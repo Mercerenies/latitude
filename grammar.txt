@@ -1,0 +1,48 @@
+
+<line> ::= <stmt> "."
+<stmt> ::= <expr> |
+           <name> <name> <expr> { "," <expr> } |
+           <name> ":=" <stmt> |
+           <name> <name> ":=" <stmt>
+<expr> ::= "(" <stmt> ")" | <name> | <name> <name>
+
+========
+
+<line> ::= <stmt> "."
+<stmt> ::= <qname> <stmt-rest> |
+<stmt-rest> ::= ":=" <stmt> |
+                <name> <stmt-rhs> |
+                <lambda>
+<stmt-rhs> ::= ":=" <stmt> |
+               <expr> { "," <expr> } |
+               <lambda>
+<expr> ::= <qname> <expr-rhs>
+<expr-rhs> ::= <name> |
+               <lambda>
+<qname> ::= <name> |
+            "(" <stmt> ")"
+
+========
+
+<line> ::= <stmt> "."
+<stmt> ::= <chain> <name> <rhs> |
+           <literal>
+<rhs> ::= <lambda> |
+          <literal> |
+          ":=" <stmt> |
+          ":" <arglist>
+<arglist> ::= <lambda> |
+              <arg> <arglist1>
+<arglist1> ::= <lambda> |
+               "," <arg> <arglist1>
+<arg> ::= <chain0> |
+          <literal>
+<chain> ::= <chain> <name> |
+            "(" <stmt> ")" |
+            <lambda>
+<chain0> ::= <chain> <name> |
+             "(" <stmt> ")"
+<literal> ::= "{" <linelist> "}" |
+              <number>
+<linelist> ::= <line> <linelist> |
+               <lambda>

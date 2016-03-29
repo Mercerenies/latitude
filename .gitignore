@@ -26,3 +26,15 @@
 *.exe
 *.out
 *.app
+
+# Emacs backup files
+*~
+
+# Misc.
+etc/*
+
+# Flex/Bison output data
+lex.yy.c
+lex.yy.h
+*.tab.c
+*.tab.h
