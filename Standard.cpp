@@ -40,10 +40,8 @@ ObjectPtr spawnObjects() {
     object->put("meta", meta);
 
     // Primitives (Method, double, string)
-    Method methodData;
-    methodData.lexicalScope = clone(global);
-    methodData.code = list< shared_ptr<Stmt> >();
-    method->prim(methodData);
+    method->put("closure", global);
+    method->prim(Method());
     number->prim(0.0);
     string->prim("");
 
@@ -105,12 +103,12 @@ ObjectPtr spawnObjects() {
     global->put("if", eval(R"({
                                meta sys ifThenElse: dynamic,
                                                     $1 toBool,
-                                                    {parent dynamic $2.},
-                                                    {parent dynamic $3.}.
+                                                    { parent dynamic $2. },
+                                                    { parent dynamic $3. }.
                              }.)",
                            global, global));
-    // TODO The 'if' statement uses a NASTY workaround to get lexically scoped
-    // arguments; need a better way
+    object->put("ifTrue", eval("{ if: self, $1, meta Nil. }.", global, global));
+    object->put("ifFalse", eval("{ if: self, meta Nil, $1. }.", global, global));
 
     // Ordinary objects print very simply
     object->put("toString", eval("\"Object\".", global, global));
@@ -218,15 +216,17 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             ObjectPtr dyn, cond, tr, fl;
             if (bindArguments(lst, dyn, cond, tr, fl)) {
                 auto result = eval("meta Nil.", global, global);
+                // These are unused except to verify that the prim() is correct
                 auto tr_ = boost::get<Method>(&tr->prim());
                 auto fl_ = boost::get<Method>(&fl->prim());
                 if ((tr_ == NULL) || (fl_ == NULL))
                     return eval("meta Nil.", global, global); // TODO Throw error
+                //
                 auto definitelyTrue = eval("meta True.", global, global);
                 if (cond == definitelyTrue)
-                    return callMethod(result, *tr_, clone(dyn));
+                    return callMethod(result, nullptr, tr, clone(dyn));
                 else
-                    return callMethod(result, *fl_, clone(dyn));
+                    return callMethod(result, nullptr, fl, clone(dyn));
             } else {
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
@@ -241,4 +241,5 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
 
 }
 
-        // TODO Take a lot of the ', global, global);' statements and make them scoped
+// TODO Take a lot of the ', global, global);' statements and make them scoped
+// TODO Reset the line number when we parse a second time (should be easy)

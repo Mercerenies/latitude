@@ -53,12 +53,12 @@ public:
     }
     std::string operator()(Method& val) const {
         ostringstream oss;
-        oss << val.lexicalScope;
+        oss << &val;
         return oss.str();
     }
     std::string operator()(SystemCall& val) const {
         ostringstream oss;
-        oss << &val; // TODO This makes little sense; print something better here
+        oss << &val;
         return oss.str();
     }
     std::string operator()(StreamPtr& val) const {

@@ -22,7 +22,7 @@ PtrToExpr getCurrentLine();
 std::unique_ptr<Stmt> translateCurrentLine();
 void clearCurrentLine();
 
-ObjectPtr callMethod(ObjectPtr result, Method& mthd, ObjectPtr dyn);
+ObjectPtr callMethod(ObjectPtr result, ObjectPtr self, ObjectPtr mthd, ObjectPtr dyn);
 
 std::unique_ptr<Stmt> parse(std::string str);
 

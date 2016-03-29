@@ -14,18 +14,13 @@ class Stmt; // From Reader.hpp
 
 class Slot;
 class Object;
-struct Method;
 
 using LStmt = std::list< std::shared_ptr<Stmt> >;
 using ObjectPtr = std::shared_ptr<Object>;
 using SystemCall = std::function<ObjectPtr(std::list<ObjectPtr>)>;
+using Method = LStmt;
 using Prim = boost::variant<boost::blank, double, std::string,
                             Method, SystemCall, StreamPtr>;
-
-struct Method {
-    ObjectPtr lexicalScope;
-    LStmt code;
-};
 
 enum class SlotType { PTR, INH };
 

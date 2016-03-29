@@ -76,9 +76,16 @@ void clearCurrentLine() {
     currentLine.reset();
 }
 
-ObjectPtr callMethod(ObjectPtr result, Method& mthd, ObjectPtr dyn) {
-    for (auto stmt : mthd.code)
-        result = stmt->execute(mthd.lexicalScope, dyn);
+ObjectPtr callMethod(ObjectPtr result, ObjectPtr self, ObjectPtr mthd, ObjectPtr dyn) {
+    ObjectPtr lex = getInheritedSlot(mthd, "closure");
+    auto impl = boost::get<Method>(&mthd->prim());
+    if ((!lex) || (!impl))
+        return result; // TODO Proper error handling
+    ObjectPtr lex1 = clone(lex);
+    if (self)
+        lex1->put("self", self);
+    for (auto stmt : *impl)
+        result = stmt->execute(lex1, dyn);
     return result;
 }
 
@@ -134,7 +141,7 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
         cout << "Sys" << endl;
 #endif
         return (*sys)(parms);
-    } else if (auto function = boost::get<Method>(&prim)) {
+    } else if (boost::get<Method>(&prim)) {
         // Standard method call
 #ifdef PRINT_BEFORE_EXEC
         cout << "Func" << endl;
@@ -149,10 +156,8 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
             oss << "$" << nth;
             dyn1->put(oss.str(), arg);
         }
-        // Bind a special 'self' variable
-        function->lexicalScope->put("self", scope);
         // Call the function
-        return callMethod(result, *function, dyn1);
+        return callMethod(result, scope, target, dyn1);
     } else {
         // Normal object
 #ifdef PRINT_BEFORE_EXEC
@@ -185,12 +190,10 @@ StmtMethod::StmtMethod(std::list< std::shared_ptr<Stmt> >& contents)
     : contents(move(contents)) {}
 
 ObjectPtr StmtMethod::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr lex1 = clone(lex);
     ObjectPtr mthd = clone(getInheritedSlot(meta(lex), "Method"));
     Method methodData;
-    methodData.lexicalScope = lex1;
-    methodData.code = contents;
-    mthd->prim(methodData);
+    mthd->put("closure", lex);
+    mthd->prim(contents);
     return mthd;
 }
 
