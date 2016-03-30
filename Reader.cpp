@@ -84,6 +84,10 @@ ObjectPtr callMethod(ObjectPtr result, ObjectPtr self, ObjectPtr mthd, ObjectPtr
     ObjectPtr lex1 = clone(lex);
     if (self)
         lex1->put("self", self);
+    lex1->put("lexical", lex1);
+    lex1->put("dynamic", dyn);
+    dyn->put("$lexical", lex1);
+    dyn->put("$dynamic", dyn);
     for (auto stmt : *impl)
         result = stmt->execute(lex1, dyn);
     return result;

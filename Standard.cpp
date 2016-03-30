@@ -92,8 +92,9 @@ ObjectPtr spawnObjects() {
     // Self-reference in scopes, etc.
     global->put("scope", eval("{ self. }.", global, global));
     global->put("$scope", eval("{ self. }.", global, global));
-    global->put("lexical", eval("{ self. }.", global, global));
-    global->put("dynamic", eval("{ $scope parent. }.", global, global));
+    // These are now done much more reliably in callMethod directly
+    //global->put("lexical", eval("{ self. }.", global, global));
+    //global->put("dynamic", eval("{ $scope parent. }.", global, global));
     object->put("me", eval("{ self. }.", global, global));
 
     // More method setup (now that we have system calls)
@@ -110,7 +111,6 @@ ObjectPtr spawnObjects() {
                                                     { parent dynamic $3. }.
                              }.)",
                            global, global));
-    /////
     object->put("ifTrue", eval(R"({ if: self,
                                         { parent dynamic $1. },
                                         { meta Nil. }.

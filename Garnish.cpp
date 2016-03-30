@@ -87,7 +87,7 @@ public:
 template <>
 ObjectPtr DumpObjectVisitor::operator()<Method>(Method& val) const {
     ObjectPtr result = getInheritedSlot(meta(lex), "Nil");
-    return callMethod(result, curr, mthd, dyn);
+    return callMethod(result, curr, mthd, clone(dyn));
 }
 template <>
 ObjectPtr DumpObjectVisitor::operator()<SystemCall>(SystemCall& val) const {
