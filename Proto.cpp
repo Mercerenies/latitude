@@ -1,4 +1,5 @@
 #include "Proto.hpp"
+#include "GC.hpp"
 
 using namespace std;
 
@@ -7,7 +8,7 @@ Slot::Slot() {}
 Slot::Slot(ObjectPtr ptr) : obj(ptr) {}
 
 SlotType Slot::getType() {
-    if (obj)
+    if (obj.lock()) // TODO Is this right? Should we be comparing obj to NULL instead?
         return SlotType::PTR;
     else
         return SlotType::INH;
@@ -44,8 +45,9 @@ Prim& Object::prim() {
 }
 
 ObjectPtr clone(ObjectPtr obj) {
-    ObjectPtr ptr(new Object());
-    ptr->put("parent", obj);
+    ObjectPtr ptr(GC::get().allocate());
+    auto ptr1 = ptr.lock();
+    ptr1->put("parent", obj);
     return ptr;
 }
 
@@ -54,11 +56,14 @@ ObjectPtr meta(ObjectPtr obj) {
 }
 
 Slot _getInheritedSlot(list<ObjectPtr>& parents, ObjectPtr obj, string name) {
-    if (find(parents.begin(), parents.end(), obj) != parents.end()) {
+    auto obj1 = obj.lock();
+    if (find_if(parents.begin(), parents.end(), [&obj1](auto xx){
+                return xx.lock() == obj1;
+            }) != parents.end()) {
         return Slot();
     } else {
-        Slot check = (*obj)[name];
-        Slot parent = (*obj)["parent"];
+        Slot check = (*obj1)[name];
+        Slot parent = (*obj1)["parent"];
         switch (check.getType()) {
         case SlotType::PTR:
             return check.getPtr();
@@ -83,10 +88,13 @@ ObjectPtr getInheritedSlot(ObjectPtr obj, string name) {
 }
 
 void _keys(list<ObjectPtr>& parents, set<string>& result, ObjectPtr obj) {
-    if (find(parents.begin(), parents.end(), obj) != parents.end())
+    auto obj1 = obj.lock();
+    if (find_if(parents.begin(), parents.end(), [&obj1](auto xx){
+                return xx.lock() == obj1;
+            }) != parents.end())
         return;
     parents.push_back(obj);
-    auto curr = obj->directKeys();
+    auto curr = obj.lock()->directKeys();
     result.insert(curr.begin(), curr.end());
     _keys(parents, result, getInheritedSlot(obj, "parent"));
 }

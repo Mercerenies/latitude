@@ -11,7 +11,7 @@ template <typename ForwardIterator, typename T, typename... Ts>
 void _bindArguments(ForwardIterator& begin, ForwardIterator& end, T& arg, Ts&... args) {
     if (begin == end)
         return;
-    arg = *begin;
+    arg = (*begin).lock();
     ++begin;
     _bindArguments(begin, end, args...);
 }

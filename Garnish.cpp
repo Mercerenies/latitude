@@ -18,14 +18,14 @@ ObjectPtr garnish(ObjectPtr global, boost::blank value) {
 ObjectPtr garnish(ObjectPtr global, std::string value) {
     ObjectPtr string = eval("meta String.", global, global);
     ObjectPtr val = clone(string);
-    val->prim(value);
+    val.lock()->prim(value);
     return val;
 }
 
 ObjectPtr garnish(ObjectPtr global, double value) {
     ObjectPtr num = eval("meta Number.", global, global);
     ObjectPtr val = clone(num);
-    val->prim(value);
+    val.lock()->prim(value);
     return val;
 }
 
@@ -69,7 +69,7 @@ public:
 };
 
 std::string primToString(ObjectPtr obj) {
-    return boost::apply_visitor(PrimToStringVisitor(), obj->prim());
+    return boost::apply_visitor(PrimToStringVisitor(), obj.lock()->prim());
 }
 
 class DumpObjectVisitor : public boost::static_visitor<ObjectPtr> {
@@ -87,7 +87,7 @@ public:
 template <>
 ObjectPtr DumpObjectVisitor::operator()<Method>(Method& val) const {
     ObjectPtr result = getInheritedSlot(meta(lex), "Nil");
-    return callMethod(result, curr, mthd, clone(dyn));
+    return callMethod(result, curr.lock(), mthd, clone(dyn));
 }
 template <>
 ObjectPtr DumpObjectVisitor::operator()<SystemCall>(SystemCall& val) const {
@@ -98,8 +98,8 @@ void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
     ObjectPtr toString0 = getInheritedSlot(obj, "toString");
     ObjectPtr asString0 =
         boost::apply_visitor(DumpObjectVisitor(obj, toString0, lex, dyn),
-                             toString0->prim());
-    if (auto str = boost::get<std::string>(&asString0->prim()))
+                             toString0.lock()->prim());
+    if (auto str = boost::get<std::string>(&asString0.lock()->prim()))
         stream.writeLine(*str);
     else
         stream.writeLine("<?>");
@@ -108,11 +108,11 @@ void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
         ObjectPtr toString1 = getInheritedSlot(value, "toString");
         ObjectPtr asString1 =
             boost::apply_visitor(DumpObjectVisitor(value, toString1, lex, dyn),
-                                 toString1->prim());
+                                 toString1.lock()->prim());
         stream.writeText("  ");
         stream.writeText(key);
         stream.writeText(": ");
-        if (auto str = boost::get<std::string>(&asString1->prim()))
+        if (auto str = boost::get<std::string>(&asString1.lock()->prim()))
             stream.writeLine(*str);
         else
             stream.writeLine("<?>");

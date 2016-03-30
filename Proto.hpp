@@ -17,7 +17,8 @@ class Slot;
 class Object;
 
 using LStmt = std::list< std::shared_ptr<Stmt> >;
-using ObjectPtr = std::shared_ptr<Object>;
+using ObjectPtr = std::weak_ptr<Object>;
+using ObjectSPtr = std::shared_ptr<Object>;
 using SystemCall = std::function<ObjectPtr(std::list<ObjectPtr>)>;
 using Method = LStmt;
 using Prim = boost::variant<boost::blank, double, std::string,

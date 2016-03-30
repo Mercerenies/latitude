@@ -6,6 +6,7 @@ extern "C" {
 #include "Reader.hpp"
 #include "Standard.hpp"
 #include "Garnish.hpp"
+#include "GC.hpp"
 #include <iostream>
 #include <cstring>
 
@@ -22,6 +23,7 @@ int main(int argc, char** argv) {
             }) me.)",
          global, global);
     auto stream = outStream();
+    GC::get().garbageCollect(global);
 
     return 0;
 }

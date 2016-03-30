@@ -2,6 +2,7 @@
 #include "Reader.hpp"
 #include "Garnish.hpp"
 #include "Macro.hpp"
+#include "GC.hpp"
 #include <list>
 #include <sstream>
 
@@ -13,7 +14,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
 
 ObjectPtr spawnObjects() {
 
-    ObjectPtr object(new Object());
+    ObjectPtr object(GC::get().allocate());
     ObjectPtr meta(clone(object));
     ObjectPtr global(clone(object));
     ObjectPtr method(clone(object));
@@ -33,105 +34,108 @@ ObjectPtr spawnObjects() {
     ObjectPtr sys(clone(object));
 
     // Object is its own parent
-    object->put("parent", object);
+    object.lock()->put("parent", object);
 
     // Meta linkage
-    meta->put("meta", meta);
-    object->put("meta", meta);
+    meta.lock()->put("meta", meta);
+    object.lock()->put("meta", meta);
 
     // Primitives (Method, double, string)
-    method->put("closure", global);
-    method->prim(Method());
-    number->prim(0.0);
-    string->prim("");
+    method.lock()->put("closure", global);
+    method.lock()->prim(Method());
+    number.lock()->prim(0.0);
+    string.lock()->prim("");
 
     // Global scope contains basic types
-    global->put("Global", global);
-    global->put("Object", global);
-    global->put("Method", method);
-    global->put("Number", number);
-    global->put("String", string);
-    global->put("Stream", stream);
-    global->put("stdin", stdin_);
-    global->put("stderr", stderr_);
-    global->put("stdout", stdout_);
-    global->put("SystemCall", systemCall);
-    global->put("True", true_);
-    global->put("False", false_);
-    global->put("Nil", nil);
-    global->put("Boolean", boolean);
+    global.lock()->put("Global", global);
+    global.lock()->put("Object", global);
+    global.lock()->put("Method", method);
+    global.lock()->put("Number", number);
+    global.lock()->put("String", string);
+    global.lock()->put("Stream", stream);
+    global.lock()->put("stdin", stdin_);
+    global.lock()->put("stderr", stderr_);
+    global.lock()->put("stdout", stdout_);
+    global.lock()->put("SystemCall", systemCall);
+    global.lock()->put("True", true_);
+    global.lock()->put("False", false_);
+    global.lock()->put("Nil", nil);
+    global.lock()->put("Boolean", boolean);
 
     // Meta calls for basic types
-    meta->put("Method", method);
-    meta->put("Number", number);
-    meta->put("String", string);
-    meta->put("Stream", stream);
-    meta->put("SystemCall", systemCall);
-    meta->put("True", true_);
-    meta->put("False", false_);
-    meta->put("Nil", nil);
-    meta->put("Boolean", boolean);
-    meta->put("sys", sys);
+    meta.lock()->put("Method", method);
+    meta.lock()->put("Number", number);
+    meta.lock()->put("String", string);
+    meta.lock()->put("Stream", stream);
+    meta.lock()->put("SystemCall", systemCall);
+    meta.lock()->put("True", true_);
+    meta.lock()->put("False", false_);
+    meta.lock()->put("Nil", nil);
+    meta.lock()->put("Boolean", boolean);
+    meta.lock()->put("sys", sys);
 
     // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
 
     // Stream setup
-    stdout_->prim(outStream());
-    stdin_->prim(inStream());
-    stderr_->prim(errStream());
-    stream->put("in?", eval("{ meta sys streamIn?: self. }.", global, global));
-    stream->put("out?", eval("{ meta sys streamOut?: self. }.", global, global));
-    stream->put("puts", eval("{ meta sys streamPuts: self, $1. }.", global, global));
-    stream->put("putln", eval("{ meta sys streamPutln: self, $1. }.", global, global));
-    stream->put("print", eval("{ self puts: $1 toString. }.", global, global));
-    stream->put("println", eval("{ self putln: $1 toString. }.", global, global));
-    stream->put("dump", eval("{ meta sys streamDump: lexical, dynamic, self, $1. }.",
+    stdout_.lock()->prim(outStream());
+    stdin_.lock()->prim(inStream());
+    stderr_.lock()->prim(errStream());
+    stream.lock()->put("in?", eval("{ meta sys streamIn?: self. }.", global, global));
+    stream.lock()->put("out?", eval("{ meta sys streamOut?: self. }.", global, global));
+    stream.lock()->put("puts", eval("{meta sys streamPuts: self, $1.}.", global, global));
+    stream.lock()->put("putln", eval("{meta sys streamPutln: self, $1.}.",
+                                     global, global));
+    stream.lock()->put("print", eval("{ self puts: $1 toString. }.", global, global));
+    stream.lock()->put("println", eval("{ self putln: $1 toString. }.", global, global));
+    stream.lock()->put("dump", eval("{meta sys streamDump: lexical, dynamic, self, $1.}.",
                              global, global));
 
     // Self-reference in scopes, etc.
-    global->put("scope", eval("{ self. }.", global, global));
-    global->put("$scope", eval("{ self. }.", global, global));
+    global.lock()->put("scope", eval("{ self. }.", global, global));
+    global.lock()->put("$scope", eval("{ self. }.", global, global));
     // These are now done much more reliably in callMethod directly
     //global->put("lexical", eval("{ self. }.", global, global));
     //global->put("dynamic", eval("{ $scope parent. }.", global, global));
-    object->put("me", eval("{ self. }.", global, global));
+    object.lock()->put("me", eval("{ self. }.", global, global));
 
     // More method setup (now that we have system calls)
-    method->put("call", eval("{ self. }.", global, global));
+    method.lock()->put("call", eval("{ self. }.", global, global));
 
     // Boolean casts and operations
-    object->put("toBool", true_);
-    false_->put("toBool", false_);
-    nil->put("toBool", false_);
-    global->put("if", eval(R"({
+    object.lock()->put("toBool", true_);
+    false_.lock()->put("toBool", false_);
+    nil.lock()->put("toBool", false_);
+    global.lock()->put("if", eval(R"({
                                meta sys ifThenElse: dynamic,
                                                     $1 toBool,
                                                     { parent dynamic $2. },
                                                     { parent dynamic $3. }.
                              }.)",
                            global, global));
-    object->put("ifTrue", eval(R"({ if: self,
+    object.lock()->put("ifTrue", eval(R"({ if: self,
                                         { parent dynamic $1. },
                                         { meta Nil. }.
                                   }.)", global, global));
-    object->put("ifFalse", eval(R"({ if: self,
+    object.lock()->put("ifFalse", eval(R"({ if: self,
                                         { meta Nil. },
                                         { parent dynamic $1. }.
                                   }.)", global, global));
 
     // Ordinary objects print very simply
-    object->put("toString", eval("\"Object\".", global, global));
+    object.lock()->put("toString", eval("\"Object\".", global, global));
 
     // Basic data types print appropriately
-    method->put("toString", eval("\"Method\".", global, global));
-    stream->put("toString", eval("\"Stream\".", global, global));
-    string->put("toString", eval("{ meta sys primToString: self. }.", global, global));
-    number->put("toString", eval("{ meta sys primToString: self. }.", global, global));
-    boolean->put("toString", eval("\"Boolean\".", global, global));
-    true_->put("toString", eval("\"True\".", global, global));
-    false_->put("toString", eval("\"False\".", global, global));
-    nil->put("toString", eval("\"Nil\".", global, global));
+    method.lock()->put("toString", eval("\"Method\".", global, global));
+    stream.lock()->put("toString", eval("\"Stream\".", global, global));
+    string.lock()->put("toString", eval("{ meta sys primToString: self. }.",
+                                        global, global));
+    number.lock()->put("toString", eval("{ meta sys primToString: self. }.",
+                                        global, global));
+    boolean.lock()->put("toString", eval("\"Boolean\".", global, global));
+    true_.lock()->put("toString", eval("\"True\".", global, global));
+    false_.lock()->put("toString", eval("\"False\".", global, global));
+    nil.lock()->put("toString", eval("\"Nil\".", global, global));
 
     return global;
 }
@@ -145,11 +149,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callIfStatement(clone(systemCall));
     ObjectPtr callStreamDump(clone(systemCall));
 
-    systemCall->prim([&global](list<ObjectPtr> lst) {
+    systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
         });
-    callStreamIn->prim([&global](list<ObjectPtr> lst) {
-            ObjectPtr stream;
+    callStreamIn.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr stream;
             if (bindArguments(lst, stream)) {
                 auto prim = stream->prim();
                 if (auto call = boost::get<StreamPtr>(&prim))
@@ -160,8 +164,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
-    callStreamOut->prim([&global](list<ObjectPtr> lst) {
-            ObjectPtr stream;
+    callStreamOut.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr stream;
             if (bindArguments(lst, stream)) {
                 auto prim = stream->prim();
                 if (auto call = boost::get<StreamPtr>(&prim))
@@ -172,8 +176,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
-    callStreamPuts->prim([&global](list<ObjectPtr> lst) {
-            ObjectPtr stream, obj;
+    callStreamPuts.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr stream, obj;
             if (bindArguments(lst, stream, obj)) {
                 auto stream0 = stream->prim();
                 auto obj0 = obj->prim();
@@ -193,8 +197,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
-    callStreamPutln->prim([&global](list<ObjectPtr> lst) {
-            ObjectPtr stream, obj;
+    callStreamPutln.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr stream, obj;
             if (bindArguments(lst, stream, obj)) {
                 auto stream0 = stream->prim();
                 auto obj0 = obj->prim();
@@ -214,8 +218,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
-    callPrimToString->prim([&global](list<ObjectPtr> lst) {
-            ObjectPtr obj;
+    callPrimToString.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 string result = primToString(obj);
                 return garnish(global, result);
@@ -223,8 +227,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
-    callIfStatement->prim([&global](list<ObjectPtr> lst) {
-            ObjectPtr dyn, cond, tr, fl;
+    callIfStatement.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr dyn, cond, tr, fl;
             if (bindArguments(lst, dyn, cond, tr, fl)) {
                 auto result = eval("meta Nil.", global, global);
                 // These are unused except to verify that the prim() is correct
@@ -233,7 +237,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if ((tr_ == NULL) || (fl_ == NULL))
                     return eval("meta Nil.", global, global); // TODO Throw error
                 //
-                auto definitelyTrue = eval("meta True.", global, global);
+                auto definitelyTrue = eval("meta True.", global, global).lock();
                 if (cond == definitelyTrue)
                     return callMethod(result, nullptr, tr, clone(dyn));
                 else
@@ -242,8 +246,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
-    callStreamDump->prim([&global](list<ObjectPtr> lst) {
-            ObjectPtr lex, dyn, stream, obj;
+    callStreamDump.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, stream, obj;
             if (bindArguments(lst, lex, dyn, stream, obj)) {
                 if (auto stream0 = boost::get<StreamPtr>(&stream->prim())) {
                     dumpObject(lex, dyn, **stream0, obj);
@@ -256,13 +260,13 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             }
         });
 
-    sys->put("streamIn?", callStreamIn);
-    sys->put("streamOut?", callStreamOut);
-    sys->put("streamPuts", callStreamPuts);
-    sys->put("streamPutln", callStreamPutln);
-    sys->put("primToString", callPrimToString);
-    sys->put("ifThenElse", callIfStatement);
-    sys->put("streamDump", callStreamDump);
+    sys.lock()->put("streamIn?", callStreamIn);
+    sys.lock()->put("streamOut?", callStreamOut);
+    sys.lock()->put("streamPuts", callStreamPuts);
+    sys.lock()->put("streamPutln", callStreamPutln);
+    sys.lock()->put("primToString", callPrimToString);
+    sys.lock()->put("ifThenElse", callIfStatement);
+    sys.lock()->put("streamDump", callStreamDump);
 
 }
 

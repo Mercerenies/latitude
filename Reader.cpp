@@ -76,18 +76,18 @@ void clearCurrentLine() {
     currentLine.reset();
 }
 
-ObjectPtr callMethod(ObjectPtr result, ObjectPtr self, ObjectPtr mthd, ObjectPtr dyn) {
+ObjectPtr callMethod(ObjectPtr result, ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     ObjectPtr lex = getInheritedSlot(mthd, "closure");
-    auto impl = boost::get<Method>(&mthd->prim());
-    if ((!lex) || (!impl))
+    auto impl = boost::get<Method>(&mthd.lock()->prim());
+    if ((lex.expired()) || (!impl))
         return result; // TODO Proper error handling
     ObjectPtr lex1 = clone(lex);
     if (self)
-        lex1->put("self", self);
-    lex1->put("lexical", lex1);
-    lex1->put("dynamic", dyn);
-    dyn->put("$lexical", lex1);
-    dyn->put("$dynamic", dyn);
+        lex1.lock()->put("self", self);
+    lex1.lock()->put("lexical", lex1);
+    lex1.lock()->put("dynamic", dyn);
+    dyn.lock()->put("$lexical", lex1);
+    dyn.lock()->put("$dynamic", dyn);
     for (auto stmt : *impl)
         result = stmt->execute(lex1, dyn);
     return result;
@@ -131,8 +131,8 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
                   return arg->execute(lex, dyn);
               });
     ObjectPtr target = getInheritedSlot(scope, functionName);
-    auto prim = target ? target->prim() : boost::blank();
-    if (target == NULL) {
+    auto prim = (!target.expired()) ? target.lock()->prim() : boost::blank();
+    if (target.expired()) {
         // Could not find slot
         // TODO Better error handling
 #ifdef PRINT_BEFORE_EXEC
@@ -158,10 +158,10 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
             nth++;
             ostringstream oss;
             oss << "$" << nth;
-            dyn1->put(oss.str(), arg);
+            dyn1.lock()->put(oss.str(), arg);
         }
         // Call the function
-        return callMethod(result, scope, target, dyn1);
+        return callMethod(result, scope.lock(), target, dyn1);
     } else {
         // Normal object
 #ifdef PRINT_BEFORE_EXEC
@@ -186,7 +186,7 @@ ObjectPtr StmtEqual::execute(ObjectPtr lex, ObjectPtr dyn) {
             scope = dyn;
     }
     ObjectPtr result = rhs->execute(lex, dyn);
-    scope->put(functionName, result);
+    scope.lock()->put(functionName, result);
     return result;
 }
 
@@ -195,9 +195,8 @@ StmtMethod::StmtMethod(std::list< std::shared_ptr<Stmt> >& contents)
 
 ObjectPtr StmtMethod::execute(ObjectPtr lex, ObjectPtr dyn) {
     ObjectPtr mthd = clone(getInheritedSlot(meta(lex), "Method"));
-    Method methodData;
-    mthd->put("closure", lex);
-    mthd->prim(contents);
+    mthd.lock()->put("closure", lex);
+    mthd.lock()->prim(contents);
     return mthd;
 }
 
@@ -206,7 +205,7 @@ StmtNumber::StmtNumber(double value)
 
 ObjectPtr StmtNumber::execute(ObjectPtr lex, ObjectPtr dyn) {
     ObjectPtr num = clone(getInheritedSlot(meta(lex), "Number"));
-    num->prim(value);
+    num.lock()->prim(value);
     return num;
 }
 
@@ -215,6 +214,6 @@ StmtString::StmtString(const char* contents)
 
 ObjectPtr StmtString::execute(ObjectPtr lex, ObjectPtr dyn) {
     ObjectPtr str = clone(getInheritedSlot(meta(lex), "String"));
-    str->prim(value);
+    str.lock()->prim(value);
     return str;
 }
