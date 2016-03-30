@@ -12,4 +12,6 @@ ObjectPtr garnish(ObjectPtr global, double value);
 
 std::string primToString(ObjectPtr obj);
 
+void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj);
+
 #endif // _GARNISH_HPP_

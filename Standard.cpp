@@ -86,12 +86,15 @@ ObjectPtr spawnObjects() {
     stream->put("putln", eval("{ meta sys streamPutln: self, $1. }.", global, global));
     stream->put("print", eval("{ self puts: $1 toString. }.", global, global));
     stream->put("println", eval("{ self putln: $1 toString. }.", global, global));
+    stream->put("dump", eval("{ meta sys streamDump: lexical, dynamic, self, $1. }.",
+                             global, global));
 
-    // Self-reference in scopes
+    // Self-reference in scopes, etc.
     global->put("scope", eval("{ self. }.", global, global));
     global->put("$scope", eval("{ self. }.", global, global));
     global->put("lexical", eval("{ self. }.", global, global));
     global->put("dynamic", eval("{ $scope parent. }.", global, global));
+    object->put("me", eval("{ self. }.", global, global));
 
     // More method setup (now that we have system calls)
     method->put("call", eval("{ self. }.", global, global));
@@ -107,8 +110,15 @@ ObjectPtr spawnObjects() {
                                                     { parent dynamic $3. }.
                              }.)",
                            global, global));
-    object->put("ifTrue", eval("{ if: self, $1, meta Nil. }.", global, global));
-    object->put("ifFalse", eval("{ if: self, meta Nil, $1. }.", global, global));
+    /////
+    object->put("ifTrue", eval(R"({ if: self,
+                                        { parent dynamic $1. },
+                                        { meta Nil. }.
+                                  }.)", global, global));
+    object->put("ifFalse", eval(R"({ if: self,
+                                        { meta Nil. },
+                                        { parent dynamic $1. }.
+                                  }.)", global, global));
 
     // Ordinary objects print very simply
     object->put("toString", eval("\"Object\".", global, global));
@@ -133,6 +143,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callStreamPutln(clone(systemCall));
     ObjectPtr callPrimToString(clone(systemCall));
     ObjectPtr callIfStatement(clone(systemCall));
+    ObjectPtr callStreamDump(clone(systemCall));
 
     systemCall->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -231,6 +242,19 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
+    callStreamDump->prim([&global](list<ObjectPtr> lst) {
+            ObjectPtr lex, dyn, stream, obj;
+            if (bindArguments(lst, lex, dyn, stream, obj)) {
+                if (auto stream0 = boost::get<StreamPtr>(&stream->prim())) {
+                    dumpObject(lex, dyn, **stream0, obj);
+                    return eval("meta Nil.", global, global);
+                } else {
+                    return eval("meta Nil.", global, global); // TODO Throw error
+                }
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
 
     sys->put("streamIn?", callStreamIn);
     sys->put("streamOut?", callStreamOut);
@@ -238,6 +262,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys->put("streamPutln", callStreamPutln);
     sys->put("primToString", callPrimToString);
     sys->put("ifThenElse", callIfStatement);
+    sys->put("streamDump", callStreamDump);
 
 }
 

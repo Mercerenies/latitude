@@ -42,5 +42,5 @@ Stream.o:	Stream.cpp Stream.hpp
 Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp
 	$(CC) Garnish.cpp
 
-main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp
+main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp
 	$(CC) main.cpp

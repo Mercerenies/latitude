@@ -32,6 +32,13 @@ void Object::put(std::string key, ObjectPtr ptr) {
     slots.emplace(key, Slot(ptr));
 }
 
+set<string> Object::directKeys() {
+    set<string> result;
+    for (auto curr : slots)
+        result.insert(curr.first);
+    return result;
+}
+
 Prim& Object::prim() {
     return primitive;
 }
@@ -73,4 +80,20 @@ ObjectPtr getInheritedSlot(ObjectPtr obj, string name) {
         return slot.getPtr();
     else
         return ObjectPtr();
+}
+
+void _keys(list<ObjectPtr>& parents, set<string>& result, ObjectPtr obj) {
+    if (find(parents.begin(), parents.end(), obj) != parents.end())
+        return;
+    parents.push_back(obj);
+    auto curr = obj->directKeys();
+    result.insert(curr.begin(), curr.end());
+    _keys(parents, result, getInheritedSlot(obj, "parent"));
+}
+
+set<string> keys(ObjectPtr obj) {
+    set<string> result;
+    list<ObjectPtr> parents;
+    _keys(parents, result, obj);
+    return result;
 }

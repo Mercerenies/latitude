@@ -9,6 +9,7 @@
 #include <string>
 #include <boost/variant.hpp>
 #include <boost/blank.hpp>
+#include <set>
 
 class Stmt; // From Reader.hpp
 
@@ -42,6 +43,7 @@ public:
     virtual ~Object() = default;
     virtual Slot operator [](std::string key);
     virtual void put(std::string key, ObjectPtr ptr);
+    virtual std::set<std::string> directKeys();
     Prim& prim();
     template <typename T>
     Prim prim(const T& prim0);
@@ -57,5 +59,6 @@ Prim Object::prim(const T& prim0) {
 ObjectPtr clone(ObjectPtr obj);
 ObjectPtr meta(ObjectPtr obj);
 ObjectPtr getInheritedSlot(ObjectPtr obj, std::string name);
+std::set<std::string> keys(ObjectPtr obj);
 
 #endif // _PROTO_HPP_
