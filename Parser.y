@@ -38,6 +38,7 @@
         bool isNumber;
         double number;
         bool isString;
+        bool isSymbol;
     };
 
     struct List {
@@ -80,6 +81,7 @@
 %token <sval> NAME
 %token <dval> NUMBER
 %token <sval> STRING
+%token <sval> SYMBOL
 
 %%
 
@@ -130,7 +132,8 @@ chain0:
 literal:
     '{' linelist '}' { $$ = new Expr(); $$->method = true; $$->args = $2; } |
     NUMBER { $$ = new Expr(); $$->isNumber = true; $$->number = $1; } |
-    STRING { $$ = new Expr(); $$->isString = true; $$->name = $1; }
+    STRING { $$ = new Expr(); $$->isString = true; $$->name = $1; } |
+    SYMBOL { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; }
     ;
 linelist:
     line linelist { $$ = new List(); $$->car = $1; $$->cdr = $2; } |

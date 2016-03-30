@@ -80,4 +80,12 @@ public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
 };
 
+class StmtSymbol : public Stmt {
+private:
+    std::string value;
+public:
+    StmtSymbol(const char* contents);
+    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+};
+
 #endif // _READER_HPP_

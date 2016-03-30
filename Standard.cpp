@@ -20,6 +20,7 @@ ObjectPtr spawnObjects() {
     ObjectPtr method(clone(object));
     ObjectPtr number(clone(object));
     ObjectPtr string(clone(object));
+    ObjectPtr symbol(clone(object));
     ObjectPtr nil(clone(object));
     ObjectPtr boolean(clone(object));
     ObjectPtr true_(clone(boolean));
@@ -45,6 +46,7 @@ ObjectPtr spawnObjects() {
     method.lock()->prim(Method());
     number.lock()->prim(0.0);
     string.lock()->prim("");
+    symbol.lock()->prim(Symbols::get()["0"]); // TODO Better default?
 
     // Global scope contains basic types
     global.lock()->put("Global", global);
@@ -52,6 +54,7 @@ ObjectPtr spawnObjects() {
     global.lock()->put("Method", method);
     global.lock()->put("Number", number);
     global.lock()->put("String", string);
+    global.lock()->put("Symbol", symbol);
     global.lock()->put("Stream", stream);
     global.lock()->put("stdin", stdin_);
     global.lock()->put("stderr", stderr_);
@@ -66,6 +69,7 @@ ObjectPtr spawnObjects() {
     meta.lock()->put("Method", method);
     meta.lock()->put("Number", number);
     meta.lock()->put("String", string);
+    meta.lock()->put("Symbol", symbol);
     meta.lock()->put("Stream", stream);
     meta.lock()->put("SystemCall", systemCall);
     meta.lock()->put("True", true_);
@@ -76,6 +80,9 @@ ObjectPtr spawnObjects() {
 
     // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
+
+    // The basic clone method
+    object.lock()->put("clone", eval("{ meta sys doClone: self. }.", global, global));
 
     // Stream setup
     stdout_.lock()->prim(outStream());
@@ -130,6 +137,8 @@ ObjectPtr spawnObjects() {
     stream.lock()->put("toString", eval("\"Stream\".", global, global));
     string.lock()->put("toString", eval("{ meta sys primToString: self. }.",
                                         global, global));
+    symbol.lock()->put("toString", eval("{ meta sys primToString: self. }.",
+                                        global, global));
     number.lock()->put("toString", eval("{ meta sys primToString: self. }.",
                                         global, global));
     boolean.lock()->put("toString", eval("\"Boolean\".", global, global));
@@ -148,6 +157,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callPrimToString(clone(systemCall));
     ObjectPtr callIfStatement(clone(systemCall));
     ObjectPtr callStreamDump(clone(systemCall));
+    ObjectPtr callClone(clone(systemCall));
 
     systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -259,6 +269,14 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
+    callClone.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr obj;
+            if (bindArguments(lst, obj)) {
+                return clone(obj);
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
 
     sys.lock()->put("streamIn?", callStreamIn);
     sys.lock()->put("streamOut?", callStreamOut);
@@ -267,6 +285,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put("primToString", callPrimToString);
     sys.lock()->put("ifThenElse", callIfStatement);
     sys.lock()->put("streamDump", callStreamDump);
+    sys.lock()->put("doClone", callClone);
 
 }
 

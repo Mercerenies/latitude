@@ -62,6 +62,13 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_STRING>\" { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
 <INNER_STRING><<EOF>> { yyerror("Unterminated string"); yyterminate(); }
 
+\'{NORMAL}+ {
+    char* arr = calloc(strlen(yytext), sizeof(char));
+    strcpy(arr, yytext + 1);
+    yylval.sval = arr;
+    return SYMBOL;
+}
+
 \. { return '.'; }
 \( { return '('; }
 \) { return ')'; }

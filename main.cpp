@@ -7,6 +7,7 @@ extern "C" {
 #include "Standard.hpp"
 #include "Garnish.hpp"
 #include "GC.hpp"
+#include "Symbol.hpp"
 #include <iostream>
 #include <cstring>
 
@@ -16,10 +17,10 @@ int main(int argc, char** argv) {
 
     auto global = spawnObjects();
     eval(R"(({
-              True ifTrue: {stdout putln: "YAY!".}.
-              True ifFalse: {stdout putln: "Uhhhhhh".}.
-              False ifFalse: {stdout putln: "YAY!".}.
-              False ifTrue: {stdout putln: "Uhhhhhh".}.
+              xx := 'abc.
+              yy := 'def.
+              stdout println: xx.
+              stdout println: yy.
             }) me.)",
          global, global);
     auto stream = outStream();

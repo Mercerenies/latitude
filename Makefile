@@ -6,7 +6,7 @@ endif
 C=gcc -c -Wall
 CC=g++ -I $(BOOST) -c -Wall -std=c++14
 LINK=g++ -Wall -std=c++14
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o
 
 all:	$(FILES)
 	$(LINK) $(FILES)
@@ -15,7 +15,7 @@ clean:
 	rm *.o
 	rm lex.yy.c lex.yy.h Parser.tab.c Parser.tab.h
 
-Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp
+Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp
 	$(CC) Proto.cpp
 
 Standard.o:	Standard.cpp Standard.hpp Proto.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp
@@ -33,7 +33,7 @@ lex.yy.c:	Scanner.flex Parser.tab.c
 Parser.tab.c:	Parser.y
 	bison -d Parser.y
 
-Reader.o:	Reader.cpp Reader.hpp Parser.tab.c
+Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp
 	$(CC) Reader.cpp
 
 Stream.o:	Stream.cpp Stream.hpp
@@ -44,6 +44,9 @@ Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp
 
 GC.o:	GC.cpp GC.hpp Proto.hpp
 	$(CC) GC.cpp
+
+Symbol.o:	Symbol.cpp Symbol.hpp
+	$(CC) Symbol.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp
 	$(CC) main.cpp

@@ -2,6 +2,7 @@ extern "C" {
 #include "lex.yy.h"
 }
 #include "Reader.hpp"
+#include "Symbol.hpp"
 #include <list>
 #include <memory>
 #include <algorithm>
@@ -31,7 +32,9 @@ unique_ptr<Stmt> translateStmt(Expr* expr);
 list< unique_ptr<Stmt> > translateList(List* list);
 
 unique_ptr<Stmt> translateStmt(Expr* expr) {
-    if (expr->isString) {
+    if (expr->isSymbol) {
+        return unique_ptr<Stmt>(new StmtSymbol(expr->name));
+    } else if (expr->isString) {
         return unique_ptr<Stmt>(new StmtString(expr->name));
     } else if (expr->isNumber) {
         return unique_ptr<Stmt>(new StmtNumber(expr->number));
@@ -215,5 +218,15 @@ StmtString::StmtString(const char* contents)
 ObjectPtr StmtString::execute(ObjectPtr lex, ObjectPtr dyn) {
     ObjectPtr str = clone(getInheritedSlot(meta(lex), "String"));
     str.lock()->prim(value);
+    return str;
+}
+
+StmtSymbol::StmtSymbol(const char* contents)
+    : value(contents) {}
+
+ObjectPtr StmtSymbol::execute(ObjectPtr lex, ObjectPtr dyn) {
+    ObjectPtr str = clone(getInheritedSlot(meta(lex), "Symbol"));
+    Symbolic sym = { Symbols::get()[value] };
+    str.lock()->prim(sym);
     return str;
 }

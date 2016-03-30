@@ -66,6 +66,12 @@ public:
         oss << val;
         return oss.str();
     }
+    std::string operator()(Symbolic& val) const {
+        ostringstream oss;
+        oss << '\'';
+        oss << Symbols::get()[val.index];
+        return oss.str();
+    }
 };
 
 std::string primToString(ObjectPtr obj) {

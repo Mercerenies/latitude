@@ -2,6 +2,7 @@
 #define _PROTO_HPP_
 
 #include "Stream.hpp"
+#include "Symbol.hpp"
 #include <list>
 #include <functional>
 #include <memory>
@@ -22,7 +23,7 @@ using ObjectSPtr = std::shared_ptr<Object>;
 using SystemCall = std::function<ObjectPtr(std::list<ObjectPtr>)>;
 using Method = LStmt;
 using Prim = boost::variant<boost::blank, double, std::string,
-                            Method, SystemCall, StreamPtr>;
+                            Method, SystemCall, StreamPtr, Symbolic>;
 
 enum class SlotType { PTR, INH };
 
