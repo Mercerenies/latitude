@@ -17,11 +17,10 @@ int main(int argc, char** argv) {
 
     auto global = spawnObjects();
     eval(R"(({
-              xx := proc { stdout println: "I'm printing.". }.
+              xx := proc { stdout println: "I am printing.". }.
               xx call.
-              xx.
-              stdout println: xx.
-              stdout println: xx call.
+              stdout println: (xx has: 'call).
+              stdout println: (xx has: 'mall).
             }) me.)",
          global, global);
     auto stream = outStream();

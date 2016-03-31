@@ -87,6 +87,11 @@ ObjectPtr getInheritedSlot(ObjectPtr obj, string name) {
         return ObjectPtr();
 }
 
+bool hasInheritedSlot(ObjectPtr obj, string name) {
+    auto result = getInheritedSlot(obj, name);
+    return !result.expired();
+}
+
 void _keys(list<ObjectPtr>& parents, set<string>& result, ObjectPtr obj) {
     auto obj1 = obj.lock();
     if (find_if(parents.begin(), parents.end(), [&obj1](auto xx){

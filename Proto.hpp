@@ -61,6 +61,7 @@ Prim Object::prim(const T& prim0) {
 ObjectPtr clone(ObjectPtr obj);
 ObjectPtr meta(ObjectPtr obj);
 ObjectPtr getInheritedSlot(ObjectPtr obj, std::string name);
+bool hasInheritedSlot(ObjectPtr obj, std::string name);
 std::set<std::string> keys(ObjectPtr obj);
 
 #endif // _PROTO_HPP_

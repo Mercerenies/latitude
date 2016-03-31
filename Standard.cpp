@@ -85,6 +85,7 @@ ObjectPtr spawnObjects() {
     // Procs and Methods
     method.lock()->put("closure", global);
     proc.lock()->put("call", clone(method));
+    // TODO Should this use `meta Proc clone` or `Proc clone`?
     global.lock()->put("proc", eval(R"({ curr := Proc clone.
                                          curr call := { parent dynamic $1. }.
                                          curr. }.)", global, global));
@@ -92,6 +93,8 @@ ObjectPtr spawnObjects() {
     // The basics for cloning and metaprogramming
     object.lock()->put("clone", eval("{ meta sys doClone: self. }.", global, global));
     object.lock()->put("slot", eval("{ meta sys accessSlot: self, $1. }.",
+                                    global, global));
+    object.lock()->put("has", eval("{ meta sys checkSlot: self, $1. }.",
                                     global, global));
 
     // Stream setup
@@ -176,6 +179,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callStreamDump(clone(systemCall));
     ObjectPtr callClone(clone(systemCall));
     ObjectPtr callGetSlot(clone(systemCall));
+    ObjectPtr callHasSlot(clone(systemCall));
 
     systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -299,9 +303,23 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             ObjectSPtr obj, slot;
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
+                    // TODO Check hasInheritedSlot and see if need to throw error
                     return getInheritedSlot(obj, Symbols::get()[sym->index]);
                 } else {
                     return eval("meta Nil.", global, global); // TODO Throw error
+                }
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
+    callHasSlot.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr obj, slot;
+            if (bindArguments(lst, obj, slot)) {
+                if (auto sym = boost::get<Symbolic>(&slot->prim())) {
+                    return garnish(global,
+                                   hasInheritedSlot(obj, Symbols::get()[sym->index]));
+                } else {
+                    return eval("meta False.", global, global);
                 }
             } else {
                 return eval("meta Nil.", global, global); // TODO Throw error
@@ -317,6 +335,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put("streamDump", callStreamDump);
     sys.lock()->put("doClone", callClone);
     sys.lock()->put("accessSlot", callGetSlot);
+    sys.lock()->put("checkSlot", callHasSlot);
 
 }
 
