@@ -17,8 +17,11 @@ int main(int argc, char** argv) {
 
     auto global = spawnObjects();
     eval(R"(({
-              stdout println: (True and: False).
-              stdout println: (True or: False).
+              xx := Proc clone.
+              xx call := { 1. }.
+              stdout println: "Z".
+              stdout println: xx.
+              stdout println: xx call.
             }) me.)",
          global, global);
     auto stream = outStream();
