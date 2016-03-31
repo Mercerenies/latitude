@@ -85,6 +85,9 @@ ObjectPtr spawnObjects() {
     // Procs and Methods
     method.lock()->put("closure", global);
     proc.lock()->put("call", clone(method));
+    global.lock()->put("proc", eval(R"({ curr := Proc clone.
+                                         curr call := { parent dynamic $1. }.
+                                         curr. }.)", global, global));
 
     // The basics for cloning and metaprogramming
     object.lock()->put("clone", eval("{ meta sys doClone: self. }.", global, global));

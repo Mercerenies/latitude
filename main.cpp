@@ -17,9 +17,9 @@ int main(int argc, char** argv) {
 
     auto global = spawnObjects();
     eval(R"(({
-              xx := Proc clone.
-              xx call := { 1. }.
-              stdout println: "Z".
+              xx := proc { stdout println: "I'm printing.". }.
+              xx call.
+              xx.
               stdout println: xx.
               stdout println: xx call.
             }) me.)",
