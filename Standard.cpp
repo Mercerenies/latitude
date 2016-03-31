@@ -128,6 +128,12 @@ ObjectPtr spawnObjects() {
                                         { meta Nil. },
                                         { parent dynamic $1. }.
                                   }.)", global, global));
+    object.lock()->put("and", eval(R"({ if: self,
+                                            { parent dynamic $1. },
+                                            { meta False. }. }.)", global, global));
+    object.lock()->put("or", eval(R"({ if: self,
+                                            { parent self. },
+                                            { parent dynamic $1. }. }.)", global, global));
 
     // Ordinary objects print very simply
     object.lock()->put("toString", eval("\"Object\".", global, global));

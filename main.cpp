@@ -17,10 +17,8 @@ int main(int argc, char** argv) {
 
     auto global = spawnObjects();
     eval(R"(({
-              xx := 'abc.
-              yy := 'def.
-              stdout println: xx.
-              stdout println: yy.
+              stdout println: (True and: False).
+              stdout println: (True or: False).
             }) me.)",
          global, global);
     auto stream = outStream();
