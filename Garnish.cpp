@@ -68,8 +68,10 @@ public:
     }
     std::string operator()(Symbolic& val) const {
         ostringstream oss;
-        oss << '\'';
-        oss << Symbols::get()[val];
+        std::string str = Symbols::get()[val];
+        if (!Symbols::isUninterned(str))
+            oss << '\'';
+        oss << str;
         return oss.str();
     }
 };

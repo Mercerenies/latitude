@@ -124,13 +124,14 @@ ObjectPtr spawnObjects() {
     // Self-reference in scopes, etc.
     global.lock()->put(Symbols::get()["scope"], eval("{ self. }.", global, global));
     global.lock()->put(Symbols::get()["$scope"], eval("{ self. }.", global, global));
-    // These are now done much more reliably in callMethod directly
-    //global->put(Symbols::get()["lexical"], eval("{ self. }.", global, global));
-    //global->put(Symbols::get()["dynamic"], eval("{ $scope parent. }.", global, global));
     object.lock()->put(Symbols::get()["me"], eval("{ self. }.", global, global));
 
     // More method setup (now that we have system calls)
     method.lock()->put(Symbols::get()["call"], eval("{ self. }.", global, global));
+
+    // Symbol Functions
+    symbol.lock()->put(Symbols::get()["gensym"], eval("{ meta sys gensym#: self. }.",
+                                                      global, global));
 
     // Boolean casts and operations
     object.lock()->put(Symbols::get()["toBool"], true_);
@@ -191,6 +192,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callGetSlot(clone(systemCall));
     ObjectPtr callHasSlot(clone(systemCall));
     ObjectPtr callPutSlot(clone(systemCall));
+    ObjectPtr callGensym(clone(systemCall));
 
     systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -349,6 +351,16 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
+    callGensym.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr symbol;
+            if (bindArguments(lst, symbol)) {
+                ObjectPtr gen = clone(symbol);
+                gen.lock()->prim( Symbols::gensym() );
+                return gen;
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -361,6 +373,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["accessSlot#"], callGetSlot);
     sys.lock()->put(Symbols::get()["checkSlot#"], callHasSlot);
     sys.lock()->put(Symbols::get()["putSlot#"], callPutSlot);
+    sys.lock()->put(Symbols::get()["gensym#"], callGensym);
 
 }
 

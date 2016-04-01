@@ -22,6 +22,11 @@ int main(int argc, char** argv) {
                 xx put: ~abc, 1.
                 stdout println: (xx has: 'abc).
                 stdout println: (xx has: ~abc).
+                stdout println: 'abc.
+                stdout println: Symbol gensym.
+                stdout println: Symbol gensym.
+                stdout println: Symbol gensym.
+                stdout println: Symbol gensym.
             }) me.)",
          global, global);
     auto stream = outStream();

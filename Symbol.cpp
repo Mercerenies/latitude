@@ -7,20 +7,10 @@ Symbols Symbols::instance = Symbols();
 long Symbols::gensymIndex = 100L;
 
 Symbolic Symbols::gensym() {
-    auto& data = get().syms.right;
-    Symbolic index;
-    bool done = false;
-    while (!done) {
-        ostringstream oss;
-        oss << "G" << gensymIndex;
-        auto str = oss.str();
-        if (data.find(str) == data.end()) {
-            done = true;
-            index = get()[str];
-        }
-        ++gensymIndex;
-    }
-    return index;
+    ++gensymIndex;
+    ostringstream oss;
+    oss << "~G" << gensymIndex;
+    return get()[oss.str()];
 }
 
 Symbols& Symbols::get() {
