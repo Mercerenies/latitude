@@ -91,24 +91,30 @@ ObjectPtr spawnObjects() {
                                          curr. }.)", global, global));
 
     // The basics for cloning and metaprogramming
-    object.lock()->put(Symbols::get()["clone"], eval("{ meta sys doClone: self. }.", global, global));
-    object.lock()->put(Symbols::get()["slot"], eval("{ meta sys accessSlot: self, $1. }.",
+    object.lock()->put(Symbols::get()["clone"], eval("{ meta sys doClone#: self. }.",
+                                                     global, global));
+    object.lock()->put(Symbols::get()["slot"], eval("{ meta sys accessSlot#: self, $1. }.",
                                     global, global));
-    object.lock()->put(Symbols::get()["has"], eval("{ meta sys checkSlot: self, $1. }.",
+    object.lock()->put(Symbols::get()["has"], eval("{ meta sys checkSlot#: self, $1. }.",
                                     global, global));
 
     // Stream setup
     stdout_.lock()->prim(outStream());
     stdin_.lock()->prim(inStream());
     stderr_.lock()->prim(errStream());
-    stream.lock()->put(Symbols::get()["in?"], eval("{ meta sys streamIn?: self. }.", global, global));
-    stream.lock()->put(Symbols::get()["out?"], eval("{ meta sys streamOut?: self. }.", global, global));
-    stream.lock()->put(Symbols::get()["puts"], eval("{meta sys streamPuts: self, $1.}.", global, global));
-    stream.lock()->put(Symbols::get()["putln"], eval("{meta sys streamPutln: self, $1.}.",
+    stream.lock()->put(Symbols::get()["in?"], eval("{ meta sys streamIn#: self. }.",
+                                                   global, global));
+    stream.lock()->put(Symbols::get()["out?"], eval("{ meta sys streamOut#: self. }.",
+                                                    global, global));
+    stream.lock()->put(Symbols::get()["puts"], eval("{meta sys streamPuts#: self, $1.}.",
+                                                    global, global));
+    stream.lock()->put(Symbols::get()["putln"], eval("{meta sys streamPutln#: self, $1.}.",
                                      global, global));
-    stream.lock()->put(Symbols::get()["print"], eval("{ self puts: $1 toString. }.", global, global));
-    stream.lock()->put(Symbols::get()["println"], eval("{ self putln: $1 toString. }.", global, global));
-    stream.lock()->put(Symbols::get()["dump"], eval("{meta sys streamDump: lexical, dynamic, self, $1.}.",
+    stream.lock()->put(Symbols::get()["print"], eval("{ self puts: $1 toString. }.",
+                                                     global, global));
+    stream.lock()->put(Symbols::get()["println"], eval("{ self putln: $1 toString. }.",
+                                                       global, global));
+    stream.lock()->put(Symbols::get()["dump"], eval("{meta sys streamDump#: lexical, dynamic, self, $1.}.",
                              global, global));
 
     // Self-reference in scopes, etc.
@@ -127,10 +133,10 @@ ObjectPtr spawnObjects() {
     false_.lock()->put(Symbols::get()["toBool"], false_);
     nil.lock()->put(Symbols::get()["toBool"], false_);
     global.lock()->put(Symbols::get()["if"], eval(R"({
-                               meta sys ifThenElse: dynamic,
-                                                    $1 toBool,
-                                                    { parent dynamic $2. },
-                                                    { parent dynamic $3. }.
+                               meta sys ifThenElse#: dynamic,
+                                                     $1 toBool,
+                                                     { parent dynamic $2. },
+                                                     { parent dynamic $3. }.
                              }.)",
                            global, global));
     object.lock()->put(Symbols::get()["ifTrue"], eval(R"({ if: self,
@@ -155,11 +161,11 @@ ObjectPtr spawnObjects() {
     method.lock()->put(Symbols::get()["toString"], eval("\"Method\".", global, global));
     proc.lock()->put(Symbols::get()["toString"], eval("\"Proc\".", global, global));
     stream.lock()->put(Symbols::get()["toString"], eval("\"Stream\".", global, global));
-    string.lock()->put(Symbols::get()["toString"], eval("{ meta sys primToString: self. }.",
+    string.lock()->put(Symbols::get()["toString"], eval("{meta sys primToString#: self.}.",
                                         global, global));
-    symbol.lock()->put(Symbols::get()["toString"], eval("{ meta sys primToString: self. }.",
+    symbol.lock()->put(Symbols::get()["toString"], eval("{meta sys primToString#: self.}.",
                                         global, global));
-    number.lock()->put(Symbols::get()["toString"], eval("{ meta sys primToString: self. }.",
+    number.lock()->put(Symbols::get()["toString"], eval("{meta sys primToString#: self.}.",
                                         global, global));
     boolean.lock()->put(Symbols::get()["toString"], eval("\"Boolean\".", global, global));
     true_.lock()->put(Symbols::get()["toString"], eval("\"True\".", global, global));
@@ -326,16 +332,16 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             }
         });
 
-    sys.lock()->put(Symbols::get()["streamIn?"], callStreamIn);
-    sys.lock()->put(Symbols::get()["streamOut?"], callStreamOut);
-    sys.lock()->put(Symbols::get()["streamPuts"], callStreamPuts);
-    sys.lock()->put(Symbols::get()["streamPutln"], callStreamPutln);
-    sys.lock()->put(Symbols::get()["primToString"], callPrimToString);
-    sys.lock()->put(Symbols::get()["ifThenElse"], callIfStatement);
-    sys.lock()->put(Symbols::get()["streamDump"], callStreamDump);
-    sys.lock()->put(Symbols::get()["doClone"], callClone);
-    sys.lock()->put(Symbols::get()["accessSlot"], callGetSlot);
-    sys.lock()->put(Symbols::get()["checkSlot"], callHasSlot);
+    sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
+    sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
+    sys.lock()->put(Symbols::get()["streamPuts#"], callStreamPuts);
+    sys.lock()->put(Symbols::get()["streamPutln#"], callStreamPutln);
+    sys.lock()->put(Symbols::get()["primToString#"], callPrimToString);
+    sys.lock()->put(Symbols::get()["ifThenElse#"], callIfStatement);
+    sys.lock()->put(Symbols::get()["streamDump#"], callStreamDump);
+    sys.lock()->put(Symbols::get()["doClone#"], callClone);
+    sys.lock()->put(Symbols::get()["accessSlot#"], callGetSlot);
+    sys.lock()->put(Symbols::get()["checkSlot#"], callHasSlot);
 
 }
 
