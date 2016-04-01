@@ -39,12 +39,12 @@ public:
 
 class Object {
 private:
-    std::unordered_map<std::string, Slot> slots;
+    std::unordered_map<Symbolic, Slot> slots;
     Prim primitive;
 public:
     virtual ~Object() = default;
-    virtual Slot operator [](std::string key);
-    virtual void put(std::string key, ObjectPtr ptr);
+    virtual Slot operator [](Symbolic key);
+    virtual void put(Symbolic key, ObjectPtr ptr);
     virtual std::set<std::string> directKeys();
     Prim& prim();
     template <typename T>
@@ -60,8 +60,8 @@ Prim Object::prim(const T& prim0) {
 
 ObjectPtr clone(ObjectPtr obj);
 ObjectPtr meta(ObjectPtr obj);
-ObjectPtr getInheritedSlot(ObjectPtr obj, std::string name);
-bool hasInheritedSlot(ObjectPtr obj, std::string name);
+ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name);
+bool hasInheritedSlot(ObjectPtr obj, Symbolic name);
 std::set<std::string> keys(ObjectPtr obj);
 
 #endif // _PROTO_HPP_

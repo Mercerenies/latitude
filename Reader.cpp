@@ -81,17 +81,17 @@ void clearCurrentLine() {
 }
 
 ObjectPtr callMethod(ObjectPtr result, ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
-    ObjectPtr lex = getInheritedSlot(mthd, "closure");
+    ObjectPtr lex = getInheritedSlot(mthd, Symbols::get()["closure"]);
     auto impl = boost::get<Method>(&mthd.lock()->prim());
     if ((lex.expired()) || (!impl))
         return result; // TODO Proper error handling
     ObjectPtr lex1 = clone(lex);
     if (self)
-        lex1.lock()->put("self", self);
-    lex1.lock()->put("lexical", lex1);
-    lex1.lock()->put("dynamic", dyn);
-    dyn.lock()->put("$lexical", lex1);
-    dyn.lock()->put("$dynamic", dyn);
+        lex1.lock()->put(Symbols::get()["self"], self);
+    lex1.lock()->put(Symbols::get()["lexical"], lex1);
+    lex1.lock()->put(Symbols::get()["dynamic"], dyn);
+    dyn.lock()->put(Symbols::get()["$lexical"], lex1);
+    dyn.lock()->put(Symbols::get()["$dynamic"], dyn);
     for (auto stmt : *impl)
         result = stmt->execute(lex1, dyn);
     return result;
@@ -135,7 +135,7 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
               [&lex, &dyn](std::unique_ptr<Stmt>& arg) {
                   return arg->execute(lex, dyn);
               });
-    ObjectPtr target = getInheritedSlot(scope, functionName);
+    ObjectPtr target = getInheritedSlot(scope, Symbols::get()[functionName]);
     auto prim = (!target.expired()) ? target.lock()->prim() : boost::blank();
     if (target.expired()) {
         // Could not find slot
@@ -155,7 +155,7 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
 #ifdef PRINT_BEFORE_EXEC
         cout << "Func" << endl;
 #endif
-        ObjectPtr result(getInheritedSlot(meta(scope), "Nil"));
+        ObjectPtr result(getInheritedSlot(meta(scope), Symbols::get()["Nil"]));
         ObjectPtr dyn1 = clone(dyn);
         // Arguments :D
         int nth = 0;
@@ -163,7 +163,7 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
             nth++;
             ostringstream oss;
             oss << "$" << nth;
-            dyn1.lock()->put(oss.str(), arg);
+            dyn1.lock()->put(Symbols::get()[oss.str()], arg);
         }
         // Call the function
         return callMethod(result, scope.lock(), target, dyn1);
@@ -191,7 +191,7 @@ ObjectPtr StmtEqual::execute(ObjectPtr lex, ObjectPtr dyn) {
             scope = dyn;
     }
     ObjectPtr result = rhs->execute(lex, dyn);
-    scope.lock()->put(functionName, result);
+    scope.lock()->put(Symbols::get()[functionName], result);
     return result;
 }
 
@@ -199,8 +199,8 @@ StmtMethod::StmtMethod(std::list< std::shared_ptr<Stmt> >& contents)
     : contents(move(contents)) {}
 
 ObjectPtr StmtMethod::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr mthd = clone(getInheritedSlot(meta(lex), "Method"));
-    mthd.lock()->put("closure", lex);
+    ObjectPtr mthd = clone(getInheritedSlot(meta(lex), Symbols::get()["Method"]));
+    mthd.lock()->put(Symbols::get()["closure"], lex);
     mthd.lock()->prim(contents);
     return mthd;
 }
@@ -209,7 +209,7 @@ StmtNumber::StmtNumber(double value)
     : value(value) {}
 
 ObjectPtr StmtNumber::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr num = clone(getInheritedSlot(meta(lex), "Number"));
+    ObjectPtr num = clone(getInheritedSlot(meta(lex), Symbols::get()["Number"]));
     num.lock()->prim(value);
     return num;
 }
@@ -218,7 +218,7 @@ StmtString::StmtString(const char* contents)
     : value(contents) {}
 
 ObjectPtr StmtString::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr str = clone(getInheritedSlot(meta(lex), "String"));
+    ObjectPtr str = clone(getInheritedSlot(meta(lex), Symbols::get()["String"]));
     str.lock()->prim(value);
     return str;
 }
@@ -227,7 +227,7 @@ StmtSymbol::StmtSymbol(const char* contents)
     : value(contents) {}
 
 ObjectPtr StmtSymbol::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr str = clone(getInheritedSlot(meta(lex), "Symbol"));
+    ObjectPtr str = clone(getInheritedSlot(meta(lex), Symbols::get()["Symbol"]));
     Symbolic sym = { Symbols::get()[value] };
     str.lock()->prim(sym);
     return str;

@@ -4,6 +4,7 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <string>
+#include <functional>
 
 struct Symbolic;
 
@@ -21,12 +22,24 @@ private:
 public:
     static Symbolic gensym();
     static Symbols& get();
-    index_t operator[](const std::string& str);
-    std::string operator[](const index_t& str);
+    Symbolic operator[](const std::string& str);
+    std::string operator[](const Symbolic& str);
 };
 
 struct Symbolic {
     Symbols::index_t index;
 };
+
+bool operator ==(const Symbolic& a, const Symbolic& b);
+
+namespace std {
+    template <>
+    class hash<Symbolic> {
+    public:
+        size_t operator()(const Symbolic& val) const noexcept {
+            return hash<Symbols::index_t>()(val.index);
+        }
+    };
+}
 
 #endif

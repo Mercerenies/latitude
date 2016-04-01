@@ -69,7 +69,7 @@ public:
     std::string operator()(Symbolic& val) const {
         ostringstream oss;
         oss << '\'';
-        oss << Symbols::get()[val.index];
+        oss << Symbols::get()[val];
         return oss.str();
     }
 };
@@ -92,7 +92,7 @@ public:
 
 template <>
 ObjectPtr DumpObjectVisitor::operator()<Method>(Method& val) const {
-    ObjectPtr result = getInheritedSlot(meta(lex), "Nil");
+    ObjectPtr result = getInheritedSlot(meta(lex), Symbols::get()["Nil"]);
     return callMethod(result, curr.lock(), mthd, clone(dyn));
 }
 template <>
@@ -101,7 +101,7 @@ ObjectPtr DumpObjectVisitor::operator()<SystemCall>(SystemCall& val) const {
 }
 
 void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
-    ObjectPtr toString0 = getInheritedSlot(obj, "toString");
+    ObjectPtr toString0 = getInheritedSlot(obj, Symbols::get()["toString"]);
     ObjectPtr asString0 =
         boost::apply_visitor(DumpObjectVisitor(obj, toString0, lex, dyn),
                              toString0.lock()->prim());
@@ -110,8 +110,8 @@ void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
     else
         stream.writeLine("<?>");
     for (auto key : keys(obj)) {
-        auto value = getInheritedSlot(obj, key);
-        ObjectPtr toString1 = getInheritedSlot(value, "toString");
+        auto value = getInheritedSlot(obj, Symbols::get()[key]);
+        ObjectPtr toString1 = getInheritedSlot(value, Symbols::get()["toString"]);
         ObjectPtr asString1 =
             boost::apply_visitor(DumpObjectVisitor(value, toString1, lex, dyn),
                                  toString1.lock()->prim());

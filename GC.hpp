@@ -41,7 +41,7 @@ void GC::garbageCollect(Ts... globals) {
         frontier.erase(curr);
         if (auto curr1 = curr->lock()) {
             for (auto key : curr1->directKeys()) {
-                auto val = getInheritedSlot(*curr, key);
+                auto val = getInheritedSlot(*curr, Symbols::get()[key]);
                 if (visited.find(val) == visited.end())
                     frontier.insert(val);
             }

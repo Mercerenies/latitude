@@ -8,7 +8,7 @@ long Symbols::gensymIndex = 100L;
 
 Symbolic Symbols::gensym() {
     auto& data = get().syms.right;
-    index_t index = 0;
+    Symbolic index;
     bool done = false;
     while (!done) {
         ostringstream oss;
@@ -20,25 +20,28 @@ Symbolic Symbols::gensym() {
         }
         ++gensymIndex;
     }
-    return { index };
+    return index;
 }
 
 Symbols& Symbols::get() {
     return instance;
 }
 
-auto Symbols::operator[](const std::string& str)
-    -> index_t {
+Symbolic Symbols::operator[](const std::string& str) {
     auto& data = syms.right;
     if (data.find(str) == data.end())
         syms.insert(bimap_t::value_type(index++, str));
-    return (*data.find(str)).second;
+    Symbolic sym = { (*data.find(str)).second };
+    return sym;
 }
 
-auto Symbols::operator[](const index_t& str)
-    -> std::string {
+std::string Symbols::operator[](const Symbolic& str) {
     auto& data = syms.left;
-    if (data.find(str) == data.end())
+    if (data.find(str.index) == data.end())
         return ""; // TODO Is this what we really want?
-    return (*data.find(str)).second;
+    return (*data.find(str.index)).second;
+}
+
+bool operator ==(const Symbolic& a, const Symbolic& b) {
+    return a.index == b.index;
 }

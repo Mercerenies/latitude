@@ -36,11 +36,11 @@ ObjectPtr spawnObjects() {
     ObjectPtr sys(clone(object));
 
     // Object is its own parent
-    object.lock()->put("parent", object);
+    object.lock()->put(Symbols::get()["parent"], object);
 
     // Meta linkage
-    meta.lock()->put("meta", meta);
-    object.lock()->put("meta", meta);
+    meta.lock()->put(Symbols::get()["meta"], meta);
+    object.lock()->put(Symbols::get()["meta"], meta);
 
     // Primitives (Method, double, string)
     method.lock()->prim(Method());
@@ -49,122 +49,122 @@ ObjectPtr spawnObjects() {
     symbol.lock()->prim(Symbols::get()["0"]); // TODO Better default?
 
     // Global scope contains basic types
-    global.lock()->put("Global", global);
-    global.lock()->put("Object", global);
-    global.lock()->put("Proc", proc);
-    global.lock()->put("Method", method);
-    global.lock()->put("Number", number);
-    global.lock()->put("String", string);
-    global.lock()->put("Symbol", symbol);
-    global.lock()->put("Stream", stream);
-    global.lock()->put("stdin", stdin_);
-    global.lock()->put("stderr", stderr_);
-    global.lock()->put("stdout", stdout_);
-    global.lock()->put("SystemCall", systemCall);
-    global.lock()->put("True", true_);
-    global.lock()->put("False", false_);
-    global.lock()->put("Nil", nil);
-    global.lock()->put("Boolean", boolean);
+    global.lock()->put(Symbols::get()["Global"], global);
+    global.lock()->put(Symbols::get()["Object"], global);
+    global.lock()->put(Symbols::get()["Proc"], proc);
+    global.lock()->put(Symbols::get()["Method"], method);
+    global.lock()->put(Symbols::get()["Number"], number);
+    global.lock()->put(Symbols::get()["String"], string);
+    global.lock()->put(Symbols::get()["Symbol"], symbol);
+    global.lock()->put(Symbols::get()["Stream"], stream);
+    global.lock()->put(Symbols::get()["stdin"], stdin_);
+    global.lock()->put(Symbols::get()["stderr"], stderr_);
+    global.lock()->put(Symbols::get()["stdout"], stdout_);
+    global.lock()->put(Symbols::get()["SystemCall"], systemCall);
+    global.lock()->put(Symbols::get()["True"], true_);
+    global.lock()->put(Symbols::get()["False"], false_);
+    global.lock()->put(Symbols::get()["Nil"], nil);
+    global.lock()->put(Symbols::get()["Boolean"], boolean);
 
     // Meta calls for basic types
-    meta.lock()->put("Method", method);
-    meta.lock()->put("Number", number);
-    meta.lock()->put("String", string);
-    meta.lock()->put("Symbol", symbol);
-    meta.lock()->put("Stream", stream);
-    meta.lock()->put("SystemCall", systemCall);
-    meta.lock()->put("True", true_);
-    meta.lock()->put("False", false_);
-    meta.lock()->put("Nil", nil);
-    meta.lock()->put("Boolean", boolean);
-    meta.lock()->put("sys", sys);
+    meta.lock()->put(Symbols::get()["Method"], method);
+    meta.lock()->put(Symbols::get()["Number"], number);
+    meta.lock()->put(Symbols::get()["String"], string);
+    meta.lock()->put(Symbols::get()["Symbol"], symbol);
+    meta.lock()->put(Symbols::get()["Stream"], stream);
+    meta.lock()->put(Symbols::get()["SystemCall"], systemCall);
+    meta.lock()->put(Symbols::get()["True"], true_);
+    meta.lock()->put(Symbols::get()["False"], false_);
+    meta.lock()->put(Symbols::get()["Nil"], nil);
+    meta.lock()->put(Symbols::get()["Boolean"], boolean);
+    meta.lock()->put(Symbols::get()["sys"], sys);
 
     // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
 
     // Procs and Methods
-    method.lock()->put("closure", global);
-    proc.lock()->put("call", clone(method));
+    method.lock()->put(Symbols::get()["closure"], global);
+    proc.lock()->put(Symbols::get()["call"], clone(method));
     // TODO Should this use `meta Proc clone` or `Proc clone`?
-    global.lock()->put("proc", eval(R"({ curr := Proc clone.
+    global.lock()->put(Symbols::get()["proc"], eval(R"({ curr := Proc clone.
                                          curr call := { parent dynamic $1. }.
                                          curr. }.)", global, global));
 
     // The basics for cloning and metaprogramming
-    object.lock()->put("clone", eval("{ meta sys doClone: self. }.", global, global));
-    object.lock()->put("slot", eval("{ meta sys accessSlot: self, $1. }.",
+    object.lock()->put(Symbols::get()["clone"], eval("{ meta sys doClone: self. }.", global, global));
+    object.lock()->put(Symbols::get()["slot"], eval("{ meta sys accessSlot: self, $1. }.",
                                     global, global));
-    object.lock()->put("has", eval("{ meta sys checkSlot: self, $1. }.",
+    object.lock()->put(Symbols::get()["has"], eval("{ meta sys checkSlot: self, $1. }.",
                                     global, global));
 
     // Stream setup
     stdout_.lock()->prim(outStream());
     stdin_.lock()->prim(inStream());
     stderr_.lock()->prim(errStream());
-    stream.lock()->put("in?", eval("{ meta sys streamIn?: self. }.", global, global));
-    stream.lock()->put("out?", eval("{ meta sys streamOut?: self. }.", global, global));
-    stream.lock()->put("puts", eval("{meta sys streamPuts: self, $1.}.", global, global));
-    stream.lock()->put("putln", eval("{meta sys streamPutln: self, $1.}.",
+    stream.lock()->put(Symbols::get()["in?"], eval("{ meta sys streamIn?: self. }.", global, global));
+    stream.lock()->put(Symbols::get()["out?"], eval("{ meta sys streamOut?: self. }.", global, global));
+    stream.lock()->put(Symbols::get()["puts"], eval("{meta sys streamPuts: self, $1.}.", global, global));
+    stream.lock()->put(Symbols::get()["putln"], eval("{meta sys streamPutln: self, $1.}.",
                                      global, global));
-    stream.lock()->put("print", eval("{ self puts: $1 toString. }.", global, global));
-    stream.lock()->put("println", eval("{ self putln: $1 toString. }.", global, global));
-    stream.lock()->put("dump", eval("{meta sys streamDump: lexical, dynamic, self, $1.}.",
+    stream.lock()->put(Symbols::get()["print"], eval("{ self puts: $1 toString. }.", global, global));
+    stream.lock()->put(Symbols::get()["println"], eval("{ self putln: $1 toString. }.", global, global));
+    stream.lock()->put(Symbols::get()["dump"], eval("{meta sys streamDump: lexical, dynamic, self, $1.}.",
                              global, global));
 
     // Self-reference in scopes, etc.
-    global.lock()->put("scope", eval("{ self. }.", global, global));
-    global.lock()->put("$scope", eval("{ self. }.", global, global));
+    global.lock()->put(Symbols::get()["scope"], eval("{ self. }.", global, global));
+    global.lock()->put(Symbols::get()["$scope"], eval("{ self. }.", global, global));
     // These are now done much more reliably in callMethod directly
-    //global->put("lexical", eval("{ self. }.", global, global));
-    //global->put("dynamic", eval("{ $scope parent. }.", global, global));
-    object.lock()->put("me", eval("{ self. }.", global, global));
+    //global->put(Symbols::get()["lexical"], eval("{ self. }.", global, global));
+    //global->put(Symbols::get()["dynamic"], eval("{ $scope parent. }.", global, global));
+    object.lock()->put(Symbols::get()["me"], eval("{ self. }.", global, global));
 
     // More method setup (now that we have system calls)
-    method.lock()->put("call", eval("{ self. }.", global, global));
+    method.lock()->put(Symbols::get()["call"], eval("{ self. }.", global, global));
 
     // Boolean casts and operations
-    object.lock()->put("toBool", true_);
-    false_.lock()->put("toBool", false_);
-    nil.lock()->put("toBool", false_);
-    global.lock()->put("if", eval(R"({
+    object.lock()->put(Symbols::get()["toBool"], true_);
+    false_.lock()->put(Symbols::get()["toBool"], false_);
+    nil.lock()->put(Symbols::get()["toBool"], false_);
+    global.lock()->put(Symbols::get()["if"], eval(R"({
                                meta sys ifThenElse: dynamic,
                                                     $1 toBool,
                                                     { parent dynamic $2. },
                                                     { parent dynamic $3. }.
                              }.)",
                            global, global));
-    object.lock()->put("ifTrue", eval(R"({ if: self,
+    object.lock()->put(Symbols::get()["ifTrue"], eval(R"({ if: self,
                                         { parent dynamic $1. },
                                         { meta Nil. }.
                                   }.)", global, global));
-    object.lock()->put("ifFalse", eval(R"({ if: self,
+    object.lock()->put(Symbols::get()["ifFalse"], eval(R"({ if: self,
                                         { meta Nil. },
                                         { parent dynamic $1. }.
                                   }.)", global, global));
-    object.lock()->put("and", eval(R"({ if: self,
+    object.lock()->put(Symbols::get()["and"], eval(R"({ if: self,
                                             { parent dynamic $1. },
                                             { meta False. }. }.)", global, global));
-    object.lock()->put("or", eval(R"({ if: self,
+    object.lock()->put(Symbols::get()["or"], eval(R"({ if: self,
                                             { parent self. },
                                             { parent dynamic $1. }. }.)", global, global));
 
     // Ordinary objects print very simply
-    object.lock()->put("toString", eval("\"Object\".", global, global));
+    object.lock()->put(Symbols::get()["toString"], eval("\"Object\".", global, global));
 
     // Basic data types print appropriately
-    method.lock()->put("toString", eval("\"Method\".", global, global));
-    proc.lock()->put("toString", eval("\"Proc\".", global, global));
-    stream.lock()->put("toString", eval("\"Stream\".", global, global));
-    string.lock()->put("toString", eval("{ meta sys primToString: self. }.",
+    method.lock()->put(Symbols::get()["toString"], eval("\"Method\".", global, global));
+    proc.lock()->put(Symbols::get()["toString"], eval("\"Proc\".", global, global));
+    stream.lock()->put(Symbols::get()["toString"], eval("\"Stream\".", global, global));
+    string.lock()->put(Symbols::get()["toString"], eval("{ meta sys primToString: self. }.",
                                         global, global));
-    symbol.lock()->put("toString", eval("{ meta sys primToString: self. }.",
+    symbol.lock()->put(Symbols::get()["toString"], eval("{ meta sys primToString: self. }.",
                                         global, global));
-    number.lock()->put("toString", eval("{ meta sys primToString: self. }.",
+    number.lock()->put(Symbols::get()["toString"], eval("{ meta sys primToString: self. }.",
                                         global, global));
-    boolean.lock()->put("toString", eval("\"Boolean\".", global, global));
-    true_.lock()->put("toString", eval("\"True\".", global, global));
-    false_.lock()->put("toString", eval("\"False\".", global, global));
-    nil.lock()->put("toString", eval("\"Nil\".", global, global));
+    boolean.lock()->put(Symbols::get()["toString"], eval("\"Boolean\".", global, global));
+    true_.lock()->put(Symbols::get()["toString"], eval("\"True\".", global, global));
+    false_.lock()->put(Symbols::get()["toString"], eval("\"False\".", global, global));
+    nil.lock()->put(Symbols::get()["toString"], eval("\"Nil\".", global, global));
 
     return global;
 }
@@ -304,7 +304,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
                     // TODO Check hasInheritedSlot and see if need to throw error
-                    return getInheritedSlot(obj, Symbols::get()[sym->index]);
+                    return getInheritedSlot(obj, *sym);
                 } else {
                     return eval("meta Nil.", global, global); // TODO Throw error
                 }
@@ -317,7 +317,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
                     return garnish(global,
-                                   hasInheritedSlot(obj, Symbols::get()[sym->index]));
+                                   hasInheritedSlot(obj, *sym));
                 } else {
                     return eval("meta False.", global, global);
                 }
@@ -326,16 +326,16 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             }
         });
 
-    sys.lock()->put("streamIn?", callStreamIn);
-    sys.lock()->put("streamOut?", callStreamOut);
-    sys.lock()->put("streamPuts", callStreamPuts);
-    sys.lock()->put("streamPutln", callStreamPutln);
-    sys.lock()->put("primToString", callPrimToString);
-    sys.lock()->put("ifThenElse", callIfStatement);
-    sys.lock()->put("streamDump", callStreamDump);
-    sys.lock()->put("doClone", callClone);
-    sys.lock()->put("accessSlot", callGetSlot);
-    sys.lock()->put("checkSlot", callHasSlot);
+    sys.lock()->put(Symbols::get()["streamIn?"], callStreamIn);
+    sys.lock()->put(Symbols::get()["streamOut?"], callStreamOut);
+    sys.lock()->put(Symbols::get()["streamPuts"], callStreamPuts);
+    sys.lock()->put(Symbols::get()["streamPutln"], callStreamPutln);
+    sys.lock()->put(Symbols::get()["primToString"], callPrimToString);
+    sys.lock()->put(Symbols::get()["ifThenElse"], callIfStatement);
+    sys.lock()->put(Symbols::get()["streamDump"], callStreamDump);
+    sys.lock()->put(Symbols::get()["doClone"], callClone);
+    sys.lock()->put(Symbols::get()["accessSlot"], callGetSlot);
+    sys.lock()->put(Symbols::get()["checkSlot"], callHasSlot);
 
 }
 
