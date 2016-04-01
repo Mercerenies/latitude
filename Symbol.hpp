@@ -3,6 +3,7 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 #include <string>
 #include <functional>
 
@@ -12,7 +13,7 @@ class Symbols {
 public:
     using index_t = long;
     using bimap_t = boost::bimap< boost::bimaps::unordered_set_of<index_t>,
-                                  boost::bimaps::unordered_set_of<std::string> >;
+                                  boost::bimaps::unordered_multiset_of<std::string> >;
 private:
     static long gensymIndex;
     static Symbols instance;
@@ -22,6 +23,7 @@ private:
 public:
     static Symbolic gensym();
     static Symbols& get();
+    static bool isUninterned(const std::string& str);
     Symbolic operator[](const std::string& str);
     std::string operator[](const Symbolic& str);
 };

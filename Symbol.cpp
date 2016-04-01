@@ -27,12 +27,24 @@ Symbols& Symbols::get() {
     return instance;
 }
 
+bool Symbols::isUninterned(const std::string& str) {
+    if (str == "")
+        return false;
+    return (str[0] == '~');
+}
+
 Symbolic Symbols::operator[](const std::string& str) {
-    auto& data = syms.right;
-    if (data.find(str) == data.end())
-        syms.insert(bimap_t::value_type(index++, str));
-    Symbolic sym = { (*data.find(str)).second };
-    return sym;
+    if (isUninterned(str)) {
+        index_t curr = index++;
+        syms.insert(bimap_t::value_type(curr, str));
+        return { curr };
+    } else {
+        auto& data = syms.right;
+        if (data.find(str) == data.end())
+            syms.insert(bimap_t::value_type(index++, str));
+        Symbolic sym = { (*data.find(str)).second };
+        return sym;
+    }
 }
 
 std::string Symbols::operator[](const Symbolic& str) {

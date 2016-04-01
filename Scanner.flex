@@ -38,7 +38,7 @@
 %}
 
 NORMAL    [^.,:(){}\"\' \t\n]
-SNORMAL   [^.,:(){}\"\' \t\n0-9]
+SNORMAL   [^.,:(){}\"\'~ \t\n0-9]
 ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING
@@ -65,6 +65,13 @@ ID        {SNORMAL}{NORMAL}*
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
     strcpy(arr, yytext + 1);
+    yylval.sval = arr;
+    return SYMBOL;
+}
+
+~{NORMAL}* {
+    char* arr = calloc(strlen(yytext) + 1, sizeof(char));
+    strcpy(arr, yytext);
     yylval.sval = arr;
     return SYMBOL;
 }

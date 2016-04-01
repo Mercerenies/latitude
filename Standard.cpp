@@ -95,7 +95,11 @@ ObjectPtr spawnObjects() {
                                                      global, global));
     object.lock()->put(Symbols::get()["slot"], eval("{ meta sys accessSlot#: self, $1. }.",
                                     global, global));
+    object.lock()->put(Symbols::get()["get"], eval("{ meta sys accessSlot#: self, $1. }.",
+                                                   global, global));
     object.lock()->put(Symbols::get()["has"], eval("{ meta sys checkSlot#: self, $1. }.",
+                                    global, global));
+    object.lock()->put(Symbols::get()["put"], eval("{ meta sys putSlot#: self, $1, $2. }.",
                                     global, global));
 
     // Stream setup
@@ -186,6 +190,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callClone(clone(systemCall));
     ObjectPtr callGetSlot(clone(systemCall));
     ObjectPtr callHasSlot(clone(systemCall));
+    ObjectPtr callPutSlot(clone(systemCall));
 
     systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -331,6 +336,19 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
+    callPutSlot.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr obj, slot, value;
+            if (bindArguments(lst, obj, slot, value)) {
+                if (auto sym = boost::get<Symbolic>(&slot->prim())) {
+                    obj->put(*sym, value);
+                    return ObjectPtr(value);
+                } else {
+                    return eval("meta Nil.", global, global); // TODO Throw error
+                }
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -342,8 +360,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["doClone#"], callClone);
     sys.lock()->put(Symbols::get()["accessSlot#"], callGetSlot);
     sys.lock()->put(Symbols::get()["checkSlot#"], callHasSlot);
+    sys.lock()->put(Symbols::get()["putSlot#"], callPutSlot);
 
 }
 
 // TODO Take a lot of the ', global, global);' statements and make them scoped
-// TODO Reset the line number when we parse a second time (should be easy)
