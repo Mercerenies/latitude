@@ -15,6 +15,11 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
+    Symbolic gg = Symbols::gensym();
+    Symbolic hh = Symbols::gensym();
+    cout << gg.index << " " << hh.index << " " << Symbols::get()[gg.index]
+         << " " << Symbols::get()[hh.index] << endl;
+
     auto global = spawnObjects();
     eval(R"(({
               xx := proc { stdout println: "I am printing.". }.
