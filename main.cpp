@@ -17,16 +17,14 @@ int main(int argc, char** argv) {
 
     auto global = spawnObjects();
     eval(R"(({
-                xx := Object clone.
-                xx put: 'abc, 1.
-                xx put: ~abc, 1.
-                stdout println: (xx has: 'abc).
-                stdout println: (xx has: ~abc).
-                stdout println: 'abc.
-                stdout println: Symbol gensym.
-                stdout println: Symbol gensym.
-                stdout println: Symbol gensym.
-                stdout println: Symbol gensym.
+                stdout println: (callCC: {
+                    $1 call: 1.
+                    2.
+                  }).
+                stdout println: (callCC: {
+                    1.
+                    2.
+                  }).
             }) me.)",
          global, global);
     auto stream = outStream();

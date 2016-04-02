@@ -3,6 +3,7 @@
 #include "Garnish.hpp"
 #include "Macro.hpp"
 #include "GC.hpp"
+#include "Cont.hpp"
 #include <list>
 #include <sstream>
 
@@ -27,6 +28,8 @@ ObjectPtr spawnObjects() {
     ObjectPtr true_(clone(boolean));
     ObjectPtr false_(clone(boolean));
     ObjectPtr systemCall(clone(method));
+    ObjectPtr cont(clone(proc));
+    ObjectPtr contValidator(clone(object));
 
     ObjectPtr stream(clone(object));
     ObjectPtr stdout_(clone(stream));
@@ -47,6 +50,7 @@ ObjectPtr spawnObjects() {
     number.lock()->prim(0.0);
     string.lock()->prim("");
     symbol.lock()->prim(Symbols::get()["0"]); // TODO Better default?
+    contValidator.lock()->prim(weak_ptr<SignalValidator>());
 
     // Global scope contains basic types
     global.lock()->put(Symbols::get()["Global"], global);
@@ -65,6 +69,7 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["False"], false_);
     global.lock()->put(Symbols::get()["Nil"], nil);
     global.lock()->put(Symbols::get()["Boolean"], boolean);
+    global.lock()->put(Symbols::get()["Cont"], cont);
 
     // Meta calls for basic types
     meta.lock()->put(Symbols::get()["Method"], method);
@@ -77,6 +82,8 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["False"], false_);
     meta.lock()->put(Symbols::get()["Nil"], nil);
     meta.lock()->put(Symbols::get()["Boolean"], boolean);
+    meta.lock()->put(Symbols::get()["Cont"], cont);
+    meta.lock()->put(Symbols::get()["ContValidator"], contValidator);
     meta.lock()->put(Symbols::get()["sys"], sys);
 
     // Method and system call properties
@@ -85,10 +92,20 @@ ObjectPtr spawnObjects() {
     // Procs and Methods
     method.lock()->put(Symbols::get()["closure"], global);
     proc.lock()->put(Symbols::get()["call"], clone(method));
-    // TODO Should this use `meta Proc clone` or `Proc clone`?
+    // TODO Should this use `meta Proc clone` or `Proc clone`? (Note that currently
+    //      `meta Proc clone` does not exist)
     global.lock()->put(Symbols::get()["proc"], eval(R"({ curr := Proc clone.
                                          curr call := { parent dynamic $1. }.
                                          curr. }.)", global, global));
+
+    // Continuations
+    cont.lock()->put(Symbols::get()["tag"], nil);
+    cont.lock()->put(Symbols::get()["call"],
+                     eval("{ meta sys exitCC#: lexical, dynamic, self tag, $1. }.",
+                          global, global));
+    global.lock()->put(Symbols::get()["callCC"],
+                       eval("{meta sys callCC#: lexical, dynamic, {parent dynamic $1.}.}.",
+                            global, global));
 
     // The basics for cloning and metaprogramming
     object.lock()->put(Symbols::get()["clone"], eval("{ meta sys doClone#: self. }.",
@@ -118,8 +135,9 @@ ObjectPtr spawnObjects() {
                                                      global, global));
     stream.lock()->put(Symbols::get()["println"], eval("{ self putln: $1 toString. }.",
                                                        global, global));
-    stream.lock()->put(Symbols::get()["dump"], eval("{meta sys streamDump#: lexical, dynamic, self, $1.}.",
-                             global, global));
+    stream.lock()->put(Symbols::get()["dump"],
+                       eval("{meta sys streamDump#: lexical, dynamic, self, $1.}.",
+                            global, global));
 
     // Self-reference in scopes, etc.
     global.lock()->put(Symbols::get()["scope"], eval("{ self. }.", global, global));
@@ -132,6 +150,9 @@ ObjectPtr spawnObjects() {
     // Symbol Functions
     symbol.lock()->put(Symbols::get()["gensym"], eval("{ meta sys gensym#: self. }.",
                                                       global, global));
+    symbol.lock()->put(Symbols::get()["gensymOf"],
+                       eval("{ meta sys gensymOf#: self, $1. }.",
+                            global, global));
 
     // Boolean casts and operations
     object.lock()->put(Symbols::get()["toBool"], true_);
@@ -193,6 +214,9 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callHasSlot(clone(systemCall));
     ObjectPtr callPutSlot(clone(systemCall));
     ObjectPtr callGensym(clone(systemCall));
+    ObjectPtr callGensymOf(clone(systemCall));
+    ObjectPtr callCallCC(clone(systemCall));
+    ObjectPtr callExitCC(clone(systemCall));
 
     systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -361,6 +385,83 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
+    callGensymOf.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr symbol, name;
+            if (bindArguments(lst, symbol, name)) {
+                if (auto str = boost::get<std::string>(&name->prim())) {
+                    ObjectPtr gen = clone(symbol);
+                    gen.lock()->prim( Symbols::gensym(*str) );
+                    return gen;
+                } else {
+                    return eval("meta Nil.", global, global); // TODO Throw error
+                }
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
+    callCallCC.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, mthd;
+            if (bindArguments(lst, lex, dyn, mthd)) {
+                // Dies when it goes out of scope
+                shared_ptr<SignalValidator> livingTag(new SignalValidator());
+                //
+                ObjectPtr dyn1 = clone(dyn);
+                Symbolic sym = Symbols::gensym("CONT");
+                ObjectPtr symObj = getInheritedSlot(meta(lex),
+                                                    Symbols::get()["Symbol"]);
+                ObjectPtr symObj1 = clone(symObj);
+                symObj1.lock()->prim(sym);
+                ObjectPtr validator = getInheritedSlot(meta(lex),
+                                                       Symbols::get()["ContValidator"]);
+                ObjectPtr validator1 = clone(validator);
+                validator1.lock()->prim(weak_ptr<SignalValidator>(livingTag));
+                dyn1.lock()->put(sym, validator1);
+                ObjectPtr cont = getInheritedSlot(meta(lex),
+                                                  Symbols::get()["Cont"]);
+                ObjectPtr cont1 = clone(cont);
+                cont1.lock()->put(Symbols::get()["tag"], symObj1);
+                try {
+                    ObjectPtr result = eval("meta Nil.", global, global);
+                    dyn1.lock()->put(Symbols::get()["$1"], cont1);
+                    return callMethod(result, ObjectSPtr(), mthd, dyn1);
+                } catch (Signal& signal) {
+                    if (signal.match(sym)) {
+                        return signal.getObject();
+                    } else {
+                        throw;
+                    }
+                }
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
+    callExitCC.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, tag, arg;
+            if (bindArguments(lst, lex, dyn, tag, arg)) {
+                if (auto sym = boost::get<Symbolic>(&tag->prim())) {
+                    if (hasInheritedSlot(dyn, *sym)) {
+                        auto validator = getInheritedSlot(dyn, *sym);
+                        if (auto val =
+                            boost::get< weak_ptr<SignalValidator> >(&validator.lock()
+                                                                    ->prim())) {
+                            auto stream = outStream();
+                            if (val->expired())
+                                return eval("meta Nil.",
+                                            global, global); // TODO Throw error
+                            throw Signal(*sym, arg);
+                        } else {
+                            return eval("meta Nil.", global, global); // TODO Throw error
+                        }
+                    } else {
+                        return eval("meta Nil.", global, global); // TODO Throw error
+                    }
+                } else {
+                    return eval("meta Nil.", global, global); // TODO Throw error
+                }
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -374,6 +475,9 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["checkSlot#"], callHasSlot);
     sys.lock()->put(Symbols::get()["putSlot#"], callPutSlot);
     sys.lock()->put(Symbols::get()["gensym#"], callGensym);
+    sys.lock()->put(Symbols::get()["gensymOf#"], callGensymOf);
+    sys.lock()->put(Symbols::get()["callCC#"], callCallCC);
+    sys.lock()->put(Symbols::get()["exitCC#"], callExitCC);
 
 }
 

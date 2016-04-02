@@ -80,6 +80,7 @@ void clearCurrentLine() {
     currentLine.reset();
 }
 
+// TODO Better way of handling result if block is empty
 ObjectPtr callMethod(ObjectPtr result, ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     ObjectPtr lex = getInheritedSlot(mthd, Symbols::get()["closure"]);
     auto impl = boost::get<Method>(&mthd.lock()->prim());

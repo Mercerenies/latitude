@@ -12,6 +12,7 @@
 #include <boost/blank.hpp>
 #include <set>
 
+struct SignalValidator; // From Cont.hpp
 class Stmt; // From Reader.hpp
 
 class Slot;
@@ -23,7 +24,8 @@ using ObjectSPtr = std::shared_ptr<Object>;
 using SystemCall = std::function<ObjectPtr(std::list<ObjectPtr>)>;
 using Method = LStmt;
 using Prim = boost::variant<boost::blank, double, std::string,
-                            Method, SystemCall, StreamPtr, Symbolic>;
+                            Method, SystemCall, StreamPtr, Symbolic,
+                            std::weak_ptr<SignalValidator> >;
 
 enum class SlotType { PTR, INH };
 

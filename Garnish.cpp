@@ -74,6 +74,11 @@ public:
         oss << str;
         return oss.str();
     }
+    std::string operator()(std::weak_ptr<SignalValidator>& val) const {
+        ostringstream oss;
+        oss << &val;
+        return oss.str();
+    }
 };
 
 std::string primToString(ObjectPtr obj) {

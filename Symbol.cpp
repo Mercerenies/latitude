@@ -7,9 +7,13 @@ Symbols Symbols::instance = Symbols();
 long Symbols::gensymIndex = 100L;
 
 Symbolic Symbols::gensym() {
+    return gensym("G");
+}
+
+Symbolic Symbols::gensym(std::string prefix) {
     ++gensymIndex;
     ostringstream oss;
-    oss << "~G" << gensymIndex;
+    oss << "~" << prefix << gensymIndex;
     return get()[oss.str()];
 }
 

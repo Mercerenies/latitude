@@ -22,6 +22,7 @@ private:
     Symbols() = default;
 public:
     static Symbolic gensym();
+static Symbolic gensym(std::string prefix);
     static Symbols& get();
     static bool isUninterned(const std::string& str);
     Symbolic operator[](const std::string& str);
