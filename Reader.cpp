@@ -101,7 +101,7 @@ ObjectPtr callMethod(ObjectPtr result, ObjectSPtr self, ObjectPtr mthd, ObjectPt
 std::unique_ptr<Stmt> parse(std::string str) {
     const char* buffer = str.c_str();
     auto curr = yy_scan_string(buffer);
-    line_num = 0;
+    line_num = 1;
     yyparse();
     yy_delete_buffer(curr);
     auto result = translateCurrentLine();
