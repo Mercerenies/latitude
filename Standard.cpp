@@ -110,6 +110,8 @@ ObjectPtr spawnObjects() {
     // The basics for cloning and metaprogramming
     object.lock()->put(Symbols::get()["clone"], eval("{ meta sys doClone#: self. }.",
                                                      global, global));
+    object.lock()->put(Symbols::get()["is"], eval("{ meta sys instanceOf#: self, $1. }.",
+                                                  global, global));
     object.lock()->put(Symbols::get()["slot"], eval("{ meta sys accessSlot#: self, $1. }.",
                                     global, global));
     object.lock()->put(Symbols::get()["get"], eval("{ meta sys accessSlot#: self, $1. }.",
@@ -217,6 +219,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callGensymOf(clone(systemCall));
     ObjectPtr callCallCC(clone(systemCall));
     ObjectPtr callExitCC(clone(systemCall));
+    ObjectPtr callInstanceof(clone(systemCall));
 
     systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -462,6 +465,18 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
+    callInstanceof.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr obj0, obj1;
+            if (bindArguments(lst, obj0, obj1)) {
+                auto hier = hierarchy(obj0);
+                bool result = (find_if(hier.begin(), hier.end(),
+                                       [&obj1](auto& o){ return o.lock() == obj1; })
+                               != hier.end());
+                return garnish(global, result);
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -478,6 +493,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["gensymOf#"], callGensymOf);
     sys.lock()->put(Symbols::get()["callCC#"], callCallCC);
     sys.lock()->put(Symbols::get()["exitCC#"], callExitCC);
+    sys.lock()->put(Symbols::get()["instanceOf#"], callInstanceof);
 
 }
 
