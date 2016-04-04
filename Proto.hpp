@@ -47,7 +47,7 @@ public:
     virtual ~Object() = default;
     virtual Slot operator [](Symbolic key);
     virtual void put(Symbolic key, ObjectPtr ptr);
-    virtual std::set<std::string> directKeys();
+    virtual std::set<Symbolic> directKeys();
     Prim& prim();
     template <typename T>
     Prim prim(const T& prim0);
@@ -65,5 +65,6 @@ ObjectPtr meta(ObjectPtr obj);
 ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name);
 bool hasInheritedSlot(ObjectPtr obj, Symbolic name);
 std::set<std::string> keys(ObjectPtr obj);
+std::list<ObjectPtr> hierarchy(ObjectPtr obj);
 
 #endif // _PROTO_HPP_

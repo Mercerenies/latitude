@@ -16,4 +16,12 @@ public:
     ObjectPtr getObject();
 };
 
+class ProtoError {
+private:
+    ObjectPtr object;
+public:
+    ProtoError(ObjectPtr obj);
+    ObjectPtr getObject();
+};
+
 #endif // _CONT_HPP_

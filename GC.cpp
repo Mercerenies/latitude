@@ -7,7 +7,7 @@ GC& GC::get() {
 }
 
 ObjectPtr GC::allocate() {
-    ObjectSPtr ptr(new Object());
+    ObjectSPtr ptr = std::make_shared<Object>();
     alloc.insert(ptr);
     return ptr;
 }

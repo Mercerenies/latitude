@@ -17,6 +17,7 @@ public:
     void garbageCollect(Ts... globals);
 };
 
+// TODO Update this to work with uninterned slot names
 template <typename... Ts>
 void GC::garbageCollect(Ts... globals) {
     struct WeakLess {
@@ -37,11 +38,12 @@ void GC::garbageCollect(Ts... globals) {
         frontier.insert(elem);
     while (!frontier.empty()) {
         auto curr = frontier.begin();
+        auto stream(outStream());
         visited.insert(*curr);
         frontier.erase(curr);
         if (auto curr1 = curr->lock()) {
             for (auto key : curr1->directKeys()) {
-                auto val = getInheritedSlot(*curr, Symbols::get()[key]);
+                auto val = getInheritedSlot(curr1, key);
                 if (visited.find(val) == visited.end())
                     frontier.insert(val);
             }

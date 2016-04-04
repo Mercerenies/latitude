@@ -51,3 +51,7 @@ std::string Symbols::operator[](const Symbolic& str) {
 bool operator ==(const Symbolic& a, const Symbolic& b) {
     return a.index == b.index;
 }
+
+bool operator <(const Symbolic& a, const Symbolic& b) {
+    return a.index < b.index;
+}

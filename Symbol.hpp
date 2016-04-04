@@ -34,6 +34,7 @@ struct Symbolic {
 };
 
 bool operator ==(const Symbolic& a, const Symbolic& b);
+bool operator <(const Symbolic& a, const Symbolic& b);
 
 namespace std {
     template <>

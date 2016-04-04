@@ -10,3 +10,10 @@ bool Signal::match(Symbolic other) {
 ObjectPtr Signal::getObject() {
     return object;
 }
+
+ProtoError::ProtoError(ObjectPtr obj)
+    : object(obj) {}
+
+ObjectPtr ProtoError::getObject() {
+    return object;
+}
