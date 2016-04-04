@@ -80,8 +80,8 @@ void clearCurrentLine() {
     currentLine.reset();
 }
 
-// TODO Better way of handling result if block is empty
-ObjectPtr callMethod(ObjectPtr result, ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
+ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
+    ObjectPtr result = getInheritedSlot(meta(mthd), Symbols::get()["Nil"]);
     ObjectPtr lex = getInheritedSlot(mthd, Symbols::get()["closure"]);
     auto impl = boost::get<Method>(&mthd.lock()->prim());
     if ((lex.expired()) || (!impl))
@@ -156,7 +156,6 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
 #ifdef PRINT_BEFORE_EXEC
         cout << "Func" << endl;
 #endif
-        ObjectPtr result(getInheritedSlot(meta(scope), Symbols::get()["Nil"]));
         ObjectPtr dyn1 = clone(dyn);
         // Arguments :D
         int nth = 0;
@@ -167,7 +166,7 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
             dyn1.lock()->put(Symbols::get()[oss.str()], arg);
         }
         // Call the function
-        return callMethod(result, scope.lock(), target, dyn1);
+        return callMethod(scope.lock(), target, dyn1);
     } else {
         // Normal object
 #ifdef PRINT_BEFORE_EXEC

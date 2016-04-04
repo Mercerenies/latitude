@@ -18,14 +18,7 @@ int main(int argc, char** argv) {
     auto global = spawnObjects();
     try {
         eval(R"(({
-              try: {
-                stdout println: 1.
-                Symbol throw.
-                stdout println: 2.
-              }, String, {
-                stdout println: $1.
-                stdout println: 3.
-              }.
+              stdout println: ({}) me.
             }) me.)",
              global, global);
         auto stream = outStream();

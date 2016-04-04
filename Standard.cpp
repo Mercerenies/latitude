@@ -319,7 +319,6 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     callIfStatement.lock()->prim([&global](list<ObjectPtr> lst) {
             ObjectSPtr dyn, cond, tr, fl;
             if (bindArguments(lst, dyn, cond, tr, fl)) {
-                auto result = eval("meta Nil.", global, global);
                 // These are unused except to verify that the prim() is correct
                 auto tr_ = boost::get<Method>(&tr->prim());
                 auto fl_ = boost::get<Method>(&fl->prim());
@@ -328,9 +327,9 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 //
                 auto definitelyTrue = eval("meta True.", global, global).lock();
                 if (cond == definitelyTrue)
-                    return callMethod(result, nullptr, tr, clone(dyn));
+                    return callMethod(nullptr, tr, clone(dyn));
                 else
-                    return callMethod(result, nullptr, fl, clone(dyn));
+                    return callMethod(nullptr, fl, clone(dyn));
             } else {
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
@@ -441,9 +440,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 ObjectPtr cont1 = clone(cont);
                 cont1.lock()->put(Symbols::get()["tag"], symObj1);
                 try {
-                    ObjectPtr result = eval("meta Nil.", global, global);
                     dyn1.lock()->put(Symbols::get()["$1"], cont1);
-                    return callMethod(result, ObjectSPtr(), mthd, dyn1);
+                    return callMethod(ObjectSPtr(), mthd, dyn1);
                 } catch (Signal& signal) {
                     if (signal.match(sym)) {
                         return signal.getObject();
@@ -496,19 +494,18 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     callTryStmt.lock()->prim([&global](list<ObjectPtr> lst) {
             ObjectSPtr lex, dyn, lhs, cond, rhs;
             if (bindArguments(lst, lex, dyn, lhs, cond, rhs)) {
-                ObjectPtr result = eval("meta Nil.", global, global);
                 try {
                     ObjectPtr dyn1 = clone(dyn);
-                    return callMethod(result, ObjectSPtr(), lhs, dyn1);
+                    return callMethod(ObjectSPtr(), lhs, dyn1);
                 } catch (ProtoError& err) {
                     ObjectPtr dyn1 = clone(dyn);
                     dyn1.lock()->put(Symbols::get()["$1"], err.getObject());
-                    ObjectPtr result1 = callMethod(result, ObjectSPtr(), cond, dyn1);
+                    ObjectPtr result1 = callMethod(ObjectSPtr(), cond, dyn1);
                     auto definitelyTrue = eval("meta True.", global, global).lock();
                     if (result1.lock() == definitelyTrue) {
                         ObjectPtr dyn2 = clone(dyn);
                         dyn2.lock()->put(Symbols::get()["$1"], err.getObject());
-                        return callMethod(result, ObjectSPtr(), rhs, dyn2);
+                        return callMethod(ObjectSPtr(), rhs, dyn2);
                     } else {
                         throw;
                     }
