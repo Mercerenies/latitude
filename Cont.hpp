@@ -24,4 +24,6 @@ public:
     ObjectPtr getObject();
 };
 
+[[ noreturn ]] void throwProtoError(const ObjectPtr&);
+
 #endif // _CONT_HPP_

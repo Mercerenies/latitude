@@ -51,5 +51,5 @@ Symbol.o:	Symbol.cpp Symbol.hpp
 Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp
 	$(CC) Cont.cpp
 
-main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp
+main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp
 	$(CC) main.cpp

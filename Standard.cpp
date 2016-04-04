@@ -121,6 +121,21 @@ ObjectPtr spawnObjects() {
     object.lock()->put(Symbols::get()["put"], eval("{ meta sys putSlot#: self, $1, $2. }.",
                                     global, global));
 
+    // Exception throwing and handling routines
+    global.lock()->put(Symbols::get()["handle"],
+                       eval(R"({ meta sys try#: lexical, dynamic,
+                                                { parent dynamic $1. },
+                                                { (parent dynamic $2: $1) toBool. },
+                                                { parent dynamic $3. }. }.)",
+                            global, global));
+    global.lock()->put(Symbols::get()["try"],
+                       eval(R"({ self handle: { parent dynamic $1. },
+                                              { $1 is: parent dynamic $2. },
+                                              { parent dynamic $3. }. }.)",
+                            global, global));
+    object.lock()->put(Symbols::get()["throw"],
+                       eval("{ meta sys throw#: self. }.", global, global));
+
     // Stream setup
     stdout_.lock()->prim(outStream());
     stdin_.lock()->prim(inStream());
@@ -220,6 +235,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callCallCC(clone(systemCall));
     ObjectPtr callExitCC(clone(systemCall));
     ObjectPtr callInstanceof(clone(systemCall));
+    ObjectPtr callTryStmt(clone(systemCall));
+    ObjectPtr callThrowStmt(clone(systemCall));
 
     systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -447,7 +464,6 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                         if (auto val =
                             boost::get< weak_ptr<SignalValidator> >(&validator.lock()
                                                                     ->prim())) {
-                            auto stream = outStream();
                             if (val->expired())
                                 return eval("meta Nil.",
                                             global, global); // TODO Throw error
@@ -477,6 +493,38 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 return eval("meta Nil.", global, global); // TODO Throw error
             }
         });
+    callTryStmt.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, lhs, cond, rhs;
+            if (bindArguments(lst, lex, dyn, lhs, cond, rhs)) {
+                ObjectPtr result = eval("meta Nil.", global, global);
+                try {
+                    ObjectPtr dyn1 = clone(dyn);
+                    return callMethod(result, ObjectSPtr(), lhs, dyn1);
+                } catch (ProtoError& err) {
+                    ObjectPtr dyn1 = clone(dyn);
+                    dyn1.lock()->put(Symbols::get()["$1"], err.getObject());
+                    ObjectPtr result1 = callMethod(result, ObjectSPtr(), cond, dyn1);
+                    auto definitelyTrue = eval("meta True.", global, global).lock();
+                    if (result1.lock() == definitelyTrue) {
+                        ObjectPtr dyn2 = clone(dyn);
+                        dyn2.lock()->put(Symbols::get()["$1"], err.getObject());
+                        return callMethod(result, ObjectSPtr(), rhs, dyn2);
+                    } else {
+                        throw;
+                    }
+                }
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
+    callThrowStmt.lock()->prim([&global](list<ObjectPtr> lst) {
+            ObjectSPtr obj;
+            if (bindArguments(lst, obj)) {
+                throwProtoError(obj);
+            } else {
+                return eval("meta Nil.", global, global); // TODO Throw error
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -494,6 +542,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["callCC#"], callCallCC);
     sys.lock()->put(Symbols::get()["exitCC#"], callExitCC);
     sys.lock()->put(Symbols::get()["instanceOf#"], callInstanceof);
+    sys.lock()->put(Symbols::get()["try#"], callTryStmt);
+    sys.lock()->put(Symbols::get()["throw#"], callThrowStmt);
 
 }
 

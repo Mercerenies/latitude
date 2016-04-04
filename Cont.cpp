@@ -17,3 +17,7 @@ ProtoError::ProtoError(ObjectPtr obj)
 ObjectPtr ProtoError::getObject() {
     return object;
 }
+
+[[ noreturn ]] void throwProtoError(const ObjectPtr& obj) {
+    throw ProtoError(obj);
+}
