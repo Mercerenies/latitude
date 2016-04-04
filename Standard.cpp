@@ -122,17 +122,17 @@ ObjectPtr spawnObjects() {
                                     global, global));
 
     // Exception throwing and handling routines
-    global.lock()->put(Symbols::get()["handle"],
+    method.lock()->put(Symbols::get()["handle"],
                        eval(R"({ meta sys try#: lexical, dynamic,
-                                                { parent dynamic $1. },
-                                                { (parent dynamic $2: $1) toBool. },
-                                                { parent dynamic $3. }. }.)",
+                                                { self. },
+                                                { (parent dynamic $1: $1) toBool. },
+                                                { parent dynamic $2. }. }.)",
                             global, global));
-    global.lock()->put(Symbols::get()["try"],
-                       eval(R"({ self handle: { parent dynamic $1. },
-                                              { $1 is: parent dynamic $2. },
-                                              { parent dynamic $3. }. }.)",
-                            global, global));
+    method.lock()->put(Symbols::get()["try"],
+                       eval(R"({ ({ parent self. }) handle:
+                                   { $1 is: parent dynamic $1. },
+                                   { parent dynamic $2. }. }.)",
+                          global, global));
     object.lock()->put(Symbols::get()["throw"],
                        eval("{ meta sys throw#: self. }.", global, global));
 
@@ -181,7 +181,7 @@ ObjectPtr spawnObjects() {
                                                      { parent dynamic $2. },
                                                      { parent dynamic $3. }.
                              }.)",
-                           global, global));
+                                                  global, global));
     object.lock()->put(Symbols::get()["ifTrue"], eval(R"({ if: self,
                                         { parent dynamic $1. },
                                         { meta Nil. }.
