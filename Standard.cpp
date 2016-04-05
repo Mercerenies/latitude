@@ -63,7 +63,7 @@ ObjectPtr spawnObjects() {
 
     // Global scope contains basic types
     global.lock()->put(Symbols::get()["global"], global);
-    global.lock()->put(Symbols::get()["Object"], global);
+    global.lock()->put(Symbols::get()["Object"], object);
     global.lock()->put(Symbols::get()["Proc"], proc);
     global.lock()->put(Symbols::get()["Method"], method);
     global.lock()->put(Symbols::get()["Number"], number);
