@@ -16,7 +16,14 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-    auto global = spawnObjects();
+    ObjectPtr global;
+    try {
+        global = spawnObjects();
+    } catch (ProtoError& err) {
+        cerr << "An error occurred while loading the standard library. "
+             << "Please report this." << endl;
+        return 1;
+    }
     try {
         runREPL(global);
     } catch (ProtoError& err) {
@@ -24,6 +31,7 @@ int main(int argc, char** argv) {
         stream->writeLine("*** TOPLEVEL EXCEPTION ***");
         //global.lock()->put(Symbols::get()["$except"], err.getObject());
         dumpObject(global, global, *stream, err.getObject());
+        return 1;
     }
 
     return 0;
