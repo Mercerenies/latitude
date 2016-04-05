@@ -5,6 +5,7 @@ extern "C" {
 #include "Reader.hpp"
 #include "Symbol.hpp"
 #include "Standard.hpp"
+#include <cstdio>
 #include <list>
 #include <memory>
 #include <algorithm>

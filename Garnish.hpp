@@ -14,5 +14,6 @@ ObjectPtr garnish(ObjectPtr global, int value);
 std::string primToString(ObjectPtr obj);
 
 void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj);
+void simplePrintObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj);
 
 #endif // _GARNISH_HPP_

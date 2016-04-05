@@ -83,6 +83,7 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["SystemError"], systemError);
 
     // Meta calls for basic types
+    meta.lock()->put(Symbols::get()["Object"], object);
     meta.lock()->put(Symbols::get()["Method"], method);
     meta.lock()->put(Symbols::get()["Number"], number);
     meta.lock()->put(Symbols::get()["String"], string);

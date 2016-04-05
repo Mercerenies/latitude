@@ -8,6 +8,7 @@ extern "C" {
 #include "GC.hpp"
 #include "Symbol.hpp"
 #include "Cont.hpp"
+#include "REPL.hpp"
 #include <iostream>
 #include <cstring>
 
@@ -17,24 +18,12 @@ int main(int argc, char** argv) {
 
     auto global = spawnObjects();
     try {
-        eval(R"(({
-              xx := Object clone....
-              xx a := 1.
-              xx c := 3.
-              ({
-                stdout println: xx a.
-                stdout println: xx b.
-                stdout println: xx c.
-              }) catch: SlotError, {
-                stdout putln: "Bazinga".
-              }.
-            }) me.)",
-             global, global);
-        GC::get().garbageCollect(global);
-    } catch (ProtoError& e) {
+        runREPL(global);
+    } catch (ProtoError& err) {
         auto stream = errStream();
-        stream->writeLine("*** UNCAUGHT EXCEPTION ***");
-        dumpObject(global, global, *stream, e.getObject());
+        stream->writeLine("*** TOPLEVEL EXCEPTION ***");
+        //global.lock()->put(Symbols::get()["$except"], err.getObject());
+        dumpObject(global, global, *stream, err.getObject());
     }
 
     return 0;

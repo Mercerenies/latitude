@@ -95,7 +95,7 @@ bool hasInheritedSlot(ObjectPtr obj, Symbolic name) {
     return slot.getType() == SlotType::PTR;
 }
 
-void _keys(list<ObjectPtr>& parents, set<string>& result, ObjectPtr obj) {
+void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
     auto obj1 = obj.lock();
     if (find_if(parents.begin(), parents.end(), [&obj1](auto xx){
                 return xx.lock() == obj1;
@@ -104,12 +104,12 @@ void _keys(list<ObjectPtr>& parents, set<string>& result, ObjectPtr obj) {
     parents.push_back(obj);
     auto curr = obj.lock()->directKeys();
     for (auto elem : curr)
-        result.insert(Symbols::get()[elem]);
+        result.insert(elem);
     _keys(parents, result, getInheritedSlot(obj, Symbols::get()["parent"]));
 }
 
-set<string> keys(ObjectPtr obj) {
-    set<string> result;
+set<Symbolic> keys(ObjectPtr obj) {
+    set<Symbolic> result;
     list<ObjectPtr> parents;
     _keys(parents, result, obj);
     return result;

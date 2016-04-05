@@ -64,7 +64,7 @@ ObjectPtr clone(ObjectPtr obj);
 ObjectPtr meta(ObjectPtr obj);
 ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name);
 bool hasInheritedSlot(ObjectPtr obj, Symbolic name);
-std::set<std::string> keys(ObjectPtr obj);
+std::set<Symbolic> keys(ObjectPtr obj);
 std::list<ObjectPtr> hierarchy(ObjectPtr obj);
 
 #endif // _PROTO_HPP_

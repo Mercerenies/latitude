@@ -6,7 +6,7 @@ endif
 C=gcc -c -Wall
 CC=g++ -I $(BOOST) -c -Wall -std=c++14
 LINK=g++ -Wall -std=c++14
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o
 
 all:	$(FILES)
 	$(LINK) $(FILES)
@@ -51,5 +51,8 @@ Symbol.o:	Symbol.cpp Symbol.hpp
 Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp
 	$(CC) Cont.cpp
 
-main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp
+REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp
+	$(CC) REPL.cpp
+
+main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp REPL.hpp
 	$(CC) main.cpp

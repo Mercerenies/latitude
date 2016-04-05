@@ -121,17 +121,28 @@ void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
     else
         stream.writeLine("<?>");
     for (auto key : keys(obj)) {
-        auto value = getInheritedSlot(obj, Symbols::get()[key]);
+        auto value = getInheritedSlot(obj, key);
         ObjectPtr toString1 = getInheritedSlot(value, Symbols::get()["toString"]);
         ObjectPtr asString1 =
             boost::apply_visitor(DumpObjectVisitor(value, toString1, lex, dyn),
                                  toString1.lock()->prim());
         stream.writeText("  ");
-        stream.writeText(key);
+        stream.writeText(Symbols::get()[key]);
         stream.writeText(": ");
         if (auto str = boost::get<std::string>(&asString1.lock()->prim()))
             stream.writeLine(*str);
         else
             stream.writeLine("<?>");
     }
+}
+
+void simplePrintObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
+    ObjectPtr toString0 = getInheritedSlot(obj, Symbols::get()["toString"]);
+    ObjectPtr asString0 =
+        boost::apply_visitor(DumpObjectVisitor(obj, toString0, lex, dyn),
+                             toString0.lock()->prim());
+    if (auto str = boost::get<std::string>(&asString0.lock()->prim()))
+        stream.writeLine(*str);
+    else
+        stream.writeLine("<?>");
 }
