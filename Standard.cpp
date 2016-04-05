@@ -9,16 +9,16 @@
 
 using namespace std;
 
-// TODO Failed lookups should return nil or err properly, not segfault
+// TODO More objects should have toString so they don't all default to showing "Object"
 
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
 void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta);
 
-ProtoError doSystemArgError(ObjectPtr& global, string name, int expected, int got);
-ProtoError doSlotError(ObjectPtr& global, ObjectPtr& problem, string slotName);
-ProtoError doParseError(ObjectPtr& global);
-ProtoError doParseError(ObjectPtr& global, string message);
-ProtoError doEtcError(ObjectPtr& global, string errorName, string msg);
+ProtoError doSystemArgError(ObjectPtr global, string name, int expected, int got);
+ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, string slotName);
+ProtoError doParseError(ObjectPtr global);
+ProtoError doParseError(ObjectPtr global, string message);
+ProtoError doEtcError(ObjectPtr global, string errorName, string msg);
 
 ObjectPtr spawnObjects() {
 
@@ -111,9 +111,7 @@ ObjectPtr spawnObjects() {
     // Procs and Methods
     method.lock()->put(Symbols::get()["closure"], global);
     proc.lock()->put(Symbols::get()["call"], clone(method));
-    // TODO Should this use `meta Proc clone` or `Proc clone`? (Note that currently
-    //      `meta Proc clone` does not exist)
-    global.lock()->put(Symbols::get()["proc"], eval(R"({ curr := Proc clone.
+    global.lock()->put(Symbols::get()["proc"], eval(R"({ curr := self Proc clone.
                                          curr call := { parent dynamic $1. }.
                                          curr. }.)", global, global));
 
@@ -190,6 +188,16 @@ ObjectPtr spawnObjects() {
                        eval("{ meta sys gensymOf#: self, $1. }.",
                             global, global));
 
+    // Basic arithmetic operations
+    number.lock()->put(Symbols::get()["+"], eval("{ meta sys numAdd#: self, $1. }.",
+                                                 global, global));
+    number.lock()->put(Symbols::get()["-"], eval("{ meta sys numSub#: self, $1. }.",
+                                                 global, global));
+    number.lock()->put(Symbols::get()["*"], eval("{ meta sys numMul#: self, $1. }.",
+                                                 global, global));
+    number.lock()->put(Symbols::get()["/"], eval("{ meta sys numDiv#: self, $1. }.",
+                                                 global, global));
+
     // Boolean casts and operations
     object.lock()->put(Symbols::get()["toBool"], true_);
     false_.lock()->put(Symbols::get()["toBool"], false_);
@@ -217,7 +225,16 @@ ObjectPtr spawnObjects() {
                                             { parent dynamic $1. }. }.)", global, global));
 
     // Ordinary objects print very simply
+    // NOTE: The following analogy is appropriate:
+    //           `toString` is to `pretty` in this language as
+    //           `__repr__` is to `__str__` in Python. The `toString`
+    //           should print a composable machine representation for
+    //           debug use, and the `pretty` should print a user-friendly string.
+    //           Note that `pretty` defaults to `toString`, so if you only wish
+    //           to implement one, implement `toString`.
     object.lock()->put(Symbols::get()["toString"], eval("\"Object\".", global, global));
+    object.lock()->put(Symbols::get()["pretty"],
+                       eval("{ self toString. }.", global, global));
 
     // Basic data types print appropriately
     method.lock()->put(Symbols::get()["toString"], eval("\"Method\".", global, global));
@@ -234,7 +251,9 @@ ObjectPtr spawnObjects() {
     false_.lock()->put(Symbols::get()["toString"], eval("\"False\".", global, global));
     nil.lock()->put(Symbols::get()["toString"], eval("\"Nil\".", global, global));
     exception.lock()->put(Symbols::get()["toString"],
-                          eval("\"Exception\".", global, global)); // TODO This
+                          eval("\"Exception\".", global, global));
+    exception.lock()->put(Symbols::get()["pretty"],
+                          eval("{ self message. }.", global, global)); // TODO This more
 
     return global;
 }
@@ -258,11 +277,15 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callInstanceof(clone(systemCall));
     ObjectPtr callTryStmt(clone(systemCall));
     ObjectPtr callThrowStmt(clone(systemCall));
+    ObjectPtr callNumAdd(clone(systemCall));
+    ObjectPtr callNumSub(clone(systemCall));
+    ObjectPtr callNumMul(clone(systemCall));
+    ObjectPtr callNumDiv(clone(systemCall));
 
-    systemCall.lock()->prim([&global](list<ObjectPtr> lst) {
+    systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
         });
-    callStreamIn.lock()->prim([&global](list<ObjectPtr> lst) {
+    callStreamIn.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr stream;
             if (bindArguments(lst, stream)) {
                 auto prim = stream->prim();
@@ -274,7 +297,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamIn#", 1, lst.size());
             }
         });
-    callStreamOut.lock()->prim([&global](list<ObjectPtr> lst) {
+    callStreamOut.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr stream;
             if (bindArguments(lst, stream)) {
                 auto prim = stream->prim();
@@ -286,7 +309,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamOut#", 1, lst.size());
             }
         });
-    callStreamPuts.lock()->prim([&global](list<ObjectPtr> lst) {
+    callStreamPuts.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr stream, obj;
             if (bindArguments(lst, stream, obj)) {
                 auto stream0 = stream->prim();
@@ -310,7 +333,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamPuts#", 1, lst.size());
             }
         });
-    callStreamPutln.lock()->prim([&global](list<ObjectPtr> lst) {
+    callStreamPutln.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr stream, obj;
             if (bindArguments(lst, stream, obj)) {
                 auto stream0 = stream->prim();
@@ -334,7 +357,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamPutln#", 1, lst.size());
             }
         });
-    callPrimToString.lock()->prim([&global](list<ObjectPtr> lst) {
+    callPrimToString.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 string result = primToString(obj);
@@ -343,7 +366,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "primToString#", 1, lst.size());
             }
         });
-    callIfStatement.lock()->prim([&global](list<ObjectPtr> lst) {
+    callIfStatement.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr dyn, cond, tr, fl;
             if (bindArguments(lst, dyn, cond, tr, fl)) {
                 // These are unused except to verify that the prim() is correct
@@ -362,7 +385,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "ifThenElse#", 4, lst.size());
             }
         });
-    callStreamDump.lock()->prim([&global](list<ObjectPtr> lst) {
+    callStreamDump.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr lex, dyn, stream, obj;
             if (bindArguments(lst, lex, dyn, stream, obj)) {
                 if (auto stream0 = boost::get<StreamPtr>(&stream->prim())) {
@@ -376,7 +399,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamDump#", 4, lst.size());
             }
         });
-    callClone.lock()->prim([&global](list<ObjectPtr> lst) {
+    callClone.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 return clone(obj);
@@ -384,7 +407,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "doClone#", 1, lst.size());
             }
         });
-    callGetSlot.lock()->prim([&global](list<ObjectPtr> lst) {
+    callGetSlot.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj, slot;
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
@@ -396,7 +419,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "accessSlot#", 2, lst.size());
             }
         });
-    callHasSlot.lock()->prim([&global](list<ObjectPtr> lst) {
+    callHasSlot.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj, slot;
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
@@ -409,7 +432,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "checkSlot#", 2, lst.size());
             }
         });
-    callPutSlot.lock()->prim([&global](list<ObjectPtr> lst) {
+    callPutSlot.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj, slot, value;
             if (bindArguments(lst, obj, slot, value)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
@@ -422,7 +445,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "putSlot#", 3, lst.size());
             }
         });
-    callGensym.lock()->prim([&global](list<ObjectPtr> lst) {
+    callGensym.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr symbol;
             if (bindArguments(lst, symbol)) {
                 ObjectPtr gen = clone(symbol);
@@ -432,7 +455,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "gensym#", 1, lst.size());
             }
         });
-    callGensymOf.lock()->prim([&global](list<ObjectPtr> lst) {
+    callGensymOf.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr symbol, name;
             if (bindArguments(lst, symbol, name)) {
                 if (auto str = boost::get<std::string>(&name->prim())) {
@@ -447,7 +470,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "gensymOf#", 2, lst.size());
             }
         });
-    callCallCC.lock()->prim([&global](list<ObjectPtr> lst) {
+    callCallCC.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr lex, dyn, mthd;
             if (bindArguments(lst, lex, dyn, mthd)) {
                 // Dies when it goes out of scope
@@ -482,7 +505,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "callCC#", 3, lst.size());
             }
         });
-    callExitCC.lock()->prim([&global](list<ObjectPtr> lst) {
+    callExitCC.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr lex, dyn, tag, arg;
             if (bindArguments(lst, lex, dyn, tag, arg)) {
                 if (auto sym = boost::get<Symbolic>(&tag->prim())) {
@@ -512,7 +535,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "exitCC#", 4, lst.size());
             }
         });
-    callInstanceof.lock()->prim([&global](list<ObjectPtr> lst) {
+    callInstanceof.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj0, obj1;
             if (bindArguments(lst, obj0, obj1)) {
                 auto hier = hierarchy(obj0);
@@ -524,7 +547,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "instanceOf#", 2, lst.size());
             }
         });
-    callTryStmt.lock()->prim([&global](list<ObjectPtr> lst) {
+    callTryStmt.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr lex, dyn, lhs, cond, rhs;
             if (bindArguments(lst, lex, dyn, lhs, cond, rhs)) {
                 try {
@@ -547,13 +570,69 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "try#", 5, lst.size());
             }
         });
-    callThrowStmt.lock()->prim([&global](list<ObjectPtr> lst) {
+    callThrowStmt.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 throwProtoError(obj);
                 return eval("meta Nil.", global, global); // Should never happen
             } else {
                 throw doSystemArgError(global, "throw#", 1, lst.size());
+            }
+        });
+    callNumAdd.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                auto n0 = boost::get<double>(&obj1->prim());
+                auto n1 = boost::get<double>(&obj2->prim());
+                if (n0 && n1)
+                    return garnish(global, *n0 + *n1);
+                else
+                    throw doEtcError(global, "TypeError",
+                                     "Got non-numeral in arithmetic operation");
+            } else {
+                throw doSystemArgError(global, "numAdd#", 2, lst.size());
+            }
+        });
+    callNumSub.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                auto n0 = boost::get<double>(&obj1->prim());
+                auto n1 = boost::get<double>(&obj2->prim());
+                if (n0 && n1)
+                    return garnish(global, *n0 - *n1);
+                else
+                    throw doEtcError(global, "TypeError",
+                                     "Got non-numeral in arithmetic operation");
+            } else {
+                throw doSystemArgError(global, "numSub#", 2, lst.size());
+            }
+        });
+    callNumMul.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                auto n0 = boost::get<double>(&obj1->prim());
+                auto n1 = boost::get<double>(&obj2->prim());
+                if (n0 && n1)
+                    return garnish(global, *n0 * *n1);
+                else
+                    throw doEtcError(global, "TypeError",
+                                     "Got non-numeral in arithmetic operation");
+            } else {
+                throw doSystemArgError(global, "numMul#", 2, lst.size());
+            }
+        });
+    callNumDiv.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                auto n0 = boost::get<double>(&obj1->prim());
+                auto n1 = boost::get<double>(&obj2->prim());
+                if (n0 && n1)
+                    return garnish(global, *n0 / *n1);
+                else
+                    throw doEtcError(global, "TypeError",
+                                     "Got non-numeral in arithmetic operation");
+            } else {
+                throw doSystemArgError(global, "numDiv#", 2, lst.size());
             }
         });
 
@@ -575,6 +654,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["instanceOf#"], callInstanceof);
     sys.lock()->put(Symbols::get()["try#"], callTryStmt);
     sys.lock()->put(Symbols::get()["throw#"], callThrowStmt);
+    sys.lock()->put(Symbols::get()["numAdd#"], callNumAdd);
+    sys.lock()->put(Symbols::get()["numSub#"], callNumSub);
+    sys.lock()->put(Symbols::get()["numMul#"], callNumMul);
+    sys.lock()->put(Symbols::get()["numDiv#"], callNumDiv);
 
 }
 
@@ -639,7 +722,7 @@ void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta) {
 
 // TODO Take a lot of the ', global, global);' statements and make them scoped
 
-ProtoError doSystemArgError(ObjectPtr& global,
+ProtoError doSystemArgError(ObjectPtr global,
                                 string name,
                                 int expected,
                                 int got) {
@@ -651,7 +734,7 @@ ProtoError doSystemArgError(ObjectPtr& global,
     return ProtoError(err);
 }
 
-ProtoError doSlotError(ObjectPtr& global, ObjectPtr& problem, string slotName) {
+ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, string slotName) {
     ObjectPtr meta_ = meta(global);
     ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["SlotError"]));
     err.lock()->put(Symbols::get()["slotName"], garnish(global, slotName));
@@ -659,20 +742,20 @@ ProtoError doSlotError(ObjectPtr& global, ObjectPtr& problem, string slotName) {
     return ProtoError(err);
 }
 
-ProtoError doParseError(ObjectPtr& global) {
+ProtoError doParseError(ObjectPtr global) {
     ObjectPtr meta_ = meta(global);
     ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["ParseError"]));
     return ProtoError(err);
 }
 
-ProtoError doParseError(ObjectPtr& global, string message) {
+ProtoError doParseError(ObjectPtr global, string message) {
     ObjectPtr meta_ = meta(global);
     ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["ParseError"]));
     err.lock()->put(Symbols::get()["message"], garnish(global, message));
     return ProtoError(err);
 }
 
-ProtoError doEtcError(ObjectPtr& global, string errorName, string msg) {
+ProtoError doEtcError(ObjectPtr global, string errorName, string msg) {
     ObjectPtr meta_ = meta(global);
     ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()[errorName]));
     err.lock()->put(Symbols::get()["message"], garnish(global, msg));
