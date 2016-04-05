@@ -17,7 +17,6 @@ public:
     void garbageCollect(Ts... globals);
 };
 
-// TODO Update this to work with uninterned slot names
 template <typename... Ts>
 void GC::garbageCollect(Ts... globals) {
     struct WeakLess {

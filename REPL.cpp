@@ -1,3 +1,4 @@
+#include "GC.hpp"
 #include "REPL.hpp"
 #include "Symbol.hpp"
 #include "Garnish.hpp"
@@ -66,6 +67,8 @@ void runREPL(ObjectPtr& global) {
                 } catch (std::string parseException) {
                     throw doParseError(global, parseException);
                 }
+                // TODO Don't garbage collect at every step
+                GC::get().garbageCollect(global);
             } catch (ProtoError& err) {
                 auto stream = errStream();
                 stream->writeLine("*** EXCEPTION ***");

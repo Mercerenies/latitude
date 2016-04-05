@@ -203,7 +203,8 @@ ObjectPtr spawnObjects() {
     false_.lock()->put(Symbols::get()["toBool"], false_);
     nil.lock()->put(Symbols::get()["toBool"], false_);
     global.lock()->put(Symbols::get()["if"], eval(R"({
-                               meta sys ifThenElse#: dynamic,
+                               meta sys ifThenElse#: lexical,
+                                                     dynamic,
                                                      $1 toBool,
                                                      { parent dynamic $2. },
                                                      { parent dynamic $3. }.
@@ -223,6 +224,13 @@ ObjectPtr spawnObjects() {
     object.lock()->put(Symbols::get()["or"], eval(R"({ if: self,
                                             { parent self. },
                                             { parent dynamic $1. }. }.)", global, global));
+
+    // Equality
+    // Triple-equals is used for pointer equality and should almost never
+    // be overriden by children. Double-equals defaults to pointer equality
+    // but can and should be overriden if a better version of "conceptual"
+    // equality exists for the type
+    /////
 
     // Ordinary objects print very simply
     // NOTE: The following analogy is appropriate:
@@ -367,8 +375,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             }
         });
     callIfStatement.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr dyn, cond, tr, fl;
-            if (bindArguments(lst, dyn, cond, tr, fl)) {
+            ObjectSPtr lex, dyn, cond, tr, fl;
+            if (bindArguments(lst, lex, dyn, cond, tr, fl)) {
                 // These are unused except to verify that the prim() is correct
                 auto tr_ = boost::get<Method>(&tr->prim());
                 auto fl_ = boost::get<Method>(&fl->prim());
@@ -378,11 +386,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 //
                 auto definitelyTrue = eval("meta True.", global, global).lock();
                 if (cond == definitelyTrue)
-                    return callMethod(nullptr, tr, clone(dyn));
+                    return callMethod(lex, tr, clone(dyn));
                 else
-                    return callMethod(nullptr, fl, clone(dyn));
+                    return callMethod(lex, fl, clone(dyn));
             } else {
-                throw doSystemArgError(global, "ifThenElse#", 4, lst.size());
+                throw doSystemArgError(global, "ifThenElse#", 5, lst.size());
             }
         });
     callStreamDump.lock()->prim([global](list<ObjectPtr> lst) {
@@ -493,7 +501,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 cont1.lock()->put(Symbols::get()["tag"], symObj1);
                 try {
                     dyn1.lock()->put(Symbols::get()["$1"], cont1);
-                    return callMethod(ObjectSPtr(), mthd, dyn1);
+                    return callMethod(lex, mthd, dyn1);
                 } catch (Signal& signal) {
                     if (signal.match(sym)) {
                         return signal.getObject();
@@ -552,16 +560,16 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, lex, dyn, lhs, cond, rhs)) {
                 try {
                     ObjectPtr dyn1 = clone(dyn);
-                    return callMethod(ObjectSPtr(), lhs, dyn1);
+                    return callMethod(lex, lhs, dyn1);
                 } catch (ProtoError& err) {
                     ObjectPtr dyn1 = clone(dyn);
                     dyn1.lock()->put(Symbols::get()["$1"], err.getObject());
-                    ObjectPtr result1 = callMethod(ObjectSPtr(), cond, dyn1);
+                    ObjectPtr result1 = callMethod(lex, cond, dyn1);
                     auto definitelyTrue = eval("meta True.", global, global).lock();
                     if (result1.lock() == definitelyTrue) {
                         ObjectPtr dyn2 = clone(dyn);
                         dyn2.lock()->put(Symbols::get()["$1"], err.getObject());
-                        return callMethod(ObjectSPtr(), rhs, dyn2);
+                        return callMethod(lex, rhs, dyn2);
                     } else {
                         throw;
                     }
