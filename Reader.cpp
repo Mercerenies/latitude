@@ -4,6 +4,7 @@ extern "C" {
 }
 #include "Reader.hpp"
 #include "Symbol.hpp"
+#include "Standard.hpp"
 #include <list>
 #include <memory>
 #include <algorithm>
@@ -84,8 +85,8 @@ ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     ObjectPtr result = getInheritedSlot(meta(mthd), Symbols::get()["Nil"]);
     ObjectPtr lex = getInheritedSlot(mthd, Symbols::get()["closure"]);
     auto impl = boost::get<Method>(&mthd.lock()->prim());
-    if ((lex.expired()) || (!impl))
-        return result; // TODO Proper error handling
+    if (!impl)
+        return mthd;
     ObjectPtr lex1 = clone(lex);
     if (self)
         lex1.lock()->put(Symbols::get()["self"], self);
@@ -110,11 +111,15 @@ std::unique_ptr<Stmt> parse(std::string str) {
 }
 
 ObjectPtr eval(string str, ObjectPtr lex, ObjectPtr dyn) {
-    auto result = parse(str);
-    if (result)
-        return result->execute(lex, dyn);
-    else
-        return ObjectPtr(); // TODO Better error handling
+    try {
+        auto result = parse(str);
+        if (result)
+            return result->execute(lex, dyn);
+        else
+            throw doParseError(lex);
+    } catch (std::string parseException) {
+        throw doParseError(lex, parseException);
+    }
 }
 
 StmtCall::StmtCall(unique_ptr<Stmt>& cls, const string& func, ArgList& arg)

@@ -29,6 +29,11 @@ ObjectPtr garnish(ObjectPtr global, double value) {
     return val;
 }
 
+// TODO Consider having an Int type in the language
+ObjectPtr garnish(ObjectPtr global, int value) {
+    return garnish(global, (double)value);
+}
+
 class PrimToStringVisitor : public boost::static_visitor<std::string> {
 public:
     std::string operator()(boost::blank& val) const {

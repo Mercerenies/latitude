@@ -12,6 +12,13 @@ using namespace std;
 // TODO Failed lookups should return nil or err properly, not segfault
 
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
+void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta);
+
+ProtoError doSystemArgError(ObjectPtr& global, string name, int expected, int got);
+ProtoError doSlotError(ObjectPtr& global, ObjectPtr& problem, string slotName);
+ProtoError doParseError(ObjectPtr& global);
+ProtoError doParseError(ObjectPtr& global, string message);
+ProtoError doEtcError(ObjectPtr& global, string errorName, string msg);
 
 ObjectPtr spawnObjects() {
 
@@ -30,6 +37,8 @@ ObjectPtr spawnObjects() {
     ObjectPtr systemCall(clone(method));
     ObjectPtr cont(clone(proc));
     ObjectPtr contValidator(clone(object));
+    ObjectPtr exception(clone(object));
+    ObjectPtr systemError(clone(exception));
 
     ObjectPtr stream(clone(object));
     ObjectPtr stdout_(clone(stream));
@@ -53,7 +62,7 @@ ObjectPtr spawnObjects() {
     contValidator.lock()->prim(weak_ptr<SignalValidator>());
 
     // Global scope contains basic types
-    global.lock()->put(Symbols::get()["Global"], global);
+    global.lock()->put(Symbols::get()["global"], global);
     global.lock()->put(Symbols::get()["Object"], global);
     global.lock()->put(Symbols::get()["Proc"], proc);
     global.lock()->put(Symbols::get()["Method"], method);
@@ -70,6 +79,8 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["Nil"], nil);
     global.lock()->put(Symbols::get()["Boolean"], boolean);
     global.lock()->put(Symbols::get()["Cont"], cont);
+    global.lock()->put(Symbols::get()["Exception"], exception);
+    global.lock()->put(Symbols::get()["SystemError"], systemError);
 
     // Meta calls for basic types
     meta.lock()->put(Symbols::get()["Method"], method);
@@ -85,9 +96,16 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["Cont"], cont);
     meta.lock()->put(Symbols::get()["ContValidator"], contValidator);
     meta.lock()->put(Symbols::get()["sys"], sys);
+    meta.lock()->put(Symbols::get()["Exception"], exception);
+    meta.lock()->put(Symbols::get()["SystemError"], systemError);
 
     // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
+
+    // Exceptions
+    exception.lock()->put(Symbols::get()["message"],
+                          eval("\"Exception!\".", global, global));
+    spawnExceptions(global, systemError, meta);
 
     // Procs and Methods
     method.lock()->put(Symbols::get()["closure"], global);
@@ -128,7 +146,7 @@ ObjectPtr spawnObjects() {
                                                 { (parent dynamic $1: $1) toBool. },
                                                 { parent dynamic $2. }. }.)",
                             global, global));
-    method.lock()->put(Symbols::get()["try"],
+    method.lock()->put(Symbols::get()["catch"],
                        eval(R"({ ({ parent self. }) handle:
                                    { $1 is: parent dynamic $1. },
                                    { parent dynamic $2. }. }.)",
@@ -214,6 +232,8 @@ ObjectPtr spawnObjects() {
     true_.lock()->put(Symbols::get()["toString"], eval("\"True\".", global, global));
     false_.lock()->put(Symbols::get()["toString"], eval("\"False\".", global, global));
     nil.lock()->put(Symbols::get()["toString"], eval("\"Nil\".", global, global));
+    exception.lock()->put(Symbols::get()["toString"],
+                          eval("\"Exception\".", global, global)); // TODO This
 
     return global;
 }
@@ -250,7 +270,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 else
                     return eval("meta False.", global, global);
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "streamIn#", 1, lst.size());
             }
         });
     callStreamOut.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -262,7 +282,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 else
                     return eval("meta False.", global, global);
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "streamOut#", 1, lst.size());
             }
         });
     callStreamPuts.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -273,17 +293,20 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
                     if (auto obj1 = boost::get<string>(&obj0)) {
                         if (!(*stream1)->hasOut())
-                            return eval("meta Nil.", global, global); // TODO Throw error
+                            throw doEtcError(global, "StreamError",
+                                             "Stream not designated for output");
                         (*stream1)->writeText(*obj1);
-                        return eval("meta Nil.", global, global); // TODO Return value?
+                        return eval("meta Nil.", global, global);
                     } else {
-                        return eval("meta Nil.", global, global); // TODO Throw error
+                        throw doEtcError(global, "StreamError",
+                                         "Object to print is not a string");
                     }
                 } else {
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError",
+                                     "Object is not a stream");
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "streamPuts#", 1, lst.size());
             }
         });
     callStreamPutln.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -294,17 +317,20 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
                     if (auto obj1 = boost::get<string>(&obj0)) {
                         if (!(*stream1)->hasOut())
-                            return eval("meta Nil.", global, global); // TODO Throw error
+                            throw doEtcError(global, "StreamError",
+                                             "Stream not designated for output");
                         (*stream1)->writeLine(*obj1);
-                        return eval("meta Nil.", global, global); // TODO Return value?
+                        return eval("meta Nil.", global, global);
                     } else {
-                        return eval("meta Nil.", global, global); // TODO Throw error
+                        throw doEtcError(global, "StreamError",
+                                         "Object to print is not a string");
                     }
                 } else {
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError",
+                                     "Object is not a stream");
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "streamPutln#", 1, lst.size());
             }
         });
     callPrimToString.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -313,7 +339,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 string result = primToString(obj);
                 return garnish(global, result);
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "primToString#", 1, lst.size());
             }
         });
     callIfStatement.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -323,7 +349,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 auto tr_ = boost::get<Method>(&tr->prim());
                 auto fl_ = boost::get<Method>(&fl->prim());
                 if ((tr_ == NULL) || (fl_ == NULL))
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError",
+                                     "If statement body is not a method");
                 //
                 auto definitelyTrue = eval("meta True.", global, global).lock();
                 if (cond == definitelyTrue)
@@ -331,7 +358,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 else
                     return callMethod(nullptr, fl, clone(dyn));
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "ifThenElse#", 4, lst.size());
             }
         });
     callStreamDump.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -341,10 +368,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     dumpObject(lex, dyn, **stream0, obj);
                     return eval("meta Nil.", global, global);
                 } else {
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError",
+                                     "Object is not a stream");
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "streamDump#", 4, lst.size());
             }
         });
     callClone.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -352,20 +380,19 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj)) {
                 return clone(obj);
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "doClone#", 1, lst.size());
             }
         });
     callGetSlot.lock()->prim([&global](list<ObjectPtr> lst) {
             ObjectSPtr obj, slot;
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
-                    // TODO Check hasInheritedSlot and see if need to throw error
                     return getInheritedSlot(obj, *sym);
                 } else {
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError", "Slot name must be a symbol");
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "accessSlot#", 2, lst.size());
             }
         });
     callHasSlot.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -378,7 +405,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     return eval("meta False.", global, global);
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "checkSlot#", 2, lst.size());
             }
         });
     callPutSlot.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -388,10 +415,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     obj->put(*sym, value);
                     return ObjectPtr(value);
                 } else {
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError", "Slot name must be a symbol");
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "putSlot#", 3, lst.size());
             }
         });
     callGensym.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -401,7 +428,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 gen.lock()->prim( Symbols::gensym() );
                 return gen;
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "gensym#", 1, lst.size());
             }
         });
     callGensymOf.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -412,10 +439,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     gen.lock()->prim( Symbols::gensym(*str) );
                     return gen;
                 } else {
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError",
+                                     "Expected string gensym prefix");
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "gensymOf#", 2, lst.size());
             }
         });
     callCallCC.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -450,7 +478,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     }
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "callCC#", 3, lst.size());
             }
         });
     callExitCC.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -463,20 +491,24 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                             boost::get< weak_ptr<SignalValidator> >(&validator.lock()
                                                                     ->prim())) {
                             if (val->expired())
-                                return eval("meta Nil.",
-                                            global, global); // TODO Throw error
+                                throw doEtcError(global, "ContError",
+                                                 "Out of continuation bounds");
                             throw Signal(*sym, arg);
                         } else {
-                            return eval("meta Nil.", global, global); // TODO Throw error
+                            throw doEtcError(global, "TypeError",
+                                             "Invalid continuation in exitCC#");
                         }
                     } else {
-                        return eval("meta Nil.", global, global); // TODO Throw error
+                        throw doEtcError(global, "ContError",
+                                         "Out of continuation bounds");
                     }
                 } else {
-                    return eval("meta Nil.", global, global); // TODO Throw error
+                    throw doEtcError(global, "TypeError",
+                                     "Invalid continuation in exitCC#");
                 }
+                return eval("meta Nil.", global, global); // Should never happen
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "exitCC#", 4, lst.size());
             }
         });
     callInstanceof.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -488,7 +520,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                != hier.end());
                 return garnish(global, result);
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "instanceOf#", 2, lst.size());
             }
         });
     callTryStmt.lock()->prim([&global](list<ObjectPtr> lst) {
@@ -511,15 +543,16 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     }
                 }
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "try#", 5, lst.size());
             }
         });
     callThrowStmt.lock()->prim([&global](list<ObjectPtr> lst) {
             ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 throwProtoError(obj);
+                return eval("meta Nil.", global, global); // Should never happen
             } else {
-                return eval("meta Nil.", global, global); // TODO Throw error
+                throw doSystemArgError(global, "throw#", 1, lst.size());
             }
         });
 
@@ -544,4 +577,103 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
 
 }
 
+void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta) {
+    // TODO Better messages for these exceptions once we have some kind of
+    //      string formatting capabilities.
+
+    ObjectPtr systemCallError(clone(error));
+    systemCallError.lock()->put(Symbols::get()["message"],
+                                eval("\"Error in system call\".", global, global));
+
+    ObjectPtr systemArgError(clone(error));
+    systemArgError.lock()->put(Symbols::get()["message"],
+                               eval("\"Wrong number of arguments to system call\".",
+                                    global, global));
+    systemArgError.lock()->put(Symbols::get()["gotArguments"],
+                               eval("0.", global, global));
+    systemArgError.lock()->put(Symbols::get()["expectedArguments"],
+                               eval("0.", global, global));
+    systemArgError.lock()->put(Symbols::get()["functionName"],
+                               eval("\"\".", global, global));
+
+    ObjectPtr streamError(clone(error));
+    streamError.lock()->put(Symbols::get()["message"],
+                            eval("\"Stream error\".", global, global));
+
+    ObjectPtr typeError(clone(error));
+    typeError.lock()->put(Symbols::get()["message"],
+                          eval("\"Type error\".", global, global));
+
+    ObjectPtr slotError(clone(error));
+    slotError.lock()->put(Symbols::get()["message"],
+                          eval("\"Could not find slot\".", global, global));
+    slotError.lock()->put(Symbols::get()["slotName"],
+                          eval("\"\".", global, global));
+    slotError.lock()->put(Symbols::get()["objectInstance"],
+                          eval("meta Nil.", global, global));
+
+    ObjectPtr contError(clone(error));
+    contError.lock()->put(Symbols::get()["message"],
+                          eval("\"Continuation error\".", global, global));
+
+    ObjectPtr parseError(clone(error));
+    parseError.lock()->put(Symbols::get()["message"],
+                           eval("\"Parse error\".", global, global));
+
+    meta.lock()->put(Symbols::get()["SystemCallError"], systemCallError);
+    meta.lock()->put(Symbols::get()["SystemArgError"], systemArgError);
+    meta.lock()->put(Symbols::get()["StreamError"], streamError);
+    meta.lock()->put(Symbols::get()["TypeError"], typeError);
+    meta.lock()->put(Symbols::get()["SlotError"], slotError);
+    meta.lock()->put(Symbols::get()["ContError"], contError);
+    meta.lock()->put(Symbols::get()["ParseError"], parseError);
+    global.lock()->put(Symbols::get()["SystemCallError"], systemCallError);
+    global.lock()->put(Symbols::get()["SystemArgError"], systemArgError);
+    global.lock()->put(Symbols::get()["StreamError"], streamError);
+    global.lock()->put(Symbols::get()["TypeError"], typeError);
+    global.lock()->put(Symbols::get()["SlotError"], slotError);
+    global.lock()->put(Symbols::get()["ContError"], contError);
+    global.lock()->put(Symbols::get()["ParseError"], parseError);
+}
+
 // TODO Take a lot of the ', global, global);' statements and make them scoped
+
+ProtoError doSystemArgError(ObjectPtr& global,
+                                string name,
+                                int expected,
+                                int got) {
+    ObjectPtr meta_ = meta(global);
+    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["SystemArgError"]));
+    err.lock()->put(Symbols::get()["gotArguments"], garnish(global, got));
+    err.lock()->put(Symbols::get()["expectedArguments"], garnish(global, expected));
+    err.lock()->put(Symbols::get()["functionName"], garnish(global, name));
+    return ProtoError(err);
+}
+
+ProtoError doSlotError(ObjectPtr& global, ObjectPtr& problem, string slotName) {
+    ObjectPtr meta_ = meta(global);
+    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["SlotError"]));
+    err.lock()->put(Symbols::get()["slotName"], garnish(global, slotName));
+    err.lock()->put(Symbols::get()["objectInstance"], problem);
+    return ProtoError(err);
+}
+
+ProtoError doParseError(ObjectPtr& global) {
+    ObjectPtr meta_ = meta(global);
+    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["ParseError"]));
+    return ProtoError(err);
+}
+
+ProtoError doParseError(ObjectPtr& global, string message) {
+    ObjectPtr meta_ = meta(global);
+    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["ParseError"]));
+    err.lock()->put(Symbols::get()["message"], garnish(global, message));
+    return ProtoError(err);
+}
+
+ProtoError doEtcError(ObjectPtr& global, string errorName, string msg) {
+    ObjectPtr meta_ = meta(global);
+    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()[errorName]));
+    err.lock()->put(Symbols::get()["message"], garnish(global, msg));
+    return ProtoError(err);
+}

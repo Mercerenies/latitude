@@ -1,5 +1,6 @@
 #include "Proto.hpp"
 #include "GC.hpp"
+#include "Standard.hpp"
 
 using namespace std;
 
@@ -8,7 +9,7 @@ Slot::Slot() {}
 Slot::Slot(ObjectPtr ptr) : obj(ptr) {}
 
 SlotType Slot::getType() {
-    if (obj.lock()) // TODO Is this right? Should we be comparing obj to NULL instead?
+    if (!obj.expired())
         return SlotType::PTR;
     else
         return SlotType::INH;
@@ -84,13 +85,14 @@ ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name) {
     if (slot.getType() == SlotType::PTR) {
         return slot.getPtr();
     } else {
-        return ObjectPtr();
+        throw doSlotError(obj, obj, Symbols::get()[name]);
     }
 }
 
 bool hasInheritedSlot(ObjectPtr obj, Symbolic name) {
-    auto result = getInheritedSlot(obj, name);
-    return !result.expired();
+    list<ObjectPtr> parents;
+    auto slot = _getInheritedSlot(parents, obj, name);
+    return slot.getType() == SlotType::PTR;
 }
 
 void _keys(list<ObjectPtr>& parents, set<string>& result, ObjectPtr obj) {

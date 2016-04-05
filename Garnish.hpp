@@ -9,6 +9,7 @@ ObjectPtr garnish(ObjectPtr global, bool value);
 ObjectPtr garnish(ObjectPtr global, boost::blank value);
 ObjectPtr garnish(ObjectPtr global, std::string value);
 ObjectPtr garnish(ObjectPtr global, double value);
+ObjectPtr garnish(ObjectPtr global, int value);
 
 std::string primToString(ObjectPtr obj);
 

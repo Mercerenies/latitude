@@ -6,6 +6,7 @@
     #include <memory>
     #include <string>
     #include "Reader.hpp"
+    #include "Standard.hpp"
     #ifdef __cplusplus
     extern "C" int yylex();
     extern "C" int yyparse();
@@ -145,7 +146,9 @@ linelist:
 extern "C" {
 
 void yyerror(const char* str) {
-    std::cout << "Error on line " << line_num << "! " << str << std::endl;
+    std::ostringstream oss;
+    oss << "Error on line " << line_num << "! " << str;
+    throw oss.str();
 }
 
 void cleanupE(struct Expr* stmt) {

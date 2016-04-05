@@ -18,11 +18,18 @@ int main(int argc, char** argv) {
     auto global = spawnObjects();
     try {
         eval(R"(({
-              stdout println: ({}) me.
+              xx := Object clone....
+              xx a := 1.
+              xx c := 3.
+              ({
+                stdout println: xx a.
+                stdout println: xx b.
+                stdout println: xx c.
+              }) catch: SlotError, {
+                stdout putln: "Bazinga".
+              }.
             }) me.)",
              global, global);
-        auto stream = outStream();
-        auto val = getInheritedSlot(global, Symbols::get()["Global"]);
         GC::get().garbageCollect(global);
     } catch (ProtoError& e) {
         auto stream = errStream();
