@@ -75,7 +75,6 @@
 %type <argval> arglist1
 %type <exprval> arg
 %type <exprval> chain
-%type <exprval> chain0
 %type <exprval> literal
 %type <argval> linelist
 
@@ -120,18 +119,15 @@ arglist1:
     ',' arg arglist1 { $$ = new List(); $$->car = $2; $$->cdr = $3; }
     ;
 arg:
-    chain0
+    chain NAME { $$ = new Expr(); $$->lhs = $1; $$->name = $2; } |
+    '(' stmt ')' { $$ = $2; } |
+    literal
     ;
 chain:
     chain NAME { $$ = new Expr(); $$->lhs = $1; $$->name = $2; } |
     '(' stmt ')' { $$ = $2; } |
     literal |
     /* empty */ { $$ = NULL; }
-    ;
-chain0:
-    chain NAME { $$ = new Expr(); $$->lhs = $1; $$->name = $2; } |
-    '(' stmt ')' { $$ = $2; } |
-    literal
     ;
 literal:
     '{' linelist '}' { $$ = new Expr(); $$->method = true; $$->args = $2; } |
