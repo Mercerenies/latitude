@@ -22,7 +22,7 @@
          curr_buffer_size = 40;
      }
      void append_buffer(char ch) {
-         if (curr_buffer_pos == curr_buffer_size) {
+         if (curr_buffer_pos >= curr_buffer_size - 1) {
              curr_buffer_size *= 2;
              curr_buffer = realloc(curr_buffer, curr_buffer_size * sizeof(char));
              memset(curr_buffer + curr_buffer_pos, 0,
