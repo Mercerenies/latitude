@@ -176,6 +176,8 @@ ObjectPtr spawnObjects() {
     stream.lock()->put(Symbols::get()["dump"],
                        eval("{meta sys streamDump#: lexical, dynamic, self, $1.}.",
                             global, global));
+    stream.lock()->put(Symbols::get()["readln"], eval("{ meta sys streamRead#: self. }.",
+                                                      global, global));
 
     // Self-reference in scopes, etc.
     global.lock()->put(Symbols::get()["scope"], eval("{ self. }.", global, global));
@@ -349,6 +351,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callTripleEquals(clone(systemCall));
     ObjectPtr callPrimEquals(clone(systemCall));
     ObjectPtr callStringConcat(clone(systemCall));
+    ObjectPtr callStreamRead(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -398,7 +401,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Object is not a stream");
                 }
             } else {
-                throw doSystemArgError(global, "streamPuts#", 1, lst.size());
+                throw doSystemArgError(global, "streamPuts#", 2, lst.size());
             }
         });
     callStreamPutln.lock()->prim([global](list<ObjectPtr> lst) {
@@ -422,7 +425,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Object is not a stream");
                 }
             } else {
-                throw doSystemArgError(global, "streamPutln#", 1, lst.size());
+                throw doSystemArgError(global, "streamPutln#", 2, lst.size());
             }
         });
     callPrimToString.lock()->prim([global](list<ObjectPtr> lst) {
@@ -733,6 +736,23 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "stringConcat#", 2, lst.size());
             }
         });
+    callStreamRead.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr stream;
+            if (bindArguments(lst, stream)) {
+                auto stream0 = stream->prim();
+                if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
+                    if (!(*stream1)->hasIn())
+                        throw doEtcError(global, "StreamError",
+                                         "Stream not designated for input");
+                    return garnish(global, (*stream1)->readLine());
+                } else {
+                    throw doEtcError(global, "TypeError",
+                                     "Object is not a stream");
+                }
+            } else {
+                throw doSystemArgError(global, "streamRead#", 1, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -759,6 +779,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["ptrEquals#"], callTripleEquals);
     sys.lock()->put(Symbols::get()["primEquals#"], callPrimEquals);
     sys.lock()->put(Symbols::get()["stringConcat#"], callStringConcat);
+    sys.lock()->put(Symbols::get()["streamRead#"], callStreamRead);
 
 }
 
