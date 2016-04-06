@@ -39,6 +39,8 @@ ObjectPtr spawnObjects() {
     ObjectPtr contValidator(clone(object));
     ObjectPtr exception(clone(object));
     ObjectPtr systemError(clone(exception));
+    ObjectPtr latchkey(clone(object));
+    ObjectPtr lockbox(clone(object));
 
     ObjectPtr stream(clone(object));
     ObjectPtr stdout_(clone(stream));
@@ -81,6 +83,8 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["Cont"], cont);
     global.lock()->put(Symbols::get()["Exception"], exception);
     global.lock()->put(Symbols::get()["SystemError"], systemError);
+    global.lock()->put(Symbols::get()["Lockbox"], lockbox);
+    global.lock()->put(Symbols::get()["Latchkey"], latchkey);
 
     // Meta calls for basic types
     meta.lock()->put(Symbols::get()["Object"], object);
@@ -198,6 +202,21 @@ ObjectPtr spawnObjects() {
     number.lock()->put(Symbols::get()["/"], eval("{ meta sys numDiv#: self, $1. }.",
                                                  global, global));
 
+    // Latchkeys and Lockboxes
+    latchkey.lock()->put(Symbols::get()["tag"], symbol);
+    latchkey.lock()->put(Symbols::get()["make"],
+                         eval(R"({ key := self clone.
+                                   key tag := key tag gensymOf: "KEY".
+                                   key. }.)", global, global));
+    lockbox.lock()->put(Symbols::get()["store"],
+                        eval(R"({ self put: $1 tag, $2. }.)", global, global));
+    lockbox.lock()->put(Symbols::get()["fits"],
+                        eval(R"({ self has: $1 tag. }.)", global, global));
+    lockbox.lock()->put(Symbols::get()["retrieve"],
+                        eval(R"({ if: { parent self fits: parent dynamic $1. },
+                                      { parent self get: parent dynamic $1 tag. },
+                                      { meta Nil. }. }.)", global, global));
+
     // Boolean casts and operations
     object.lock()->put(Symbols::get()["toBool"], true_);
     false_.lock()->put(Symbols::get()["toBool"], false_);
@@ -263,8 +282,19 @@ ObjectPtr spawnObjects() {
     nil.lock()->put(Symbols::get()["toString"], eval("\"Nil\".", global, global));
     exception.lock()->put(Symbols::get()["toString"],
                           eval("\"Exception\".", global, global));
+    lockbox.lock()->put(Symbols::get()["toString"],
+                        eval("\"Lockbox\".", global, global));
+    latchkey.lock()->put(Symbols::get()["toString"],
+                         eval("\"Latchkey\".", global, global));
+
+    // TODO The pretty prints here in more detail once we have string formatting
+    //      stuff.
+    lockbox.lock()->put(Symbols::get()["pretty"],
+                        eval("{ self toString. }.", global, global));
+    latchkey.lock()->put(Symbols::get()["pretty"],
+                         eval("{ self toString. }.", global, global));
     exception.lock()->put(Symbols::get()["pretty"],
-                          eval("{ self message. }.", global, global)); // TODO This more
+                          eval("{ self message. }.", global, global));
 
     // Equality comparisons for basic types
     string.lock()->put(Symbols::get()["=="],
@@ -276,6 +306,9 @@ ObjectPtr spawnObjects() {
     number.lock()->put(Symbols::get()["=="],
                        eval("{ meta sys primEquals#: self, $1. }.",
                             global, global));
+    latchkey.lock()->put(Symbols::get()["=="],
+                         eval("{ (self tag) == (self tag). }.",
+                              global, global));
 
     return global;
 }
