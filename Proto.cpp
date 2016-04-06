@@ -31,7 +31,10 @@ Slot Object::operator [](Symbolic key) {
 }
 
 void Object::put(Symbolic key, ObjectPtr ptr) {
-    slots.emplace(key, Slot(ptr));
+    if (slots.find(key) == slots.end())
+        slots.emplace(key, Slot(ptr));
+    else
+        slots[key] = Slot(ptr);
 }
 
 set<Symbolic> Object::directKeys() {
