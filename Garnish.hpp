@@ -12,6 +12,7 @@ ObjectPtr garnish(ObjectPtr global, double value);
 ObjectPtr garnish(ObjectPtr global, int value);
 
 std::string primToString(ObjectPtr obj);
+bool primEquals(ObjectPtr obj1, ObjectPtr obj2);
 
 void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj);
 void simplePrintObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj);

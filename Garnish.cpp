@@ -1,6 +1,7 @@
 #include "Garnish.hpp"
 #include "Reader.hpp"
 #include <sstream>
+#include <type_traits>
 
 using namespace std;
 
@@ -88,6 +89,36 @@ public:
 
 std::string primToString(ObjectPtr obj) {
     return boost::apply_visitor(PrimToStringVisitor(), obj.lock()->prim());
+}
+
+template <typename U, typename V>
+struct PrimEquals_ {
+    static bool call(U& first, V& second) {
+        return false;
+    }
+};
+
+class PrimEqualsVisitor : public boost::static_visitor<bool> {
+public:
+    bool operator()(double& first, double& second) const {
+        constexpr double EPSILON = 0.0001; // TODO Make this configurable
+        return abs(first - second) <= EPSILON;
+    }
+    template <typename U,
+              class = decltype(declval<U>() == declval<U>())>
+    bool operator()(U& first, U& second) const {
+        return first == second;
+    }
+    template <typename U, typename V>
+    bool operator()(U& first, V& second) const {
+        return false;
+    }
+};
+
+bool primEquals(ObjectPtr obj1, ObjectPtr obj2) {
+    return boost::apply_visitor(PrimEqualsVisitor(),
+                                obj1.lock()->prim(),
+                                obj2.lock()->prim());
 }
 
 class DumpObjectVisitor : public boost::static_visitor<ObjectPtr> {

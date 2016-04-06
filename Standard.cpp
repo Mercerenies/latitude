@@ -230,7 +230,10 @@ ObjectPtr spawnObjects() {
     // be overriden by children. Double-equals defaults to pointer equality
     // but can and should be overriden if a better version of "conceptual"
     // equality exists for the type
-    /////
+    object.lock()->put(Symbols::get()["==="], eval("{ meta sys ptrEquals#: self, $1. }.",
+                                                   global, global));
+    object.lock()->put(Symbols::get()["=="], eval("{ (self) === ($1). }.",
+                                                  global, global));
 
     // Ordinary objects print very simply
     // NOTE: The following analogy is appropriate:
@@ -263,6 +266,17 @@ ObjectPtr spawnObjects() {
     exception.lock()->put(Symbols::get()["pretty"],
                           eval("{ self message. }.", global, global)); // TODO This more
 
+    // Equality comparisons for basic types
+    string.lock()->put(Symbols::get()["=="],
+                       eval("{ meta sys primEquals#: self, $1. }.",
+                            global, global));
+    symbol.lock()->put(Symbols::get()["=="],
+                       eval("{ meta sys primEquals#: self, $1. }.",
+                            global, global));
+    number.lock()->put(Symbols::get()["=="],
+                       eval("{ meta sys primEquals#: self, $1. }.",
+                            global, global));
+
     return global;
 }
 
@@ -289,6 +303,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callNumSub(clone(systemCall));
     ObjectPtr callNumMul(clone(systemCall));
     ObjectPtr callNumDiv(clone(systemCall));
+    ObjectPtr callTripleEquals(clone(systemCall));
+    ObjectPtr callPrimEquals(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -643,6 +659,22 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "numDiv#", 2, lst.size());
             }
         });
+    callTripleEquals.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                return garnish(global, obj1 == obj2);
+            } else {
+                throw doSystemArgError(global, "ptrEquals#", 2, lst.size());
+            }
+        });
+    callPrimEquals.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                return garnish(global, primEquals(obj1, obj2));
+            } else {
+                throw doSystemArgError(global, "ptrEquals#", 2, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -666,6 +698,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["numSub#"], callNumSub);
     sys.lock()->put(Symbols::get()["numMul#"], callNumMul);
     sys.lock()->put(Symbols::get()["numDiv#"], callNumDiv);
+    sys.lock()->put(Symbols::get()["ptrEquals#"], callTripleEquals);
+    sys.lock()->put(Symbols::get()["primEquals#"], callPrimEquals);
 
 }
 
