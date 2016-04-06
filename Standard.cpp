@@ -136,12 +136,16 @@ ObjectPtr spawnObjects() {
                                                   global, global));
     object.lock()->put(Symbols::get()["slot"], eval("{ meta sys accessSlot#: self, $1. }.",
                                     global, global));
-    object.lock()->put(Symbols::get()["get"], eval("{ meta sys accessSlot#: self, $1. }.",
+    object.lock()->put(Symbols::get()["hold"],
+                       eval("{ meta sys accessSlot#: self, $1. }.",
+                            global, global));
+    object.lock()->put(Symbols::get()["get"], eval("{ self hold me. }.",
                                                    global, global));
     object.lock()->put(Symbols::get()["has"], eval("{ meta sys checkSlot#: self, $1. }.",
                                     global, global));
-    object.lock()->put(Symbols::get()["put"], eval("{ meta sys putSlot#: self, $1, $2. }.",
-                                    global, global));
+    object.lock()->put(Symbols::get()["put"],
+                       eval("{ meta sys putSlot#: self, $1, (dynamic hold: '$2). }.",
+                            global, global));
 
     // Exception throwing and handling routines
     method.lock()->put(Symbols::get()["handle"],
