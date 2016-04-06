@@ -9,6 +9,10 @@
 
 struct Symbolic;
 
+/*
+ * A singleton which keeps a list of language symbols and internal numerical
+ * identifiers to allow constant-time comparison.
+ */
 class Symbols {
 public:
     using index_t = long;
@@ -29,14 +33,31 @@ static Symbolic gensym(std::string prefix);
     std::string operator[](const Symbolic& str);
 };
 
+/*
+ * A thin wrapper for symbols in index form, to avoid
+ * accidental casting to and from integer types.
+ */
 struct Symbolic {
     Symbols::index_t index;
 };
 
+/*
+ * Symbols are comparable for equality in constant time.
+ */
 bool operator ==(const Symbolic& a, const Symbolic& b);
+/*
+ * Symbols follow an arbitrary but consistent total ordering
+ * to allow their admission into tree-like structures such
+ * as `std::map` and `std::set`.
+ */
 bool operator <(const Symbolic& a, const Symbolic& b);
 
 namespace std {
+    /*
+     * `Symbolic` instances are hashable by their index, for use
+     * in hash structures such as `std::unordered_set` and
+     * `std::unordered_map`.
+     */
     template <>
     class hash<Symbolic> {
     public:

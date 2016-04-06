@@ -19,8 +19,12 @@ void _bindArguments(ForwardIterator& begin, ForwardIterator& end, T& arg, Ts&...
 template <typename ForwardIterator>
 void _bindArguments(ForwardIterator& begin, ForwardIterator& end) {}
 
-// Returns true on success, false on failure
-// The iterator returned by Iterable must be at least a ForwardIterator
+/*
+ * Takes a forward iterable structure and a number of arguments by reference.
+ * Binds the arguments to each element of the structure, unless the size does not
+ * match, in which case nothing is changed and false is returned. Otherwise,
+ * the arguments are bound and true is returned.
+ */
 template <typename Iterable, typename... Ts>
 bool bindArguments(const Iterable& lst, Ts&... args) {
     auto begin = lst.begin();

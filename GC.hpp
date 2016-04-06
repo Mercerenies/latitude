@@ -5,6 +5,11 @@
 #include <set>
 #include <array>
 
+/*
+ * A singleton object representing the global garbage collector. All
+ * language `Object` instances should be allocated through this object
+ * so that they can be cleaned up through this object.
+ */
 class GC {
 private:
     static GC instance;
@@ -12,7 +17,18 @@ private:
     GC() = default;
 public:
     static GC& get();
+    /*
+     * Creates an object and returns a pointer to it.
+     */
     ObjectPtr allocate();
+    /*
+     * Cleans up objects. Any object references which C++ or the embedded
+     * code maintains should be passed in as arguments, as the algorithm
+     * will assume anything that is unreachable from the arguments should
+     * be freed. As an aside to this, `garbageCollect` called with no
+     * arguments will free every object that was created using the garbage
+     * collector.
+     */
     template <typename... Ts>
     void garbageCollect(Ts... globals);
 };

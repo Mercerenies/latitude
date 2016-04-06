@@ -24,15 +24,31 @@ void clearCurrentLine();
 
 ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn);
 
+/*
+ * Parses the string. Will throw an std::string as an exception
+ * if a parse error occurs. For this reason, it is often desirable
+ * to use `eval`, which captures these parse errors and rethrows them
+ * as `ProtoError` objects.
+ */
 std::unique_ptr<Stmt> parse(std::string str);
 
+/*
+ * Parses and evaluates the expression in the given context.
+ */
 ObjectPtr eval(std::string str, ObjectPtr lex, ObjectPtr dyn);
 
+/*
+ * A statement. Defines only one method, which executes
+ * the statement in a given lexical and dynamic context.
+ */
 class Stmt {
 public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn) = 0;
 };
 
+/*
+ * A slot access statement, which may or may not be a method call.
+ */
 class StmtCall : public Stmt {
 public:
     typedef std::list< std::unique_ptr<Stmt> > ArgList;
@@ -45,6 +61,11 @@ public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
 };
 
+/*
+ * An assignment statement. Note that the `className` field defaults to the current
+ * scope (lexical or dynamic, depending on the name of the variable) if it is not
+ * provided.
+ */
 class StmtEqual : public Stmt {
 private:
     std::unique_ptr<Stmt> className;
@@ -56,6 +77,9 @@ public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
 };
 
+/*
+ * A method literal.
+ */
 class StmtMethod : public Stmt {
 private:
     std::list< std::shared_ptr<Stmt> > contents;
@@ -64,6 +88,9 @@ public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
 };
 
+/*
+ * A numeric literal.
+ */
 class StmtNumber : public Stmt {
 private:
     double value;
@@ -72,6 +99,9 @@ public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
 };
 
+/*
+ * A string literal.
+ */
 class StmtString : public Stmt {
 private:
     std::string value;
@@ -80,6 +110,9 @@ public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
 };
 
+/*
+ * A symbolic literal.
+ */
 class StmtSymbol : public Stmt {
 private:
     std::string value;

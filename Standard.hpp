@@ -5,7 +5,13 @@
 #include "Proto.hpp"
 #include "Cont.hpp"
 
+/*
+ * Using the global garbage collector, spawns the standard library set of objects
+ * and returns the default global scope.
+ */
 ObjectPtr spawnObjects();
+
+// These are convenience functions for various language errors.
 ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, std::string slotName);
 ProtoError doParseError(ObjectPtr global);
 ProtoError doParseError(ObjectPtr global, std::string message);
