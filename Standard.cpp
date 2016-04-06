@@ -6,6 +6,7 @@
 #include "Cont.hpp"
 #include <list>
 #include <sstream>
+#include <boost/scope_exit.hpp>
 
 using namespace std;
 
@@ -145,7 +146,7 @@ ObjectPtr spawnObjects() {
     // Exception throwing and handling routines
     method.lock()->put(Symbols::get()["handle"],
                        eval(R"({ meta sys try#: lexical, dynamic,
-                                                { self. },
+                                                { parent self. },
                                                 { (parent dynamic $1: $1) toBool. },
                                                 { parent dynamic $2. }. }.)",
                             global, global));
@@ -156,6 +157,11 @@ ObjectPtr spawnObjects() {
                           global, global));
     object.lock()->put(Symbols::get()["throw"],
                        eval("{ meta sys throw#: self. }.", global, global));
+    method.lock()->put(Symbols::get()["protect"],
+                       eval(R"({ meta sys scopeProtect#: lexical, dynamic,
+                                                         { parent self. },
+                                                         { parent dynamic $1. }. }.)",
+                            global, global));
 
     // Stream setup
     stdout_.lock()->prim(outStream());
@@ -352,6 +358,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callPrimEquals(clone(systemCall));
     ObjectPtr callStringConcat(clone(systemCall));
     ObjectPtr callStreamRead(clone(systemCall));
+    ObjectPtr callScopeProtect(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -753,6 +760,37 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamRead#", 1, lst.size());
             }
         });
+    callScopeProtect.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, block1, block2;
+            if (bindArguments(lst, lex, dyn, block1, block2)) {
+                // Runs block1, then block2. Will run block2 even if
+                // block1 throws or exits abnormally. block1 is called
+                // with no args; block2 is called with a single Boolean,
+                // which is true if the exit was "abnormal" (either an
+                // exception, a continuation exit, or a deeper system
+                // error). Note that if block2 attempts an abnormal exit that
+                // would escape the scope on the scopeProtect# call, the behavior
+                // is completely undefined.
+                bool abnormal = true;
+                BOOST_SCOPE_EXIT(&abnormal, global, block2, lex, dyn) {
+                    try {
+                        ObjectPtr status = garnish(global, abnormal);
+                        ObjectPtr dyn1 = clone(dyn);
+                        dyn1.lock()->put(Symbols::get()["$1"], status);
+                        callMethod(lex, block2, dyn1);
+                    } catch (...) {
+                        cerr << "Attempted abnormal exit from protected block!" << endl;
+                        terminate();
+                    }
+                } BOOST_SCOPE_EXIT_END;
+                ObjectPtr result = callMethod(lex, block1, clone(dyn));
+                abnormal = false;
+                return result;
+            } else {
+                throw doSystemArgError(global, "scopeProtect#", 4, lst.size());
+            }
+        });
+    /**/
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -780,6 +818,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["primEquals#"], callPrimEquals);
     sys.lock()->put(Symbols::get()["stringConcat#"], callStringConcat);
     sys.lock()->put(Symbols::get()["streamRead#"], callStreamRead);
+    sys.lock()->put(Symbols::get()["scopeProtect#"], callScopeProtect);
 
 }
 
