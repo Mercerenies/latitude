@@ -244,6 +244,16 @@ ObjectPtr spawnObjects() {
                                             { parent self. },
                                             { parent dynamic $1. }. }.)", global, global));
 
+    // Stringification
+    // The `stringify` method calls `toString` unless the object is already a string,
+    // in which case it returns the object itself.
+    object.lock()->put(Symbols::get()["stringify"], eval("{ self toString. }.",
+                                                         global, global));
+    string.lock()->put(Symbols::get()["stringify"], eval("{ self. }.", global, global));
+    object.lock()->put(Symbols::get()["++"],
+                       eval("{ meta sys stringConcat#: self stringify, $1 stringify. }.",
+                            global, global));
+
     // Equality
     // Triple-equals is used for pointer equality and should almost never
     // be overriden by children. Double-equals defaults to pointer equality
@@ -338,6 +348,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callNumDiv(clone(systemCall));
     ObjectPtr callTripleEquals(clone(systemCall));
     ObjectPtr callPrimEquals(clone(systemCall));
+    ObjectPtr callStringConcat(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -708,6 +719,20 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "ptrEquals#", 2, lst.size());
             }
         });
+    callStringConcat.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                auto str1 = boost::get<std::string>(&obj1->prim());
+                auto str2 = boost::get<std::string>(&obj2->prim());
+                if (str1 && str2)
+                    return garnish(global, *str1 + *str2);
+                else
+                    throw doEtcError(global, "TypeError",
+                                     "Got non-string in stringConcat#");
+            } else {
+                throw doSystemArgError(global, "stringConcat#", 2, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -733,6 +758,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["numDiv#"], callNumDiv);
     sys.lock()->put(Symbols::get()["ptrEquals#"], callTripleEquals);
     sys.lock()->put(Symbols::get()["primEquals#"], callPrimEquals);
+    sys.lock()->put(Symbols::get()["stringConcat#"], callStringConcat);
 
 }
 
