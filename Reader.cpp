@@ -89,8 +89,11 @@ ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     if (!impl)
         return mthd;
     ObjectPtr lex1 = clone(lex);
+    // TODO Remove this if-statement and make self-binding mandatory
+    //      once we're confident we've removed anywhere that it's not passed in.
     if (self)
         lex1.lock()->put(Symbols::get()["self"], self);
+    lex1.lock()->put(Symbols::get()["again"], mthd);
     lex1.lock()->put(Symbols::get()["lexical"], lex1);
     lex1.lock()->put(Symbols::get()["dynamic"], dyn);
     dyn.lock()->put(Symbols::get()["$lexical"], lex1);

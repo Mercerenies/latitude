@@ -89,6 +89,7 @@ ObjectPtr spawnObjects() {
 
     // Meta calls for basic types
     meta.lock()->put(Symbols::get()["Object"], object);
+    meta.lock()->put(Symbols::get()["Proc"], proc);
     meta.lock()->put(Symbols::get()["Method"], method);
     meta.lock()->put(Symbols::get()["Number"], number);
     meta.lock()->put(Symbols::get()["String"], string);
@@ -193,6 +194,18 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["scope"], eval("{ self. }.", global, global));
     global.lock()->put(Symbols::get()["$scope"], eval("{ self. }.", global, global));
     object.lock()->put(Symbols::get()["me"], eval("{ self. }.", global, global));
+    object.lock()->put(Symbols::get()["invoke"],
+                       eval(R"({ pr := meta Proc clone.
+                                 pr call := { meta sys invoke#: lexical,
+                                                                dynamic,
+                                                                parent self,
+                                                                (parent dynamic
+                                                                 hold '$1).}.
+                                 pr. }.)",
+                            global, global));
+    global.lock()->put(Symbols::get()["here"],
+                       eval("{ if: (has 'again), { hold 'again. }, { meta Nil. }. }.",
+                            global, global));
 
     // More method setup (now that we have system calls)
     method.lock()->put(Symbols::get()["call"], eval("{ self. }.", global, global));
@@ -363,6 +376,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callStringConcat(clone(systemCall));
     ObjectPtr callStreamRead(clone(systemCall));
     ObjectPtr callScopeProtect(clone(systemCall));
+    ObjectPtr callInvoke(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -794,7 +808,17 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "scopeProtect#", 4, lst.size());
             }
         });
-    /**/
+    callInvoke.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, self, mthd;
+            if (bindArguments(lst, lex, dyn, self, mthd)) {
+                // Calls the method with "self" bound to the given object,
+                // bypassing the normal self. All arguments ($n) remain the
+                // same.
+                return callMethod(self, mthd, clone(dyn));
+            } else {
+                throw doSystemArgError(global, "invoke#", 4, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -823,6 +847,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["stringConcat#"], callStringConcat);
     sys.lock()->put(Symbols::get()["streamRead#"], callStreamRead);
     sys.lock()->put(Symbols::get()["scopeProtect#"], callScopeProtect);
+    sys.lock()->put(Symbols::get()["invoke#"], callInvoke);
 
 }
 
