@@ -1,11 +1,20 @@
 
 ifndef BOOST
-  BOOST='D:/boost/boost_1_60_0'
+  #BOOST='D:/boost/boost_1_60_0'
+  BOOST="/root/Downloads/boost_1_60_0"
 endif
 
-C=gcc -c -Wall
-CC=g++ -I $(BOOST) -c -Wall -std=c++14
-LINK=g++ -Wall -std=c++14
+ifndef CCPRE
+  CCPRE=g++
+endif
+
+ifndef CPRE
+  CPRE=gcc
+endif
+
+C=$(CPRE) -c -Wall
+CC=$(CCPRE) -I $(BOOST) -c -Wall -std=c++1y
+LINK=$(CCPRE) -Wall -std=c++1y
 FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o
 
 all:	$(FILES)
