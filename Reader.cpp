@@ -237,7 +237,7 @@ StmtSymbol::StmtSymbol(const char* contents)
 
 ObjectPtr StmtSymbol::execute(ObjectPtr lex, ObjectPtr dyn) {
     ObjectPtr str = clone(getInheritedSlot(meta(lex), Symbols::get()["Symbol"]));
-    Symbolic sym = { Symbols::get()[value] };
+    Symbolic sym ( Symbols::get()[value] );
     str.lock()->prim(sym);
     return str;
 }

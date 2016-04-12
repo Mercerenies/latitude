@@ -26,9 +26,10 @@ private:
     Symbols() = default;
 public:
     static Symbolic gensym();
-static Symbolic gensym(std::string prefix);
+    static Symbolic gensym(std::string prefix);
     static Symbols& get();
     static bool isUninterned(const std::string& str);
+    static bool requiresEscape(const std::string& str);
     Symbolic operator[](const std::string& str);
     std::string operator[](const Symbolic& str);
 };

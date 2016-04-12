@@ -51,6 +51,8 @@ public:
         for (char ch : val) {
             if (ch == '"')
                 oss << "\\\"";
+            else if (ch == '\\')
+                oss << "\\\\";
             else
                 oss << ch;
         }
@@ -75,9 +77,24 @@ public:
     std::string operator()(Symbolic& val) const {
         ostringstream oss;
         std::string str = Symbols::get()[val];
-        if (!Symbols::isUninterned(str))
-            oss << '\'';
-        oss << str;
+        if (Symbols::requiresEscape(str)) {
+            oss << "'(";
+            for (char ch : str) {
+                if (ch == '(')
+                    oss << "\\(";
+                else if (ch == ')')
+                    oss << "\\)";
+                else if (ch == '\\')
+                    oss << "\\\\";
+                else
+                    oss << ch;
+            }
+            oss << ")";
+        } else {
+            if (!Symbols::isUninterned(str))
+                oss << '\'';
+            oss << str;
+        }
         return oss.str();
     }
     std::string operator()(std::weak_ptr<SignalValidator>& val) const {
