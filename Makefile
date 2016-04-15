@@ -15,7 +15,7 @@ endif
 C=$(CPRE) -c -Wall
 CC=$(CCPRE) -I $(BOOST) -c -Wall -std=c++1y
 LINK=$(CCPRE) -Wall -std=c++1y
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o Number.o
 
 all:	$(FILES)
 	$(LINK) $(FILES)
@@ -59,6 +59,9 @@ Symbol.o:	Symbol.cpp Symbol.hpp
 
 Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp
 	$(CC) Cont.cpp
+
+Number.o:	Number.cpp Number.hpp
+	$(CC) Number.cpp
 
 REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp
 	$(CC) REPL.cpp
