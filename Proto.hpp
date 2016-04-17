@@ -98,6 +98,11 @@ ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name);
  */
 bool hasInheritedSlot(ObjectPtr obj, Symbolic name);
 /*
+ * Returns the object who actually owns the slot which would be referenced in a
+ * call to getInheritedSlot.
+ */
+ObjectPtr getInheritedOrigin(ObjectPtr obj, Symbolic name);
+/*
  * Gets a set of all of the keys in the object. Recursively computes the set of keys
  * using an algorithm similar to `getInheritedSlot`. If the parent keys are not
  * desired, the instance method `directKeys` on `Object` will return only the directly

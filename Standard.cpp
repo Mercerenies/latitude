@@ -147,6 +147,10 @@ ObjectPtr spawnObjects() {
     object.lock()->put(Symbols::get()["put"],
                        eval("{ meta sys putSlot#: self, $1, (dynamic hold: '$2). }.",
                             global, global));
+    object.lock()->put(Symbols::get()["origin"],
+                       eval("{ meta sys origin#: self, $1. }.",
+                            global, global));
+    // TODO "above"
 
     // Exception throwing and handling routines
     method.lock()->put(Symbols::get()["handle"],
@@ -377,6 +381,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callStreamRead(clone(systemCall));
     ObjectPtr callScopeProtect(clone(systemCall));
     ObjectPtr callInvoke(clone(systemCall));
+    ObjectPtr callOrigin(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -819,6 +824,18 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "invoke#", 4, lst.size());
             }
         });
+    callOrigin.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr self, ref;
+            if (bindArguments(lst, self, ref)) {
+                auto sym = boost::get<Symbolic>(&ref->prim());
+                if (!sym)
+                    throw doEtcError(global, "TypeError",
+                                     "Slot name must be a symbol");
+                return getInheritedOrigin(self, *sym);
+            } else {
+                throw doSystemArgError(global, "origin#", 2, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -848,6 +865,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["streamRead#"], callStreamRead);
     sys.lock()->put(Symbols::get()["scopeProtect#"], callScopeProtect);
     sys.lock()->put(Symbols::get()["invoke#"], callInvoke);
+    sys.lock()->put(Symbols::get()["origin#"], callOrigin);
 
 }
 

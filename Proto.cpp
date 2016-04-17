@@ -1,6 +1,7 @@
 #include "Proto.hpp"
 #include "GC.hpp"
 #include "Standard.hpp"
+#include <tuple>
 
 using namespace std;
 
@@ -59,32 +60,33 @@ ObjectPtr meta(ObjectPtr obj) {
     return getInheritedSlot(obj, Symbols::get()["meta"]);
 }
 
-Slot _getInheritedSlot(list<ObjectPtr>& parents, ObjectPtr obj, Symbolic name) {
+auto _getInheritedSlot(list<ObjectPtr>& parents, ObjectPtr obj, Symbolic name)
+    -> tuple<Slot, ObjectPtr> {
     auto obj1 = obj.lock();
     if (find_if(parents.begin(), parents.end(), [&obj1](auto xx){
                 return xx.lock() == obj1;
             }) != parents.end()) {
-        return Slot();
+        return make_tuple(Slot(), ObjectPtr());
     } else {
         Slot check = (*obj1)[name];
         Slot parent = (*obj1)[ Symbols::get()["parent"] ];
         switch (check.getType()) {
         case SlotType::PTR:
-            return check.getPtr();
+            return make_tuple(check.getPtr(), obj1);
         case SlotType::INH:
             parents.push_back(obj);
             if (parent.getType() == SlotType::PTR)
                 return _getInheritedSlot(parents, parent.getPtr(), name);
             else
-                return Slot();
+                return make_tuple(Slot(), ObjectPtr());
         }
-        return Slot();
+        return make_tuple(Slot(), ObjectPtr());
     }
 }
 
 ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name) {
     list<ObjectPtr> parents;
-    auto slot = _getInheritedSlot(parents, obj, name);
+    auto slot = get<0>(_getInheritedSlot(parents, obj, name));
     if (slot.getType() == SlotType::PTR) {
         return slot.getPtr();
     } else {
@@ -94,8 +96,17 @@ ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name) {
 
 bool hasInheritedSlot(ObjectPtr obj, Symbolic name) {
     list<ObjectPtr> parents;
-    auto slot = _getInheritedSlot(parents, obj, name);
+    auto slot = get<0>(_getInheritedSlot(parents, obj, name));
     return slot.getType() == SlotType::PTR;
+}
+
+ObjectPtr getInheritedOrigin(ObjectPtr obj, Symbolic name) {
+    list<ObjectPtr> parents;
+    auto origin = get<1>(_getInheritedSlot(parents, obj, name));
+    if (!origin.expired())
+        return origin;
+    else
+        throw doSlotError(obj, obj, Symbols::get()[name]);
 }
 
 void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
