@@ -38,15 +38,33 @@
 %}
 
 NORMAL    [^.,:(){}\"\' \t\n]
-SNORMAL   [^.,:(){}\"\'~ \t\n0-9]
+SNORMAL   [^.,:(){}\"\' \t\n~0-9]
 ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING
+%x INNER_SYMBOL
 %%
 
-[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)? {
+[-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
     yylval.dval = strtod(yytext, NULL);
     return NUMBER;
+}
+
+[-+]?[0-9]+([eE][-+]?[0-9]+) {
+    yylval.dval = strtod(yytext, NULL);
+    return NUMBER;
+}
+
+[-+]?[0-9]+ {
+    errno = 0;
+    yylval.ival = strtol(yytext, NULL, 10);
+    if (errno == ERANGE) {
+        char* arr = calloc(strlen(yytext) + 1, sizeof(char));
+        strcpy(arr, yytext);
+        yylval.sval = arr;
+        return BIGINT;
+    }
+    return INTEGER;
 }
 
 {ID} {
@@ -61,6 +79,12 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_STRING>\\. { append_buffer(yytext[1]); }
 <INNER_STRING>\" { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
 <INNER_STRING><<EOF>> { yyerror("Unterminated string"); yyterminate(); }
+
+\'\( { BEGIN(INNER_SYMBOL); clear_buffer(); }
+<INNER_SYMBOL>[^\\\)] {append_buffer(yytext[0]); }
+<INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
+<INNER_SYMBOL>\) { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return SYMBOL; }
+<INNER_SYMBOL><<EOF>> { yyerror("Unterminated symbol"); yyterminate(); }
 
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));

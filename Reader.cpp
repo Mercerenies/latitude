@@ -41,6 +41,10 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         return unique_ptr<Stmt>(new StmtString(expr->name));
     } else if (expr->isNumber) {
         return unique_ptr<Stmt>(new StmtNumber(expr->number));
+    } else if (expr->isInt) {
+        return unique_ptr<Stmt>(new StmtInteger(expr->integer));
+    } else if (expr->isBigInt) {
+        return unique_ptr<Stmt>(new StmtBigInteger(expr->name));
     } else if (expr->method) {
         auto contents0 = translateList(expr->args);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
@@ -219,7 +223,26 @@ StmtNumber::StmtNumber(double value)
 
 ObjectPtr StmtNumber::execute(ObjectPtr lex, ObjectPtr dyn) {
     ObjectPtr num = clone(getInheritedSlot(meta(lex), Symbols::get()["Number"]));
-    num.lock()->prim(value);
+    num.lock()->prim(Number(value));
+    return num;
+}
+
+StmtInteger::StmtInteger(long value)
+    : value(value) {}
+
+ObjectPtr StmtInteger::execute(ObjectPtr lex, ObjectPtr dyn) {
+    ObjectPtr num = clone(getInheritedSlot(meta(lex), Symbols::get()["Number"]));
+    num.lock()->prim(Number(value));
+    return num;
+}
+
+StmtBigInteger::StmtBigInteger(const char* value)
+    : value(value) {}
+
+ObjectPtr StmtBigInteger::execute(ObjectPtr lex, ObjectPtr dyn) {
+    ObjectPtr num = clone(getInheritedSlot(meta(lex), Symbols::get()["Number"]));
+    auto value1 = static_cast<Number::bigint>(value);
+    num.lock()->prim(Number(value1));
     return num;
 }
 
@@ -237,7 +260,7 @@ StmtSymbol::StmtSymbol(const char* contents)
 
 ObjectPtr StmtSymbol::execute(ObjectPtr lex, ObjectPtr dyn) {
     ObjectPtr str = clone(getInheritedSlot(meta(lex), Symbols::get()["Symbol"]));
-    Symbolic sym = { Symbols::get()[value] };
+    Symbolic sym ( Symbols::get()[value] );
     str.lock()->prim(sym);
     return str;
 }

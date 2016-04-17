@@ -100,6 +100,28 @@ public:
 };
 
 /*
+ * A numeric integer literal.
+ */
+class StmtInteger : public Stmt {
+private:
+    long value;
+public:
+    StmtInteger(long value);
+    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+};
+
+/*
+ * A numeric integer literal.
+ */
+class StmtBigInteger : public Stmt {
+private:
+    std::string value;
+public:
+    StmtBigInteger(const char* value);
+    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+};
+
+/*
  * A string literal.
  */
 class StmtString : public Stmt {

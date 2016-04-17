@@ -1,12 +1,21 @@
 
 ifndef BOOST
-  BOOST='D:/boost/boost_1_60_0'
+  #BOOST='D:/boost/boost_1_60_0'
+  BOOST="/root/Downloads/boost_1_60_0"
 endif
 
-C=gcc -c -Wall
-CC=g++ -I $(BOOST) -c -Wall -std=c++14
-LINK=g++ -Wall -std=c++14
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o
+ifndef CCPRE
+  CCPRE=g++
+endif
+
+ifndef CPRE
+  CPRE=gcc
+endif
+
+C=$(CPRE) -c -Wall
+CC=$(CCPRE) -I $(BOOST) -c -Wall -std=c++1y
+LINK=$(CCPRE) -Wall -std=c++1y
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o Number.o
 
 all:	$(FILES)
 	$(LINK) $(FILES)
@@ -15,7 +24,7 @@ clean:
 	rm *.o
 	rm lex.yy.c lex.yy.h Parser.tab.c Parser.tab.h
 
-Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp
+Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp
 	$(CC) Proto.cpp
 
 Standard.o:	Standard.cpp Standard.hpp Proto.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Cont.hpp
@@ -50,6 +59,9 @@ Symbol.o:	Symbol.cpp Symbol.hpp
 
 Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp
 	$(CC) Cont.cpp
+
+Number.o:	Number.cpp Number.hpp
+	$(CC) Number.cpp
 
 REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp
 	$(CC) REPL.cpp

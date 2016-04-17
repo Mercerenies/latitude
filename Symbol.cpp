@@ -1,5 +1,7 @@
 #include "Symbol.hpp"
 #include <sstream>
+#include <algorithm>
+#include <iterator>
 
 using namespace std;
 
@@ -25,6 +27,17 @@ bool Symbols::isUninterned(const std::string& str) {
     if (str == "")
         return false;
     return (str[0] == '~');
+}
+
+bool Symbols::requiresEscape(const std::string& str){
+    string str0(str); // Need a copy
+    sort(str0.begin(), str0.end());
+    string special(".,:(){}\"\' \t\n");
+    sort(special.begin(), special.end());
+    string str1;
+    set_intersection(str0.begin(), str0.end(), special.begin(), special.end(),
+                     inserter(str1, str1.begin()));
+    return (str1.begin() != str1.end());
 }
 
 Symbolic Symbols::operator[](const std::string& str) {
