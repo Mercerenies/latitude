@@ -35,15 +35,20 @@ ObjectPtr garnish(ObjectPtr global, int value) {
     return garnish(global, (double)value);
 }
 
+ObjectPtr garnish(ObjectPtr global, Number value) {
+    ObjectPtr num = eval("meta Number.", global, global);
+    ObjectPtr val = clone(num);
+    val.lock()->prim(value);
+    return val;
+}
+
 class PrimToStringVisitor : public boost::static_visitor<std::string> {
 public:
     std::string operator()(boost::blank& val) const {
         return "()";
     }
-    std::string operator()(double& val) const {
-        ostringstream oss;
-        oss << val;
-        return oss.str();
+    std::string operator()(Number& val) const {
+        return val.asString();
     }
     std::string operator()(std::string& val) const {
         ostringstream oss;

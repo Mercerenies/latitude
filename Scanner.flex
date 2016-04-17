@@ -45,9 +45,26 @@ ID        {SNORMAL}{NORMAL}*
 %x INNER_SYMBOL
 %%
 
-[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)? {
+[-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
     yylval.dval = strtod(yytext, NULL);
     return NUMBER;
+}
+
+[-+]?[0-9]+([eE][-+]?[0-9]+) {
+    yylval.dval = strtod(yytext, NULL);
+    return NUMBER;
+}
+
+[-+]?[0-9]+ {
+    errno = 0;
+    yylval.ival = strtol(yytext, NULL, 10);
+    if (errno == ERANGE) {
+        char* arr = calloc(strlen(yytext) + 1, sizeof(char));
+        strcpy(arr, yytext);
+        yylval.sval = arr;
+        return BIGINT;
+    }
+    return INTEGER;
 }
 
 {ID} {

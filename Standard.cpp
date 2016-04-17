@@ -232,6 +232,8 @@ ObjectPtr spawnObjects() {
                                                  global, global));
     number.lock()->put(Symbols::get()["/"], eval("{ meta sys numDiv#: self, $1. }.",
                                                  global, global));
+    number.lock()->put(Symbols::get()["mod"], eval("{ meta sys numMod#: self, $1. }.",
+                                                   global, global));
 
     // Latchkeys and Lockboxes
     latchkey.lock()->put(Symbols::get()["tag"], symbol);
@@ -381,6 +383,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callNumSub(clone(systemCall));
     ObjectPtr callNumMul(clone(systemCall));
     ObjectPtr callNumDiv(clone(systemCall));
+    ObjectPtr callNumMod(clone(systemCall));
     ObjectPtr callTripleEquals(clone(systemCall));
     ObjectPtr callPrimEquals(clone(systemCall));
     ObjectPtr callStringConcat(clone(systemCall));
@@ -690,8 +693,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     callNumAdd.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
-                auto n0 = boost::get<double>(&obj1->prim());
-                auto n1 = boost::get<double>(&obj2->prim());
+                auto n0 = boost::get<Number>(&obj1->prim());
+                auto n1 = boost::get<Number>(&obj2->prim());
                 if (n0 && n1)
                     return garnish(global, *n0 + *n1);
                 else
@@ -704,8 +707,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     callNumSub.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
-                auto n0 = boost::get<double>(&obj1->prim());
-                auto n1 = boost::get<double>(&obj2->prim());
+                auto n0 = boost::get<Number>(&obj1->prim());
+                auto n1 = boost::get<Number>(&obj2->prim());
                 if (n0 && n1)
                     return garnish(global, *n0 - *n1);
                 else
@@ -718,8 +721,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     callNumMul.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
-                auto n0 = boost::get<double>(&obj1->prim());
-                auto n1 = boost::get<double>(&obj2->prim());
+                auto n0 = boost::get<Number>(&obj1->prim());
+                auto n1 = boost::get<Number>(&obj2->prim());
                 if (n0 && n1)
                     return garnish(global, *n0 * *n1);
                 else
@@ -732,8 +735,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     callNumDiv.lock()->prim([global](list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
-                auto n0 = boost::get<double>(&obj1->prim());
-                auto n1 = boost::get<double>(&obj2->prim());
+                auto n0 = boost::get<Number>(&obj1->prim());
+                auto n1 = boost::get<Number>(&obj2->prim());
                 if (n0 && n1)
                     return garnish(global, *n0 / *n1);
                 else
@@ -741,6 +744,20 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Got non-numeral in arithmetic operation");
             } else {
                 throw doSystemArgError(global, "numDiv#", 2, lst.size());
+            }
+        });
+    callNumMod.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                auto n0 = boost::get<Number>(&obj1->prim());
+                auto n1 = boost::get<Number>(&obj2->prim());
+                if (n0 && n1)
+                    return garnish(global, *n0 % *n1);
+                else
+                    throw doEtcError(global, "TypeError",
+                                     "Got non-numeral in arithmetic operation");
+            } else {
+                throw doSystemArgError(global, "numMod#", 2, lst.size());
             }
         });
     callTripleEquals.lock()->prim([global](list<ObjectPtr> lst) {
@@ -884,6 +901,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["numSub#"], callNumSub);
     sys.lock()->put(Symbols::get()["numMul#"], callNumMul);
     sys.lock()->put(Symbols::get()["numDiv#"], callNumDiv);
+    sys.lock()->put(Symbols::get()["numMod#"], callNumMod);
     sys.lock()->put(Symbols::get()["ptrEquals#"], callTripleEquals);
     sys.lock()->put(Symbols::get()["primEquals#"], callPrimEquals);
     sys.lock()->put(Symbols::get()["stringConcat#"], callStringConcat);

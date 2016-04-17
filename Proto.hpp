@@ -3,6 +3,7 @@
 
 #include "Stream.hpp"
 #include "Symbol.hpp"
+#include "Number.hpp"
 #include <list>
 #include <functional>
 #include <memory>
@@ -23,7 +24,7 @@ using ObjectPtr = std::weak_ptr<Object>;
 using ObjectSPtr = std::shared_ptr<Object>;
 using SystemCall = std::function<ObjectPtr(std::list<ObjectPtr>)>;
 using Method = LStmt;
-using Prim = boost::variant<boost::blank, double, std::string,
+using Prim = boost::variant<boost::blank, Number, std::string,
                             Method, SystemCall, StreamPtr, Symbolic,
                             std::weak_ptr<SignalValidator> >;
 

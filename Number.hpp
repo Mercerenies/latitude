@@ -1,6 +1,8 @@
 #ifndef _NUMBER_HPP_
 #define _NUMBER_HPP_
 
+#include <ios>
+#include <string>
 #include <type_traits>
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>
@@ -13,7 +15,7 @@
 
 class Number : private boost::operators<Number> {
 public:
-    typedef int smallint;
+    typedef long smallint;
     typedef boost::multiprecision::cpp_int bigint;
     typedef boost::multiprecision::cpp_rational ratio;
     typedef double floating;
@@ -27,6 +29,8 @@ public:
     Number(bigint);
     Number(ratio);
     Number(floating);
+    bool operator ==(const Number& other);
+    bool operator <(const Number& other);
     Number& operator +=(const Number& other);
     Number& operator -=(const Number& other);
     Number& operator *=(const Number& other);
@@ -34,6 +38,7 @@ public:
     Number& operator %=(const Number& other);
     Number operator -() const;
     Number recip() const;
+    std::string asString() const;
 };
 
 namespace MagicNumber {
@@ -79,7 +84,7 @@ namespace MagicNumber {
     template <typename U, typename V>
     struct Narrower {
         typedef typename boost::conditional<
-            ((NumeralT<U>::value) > (NumeralT<V>::value)),
+            ((NumeralT<U>::type::value) > (NumeralT<V>::type::value)),
             V,
             U>::type type;
     };
@@ -131,8 +136,6 @@ namespace MagicNumber {
         }
     };
 
-    ///// Needs special handling for
-    //    floating (fmod) and rational (home-baked)
     struct ModVisitor : boost::static_visitor<Number::magic_t> {
         template <typename U, typename V>
         Number::magic_t operator()(U& first, V& second) const {
@@ -145,6 +148,42 @@ namespace MagicNumber {
                 first0 - (int)(first0 / second0) * second0;
             return Number::magic_t(result);
         }
+    };
+
+    struct EqualVisitor : boost::static_visitor<bool> {
+        template <typename U, typename V>
+        bool operator()(U& first, V& second) const {
+            auto first0 = Coerce<V>::act(first);
+            auto second0 = Coerce<U>::act(second);
+            return first0 == second0;
+        }
+    };
+
+    struct LessVisitor : boost::static_visitor<bool> {
+        template <typename U, typename V>
+        bool operator()(U& first, V& second) const {
+            auto first0 = Coerce<V>::act(first);
+            auto second0 = Coerce<U>::act(second);
+            return first0 < second0;
+        }
+    };
+
+    struct StringifyVisitor : boost::static_visitor<> {
+        ostringstream stream;
+
+        StringifyVisitor();
+
+        ///// Don't always print out five decimals (something in the stream flags)
+        template <typename U>
+        void operator()(const U& first) {
+            if (std::is_same<U, Number::floating>::value) {
+                stream << showpoint;
+            }
+            stream << first;
+            stream << noshowpoint;
+        }
+
+        std::string str();
     };
 
 };

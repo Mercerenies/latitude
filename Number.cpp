@@ -15,6 +15,16 @@ Number::Number(ratio arg)
 Number::Number(floating arg)
     : value(arg) {}
 
+bool Number::operator ==(const Number& other) {
+    auto second = other.value;
+    return boost::apply_visitor(MagicNumber::EqualVisitor(), value, second);
+}
+
+bool Number::operator <(const Number& other) {
+    auto second = other.value;
+    return boost::apply_visitor(MagicNumber::LessVisitor(), value, second);
+}
+
 Number& Number::operator +=(const Number& other) {
     auto second = other.value;
     if ((value.which() == 0) && (second.which() == 0)) {
@@ -73,4 +83,20 @@ Number Number::recip() const {
     Number curr = *this;
     curr.value = boost::apply_visitor(MagicNumber::RecipVisitor(), curr.value);
     return curr;
+}
+
+string Number::asString() const {
+    MagicNumber::StringifyVisitor visitor;
+    boost::apply_visitor(visitor, value);
+    return visitor.str();
+}
+
+namespace MagicNumber {
+    StringifyVisitor::StringifyVisitor()
+        : stream() {
+        
+    }
+    std::string StringifyVisitor::str() {
+        return stream.str();
+    }
 }

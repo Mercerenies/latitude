@@ -38,6 +38,9 @@
         bool method;
         bool isNumber;
         double number;
+        bool isInt;
+        long integer;
+        bool isBigInt;
         bool isString;
         bool isSymbol;
     };
@@ -60,6 +63,7 @@
 }
 
 %union {
+    long ival;
     double dval;
     char* sval;
     struct List* argval;
@@ -80,6 +84,8 @@
 
 %token <sval> NAME
 %token <dval> NUMBER
+%token <ival> INTEGER
+%token <sval> BIGINT
 %token <sval> STRING
 %token <sval> SYMBOL
 
@@ -132,6 +138,8 @@ chain:
 literal:
     '{' linelist '}' { $$ = new Expr(); $$->method = true; $$->args = $2; } |
     NUMBER { $$ = new Expr(); $$->isNumber = true; $$->number = $1; } |
+    INTEGER { $$ = new Expr(); $$->isInt = true; $$->integer = $1; } |
+    BIGINT { $$ = new Expr(); $$->isBigInt = true; $$->name = $1; } |
     STRING { $$ = new Expr(); $$->isString = true; $$->name = $1; } |
     SYMBOL { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; }
     ;

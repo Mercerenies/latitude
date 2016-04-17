@@ -24,7 +24,7 @@ clean:
 	rm *.o
 	rm lex.yy.c lex.yy.h Parser.tab.c Parser.tab.h
 
-Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp
+Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp
 	$(CC) Proto.cpp
 
 Standard.o:	Standard.cpp Standard.hpp Proto.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Cont.hpp
