@@ -30,7 +30,6 @@ ObjectPtr garnish(ObjectPtr global, double value) {
     return val;
 }
 
-// TODO Consider having an Int type in the language
 ObjectPtr garnish(ObjectPtr global, int value) {
     return garnish(global, (double)value);
 }

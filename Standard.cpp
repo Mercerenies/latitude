@@ -1095,4 +1095,3 @@ ProtoError doEtcError(ObjectPtr global, string errorName, string msg) {
     return ProtoError(err);
 }
 
-// TODO Print/read symbols which have spaces using a special syntax
