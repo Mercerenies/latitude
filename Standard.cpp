@@ -280,6 +280,9 @@ ObjectPtr spawnObjects() {
     object.lock()->put(Symbols::get()["or"], eval(R"({ if: self,
                                             { parent self. },
                                             { parent dynamic $1. }. }.)", global, global));
+    object.lock()->put(Symbols::get()["not"], eval(R"({ if: self,
+                                            { meta False. },
+                                            { meta True. }. }.)", global, global));
 
     // Stringification
     // The `stringify` method calls `toString` unless the object is already a string,
@@ -361,6 +364,41 @@ ObjectPtr spawnObjects() {
                          eval("{ (self tag) == (self tag). }.",
                               global, global));
 
+    // Relational Comparison Operators
+    // The primary relational operators are all based on the < and == operators.
+    // A type which defines these two appropriately will have the others provided.
+    object.lock()->put(Symbols::get()[">"],
+                       eval("{ ($1) < (self). }.", global, global));
+    object.lock()->put(Symbols::get()[">="],
+                       eval("{ ((self) > ($1)) or ((self) == ($1)). }.", global, global));
+    object.lock()->put(Symbols::get()["<="],
+                       eval("{ ((self) < ($1)) or ((self) == ($1)). }.", global, global));
+    object.lock()->put(Symbols::get()["/="],
+                       eval("{ ((self) == ($1)) not. }.", global, global));
+
+    // Relational operators on built-in types
+    method.lock()->put(Symbols::get()["<"], // Evaluate the method and then try again
+                       eval("{ (self) < ($1). }.", global, global));
+    string.lock()->put(Symbols::get()["<"],
+                       eval("{ meta sys primLT#: self, $1. }.",
+                            global, global));
+    symbol.lock()->put(Symbols::get()["<"],
+                       eval("{ meta sys primLT#: self, $1. }.",
+                            global, global));
+    number.lock()->put(Symbols::get()["<"],
+                       eval("{ meta sys primLT#: self, $1. }.",
+                            global, global));
+
+    // Numerical Type Checking
+    number.lock()->put(Symbols::get()["isBasicInt?"],
+                       eval("{ (meta sys numLevel#: self) <= 0. }.", global, global));
+    number.lock()->put(Symbols::get()["isInteger?"],
+                       eval("{ (meta sys numLevel#: self) <= 1. }.", global, global));
+    number.lock()->put(Symbols::get()["isRational?"],
+                       eval("{ (meta sys numLevel#: self) <= 2. }.", global, global));
+    number.lock()->put(Symbols::get()["isFloating?"],
+                       eval("{ (meta sys numLevel#: self) == 3. }.", global, global));
+
     return global;
 }
 
@@ -397,6 +435,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callOrigin(clone(systemCall));
     ObjectPtr callIntern(clone(systemCall));
     ObjectPtr callSymbolic(clone(systemCall));
+    ObjectPtr callNumLevel(clone(systemCall));
+    ObjectPtr callPrimLT(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -778,7 +818,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj1, obj2)) {
                 return garnish(global, primEquals(obj1, obj2));
             } else {
-                throw doSystemArgError(global, "ptrEquals#", 2, lst.size());
+                throw doSystemArgError(global, "primEquals#", 2, lst.size());
             }
         });
     callStringConcat.lock()->prim([global](list<ObjectPtr> lst) {
@@ -895,6 +935,27 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "symbolic#", 2, lst.size());
             }
         });
+    callNumLevel.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr self;
+            if (bindArguments(lst, self)) {
+                if (auto num = boost::get<Number>(&self->prim())) {
+                    return garnish(global, num->hierarchyLevel());
+                } else {
+                    throw doEtcError(global, "TypeError",
+                                     "Object is not numerical");
+                }
+            } else {
+                throw doSystemArgError(global, "numLevel#", 1, lst.size());
+            }
+        });
+    callPrimLT.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                return garnish(global, primLT(obj1, obj2));
+            } else {
+                throw doSystemArgError(global, "primLT#", 2, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -928,6 +989,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["origin#"], callOrigin);
     sys.lock()->put(Symbols::get()["intern#"], callIntern);
     sys.lock()->put(Symbols::get()["symbolic#"], callSymbolic);
+    sys.lock()->put(Symbols::get()["numLevel#"], callNumLevel);
+    sys.lock()->put(Symbols::get()["primLT#"], callPrimLT);
 
 }
 

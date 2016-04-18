@@ -1,7 +1,7 @@
 
 ifndef BOOST
-  #BOOST='D:/boost/boost_1_60_0'
-  BOOST="/root/Downloads/boost_1_60_0"
+  BOOST='D:/boost/boost_1_60_0'
+  #BOOST="/root/Downloads/boost_1_60_0"
 endif
 
 ifndef CCPRE

@@ -122,10 +122,6 @@ struct PrimEquals_ {
 
 class PrimEqualsVisitor : public boost::static_visitor<bool> {
 public:
-    bool operator()(double& first, double& second) const {
-        constexpr double EPSILON = 0.0001; // TODO Make this configurable
-        return abs(first - second) <= EPSILON;
-    }
     template <typename U,
               class = decltype(declval<U>() == declval<U>())>
     bool operator()(U& first, U& second) const {
@@ -139,6 +135,29 @@ public:
 
 bool primEquals(ObjectPtr obj1, ObjectPtr obj2) {
     return boost::apply_visitor(PrimEqualsVisitor(),
+                                obj1.lock()->prim(),
+                                obj2.lock()->prim());
+}
+
+class PrimLTVisitor : public boost::static_visitor<bool> {
+public:
+    bool operator()(string first, string second) const {
+        return first < second;
+    }
+    bool operator()(Number first, Number second) const {
+        return first < second;
+    }
+    bool operator()(Symbolic first, Symbolic second) const {
+        return first < second;
+    }
+    template <typename U, typename V>
+    bool operator()(U& first, V& second) const {
+        return false;
+    }
+};
+
+bool primLT(ObjectPtr obj1, ObjectPtr obj2) {
+    return boost::apply_visitor(PrimLTVisitor(),
                                 obj1.lock()->prim(),
                                 obj2.lock()->prim());
 }

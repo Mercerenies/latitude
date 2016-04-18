@@ -39,6 +39,7 @@ public:
     Number operator -() const;
     Number recip() const;
     std::string asString() const;
+    int hierarchyLevel() const;
 };
 
 namespace MagicNumber {
@@ -173,17 +174,21 @@ namespace MagicNumber {
 
         StringifyVisitor();
 
-        ///// Don't always print out five decimals (something in the stream flags)
+        void operator()(const double& first);
+
         template <typename U>
         void operator()(const U& first) {
-            if (std::is_same<U, Number::floating>::value) {
-                stream << showpoint;
-            }
             stream << first;
-            stream << noshowpoint;
         }
 
         std::string str();
+    };
+
+    struct LevelVisitor : boost::static_visitor<int> {
+        template <typename U>
+        int operator()(const U& first) const {
+            return (int)NumeralT<U>::type::value;
+        }
     };
 
 };

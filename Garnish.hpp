@@ -40,6 +40,11 @@ std::string primToString(ObjectPtr obj);
  * outright and will always return `false` for two different types.
  */
 bool primEquals(ObjectPtr obj1, ObjectPtr obj2);
+/*
+ * Compares two `prim` fields for less-than-comparison. This will never fail
+ * outright and will always return `false` for two different types.
+ */
+bool primLT(ObjectPtr obj1, ObjectPtr obj2);
 
 /*
  * Using the current lexical and dynamic contexts, prints all of the slots

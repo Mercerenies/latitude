@@ -91,10 +91,15 @@ string Number::asString() const {
     return visitor.str();
 }
 
+int Number::hierarchyLevel() const {
+    return boost::apply_visitor(MagicNumber::LevelVisitor(), value);
+}
+
 namespace MagicNumber {
     StringifyVisitor::StringifyVisitor()
-        : stream() {
-        
+        : stream() {}
+    void StringifyVisitor::operator()(const double& first) {
+        stream << fixed << setprecision(2) << first;
     }
     std::string StringifyVisitor::str() {
         return stream.str();
