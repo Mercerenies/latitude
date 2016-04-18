@@ -19,6 +19,14 @@ Symbolic Symbols::gensym(std::string prefix) {
     return get()[oss.str()];
 }
 
+Symbolic Symbols::natural(int n) {
+    if (n <= 0)
+        return get()[""]; // TODO Better defaulting behavior here too?
+    Symbolic sym;
+    sym.index = - n;
+    return sym;
+}
+
 Symbols& Symbols::get() {
     return instance;
 }
@@ -56,6 +64,11 @@ Symbolic Symbols::operator[](const std::string& str) {
 
 std::string Symbols::operator[](const Symbolic& str) {
     auto& data = syms.left;
+    if (str.index < 0) { // "Natural" symbol
+        ostringstream str0;
+        str0 << "~NAT" << abs(str.index);
+        return str0.str();
+    }
     if (data.find(str.index) == data.end())
         return ""; // TODO Is this what we really want?
     return (*data.find(str.index)).second;

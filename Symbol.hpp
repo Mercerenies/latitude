@@ -27,6 +27,7 @@ private:
 public:
     static Symbolic gensym();
     static Symbolic gensym(std::string prefix);
+    static Symbolic natural(int n);
     static Symbols& get();
     static bool isUninterned(const std::string& str);
     static bool requiresEscape(const std::string& str);

@@ -91,6 +91,11 @@ string Number::asString() const {
     return visitor.str();
 }
 
+auto Number::asSmallInt() const
+    -> smallint {
+    return boost::apply_visitor(MagicNumber::StrictCastVisitor<smallint>(), value);
+}
+
 int Number::hierarchyLevel() const {
     return boost::apply_visitor(MagicNumber::LevelVisitor(), value);
 }

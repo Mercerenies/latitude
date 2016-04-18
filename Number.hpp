@@ -39,6 +39,7 @@ public:
     Number operator -() const;
     Number recip() const;
     std::string asString() const;
+    smallint asSmallInt() const;
     int hierarchyLevel() const;
 };
 
@@ -188,6 +189,14 @@ namespace MagicNumber {
         template <typename U>
         int operator()(const U& first) const {
             return (int)NumeralT<U>::type::value;
+        }
+    };
+
+    template <typename T>
+    struct StrictCastVisitor : boost::static_visitor<T> {
+        template <typename U>
+        T operator()(const U& first) const {
+            return (T)first;
         }
     };
 

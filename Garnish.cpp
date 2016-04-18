@@ -41,6 +41,13 @@ ObjectPtr garnish(ObjectPtr global, Number value) {
     return val;
 }
 
+ObjectPtr garnish(ObjectPtr global, Symbolic value) {
+    ObjectPtr sym = eval("meta Symbol.", global, global);
+    ObjectPtr val = clone(sym);
+    val.lock()->prim(value);
+    return val;
+}
+
 class PrimToStringVisitor : public boost::static_visitor<std::string> {
 public:
     std::string operator()(boost::blank& val) const {

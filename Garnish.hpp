@@ -29,6 +29,10 @@ ObjectPtr garnish(ObjectPtr global, int value);
  * Garnishes a Number, returning a Number.
  */
 ObjectPtr garnish(ObjectPtr global, Number value);
+/*
+ * Garnishes a symbol, returning a Symbol
+ */
+ObjectPtr garnish(ObjectPtr global, Symbolic value);
 
 /*
  * Converts the object's `prim` field to a string, using the

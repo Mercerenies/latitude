@@ -26,27 +26,38 @@ ObjectPtr spawnObjects() {
     ObjectPtr object(GC::get().allocate());
     ObjectPtr meta(clone(object));
     ObjectPtr global(clone(object));
+
     ObjectPtr proc(clone(object));
     ObjectPtr method(clone(proc));
+    ObjectPtr systemCall(clone(method));
+
     ObjectPtr number(clone(object));
     ObjectPtr string(clone(object));
     ObjectPtr symbol(clone(object));
+
     ObjectPtr nil(clone(object));
     ObjectPtr boolean(clone(object));
     ObjectPtr true_(clone(boolean));
     ObjectPtr false_(clone(boolean));
-    ObjectPtr systemCall(clone(method));
+
     ObjectPtr cont(clone(proc));
     ObjectPtr contValidator(clone(object));
+
     ObjectPtr exception(clone(object));
     ObjectPtr systemError(clone(exception));
+
     ObjectPtr latchkey(clone(object));
     ObjectPtr lockbox(clone(object));
+
+    ObjectPtr cell(clone(object));
 
     ObjectPtr stream(clone(object));
     ObjectPtr stdout_(clone(stream));
     ObjectPtr stdin_(clone(stream));
     ObjectPtr stderr_(clone(stream));
+
+    ObjectPtr array_(clone(object));
+    ObjectPtr arraySeq(clone(object));
 
     ObjectPtr sys(clone(object));
 
@@ -86,6 +97,9 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["SystemError"], systemError);
     global.lock()->put(Symbols::get()["Lockbox"], lockbox);
     global.lock()->put(Symbols::get()["Latchkey"], latchkey);
+    //    global.lock()->put(Symbols::get()["Array"], array_);
+    //    global.lock()->put(Symbols::get()["ArraySeq"], arraySeq);
+    global.lock()->put(Symbols::get()["Cell"], cell);
 
     // Meta calls for basic types
     meta.lock()->put(Symbols::get()["Object"], object);
@@ -105,9 +119,16 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["sys"], sys);
     meta.lock()->put(Symbols::get()["Exception"], exception);
     meta.lock()->put(Symbols::get()["SystemError"], systemError);
+    //    meta.lock()->put(Symbols::get()["Array"], array_);
+    //    meta.lock()->put(Symbols::get()["ArraySeq"], arraySeq);
+    meta.lock()->put(Symbols::get()["Cell"], cell);
 
     // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
+
+    // Cells
+    cell.lock()->put(Symbols::get()["value"],
+                     eval("meta Nil.", global, global));
 
     // Exceptions
     exception.lock()->put(Symbols::get()["message"],
@@ -226,6 +247,12 @@ ObjectPtr spawnObjects() {
     symbol.lock()->put(Symbols::get()["asText"],
                        eval("{ meta sys symbolic#: lexical, self. }.",
                             global, global));
+    number.lock()->put(Symbols::get()["ordinal"],
+                       eval("{ meta sys natSym#: self. }.",
+                            global, global));
+
+    // Array Functions
+    /////
 
     // Basic arithmetic operations
     number.lock()->put(Symbols::get()["+"], eval("{ meta sys numAdd#: self, $1. }.",
@@ -255,6 +282,8 @@ ObjectPtr spawnObjects() {
                                       { meta Nil. }. }.)", global, global));
 
     // Boolean casts and operations
+    // TODO Consider whether we should take a more Pythonic approach to truthiness
+    //      (Currently, only Nil and False are falsy)
     object.lock()->put(Symbols::get()["toBool"], true_);
     false_.lock()->put(Symbols::get()["toBool"], false_);
     nil.lock()->put(Symbols::get()["toBool"], false_);
@@ -317,6 +346,7 @@ ObjectPtr spawnObjects() {
                        eval("{ self toString. }.", global, global));
 
     // Basic data types print appropriately
+    cell.lock()->put(Symbols::get()["toString"], eval("\"Cell\".", global, global));
     method.lock()->put(Symbols::get()["toString"], eval("\"Method\".", global, global));
     proc.lock()->put(Symbols::get()["toString"], eval("\"Proc\".", global, global));
     stream.lock()->put(Symbols::get()["toString"], eval("\"Stream\".", global, global));
@@ -336,6 +366,7 @@ ObjectPtr spawnObjects() {
                         eval("\"Lockbox\".", global, global));
     latchkey.lock()->put(Symbols::get()["toString"],
                          eval("\"Latchkey\".", global, global));
+    // TODO Array printing
 
     // TODO The pretty prints here in more detail once we have string formatting
     //      stuff.
@@ -363,6 +394,7 @@ ObjectPtr spawnObjects() {
     latchkey.lock()->put(Symbols::get()["=="],
                          eval("{ (self tag) == (self tag). }.",
                               global, global));
+    // TODO Array equality (and possibly comparability)
 
     // Relational Comparison Operators
     // The primary relational operators are all based on the < and == operators.
@@ -437,6 +469,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callSymbolic(clone(systemCall));
     ObjectPtr callNumLevel(clone(systemCall));
     ObjectPtr callPrimLT(clone(systemCall));
+    ObjectPtr callNatSym(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -956,6 +989,26 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "primLT#", 2, lst.size());
             }
         });
+    callNatSym.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr nat;
+            if (bindArguments(lst, nat)) {
+                if (auto num = boost::get<Number>(&nat->prim())) {
+                    long value = num->asSmallInt();
+                    if (value > 0) {
+                        Symbolic sym = Symbols::get().natural(value);
+                        return garnish(global, sym);
+                    } else {
+                        throw doEtcError(global, "TypeError",
+                                         "Cannot produce natural symbol from numbers <= 0");
+                    }
+                } else {
+                    throw doEtcError(global, "TypeError",
+                                     "Object is not numerical");
+                }
+            } else {
+                throw doSystemArgError(global, "natSym#", 1, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -991,6 +1044,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["symbolic#"], callSymbolic);
     sys.lock()->put(Symbols::get()["numLevel#"], callNumLevel);
     sys.lock()->put(Symbols::get()["primLT#"], callPrimLT);
+    sys.lock()->put(Symbols::get()["natSym#"], callNatSym);
 
 }
 
