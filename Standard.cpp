@@ -57,7 +57,6 @@ ObjectPtr spawnObjects() {
     ObjectPtr stderr_(clone(stream));
 
     ObjectPtr array_(clone(object));
-    ObjectPtr arraySeq(clone(object));
 
     ObjectPtr sys(clone(object));
 
@@ -97,8 +96,7 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["SystemError"], systemError);
     global.lock()->put(Symbols::get()["Lockbox"], lockbox);
     global.lock()->put(Symbols::get()["Latchkey"], latchkey);
-    //    global.lock()->put(Symbols::get()["Array"], array_);
-    //    global.lock()->put(Symbols::get()["ArraySeq"], arraySeq);
+    global.lock()->put(Symbols::get()["Array"], array_);
     global.lock()->put(Symbols::get()["Cell"], cell);
 
     // Meta calls for basic types
@@ -119,12 +117,21 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["sys"], sys);
     meta.lock()->put(Symbols::get()["Exception"], exception);
     meta.lock()->put(Symbols::get()["SystemError"], systemError);
-    //    meta.lock()->put(Symbols::get()["Array"], array_);
-    //    meta.lock()->put(Symbols::get()["ArraySeq"], arraySeq);
+    meta.lock()->put(Symbols::get()["Array"], array_);
     meta.lock()->put(Symbols::get()["Cell"], cell);
 
     // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
+
+    // Syntax sugar on brackets, etc.
+    meta.lock()->put(Symbols::get()["brackets"],
+                     eval(R"({ ArrayBuilder := self Object clone.
+                               ArrayBuilder toString := "ArrayBuilder".
+                               ArrayBuilder array := self Array clone.
+                               ArrayBuilder next := { self array pushBack: $1. }.
+                               ArrayBuilder finish := { self array. }.
+                               ArrayBuilder. }.)",
+                          global, global));
 
     // Cells
     cell.lock()->put(Symbols::get()["value"],
@@ -252,7 +259,72 @@ ObjectPtr spawnObjects() {
                             global, global));
 
     // Array Functions
-    /////
+    // Arrays store their values at integer positions and store their lower and upper bounds to allow quick
+    // pushes and pops from either side, effectively doubling as a deque.
+    // TODO Should we delete cells when they've been popped? There's no way to do that in the language right now
+    array_.lock()->put(Symbols::get()["lowerBound"], eval("0.", global, global));
+    array_.lock()->put(Symbols::get()["upperBound"], eval("0.", global, global));
+    array_.lock()->put(Symbols::get()["mapping"],
+                       eval("{ var := $1. if: { var >= 0. }, { (var * 2) + 1. }, { var * -2. }. }.",
+                            global, global));
+    array_.lock()->put(Symbols::get()["empty?"],
+                       eval("{ (self lowerBound) >= (self upperBound). }.", global, global));
+    array_.lock()->put(Symbols::get()["pushFront"],
+                       eval(R"({ self lowerBound := self lowerBound - 1.
+                                 self put: (self mapping: self lowerBound) ordinal, $1.
+                                 $1. }.)",
+                            global, global));
+    array_.lock()->put(Symbols::get()["pushBack"],
+                       eval(R"({ self put: (self mapping: self upperBound) ordinal, $1.
+                                 self upperBound := self upperBound + 1.
+                                 $1. }.)",
+                            global, global));
+    array_.lock()->put(Symbols::get()["popFront"],
+                       eval(R"({ if: self empty?,
+                                     { meta BoundsError clone throw. },
+                                     { self := parent self.
+                                       self lowerBound := self lowerBound + 1.
+                                       self get: (self mapping: (self lowerBound - 1)) ordinal. }. }.)",
+                            global, global));
+    array_.lock()->put(Symbols::get()["popBack"],
+                       eval(R"({ if: self empty?,
+                                     { meta BoundsError clone throw. },
+                                     { self := parent self.
+                                       self upperBound := self upperBound - 1.
+                                       self get: (self mapping: self upperBound) ordinal. }. }.)",
+                            global, global));
+    array_.lock()->put(Symbols::get()["nth"],
+                       eval(R"({ pos := if: ($1 < 0),
+                                            { parent self upperBound + (parent dynamic $1). },
+                                            { parent self lowerBound + (parent dynamic $1). }.
+                                 if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
+                                     { meta BoundsError clone throw. },
+                                     { self := parent self.
+                                       self get: (self mapping: pos) ordinal. }. }.)",
+                            global, global));
+    array_.lock()->put(Symbols::get()["nth="],
+                       eval(R"({ pos := if: ($1 < 0),
+                                            { parent self upperBound + (parent dynamic $1). },
+                                            { parent self lowerBound + (parent dynamic $1). }.
+                                 if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
+                                     { meta BoundsError clone throw. },
+                                     { self := parent self.
+                                       self put: (self mapping: pos) ordinal, parent dynamic $2. }. }.)",
+                            global, global));
+    array_.lock()->put(Symbols::get()["size"],
+                       eval("{ (self upperBound) - (self lowerBound). }.", global, global));
+    array_.lock()->put(Symbols::get()["join"],
+                       eval(R"({ index := 1.
+                                 size := self size.
+                                 delim := $1.
+                                 str := if: self empty?,
+                                            { "". },
+                                            { (parent self nth: 0) stringify. }.
+                                 while: { (index) < (size). },
+                                        { parent str := (str) ++ ((delim) ++ (parent self nth: index)).
+                                          parent index := index + 1. }.
+                                 str. }.)",
+                            global, global));
 
     // Basic arithmetic operations
     number.lock()->put(Symbols::get()["+"], eval("{ meta sys numAdd#: self, $1. }.",
@@ -313,6 +385,19 @@ ObjectPtr spawnObjects() {
                                             { meta False. },
                                             { meta True. }. }.)", global, global));
 
+    // Loops
+    global.lock()->put(Symbols::get()["loop"], eval(R"({
+                               meta sys loop#: lexical,
+                                                dynamic,
+                                                { parent dynamic $1. }.
+                               }.)", global, global));
+    global.lock()->put(Symbols::get()["while"],
+                       eval(R"({ cond := { parent dynamic $1. }.
+                                 stmt := { parent dynamic $2. }.
+                                 callCC { $break := { parent dynamic $1 call. }.
+                                          loop { if: cond, { stmt. }, { $break: meta Nil. }. }. }. }.)",
+                            global, global));
+
     // Stringification
     // The `stringify` method calls `toString` unless the object is already a string,
     // in which case it returns the object itself.
@@ -366,7 +451,10 @@ ObjectPtr spawnObjects() {
                         eval("\"Lockbox\".", global, global));
     latchkey.lock()->put(Symbols::get()["toString"],
                          eval("\"Latchkey\".", global, global));
-    // TODO Array printing
+    array_.lock()->put(Symbols::get()["toString"],
+                       eval(R"({ "[" ++ ((self join ", ") ++ "]"). }.)", global, global));
+    // TODO Change the syntax to allow infix operators to associate with one another when used w/o colons.
+    //      That is, "[" ++ (expr) ++ "]" should work correctly (currently a parse error)
 
     // TODO The pretty prints here in more detail once we have string formatting
     //      stuff.
@@ -470,6 +558,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callNumLevel(clone(systemCall));
     ObjectPtr callPrimLT(clone(systemCall));
     ObjectPtr callNatSym(clone(systemCall));
+    ObjectPtr callLoop(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -1009,6 +1098,22 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "natSym#", 1, lst.size());
             }
         });
+    callLoop.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, mthd;
+            if (bindArguments(lst, lex, dyn, mthd)) {
+                // These are unused except to verify that the prim() is correct
+                auto mthd_ = boost::get<Method>(&mthd->prim());
+                if (mthd_ == NULL)
+                    throw doEtcError(global, "TypeError",
+                                     "Loop body is not a method");
+                //
+                while (true)
+                    callMethod(lex, mthd, clone(dyn)); // TODO Should this share dynamic state across iterations?
+                return eval("meta Nil.", global, global); // Should never happen
+            } else {
+                throw doSystemArgError(global, "loop#", 3, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -1045,6 +1150,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["numLevel#"], callNumLevel);
     sys.lock()->put(Symbols::get()["primLT#"], callPrimLT);
     sys.lock()->put(Symbols::get()["natSym#"], callNatSym);
+    sys.lock()->put(Symbols::get()["loop#"], callLoop);
 
 }
 
@@ -1091,6 +1197,10 @@ void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta) {
     parseError.lock()->put(Symbols::get()["message"],
                            eval("\"Parse error\".", global, global));
 
+    ObjectPtr boundsError(clone(error));
+    boundsError.lock()->put(Symbols::get()["message"],
+                            eval("\"Bounds error\".", global, global));
+
     meta.lock()->put(Symbols::get()["SystemCallError"], systemCallError);
     meta.lock()->put(Symbols::get()["SystemArgError"], systemArgError);
     meta.lock()->put(Symbols::get()["StreamError"], streamError);
@@ -1098,6 +1208,7 @@ void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta) {
     meta.lock()->put(Symbols::get()["SlotError"], slotError);
     meta.lock()->put(Symbols::get()["ContError"], contError);
     meta.lock()->put(Symbols::get()["ParseError"], parseError);
+    meta.lock()->put(Symbols::get()["BoundsError"], boundsError);
     global.lock()->put(Symbols::get()["SystemCallError"], systemCallError);
     global.lock()->put(Symbols::get()["SystemArgError"], systemArgError);
     global.lock()->put(Symbols::get()["StreamError"], streamError);
@@ -1105,6 +1216,7 @@ void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta) {
     global.lock()->put(Symbols::get()["SlotError"], slotError);
     global.lock()->put(Symbols::get()["ContError"], contError);
     global.lock()->put(Symbols::get()["ParseError"], parseError);
+    global.lock()->put(Symbols::get()["BoundsError"], boundsError);
 }
 
 // TODO Take a lot of the ', global, global);' statements and make them scoped

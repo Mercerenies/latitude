@@ -37,8 +37,8 @@
      }
 %}
 
-NORMAL    [^.,:(){}\"\' \t\n]
-SNORMAL   [^.,:(){}\"\' \t\n~0-9]
+NORMAL    [^.,:()\[\]{}\"\' \t\n]
+SNORMAL   [^.,:()\[\]{}\"\' \t\n~0-9]
 ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING
@@ -78,13 +78,13 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_STRING>[^\\\"] { append_buffer(yytext[0]); }
 <INNER_STRING>\\. { append_buffer(yytext[1]); }
 <INNER_STRING>\" { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
-<INNER_STRING><<EOF>> { yyerror("Unterminated string"); yyterminate(); }
+<INNER_STRING><<EOF>> { yyerror("Unterminated string"); }
 
 \'\( { BEGIN(INNER_SYMBOL); clear_buffer(); }
 <INNER_SYMBOL>[^\\\)] {append_buffer(yytext[0]); }
 <INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
 <INNER_SYMBOL>\) { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return SYMBOL; }
-<INNER_SYMBOL><<EOF>> { yyerror("Unterminated symbol"); yyterminate(); }
+<INNER_SYMBOL><<EOF>> { yyerror("Unterminated symbol"); }
 
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
@@ -108,6 +108,10 @@ ID        {SNORMAL}{NORMAL}*
 : { return ':'; }
 := { return '='; }
 , { return ','; }
+\[ { return '['; }
+\] { return ']'; }
 
 [ \t] ; // Ignore whitespace
 [\n] { ++line_num; }
+
+. { yyerror("Invalid lexical token"); }

@@ -143,4 +143,17 @@ public:
     virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
 };
 
+/*
+ * An inline list, which by default evaluates to an Array object.
+ */
+class StmtList : public Stmt {
+public:
+    typedef std::list< std::unique_ptr<Stmt> > ArgList;
+private:
+    ArgList args;
+public:
+    StmtList(ArgList& arg);
+    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+};
+
 #endif // _READER_HPP_

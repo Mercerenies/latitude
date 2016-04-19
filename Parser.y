@@ -43,6 +43,7 @@
         bool isBigInt;
         bool isString;
         bool isSymbol;
+        bool isList;
     };
 
     struct List {
@@ -141,7 +142,8 @@ literal:
     INTEGER { $$ = new Expr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = new Expr(); $$->isBigInt = true; $$->name = $1; } |
     STRING { $$ = new Expr(); $$->isString = true; $$->name = $1; } |
-    SYMBOL { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; }
+    SYMBOL { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; } |
+    '[' arglist ']' { $$ = new Expr(); $$->isList = true; $$->args = $2; }
     ;
 linelist:
     line linelist { $$ = new List(); $$->car = $1; $$->cdr = $2; } |

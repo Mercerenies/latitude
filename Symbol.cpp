@@ -40,7 +40,7 @@ bool Symbols::isUninterned(const std::string& str) {
 bool Symbols::requiresEscape(const std::string& str){
     string str0(str); // Need a copy
     sort(str0.begin(), str0.end());
-    string special(".,:(){}\"\' \t\n");
+    string special(".,:()[]{}\"\' \t\n");
     sort(special.begin(), special.end());
     string str1;
     set_intersection(str0.begin(), str0.end(), special.begin(), special.end(),

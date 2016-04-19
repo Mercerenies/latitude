@@ -45,6 +45,9 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         return unique_ptr<Stmt>(new StmtInteger(expr->integer));
     } else if (expr->isBigInt) {
         return unique_ptr<Stmt>(new StmtBigInteger(expr->name));
+    } else if (expr->isList) {
+        auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
+        return unique_ptr<Stmt>(new StmtList(args));
     } else if (expr->method) {
         auto contents0 = translateList(expr->args);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
@@ -263,4 +266,31 @@ ObjectPtr StmtSymbol::execute(ObjectPtr lex, ObjectPtr dyn) {
     Symbolic sym ( Symbols::get()[value] );
     str.lock()->prim(sym);
     return str;
+}
+
+// TODO Make the builtins (like Symbol, Method, etc.) call the clone method rather than forcing
+//      a system clone operation
+
+StmtList::StmtList(ArgList& arg)
+    : args(move(arg)) {}
+
+ObjectPtr StmtList::execute(ObjectPtr lex, ObjectPtr dyn) {
+    ObjectPtr meta_ = meta(lex);
+    list<ObjectPtr> parms( args.size() );
+    transform(args.begin(), args.end(), parms.begin(),
+              [&lex, &dyn](std::unique_ptr<Stmt>& arg) {
+                  return arg->execute(lex, dyn);
+              });
+    ObjectPtr builder = getInheritedSlot(meta_, Symbols::get()["brackets"]);
+    ObjectPtr builder0 = callMethod(meta_.lock(),
+                                    builder,
+                                    clone(dyn));
+    for (ObjectPtr elem : parms) {
+        ObjectPtr mthd = getInheritedSlot(builder0, Symbols::get()["next"]);
+        ObjectPtr dyn1 = clone(dyn);
+        dyn1.lock()->put(Symbols::get()["$1"], elem);
+        callMethod(builder0.lock(), mthd, dyn1);
+    }
+    ObjectPtr mthd1 = getInheritedSlot(builder0, Symbols::get()["finish"]);
+    return callMethod(builder0.lock(), mthd1, clone(dyn));
 }

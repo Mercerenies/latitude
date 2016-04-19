@@ -46,7 +46,8 @@
 <literal> ::= "{" <linelist> "}" |
               <number> |
               "\"" <text> "\"" |
-              "'" <text>
-              "~" <text>
+              "'" <text> |
+              "~" <text> |
+              "[" <arglist> "]"
 <linelist> ::= <line> <linelist> |
                <lambda>
