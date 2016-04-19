@@ -47,7 +47,20 @@
               <number> |
               "\"" <text> "\"" |
               "'" <text> |
+              "'" "(" <text> ")" |
               "~" <text> |
-              "[" <arglist> "]"
+              "[" <arglist> "]" |
+              "'" "[" <literallist> "]"
 <linelist> ::= <line> <linelist> |
                <lambda>
+<literallist> ::= <listlit> <literallist1> |
+                  <lambda>
+<literallist1> ::= <lambda> |
+                   "," <listlit> <literallist1>
+<listlit> ::= "\"" <text> "\"" |
+              "'" <text> |
+              "~" <text> |
+              <number> |
+              "'" "(" <text> ")" |
+              "[" <literallist> "]" |
+              <name>

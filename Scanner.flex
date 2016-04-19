@@ -100,6 +100,8 @@ ID        {SNORMAL}{NORMAL}*
     return SYMBOL;
 }
 
+\'\[ { return LISTLIT; }
+
 \. { return '.'; }
 \( { return '('; }
 \) { return ')'; }

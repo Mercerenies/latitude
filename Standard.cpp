@@ -319,9 +319,9 @@ ObjectPtr spawnObjects() {
                                  delim := $1.
                                  str := if: self empty?,
                                             { "". },
-                                            { (parent self nth: 0) stringify. }.
+                                            { (parent self nth: 0) toString. }.
                                  while: { (index) < (size). },
-                                        { parent str := (str) ++ ((delim) ++ (parent self nth: index)).
+                                        { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
                                           parent index := index + 1. }.
                                  str. }.)",
                             global, global));
