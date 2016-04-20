@@ -10,6 +10,7 @@
      #include <stdlib.h>
      #endif
      int line_num = 1;
+     int comments = 0;
      char* curr_buffer = NULL;
      int curr_buffer_size = 0;
      int curr_buffer_pos = 0;
@@ -43,6 +44,7 @@ ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING
 %x INNER_SYMBOL
+%x INNER_COMMENT
 %%
 
 [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
@@ -75,12 +77,14 @@ ID        {SNORMAL}{NORMAL}*
 }
 
 \" { BEGIN(INNER_STRING); clear_buffer(); }
+<INNER_STRING>\n { append_buffer(yytext[1]); ++line_num; }
 <INNER_STRING>[^\\\"] { append_buffer(yytext[0]); }
 <INNER_STRING>\\. { append_buffer(yytext[1]); }
 <INNER_STRING>\" { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
 <INNER_STRING><<EOF>> { yyerror("Unterminated string"); }
 
 \'\( { BEGIN(INNER_SYMBOL); clear_buffer(); }
+<INNER_SYMBOL>\n { append_buffer(yytext[1]); ++line_num; }
 <INNER_SYMBOL>[^\\\)] {append_buffer(yytext[0]); }
 <INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
 <INNER_SYMBOL>\) { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return SYMBOL; }
@@ -112,6 +116,13 @@ ID        {SNORMAL}{NORMAL}*
 , { return ','; }
 \[ { return '['; }
 \] { return ']'; }
+
+\;[^\n]* ; // Line comments
+\{\* { BEGIN(INNER_COMMENT); comments++; }
+<INNER_COMMENT>\{\* { comments++; }
+<INNER_COMMENT>\*\} { comments--; if (comments == 0) BEGIN(0); }
+<INNER_COMMENT>\n { ++line_num; }
+<INNER_COMMENT>. ; // Ignore
 
 [ \t] ; // Ignore whitespace
 [\n] { ++line_num; }
