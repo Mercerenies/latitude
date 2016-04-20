@@ -11,15 +11,17 @@ extern "C" {
 class ExprDeleter {
 public:
     void operator()(Expr* x);
+    void operator()(List* x);
 };
 
 using PtrToExpr = std::unique_ptr< Expr, ExprDeleter >;
+using PtrToList = std::unique_ptr< List, ExprDeleter >;
 
 class Stmt;
 
-extern "C" void setCurrentLine(Expr* stmt);
-PtrToExpr getCurrentLine();
-std::unique_ptr<Stmt> translateCurrentLine();
+extern "C" void setCurrentLine(List* stmt);
+PtrToList getCurrentLine();
+std::list< std::unique_ptr<Stmt> > translateCurrentLine();
 void clearCurrentLine();
 
 ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn);
@@ -30,7 +32,7 @@ ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn);
  * to use `eval`, which captures these parse errors and rethrows them
  * as `ProtoError` objects.
  */
-std::unique_ptr<Stmt> parse(std::string str);
+std::list< std::unique_ptr<Stmt> > parse(std::string str);
 
 /*
  * Parses and evaluates the expression in the given context.

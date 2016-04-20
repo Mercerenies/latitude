@@ -73,6 +73,7 @@
 
 %error-verbose
 
+%type <argval> lines
 %type <exprval> line
 %type <exprval> stmt
 %type <exprval> rhs
@@ -97,8 +98,11 @@
 %%
 
 toplevel:
-    line { setCurrentLine($1); }
+    lines { setCurrentLine($1); }
     ;
+lines:
+    line lines { $$ = new List(); $$->car = $1; $$->cdr = $2; } |
+    /* empty */ { $$ = new List(); }
 line:
     stmt '.'
     ;

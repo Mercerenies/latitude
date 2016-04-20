@@ -15,19 +15,23 @@ extern "C" {
 
 using namespace std;
 
-PtrToExpr currentLine;
+PtrToList currentLine;
 
 void ExprDeleter::operator()(Expr* x) {
     cleanupE(x);
 }
 
+void ExprDeleter::operator()(List* x) {
+    cleanupL(x);
+}
+
 extern "C" {
-    void setCurrentLine(Expr* stmt) {
+    void setCurrentLine(List* stmt) {
         currentLine.reset(stmt);
     }
 }
 
-PtrToExpr getCurrentLine() {
+PtrToList getCurrentLine() {
     return std::move(currentLine);
 }
 
@@ -78,11 +82,11 @@ list< unique_ptr<Stmt> > translateList(List* lst) {
     }
 }
 
-unique_ptr<Stmt> translateCurrentLine() {
+list< unique_ptr<Stmt> > translateCurrentLine() {
     if (currentLine)
-        return translateStmt(currentLine.get());
+        return translateList( currentLine.get() );
     else
-        return unique_ptr<Stmt>();
+        return list< unique_ptr<Stmt> >();
 }
 
 void clearCurrentLine() {
@@ -110,7 +114,7 @@ ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     return result;
 }
 
-std::unique_ptr<Stmt> parse(std::string str) {
+std::list< std::unique_ptr<Stmt> > parse(std::string str) {
     const char* buffer = str.c_str();
     auto curr = yy_scan_string(buffer);
     line_num = 1;
@@ -124,10 +128,14 @@ std::unique_ptr<Stmt> parse(std::string str) {
 ObjectPtr eval(string str, ObjectPtr lex, ObjectPtr dyn) {
     try {
         auto result = parse(str);
-        if (result)
-            return result->execute(lex, dyn);
-        else
+        if (!result.empty()) {
+            ObjectPtr val;
+            for (auto& expr : result)
+                val = expr->execute(lex, dyn);
+            return val;
+        } else {
             throw doParseError(lex);
+        }
     } catch (std::string parseException) {
         throw doParseError(lex, parseException);
     }
