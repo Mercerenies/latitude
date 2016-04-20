@@ -24,11 +24,15 @@ ObjectPtr spawnREPLObjects(ObjectPtr& global, ObjectPtr& cont) {
 
     repl.lock()->put(Symbols::get()["quitter"], cont);
     repl.lock()->put(Symbols::get()["quit"],
-                     eval("{ self quitter call: Nil. }.",
+                     eval("{ self quitter call: meta Nil. }.",
                           global, global));
+    repl.lock()->put(Symbols::get()["exception"], eval("meta Nil.", global, global));
+    repl.lock()->put(Symbols::get()["lastResult"], eval("meta Nil.", global, global));
     global.lock()->put(Symbols::get()["quit"],
                        eval("{ self REPL quit. }.",
                             global, global));
+    global.lock()->put(Symbols::get()["$except"], eval("{ self REPL exception. }.", global, global));
+    global.lock()->put(Symbols::get()["$it"], eval("{ self REPL lastResult. }.", global, global));
 
     return repl;
 }
@@ -51,7 +55,7 @@ void runREPL(ObjectPtr& global) {
     ObjectPtr cont1 = clone(cont);
     cont1.lock()->put(Symbols::get()["tag"], symObj1);
 
-    spawnREPLObjects(global, cont1);
+    ObjectPtr repl = spawnREPLObjects(global, cont1);
     try {
         auto out = outStream();
         ObjectPtr result;
@@ -63,6 +67,7 @@ void runREPL(ObjectPtr& global) {
                     cout << "> ";
                     getline(cin, current);
                     result = eval(current, global, global);
+                    repl.lock()->put(Symbols::get()["lastResult"], result);
                     simplePrintObject(global, global, *out, result);
                 } catch (std::string parseException) {
                     throw doParseError(global, parseException);
@@ -72,7 +77,7 @@ void runREPL(ObjectPtr& global) {
             } catch (ProtoError& err) {
                 auto stream = errStream();
                 stream->writeLine("*** EXCEPTION ***");
-                global.lock()->put(Symbols::get()["$except"], err.getObject());
+                repl.lock()->put(Symbols::get()["exception"], err.getObject());
                 dumpObject(global, global, *stream, err.getObject());
             }
         }
