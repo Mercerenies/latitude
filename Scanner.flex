@@ -38,8 +38,8 @@
      }
 %}
 
-NORMAL    [^.,:()\[\]{}\"\' \t\n]
-SNORMAL   [^.,:()\[\]{}\"\' \t\n~0-9]
+NORMAL    [^.,:()\[\]{}\"\' \t\n\r]
+SNORMAL   [^.,:()\[\]{}\"\' \t\n\r~0-9]
 ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING
@@ -124,7 +124,7 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_COMMENT>\n { ++line_num; }
 <INNER_COMMENT>. ; // Ignore
 
-[ \t] ; // Ignore whitespace
+[ \t\r] ; // Ignore whitespace
 [\n] { ++line_num; }
 
 . { yyerror("Invalid lexical token"); }
