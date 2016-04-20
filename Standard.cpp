@@ -6,6 +6,7 @@
 #include "Cont.hpp"
 #include <list>
 #include <sstream>
+#include <fstream>
 #include <boost/scope_exit.hpp>
 
 using namespace std;
@@ -26,6 +27,8 @@ ObjectPtr spawnObjects() {
     ObjectPtr object(GC::get().allocate());
     ObjectPtr meta(clone(object));
     ObjectPtr global(clone(object));
+
+    ObjectPtr kernel(clone(object));
 
     ObjectPtr proc(clone(object));
     ObjectPtr method(clone(proc));
@@ -98,6 +101,7 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["Latchkey"], latchkey);
     global.lock()->put(Symbols::get()["Array"], array_);
     global.lock()->put(Symbols::get()["Cell"], cell);
+    global.lock()->put(Symbols::get()["Kernel"], kernel);
 
     // Meta calls for basic types
     meta.lock()->put(Symbols::get()["Object"], object);
@@ -119,6 +123,7 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["SystemError"], systemError);
     meta.lock()->put(Symbols::get()["Array"], array_);
     meta.lock()->put(Symbols::get()["Cell"], cell);
+    meta.lock()->put(Symbols::get()["Kernel"], kernel);
 
     // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
@@ -238,6 +243,10 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["here"],
                        eval("{ if: (has 'again), { hold 'again. }, { meta Nil. }. }.",
                             global, global));
+
+    // Kernel functions
+    kernel.lock()->put(Symbols::get()["load"], eval("{ meta sys loadFile#: lexical, dynamic, $1. }.",
+                                                    global, global));
 
     // More method setup (now that we have system calls)
     method.lock()->put(Symbols::get()["call"], eval("{ self. }.", global, global));
@@ -451,6 +460,8 @@ ObjectPtr spawnObjects() {
                         eval("\"Lockbox\".", global, global));
     latchkey.lock()->put(Symbols::get()["toString"],
                          eval("\"Latchkey\".", global, global));
+    kernel.lock()->put(Symbols::get()["toString"],
+                       eval("\"Kernel\".", global, global));
     array_.lock()->put(Symbols::get()["toString"],
                        eval(R"({ "[" ++ ((self join ", ") ++ "]"). }.)", global, global));
     // TODO Change the syntax to allow infix operators to associate with one another when used w/o colons.
@@ -559,6 +570,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callPrimLT(clone(systemCall));
     ObjectPtr callNatSym(clone(systemCall));
     ObjectPtr callLoop(clone(systemCall));
+    ObjectPtr callLoadFile(clone(systemCall));
 
     systemCall.lock()->prim([global](list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
@@ -1114,6 +1126,22 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "loop#", 3, lst.size());
             }
         });
+    callLoadFile.lock()->prim([global](list<ObjectPtr> lst) {
+            ObjectSPtr lex, dyn, filename;
+            if (bindArguments(lst, lex, dyn, filename)) {
+                if (auto fname = boost::get<string>(&filename->prim())) {
+                    ifstream file(*fname);
+                    ObjectPtr result = eval(file, lex, dyn);
+                    file.close();
+                    return result;
+                } else {
+                    throw doEtcError(global, "TypeError",
+                                     "String filename expected");
+                }
+            } else {
+                throw doSystemArgError(global, "loadFile#", 3, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -1151,6 +1179,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["primLT#"], callPrimLT);
     sys.lock()->put(Symbols::get()["natSym#"], callNatSym);
     sys.lock()->put(Symbols::get()["loop#"], callLoop);
+    sys.lock()->put(Symbols::get()["loadFile#"], callLoadFile);
 
 }
 

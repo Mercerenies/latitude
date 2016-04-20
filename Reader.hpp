@@ -40,6 +40,11 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str);
 ObjectPtr eval(std::string str, ObjectPtr lex, ObjectPtr dyn);
 
 /*
+ * Parses and evaluates the file, which should be a source file.
+ */
+ObjectPtr eval(std::istream& file, ObjectPtr lex, ObjectPtr dyn);
+
+/*
  * A statement. Defines only one method, which executes
  * the statement in a given lexical and dynamic context.
  */

@@ -134,11 +134,17 @@ ObjectPtr eval(string str, ObjectPtr lex, ObjectPtr dyn) {
                 val = expr->execute(lex, dyn);
             return val;
         } else {
-            throw doParseError(lex);
+            throw doParseError(lex, "Empty statement encountered; ending parse");
         }
     } catch (std::string parseException) {
         throw doParseError(lex, parseException);
     }
+}
+
+ObjectPtr eval(istream& file, ObjectPtr lex, ObjectPtr dyn) {
+    stringstream str;
+    while (file >> str.rdbuf());
+    return eval(str.str(), lex, dyn);
 }
 
 StmtCall::StmtCall(unique_ptr<Stmt>& cls, const string& func, ArgList& arg)
