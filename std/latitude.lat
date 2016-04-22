@@ -1,0 +1,5 @@
+
+meta Kernel load := { meta sys loadFile#: lexical, dynamic, global, $1. }.
+meta Kernel load: "std/core.lat".
+
+here.

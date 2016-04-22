@@ -1,6 +1,4 @@
 
-;; Latitude???
-
 ;; Cloning and metaprogramming basics
 meta Object clone := { meta sys doClone#: self. }.
 meta Object is := { meta sys instanceOf#: self, $1. }.
@@ -125,7 +123,7 @@ Object /= := { ((self) == ($1)) not. }.
 
 ;; Kernel functions
 Kernel toString := "Kernel".
-Kernel load := { meta sys loadFile#: lexical, dynamic, global, $1. }.
+; (The load function is defined in the main latitude.lat file)
 
 ;; Symbol functions
 Symbol gensym := { meta sys gensym#: self. }.
@@ -253,3 +251,6 @@ Lockbox toString := "Lockbox".
 Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.
 Latchkey == := { (self tag) == (self tag). }.
+
+;; Return the script
+here.

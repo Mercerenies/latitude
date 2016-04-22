@@ -106,7 +106,7 @@ ObjectPtr spawnObjects() {
     stderr_.lock()->prim(errStream());
 
     // The core libraries
-    ifstream file("std/core.lat");
+    ifstream file("std/latitude.lat");
     BOOST_SCOPE_EXIT(&file) {
         file.close();
     } BOOST_SCOPE_EXIT_END;

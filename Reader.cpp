@@ -141,6 +141,7 @@ ObjectPtr eval(string str, ObjectPtr lex, ObjectPtr dyn) {
     }
 }
 
+// TODO Throw a ProtoException if an IO error occurs
 ObjectPtr eval(istream& file, ObjectPtr lexDef, ObjectPtr dynDef, ObjectPtr lex, ObjectPtr dyn) {
     stringstream str;
     while (file >> str.rdbuf());
