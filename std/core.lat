@@ -12,8 +12,10 @@ meta Object invoke := { procd := meta Proc clone.
                         procd call := { meta sys invoke#: lexical,
                                                           dynamic,
                                                           parent self,
-                                                          (parent dynamic hold '$1). }
+                                                          (parent dynamic hold '$1). }.
                         procd. }.
+meta Object tap := { (self invoke: (dynamic hold '$1)) call.
+                     self. }.
 ;; TODO "above" function which acts like super()
 
 ;; Move all of the meta values to the global scope
@@ -72,7 +74,7 @@ Stream puts := { meta sys streamPuts#: self, $1. }.
 Stream putln := { meta sys streamPutln#: self, $1. }.
 Stream print := { self puts: $1 toString. }.
 Stream println := { self putln: $1 toString. }.
-Stream dump := { meta sys streamDump: lexical, dynamic, self, $1. }.
+Stream dump := { meta sys streamDump#: lexical, dynamic, self, $1. }.
 Stream readln := { meta sys streamRead#: self. }.
 Stream toString := "Stream".
 
