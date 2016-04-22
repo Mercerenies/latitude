@@ -110,7 +110,7 @@ ObjectPtr spawnObjects() {
     BOOST_SCOPE_EXIT(&file) {
         file.close();
     } BOOST_SCOPE_EXIT_END;
-    eval(file, global, global, global, global);
+    eval(file, "std/latitude.lat", global, global, global, global);
 
     return global;
 }
@@ -716,7 +716,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     BOOST_SCOPE_EXIT(&file) {
                         file.close();
                     } BOOST_SCOPE_EXIT_END;
-                    ObjectPtr result = eval(file, global, global, lex, dyn);
+                    ObjectPtr result = eval(file, *fname, global, global, lex, dyn);
                     return result;
                 } else {
                     throw doEtcError(global, "TypeError",

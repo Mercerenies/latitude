@@ -139,3 +139,7 @@ list<ObjectPtr> hierarchy(ObjectPtr obj) {
     }
     return parents;
 }
+
+void hereIAm(ObjectPtr dyn, ObjectPtr here) {
+    dyn.lock()->put(Symbols::get()["$whereAmI"], here);
+}

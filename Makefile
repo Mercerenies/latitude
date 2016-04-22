@@ -42,7 +42,7 @@ lex.yy.c:	Scanner.flex Parser.tab.c
 Parser.tab.c:	Parser.y
 	bison -d Parser.y
 
-Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp
+Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp
 	$(CC) Reader.cpp
 
 Stream.o:	Stream.cpp Stream.hpp

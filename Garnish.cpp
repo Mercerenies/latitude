@@ -5,6 +5,8 @@
 
 using namespace std;
 
+// TODO Fix a lot of these to use a local lexical scope rather than global.
+
 ObjectPtr garnish(ObjectPtr global, bool value) {
     if (value)
         return eval("meta True.", global, global);

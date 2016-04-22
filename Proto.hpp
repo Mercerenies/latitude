@@ -117,4 +117,12 @@ std::set<Symbolic> keys(ObjectPtr obj);
  */
 std::list<ObjectPtr> hierarchy(ObjectPtr obj);
 
+/*
+ * Sets the $whereAmI variable. Should be used when the "execution environment" is changing,
+ * for instance when loading a file. Note carefully that while several methods in the language
+ * will implicitly set this before running, the Reader.hpp functions such as eval() will NOT
+ * do so.
+ */
+void hereIAm(ObjectPtr dyn, ObjectPtr here);
+
 #endif // _PROTO_HPP_

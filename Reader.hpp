@@ -44,7 +44,8 @@ ObjectPtr eval(std::string str, ObjectPtr lex, ObjectPtr dyn);
  * always be the global scope. The file will be treated as a method who was defined in the lexDef / dynDef
  * scope and called from the lex / dyn scope. The latter should be the "current" scope.
  */
-ObjectPtr eval(std::istream& file, ObjectPtr lexDef, ObjectPtr dynDef, ObjectPtr lex, ObjectPtr dyn);
+ObjectPtr eval(std::istream& file, std::string fname, ObjectPtr lexDef, ObjectPtr dynDef,
+               ObjectPtr lex, ObjectPtr dyn);
 
 /*
  * A statement. Defines only one method, which executes

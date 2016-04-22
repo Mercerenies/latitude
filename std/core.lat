@@ -230,6 +230,9 @@ Cont tag := Nil.
 Cont call := { meta sys exitCC#: lexical, dynamic, self tag, $1. }.
 global callCC := { meta sys callCC#: lexical, dynamic, { parent dynamic $1. }. }.
 
+;; The $whereAmI variable
+global $whereAmI := Nil.
+
 ;; "Cells" a la MIT Scheme
 global Cell := Object clone.
 Cell value := Nil.

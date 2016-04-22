@@ -33,6 +33,7 @@ ObjectPtr spawnREPLObjects(ObjectPtr& global, ObjectPtr& cont) {
                             global, global));
     global.lock()->put(Symbols::get()["$except"], eval("{ self REPL exception. }.", global, global));
     global.lock()->put(Symbols::get()["$it"], eval("{ self REPL lastResult. }.", global, global));
+    hereIAm(global, repl);
 
     return repl;
 }

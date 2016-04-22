@@ -5,6 +5,7 @@ extern "C" {
 #include "Reader.hpp"
 #include "Symbol.hpp"
 #include "Standard.hpp"
+#include "Garnish.hpp"
 #include <cstdio>
 #include <list>
 #include <memory>
@@ -142,7 +143,7 @@ ObjectPtr eval(string str, ObjectPtr lex, ObjectPtr dyn) {
 }
 
 // TODO Throw a ProtoException if an IO error occurs
-ObjectPtr eval(istream& file, ObjectPtr lexDef, ObjectPtr dynDef, ObjectPtr lex, ObjectPtr dyn) {
+ObjectPtr eval(istream& file, string fname, ObjectPtr lexDef, ObjectPtr dynDef, ObjectPtr lex, ObjectPtr dyn) {
     stringstream str;
     while (file >> str.rdbuf());
     try {
@@ -152,7 +153,9 @@ ObjectPtr eval(istream& file, ObjectPtr lexDef, ObjectPtr dynDef, ObjectPtr lex,
             stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
         auto mthdStmt = StmtMethod(stmts1);
         auto mthd = mthdStmt.execute(lexDef, dynDef);
-        return callMethod(lexDef.lock(), mthd, clone(dyn));
+        auto dyn1 = clone(dyn);
+        hereIAm(dyn1, garnish(lexDef, fname));
+        return callMethod(lexDef.lock(), mthd, dyn1);
     } catch (std::string parseException) {
         throw doParseError(lex, parseException);
     }
