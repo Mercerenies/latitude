@@ -141,10 +141,20 @@ ObjectPtr eval(string str, ObjectPtr lex, ObjectPtr dyn) {
     }
 }
 
-ObjectPtr eval(istream& file, ObjectPtr lex, ObjectPtr dyn) {
+ObjectPtr eval(istream& file, ObjectPtr lexDef, ObjectPtr dynDef, ObjectPtr lex, ObjectPtr dyn) {
     stringstream str;
     while (file >> str.rdbuf());
-    return eval(str.str(), lex, dyn);
+    try {
+        auto stmts = parse(str.str());
+        list< shared_ptr<Stmt> > stmts1;
+        for (unique_ptr<Stmt>& stmt : stmts)
+            stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
+        auto mthdStmt = StmtMethod(stmts1);
+        auto mthd = mthdStmt.execute(lexDef, dynDef);
+        return callMethod(lexDef.lock(), mthd, clone(dyn));
+    } catch (std::string parseException) {
+        throw doParseError(lex, parseException);
+    }
 }
 
 StmtCall::StmtCall(unique_ptr<Stmt>& cls, const string& func, ArgList& arg)

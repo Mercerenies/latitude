@@ -28,31 +28,18 @@ ObjectPtr spawnObjects() {
     ObjectPtr meta(clone(object));
     ObjectPtr global(clone(object));
 
-    ObjectPtr kernel(clone(object));
-
     ObjectPtr proc(clone(object));
     ObjectPtr method(clone(proc));
     ObjectPtr systemCall(clone(method));
-
     ObjectPtr number(clone(object));
     ObjectPtr string(clone(object));
     ObjectPtr symbol(clone(object));
-
-    ObjectPtr nil(clone(object));
-    ObjectPtr boolean(clone(object));
-    ObjectPtr true_(clone(boolean));
-    ObjectPtr false_(clone(boolean));
 
     ObjectPtr cont(clone(proc));
     ObjectPtr contValidator(clone(object));
 
     ObjectPtr exception(clone(object));
     ObjectPtr systemError(clone(exception));
-
-    ObjectPtr latchkey(clone(object));
-    ObjectPtr lockbox(clone(object));
-
-    ObjectPtr cell(clone(object));
 
     ObjectPtr stream(clone(object));
     ObjectPtr stdout_(clone(stream));
@@ -62,46 +49,12 @@ ObjectPtr spawnObjects() {
     ObjectPtr array_(clone(object));
 
     ObjectPtr sys(clone(object));
+    ObjectPtr kernel(clone(object));
 
-    // Object is its own parent
-    object.lock()->put(Symbols::get()["parent"], object);
-
-    // Meta linkage
-    meta.lock()->put(Symbols::get()["meta"], meta);
-    object.lock()->put(Symbols::get()["meta"], meta);
-
-    // Primitives (Method, double, string)
-    method.lock()->prim(Method());
-    number.lock()->prim(0.0);
-    string.lock()->prim("");
-    symbol.lock()->prim(Symbols::get()["0"]); // TODO Better default?
-    contValidator.lock()->prim(weak_ptr<SignalValidator>());
-
-    // Global scope contains basic types
-    global.lock()->put(Symbols::get()["global"], global);
-    global.lock()->put(Symbols::get()["Object"], object);
-    global.lock()->put(Symbols::get()["Proc"], proc);
-    global.lock()->put(Symbols::get()["Method"], method);
-    global.lock()->put(Symbols::get()["Number"], number);
-    global.lock()->put(Symbols::get()["String"], string);
-    global.lock()->put(Symbols::get()["Symbol"], symbol);
-    global.lock()->put(Symbols::get()["Stream"], stream);
-    global.lock()->put(Symbols::get()["stdin"], stdin_);
-    global.lock()->put(Symbols::get()["stderr"], stderr_);
-    global.lock()->put(Symbols::get()["stdout"], stdout_);
-    global.lock()->put(Symbols::get()["SystemCall"], systemCall);
-    global.lock()->put(Symbols::get()["True"], true_);
-    global.lock()->put(Symbols::get()["False"], false_);
-    global.lock()->put(Symbols::get()["Nil"], nil);
-    global.lock()->put(Symbols::get()["Boolean"], boolean);
-    global.lock()->put(Symbols::get()["Cont"], cont);
-    global.lock()->put(Symbols::get()["Exception"], exception);
-    global.lock()->put(Symbols::get()["SystemError"], systemError);
-    global.lock()->put(Symbols::get()["Lockbox"], lockbox);
-    global.lock()->put(Symbols::get()["Latchkey"], latchkey);
-    global.lock()->put(Symbols::get()["Array"], array_);
-    global.lock()->put(Symbols::get()["Cell"], cell);
-    global.lock()->put(Symbols::get()["Kernel"], kernel);
+    ObjectPtr nil(clone(object));
+    ObjectPtr boolean(clone(object));
+    ObjectPtr true_(clone(boolean));
+    ObjectPtr false_(clone(boolean));
 
     // Meta calls for basic types
     meta.lock()->put(Symbols::get()["Object"], object);
@@ -122,413 +75,42 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["Exception"], exception);
     meta.lock()->put(Symbols::get()["SystemError"], systemError);
     meta.lock()->put(Symbols::get()["Array"], array_);
-    meta.lock()->put(Symbols::get()["Cell"], cell);
     meta.lock()->put(Symbols::get()["Kernel"], kernel);
 
-    // Method and system call properties
+    // Object is its own parent
+    object.lock()->put(Symbols::get()["parent"], object);
+
+    // Meta linkage
+    meta.lock()->put(Symbols::get()["meta"], meta);
+    object.lock()->put(Symbols::get()["meta"], meta);
+    meta.lock()->put(Symbols::get()["sys"], sys);
+
+    // Global variables not accessible in meta
+    global.lock()->put(Symbols::get()["stdin"], stdin_);
+    global.lock()->put(Symbols::get()["stderr"], stderr_);
+    global.lock()->put(Symbols::get()["stdout"], stdout_);
+    global.lock()->put(Symbols::get()["global"], global);
+
+    // Method and system call properties / exceptions
     spawnSystemCalls(global, systemCall, sys);
-
-    // Syntax sugar on brackets, etc.
-    meta.lock()->put(Symbols::get()["brackets"],
-                     eval(R"({ ArrayBuilder := self Object clone.
-                               ArrayBuilder toString := "ArrayBuilder".
-                               ArrayBuilder array := self Array clone.
-                               ArrayBuilder next := { self array pushBack: $1. }.
-                               ArrayBuilder finish := { self array. }.
-                               ArrayBuilder. }.)",
-                          global, global));
-
-    // Cells
-    cell.lock()->put(Symbols::get()["value"],
-                     eval("meta Nil.", global, global));
-
-    // Exceptions
-    exception.lock()->put(Symbols::get()["message"],
-                          eval("\"Exception!\".", global, global));
     spawnExceptions(global, systemError, meta);
 
-    // Procs and Methods
-    method.lock()->put(Symbols::get()["closure"], global);
-    proc.lock()->put(Symbols::get()["call"], clone(method));
-    global.lock()->put(Symbols::get()["proc"], eval(R"({ curr := self Proc clone.
-                                         curr call := { parent dynamic $1. }.
-                                         curr. }.)", global, global));
-
-    // Continuations
-    cont.lock()->put(Symbols::get()["tag"], nil);
-    cont.lock()->put(Symbols::get()["call"],
-                     eval("{ meta sys exitCC#: lexical, dynamic, self tag, $1. }.",
-                          global, global));
-    global.lock()->put(Symbols::get()["callCC"],
-                       eval("{meta sys callCC#: lexical, dynamic, {parent dynamic $1.}.}.",
-                            global, global));
-
-    // The basics for cloning and metaprogramming
-    object.lock()->put(Symbols::get()["clone"], eval("{ meta sys doClone#: self. }.",
-                                                     global, global));
-    object.lock()->put(Symbols::get()["is"], eval("{ meta sys instanceOf#: self, $1. }.",
-                                                  global, global));
-    object.lock()->put(Symbols::get()["slot"], eval("{ meta sys accessSlot#: self, $1. }.",
-                                    global, global));
-    object.lock()->put(Symbols::get()["hold"],
-                       eval("{ meta sys accessSlot#: self, $1. }.",
-                            global, global));
-    object.lock()->put(Symbols::get()["get"], eval("{ self hold me. }.",
-                                                   global, global));
-    object.lock()->put(Symbols::get()["has"], eval("{ meta sys checkSlot#: self, $1. }.",
-                                    global, global));
-    object.lock()->put(Symbols::get()["put"],
-                       eval("{ meta sys putSlot#: self, $1, (dynamic hold: '$2). }.",
-                            global, global));
-    object.lock()->put(Symbols::get()["origin"],
-                       eval("{ meta sys origin#: self, $1. }.",
-                            global, global));
-    // TODO "above"
-
-    // Exception throwing and handling routines
-    method.lock()->put(Symbols::get()["handle"],
-                       eval(R"({ meta sys try#: lexical, dynamic,
-                                                { parent self. },
-                                                { (parent dynamic $1: $1) toBool. },
-                                                { parent dynamic $2. }. }.)",
-                            global, global));
-    method.lock()->put(Symbols::get()["catch"],
-                       eval(R"({ ({ parent self. }) handle:
-                                   { $1 is: parent dynamic $1. },
-                                   { parent dynamic $2. }. }.)",
-                          global, global));
-    object.lock()->put(Symbols::get()["throw"],
-                       eval("{ meta sys throw#: self. }.", global, global));
-    method.lock()->put(Symbols::get()["protect"],
-                       eval(R"({ meta sys scopeProtect#: lexical, dynamic,
-                                                         { parent self. },
-                                                         { parent dynamic $1. }. }.)",
-                            global, global));
-
-    // Stream setup
+    // Prim Fields
+    method.lock()->prim(Method());
+    number.lock()->prim(0.0);
+    string.lock()->prim("");
+    symbol.lock()->prim(Symbols::get()["0"]); // TODO Better default?
+    contValidator.lock()->prim(weak_ptr<SignalValidator>());
     stdout_.lock()->prim(outStream());
     stdin_.lock()->prim(inStream());
     stderr_.lock()->prim(errStream());
-    stream.lock()->put(Symbols::get()["in?"], eval("{ meta sys streamIn#: self. }.",
-                                                   global, global));
-    stream.lock()->put(Symbols::get()["out?"], eval("{ meta sys streamOut#: self. }.",
-                                                    global, global));
-    stream.lock()->put(Symbols::get()["puts"], eval("{meta sys streamPuts#: self, $1.}.",
-                                                    global, global));
-    stream.lock()->put(Symbols::get()["putln"], eval("{meta sys streamPutln#: self, $1.}.",
-                                     global, global));
-    stream.lock()->put(Symbols::get()["print"], eval("{ self puts: $1 toString. }.",
-                                                     global, global));
-    stream.lock()->put(Symbols::get()["println"], eval("{ self putln: $1 toString. }.",
-                                                       global, global));
-    stream.lock()->put(Symbols::get()["dump"],
-                       eval("{meta sys streamDump#: lexical, dynamic, self, $1.}.",
-                            global, global));
-    stream.lock()->put(Symbols::get()["readln"], eval("{ meta sys streamRead#: self. }.",
-                                                      global, global));
 
-    // Self-reference in scopes, etc.
-    global.lock()->put(Symbols::get()["scope"], eval("{ self. }.", global, global));
-    global.lock()->put(Symbols::get()["$scope"], eval("{ self. }.", global, global));
-    object.lock()->put(Symbols::get()["me"], eval("{ self. }.", global, global));
-    object.lock()->put(Symbols::get()["invoke"],
-                       eval(R"({ pr := meta Proc clone.
-                                 pr call := { meta sys invoke#: lexical,
-                                                                dynamic,
-                                                                parent self,
-                                                                (parent dynamic
-                                                                 hold '$1).}.
-                                 pr. }.)",
-                            global, global));
-    global.lock()->put(Symbols::get()["here"],
-                       eval("{ if: (has 'again), { hold 'again. }, { meta Nil. }. }.",
-                            global, global));
-
-    // Kernel functions
-    kernel.lock()->put(Symbols::get()["load"], eval("{ meta sys loadFile#: lexical, dynamic, $1. }.",
-                                                    global, global));
-
-    // More method setup (now that we have system calls)
-    method.lock()->put(Symbols::get()["call"], eval("{ self. }.", global, global));
-
-    // Symbol Functions
-    symbol.lock()->put(Symbols::get()["gensym"], eval("{ meta sys gensym#: self. }.",
-                                                      global, global));
-    symbol.lock()->put(Symbols::get()["gensymOf"],
-                       eval("{ meta sys gensymOf#: self, $1. }.",
-                            global, global));
-    string.lock()->put(Symbols::get()["intern"],
-                       eval("{ meta sys intern#: lexical, self. }.",
-                            global, global));
-    symbol.lock()->put(Symbols::get()["asText"],
-                       eval("{ meta sys symbolic#: lexical, self. }.",
-                            global, global));
-    number.lock()->put(Symbols::get()["ordinal"],
-                       eval("{ meta sys natSym#: self. }.",
-                            global, global));
-
-    // Array Functions
-    // Arrays store their values at integer positions and store their lower and upper bounds to allow quick
-    // pushes and pops from either side, effectively doubling as a deque.
-    // TODO Should we delete cells when they've been popped? There's no way to do that in the language right now
-    array_.lock()->put(Symbols::get()["lowerBound"], eval("0.", global, global));
-    array_.lock()->put(Symbols::get()["upperBound"], eval("0.", global, global));
-    array_.lock()->put(Symbols::get()["mapping"],
-                       eval("{ var := $1. if: { var >= 0. }, { (var * 2) + 1. }, { var * -2. }. }.",
-                            global, global));
-    array_.lock()->put(Symbols::get()["empty?"],
-                       eval("{ (self lowerBound) >= (self upperBound). }.", global, global));
-    array_.lock()->put(Symbols::get()["pushFront"],
-                       eval(R"({ self lowerBound := self lowerBound - 1.
-                                 self put: (self mapping: self lowerBound) ordinal, $1.
-                                 $1. }.)",
-                            global, global));
-    array_.lock()->put(Symbols::get()["pushBack"],
-                       eval(R"({ self put: (self mapping: self upperBound) ordinal, $1.
-                                 self upperBound := self upperBound + 1.
-                                 $1. }.)",
-                            global, global));
-    array_.lock()->put(Symbols::get()["popFront"],
-                       eval(R"({ if: self empty?,
-                                     { meta BoundsError clone throw. },
-                                     { self := parent self.
-                                       self lowerBound := self lowerBound + 1.
-                                       self get: (self mapping: (self lowerBound - 1)) ordinal. }. }.)",
-                            global, global));
-    array_.lock()->put(Symbols::get()["popBack"],
-                       eval(R"({ if: self empty?,
-                                     { meta BoundsError clone throw. },
-                                     { self := parent self.
-                                       self upperBound := self upperBound - 1.
-                                       self get: (self mapping: self upperBound) ordinal. }. }.)",
-                            global, global));
-    array_.lock()->put(Symbols::get()["nth"],
-                       eval(R"({ pos := if: ($1 < 0),
-                                            { parent self upperBound + (parent dynamic $1). },
-                                            { parent self lowerBound + (parent dynamic $1). }.
-                                 if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                                     { meta BoundsError clone throw. },
-                                     { self := parent self.
-                                       self get: (self mapping: pos) ordinal. }. }.)",
-                            global, global));
-    array_.lock()->put(Symbols::get()["nth="],
-                       eval(R"({ pos := if: ($1 < 0),
-                                            { parent self upperBound + (parent dynamic $1). },
-                                            { parent self lowerBound + (parent dynamic $1). }.
-                                 if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                                     { meta BoundsError clone throw. },
-                                     { self := parent self.
-                                       self put: (self mapping: pos) ordinal, parent dynamic $2. }. }.)",
-                            global, global));
-    array_.lock()->put(Symbols::get()["size"],
-                       eval("{ (self upperBound) - (self lowerBound). }.", global, global));
-    array_.lock()->put(Symbols::get()["join"],
-                       eval(R"({ index := 1.
-                                 size := self size.
-                                 delim := $1.
-                                 str := if: self empty?,
-                                            { "". },
-                                            { (parent self nth: 0) toString. }.
-                                 while: { (index) < (size). },
-                                        { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
-                                          parent index := index + 1. }.
-                                 str. }.)",
-                            global, global));
-
-    // Basic arithmetic operations
-    number.lock()->put(Symbols::get()["+"], eval("{ meta sys numAdd#: self, $1. }.",
-                                                 global, global));
-    number.lock()->put(Symbols::get()["-"], eval("{ meta sys numSub#: self, $1. }.",
-                                                 global, global));
-    number.lock()->put(Symbols::get()["*"], eval("{ meta sys numMul#: self, $1. }.",
-                                                 global, global));
-    number.lock()->put(Symbols::get()["/"], eval("{ meta sys numDiv#: self, $1. }.",
-                                                 global, global));
-    number.lock()->put(Symbols::get()["mod"], eval("{ meta sys numMod#: self, $1. }.",
-                                                   global, global));
-
-    // Latchkeys and Lockboxes
-    latchkey.lock()->put(Symbols::get()["tag"], symbol);
-    latchkey.lock()->put(Symbols::get()["make"],
-                         eval(R"({ key := self clone.
-                                   key tag := key tag gensymOf: "KEY".
-                                   key. }.)", global, global));
-    lockbox.lock()->put(Symbols::get()["store"],
-                        eval(R"({ self put: $1 tag, $2. }.)", global, global));
-    lockbox.lock()->put(Symbols::get()["fits"],
-                        eval(R"({ self has: $1 tag. }.)", global, global));
-    lockbox.lock()->put(Symbols::get()["retrieve"],
-                        eval(R"({ if: { parent self fits: parent dynamic $1. },
-                                      { parent self get: parent dynamic $1 tag. },
-                                      { meta Nil. }. }.)", global, global));
-
-    // Boolean casts and operations
-    // TODO Consider whether we should take a more Pythonic approach to truthiness
-    //      (Currently, only Nil and False are falsy)
-    object.lock()->put(Symbols::get()["toBool"], true_);
-    false_.lock()->put(Symbols::get()["toBool"], false_);
-    nil.lock()->put(Symbols::get()["toBool"], false_);
-    global.lock()->put(Symbols::get()["if"], eval(R"({
-                               meta sys ifThenElse#: lexical,
-                                                     dynamic,
-                                                     $1 toBool,
-                                                     { parent dynamic $2. },
-                                                     { parent dynamic $3. }.
-                             }.)",
-                                                  global, global));
-    object.lock()->put(Symbols::get()["ifTrue"], eval(R"({ if: self,
-                                        { parent dynamic $1. },
-                                        { meta Nil. }.
-                                  }.)", global, global));
-    object.lock()->put(Symbols::get()["ifFalse"], eval(R"({ if: self,
-                                        { meta Nil. },
-                                        { parent dynamic $1. }.
-                                  }.)", global, global));
-    object.lock()->put(Symbols::get()["and"], eval(R"({ if: self,
-                                            { parent dynamic $1. },
-                                            { meta False. }. }.)", global, global));
-    object.lock()->put(Symbols::get()["or"], eval(R"({ if: self,
-                                            { parent self. },
-                                            { parent dynamic $1. }. }.)", global, global));
-    object.lock()->put(Symbols::get()["not"], eval(R"({ if: self,
-                                            { meta False. },
-                                            { meta True. }. }.)", global, global));
-
-    // Loops
-    global.lock()->put(Symbols::get()["loop"], eval(R"({
-                               meta sys loop#: lexical,
-                                                dynamic,
-                                                { parent dynamic $1. }.
-                               }.)", global, global));
-    global.lock()->put(Symbols::get()["while"],
-                       eval(R"({ cond := { parent dynamic $1. }.
-                                 stmt := { parent dynamic $2. }.
-                                 callCC { $break := { parent dynamic $1 call. }.
-                                          loop { if: cond, { stmt. }, { $break: meta Nil. }. }. }. }.)",
-                            global, global));
-
-    // Stringification
-    // The `stringify` method calls `toString` unless the object is already a string,
-    // in which case it returns the object itself.
-    object.lock()->put(Symbols::get()["stringify"], eval("{ self toString. }.",
-                                                         global, global));
-    string.lock()->put(Symbols::get()["stringify"], eval("{ self. }.", global, global));
-    object.lock()->put(Symbols::get()["++"],
-                       eval("{ meta sys stringConcat#: self stringify, $1 stringify. }.",
-                            global, global));
-
-    // Equality
-    // Triple-equals is used for pointer equality and should almost never
-    // be overriden by children. Double-equals defaults to pointer equality
-    // but can and should be overriden if a better version of "conceptual"
-    // equality exists for the type
-    object.lock()->put(Symbols::get()["==="], eval("{ meta sys ptrEquals#: self, $1. }.",
-                                                   global, global));
-    object.lock()->put(Symbols::get()["=="], eval("{ (self) === ($1). }.",
-                                                  global, global));
-
-    // Ordinary objects print very simply
-    // NOTE: The following analogy is appropriate:
-    //           `toString` is to `pretty` in this language as
-    //           `__repr__` is to `__str__` in Python. The `toString`
-    //           should print a composable machine representation for
-    //           debug use, and the `pretty` should print a user-friendly string.
-    //           Note that `pretty` defaults to `toString`, so if you only wish
-    //           to implement one, implement `toString`.
-    object.lock()->put(Symbols::get()["toString"], eval("\"Object\".", global, global));
-    object.lock()->put(Symbols::get()["pretty"],
-                       eval("{ self toString. }.", global, global));
-
-    // Basic data types print appropriately
-    cell.lock()->put(Symbols::get()["toString"], eval("\"Cell\".", global, global));
-    method.lock()->put(Symbols::get()["toString"], eval("\"Method\".", global, global));
-    proc.lock()->put(Symbols::get()["toString"], eval("\"Proc\".", global, global));
-    stream.lock()->put(Symbols::get()["toString"], eval("\"Stream\".", global, global));
-    string.lock()->put(Symbols::get()["toString"], eval("{meta sys primToString#: self.}.",
-                                        global, global));
-    symbol.lock()->put(Symbols::get()["toString"], eval("{meta sys primToString#: self.}.",
-                                        global, global));
-    number.lock()->put(Symbols::get()["toString"], eval("{meta sys primToString#: self.}.",
-                                        global, global));
-    boolean.lock()->put(Symbols::get()["toString"], eval("\"Boolean\".", global, global));
-    true_.lock()->put(Symbols::get()["toString"], eval("\"True\".", global, global));
-    false_.lock()->put(Symbols::get()["toString"], eval("\"False\".", global, global));
-    nil.lock()->put(Symbols::get()["toString"], eval("\"Nil\".", global, global));
-    exception.lock()->put(Symbols::get()["toString"],
-                          eval("\"Exception\".", global, global));
-    lockbox.lock()->put(Symbols::get()["toString"],
-                        eval("\"Lockbox\".", global, global));
-    latchkey.lock()->put(Symbols::get()["toString"],
-                         eval("\"Latchkey\".", global, global));
-    kernel.lock()->put(Symbols::get()["toString"],
-                       eval("\"Kernel\".", global, global));
-    array_.lock()->put(Symbols::get()["toString"],
-                       eval(R"({ "[" ++ ((self join ", ") ++ "]"). }.)", global, global));
-    // TODO Change the syntax to allow infix operators to associate with one another when used w/o colons.
-    //      That is, "[" ++ (expr) ++ "]" should work correctly (currently a parse error)
-
-    // TODO The pretty prints here in more detail once we have string formatting
-    //      stuff.
-    lockbox.lock()->put(Symbols::get()["pretty"],
-                        eval("{ self toString. }.", global, global));
-    latchkey.lock()->put(Symbols::get()["pretty"],
-                         eval("{ self toString. }.", global, global));
-    exception.lock()->put(Symbols::get()["pretty"],
-                          eval("{ self message. }.", global, global));
-    string.lock()->put(Symbols::get()["pretty"],
-                       eval("{ self. }.", global, global));
-    symbol.lock()->put(Symbols::get()["pretty"],
-                       eval("{ self asText. }.", global, global));
-
-    // Equality comparisons for basic types
-    string.lock()->put(Symbols::get()["=="],
-                       eval("{ meta sys primEquals#: self, $1. }.",
-                            global, global));
-    symbol.lock()->put(Symbols::get()["=="],
-                       eval("{ meta sys primEquals#: self, $1. }.",
-                            global, global));
-    number.lock()->put(Symbols::get()["=="],
-                       eval("{ meta sys primEquals#: self, $1. }.",
-                            global, global));
-    latchkey.lock()->put(Symbols::get()["=="],
-                         eval("{ (self tag) == (self tag). }.",
-                              global, global));
-    // TODO Array equality (and possibly comparability)
-
-    // Relational Comparison Operators
-    // The primary relational operators are all based on the < and == operators.
-    // A type which defines these two appropriately will have the others provided.
-    object.lock()->put(Symbols::get()[">"],
-                       eval("{ ($1) < (self). }.", global, global));
-    object.lock()->put(Symbols::get()[">="],
-                       eval("{ ((self) > ($1)) or ((self) == ($1)). }.", global, global));
-    object.lock()->put(Symbols::get()["<="],
-                       eval("{ ((self) < ($1)) or ((self) == ($1)). }.", global, global));
-    object.lock()->put(Symbols::get()["/="],
-                       eval("{ ((self) == ($1)) not. }.", global, global));
-
-    // Relational operators on built-in types
-    method.lock()->put(Symbols::get()["<"], // Evaluate the method and then try again
-                       eval("{ (self) < ($1). }.", global, global));
-    string.lock()->put(Symbols::get()["<"],
-                       eval("{ meta sys primLT#: self, $1. }.",
-                            global, global));
-    symbol.lock()->put(Symbols::get()["<"],
-                       eval("{ meta sys primLT#: self, $1. }.",
-                            global, global));
-    number.lock()->put(Symbols::get()["<"],
-                       eval("{ meta sys primLT#: self, $1. }.",
-                            global, global));
-
-    // Numerical Type Checking
-    number.lock()->put(Symbols::get()["isBasicInt?"],
-                       eval("{ (meta sys numLevel#: self) <= 0. }.", global, global));
-    number.lock()->put(Symbols::get()["isInteger?"],
-                       eval("{ (meta sys numLevel#: self) <= 1. }.", global, global));
-    number.lock()->put(Symbols::get()["isRational?"],
-                       eval("{ (meta sys numLevel#: self) <= 2. }.", global, global));
-    number.lock()->put(Symbols::get()["isFloating?"],
-                       eval("{ (meta sys numLevel#: self) == 3. }.", global, global));
+    // The core libraries
+    ifstream file("std/core.lat");
+    BOOST_SCOPE_EXIT(&file) {
+        file.close();
+    } BOOST_SCOPE_EXIT_END;
+    eval(file, global, global, global, global);
 
     return global;
 }
@@ -1127,19 +709,21 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             }
         });
     callLoadFile.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, filename;
-            if (bindArguments(lst, lex, dyn, filename)) {
+            ObjectSPtr lex, dyn, global, filename;
+            if (bindArguments(lst, lex, dyn, global, filename)) {
                 if (auto fname = boost::get<string>(&filename->prim())) {
                     ifstream file(*fname);
-                    ObjectPtr result = eval(file, lex, dyn);
-                    file.close();
+                    BOOST_SCOPE_EXIT(&file) {
+                        file.close();
+                    } BOOST_SCOPE_EXIT_END;
+                    ObjectPtr result = eval(file, global, global, lex, dyn);
                     return result;
                 } else {
                     throw doEtcError(global, "TypeError",
                                      "String filename expected");
                 }
             } else {
-                throw doSystemArgError(global, "loadFile#", 3, lst.size());
+                throw doSystemArgError(global, "loadFile#", 4, lst.size());
             }
         });
 
