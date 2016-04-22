@@ -12,7 +12,7 @@
 ObjectPtr spawnObjects();
 
 // These are convenience functions for various language errors.
-ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, std::string slotName);
+ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, Symbolic slotName);
 ProtoError doParseError(ObjectPtr global);
 ProtoError doParseError(ObjectPtr global, std::string message);
 

@@ -22,7 +22,7 @@ class Object;
 using LStmt = std::list< std::shared_ptr<Stmt> >;
 using ObjectPtr = std::weak_ptr<Object>;
 using ObjectSPtr = std::shared_ptr<Object>;
-using SystemCall = std::function<ObjectPtr(std::list<ObjectPtr>)>;
+using SystemCall = std::function<ObjectPtr(ObjectPtr, ObjectPtr, std::list<ObjectPtr>)>;
 using Method = LStmt;
 using Prim = boost::variant<boost::blank, Number, std::string,
                             Method, SystemCall, StreamPtr, Symbolic,
@@ -85,7 +85,7 @@ ObjectPtr clone(ObjectPtr obj);
  * Accesses the object's meta field. This is purely a convenience function.
  *   meta(obj) === getInheritedSlot(obj, Symbols::get()["meta"]);
  */
-ObjectPtr meta(ObjectPtr obj);
+ObjectPtr meta(ObjectPtr dyn, ObjectPtr obj);
 /*
  * Accesses the object's slot, recursively checking the "parent" object if the slot
  * is not found. Returns a null pointer if the slot does not exist. Note that this
@@ -93,16 +93,16 @@ ObjectPtr meta(ObjectPtr obj);
  * encounters one. In fact, such a loop always exists by default, as `Object` is
  * its own parent in the standard library.
  */
-ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name);
+ObjectPtr getInheritedSlot(ObjectPtr dyn, ObjectPtr obj, Symbolic name);
 /*
  * Checks whether a given slot exists, using the same algorithm as `getInheritedSlot`.
  */
-bool hasInheritedSlot(ObjectPtr obj, Symbolic name);
+bool hasInheritedSlot(ObjectPtr dyn, ObjectPtr obj, Symbolic name);
 /*
  * Returns the object who actually owns the slot which would be referenced in a
  * call to getInheritedSlot.
  */
-ObjectPtr getInheritedOrigin(ObjectPtr obj, Symbolic name);
+ObjectPtr getInheritedOrigin(ObjectPtr dyn, ObjectPtr obj, Symbolic name);
 /*
  * Gets a set of all of the keys in the object. Recursively computes the set of keys
  * using an algorithm similar to `getInheritedSlot`. If the parent keys are not

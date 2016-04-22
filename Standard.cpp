@@ -17,7 +17,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
 void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta);
 
 ProtoError doSystemArgError(ObjectPtr global, string name, int expected, int got);
-ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, string slotName);
+ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, Symbolic slotName);
 ProtoError doParseError(ObjectPtr global);
 ProtoError doParseError(ObjectPtr global, string message);
 ProtoError doEtcError(ObjectPtr global, string errorName, string msg);
@@ -154,10 +154,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callLoop(clone(systemCall));
     ObjectPtr callLoadFile(clone(systemCall));
 
-    systemCall.lock()->prim([global](list<ObjectPtr> lst) {
+    systemCall.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             return eval("meta Nil.", global, global);
         });
-    callStreamIn.lock()->prim([global](list<ObjectPtr> lst) {
+    callStreamIn.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr stream;
             if (bindArguments(lst, stream)) {
                 auto prim = stream->prim();
@@ -169,7 +169,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamIn#", 1, lst.size());
             }
         });
-    callStreamOut.lock()->prim([global](list<ObjectPtr> lst) {
+    callStreamOut.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr stream;
             if (bindArguments(lst, stream)) {
                 auto prim = stream->prim();
@@ -181,7 +181,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamOut#", 1, lst.size());
             }
         });
-    callStreamPuts.lock()->prim([global](list<ObjectPtr> lst) {
+    callStreamPuts.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr stream, obj;
             if (bindArguments(lst, stream, obj)) {
                 auto stream0 = stream->prim();
@@ -205,7 +205,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamPuts#", 2, lst.size());
             }
         });
-    callStreamPutln.lock()->prim([global](list<ObjectPtr> lst) {
+    callStreamPutln.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr stream, obj;
             if (bindArguments(lst, stream, obj)) {
                 auto stream0 = stream->prim();
@@ -229,7 +229,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamPutln#", 2, lst.size());
             }
         });
-    callPrimToString.lock()->prim([global](list<ObjectPtr> lst) {
+    callPrimToString.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 string result = primToString(obj);
@@ -238,9 +238,9 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "primToString#", 1, lst.size());
             }
         });
-    callIfStatement.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, cond, tr, fl;
-            if (bindArguments(lst, lex, dyn, cond, tr, fl)) {
+    callIfStatement.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr cond, tr, fl;
+            if (bindArguments(lst, cond, tr, fl)) {
                 // These are unused except to verify that the prim() is correct
                 auto tr_ = boost::get<Method>(&tr->prim());
                 auto fl_ = boost::get<Method>(&fl->prim());
@@ -250,16 +250,16 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 //
                 auto definitelyTrue = eval("meta True.", global, global).lock();
                 if (cond == definitelyTrue)
-                    return callMethod(lex, tr, clone(dyn));
+                    return callMethod(lex.lock(), tr, clone(dyn.lock()));
                 else
-                    return callMethod(lex, fl, clone(dyn));
+                    return callMethod(lex.lock(), fl, clone(dyn.lock()));
             } else {
-                throw doSystemArgError(global, "ifThenElse#", 5, lst.size());
+                throw doSystemArgError(global, "ifThenElse#", 3, lst.size());
             }
         });
-    callStreamDump.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, stream, obj;
-            if (bindArguments(lst, lex, dyn, stream, obj)) {
+    callStreamDump.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr stream, obj;
+            if (bindArguments(lst, stream, obj)) {
                 if (auto stream0 = boost::get<StreamPtr>(&stream->prim())) {
                     dumpObject(lex, dyn, **stream0, obj);
                     return eval("meta Nil.", global, global);
@@ -268,10 +268,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Object is not a stream");
                 }
             } else {
-                throw doSystemArgError(global, "streamDump#", 4, lst.size());
+                throw doSystemArgError(global, "streamDump#", 2, lst.size());
             }
         });
-    callClone.lock()->prim([global](list<ObjectPtr> lst) {
+    callClone.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 return clone(obj);
@@ -279,11 +279,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "doClone#", 1, lst.size());
             }
         });
-    callGetSlot.lock()->prim([global](list<ObjectPtr> lst) {
+    callGetSlot.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj, slot;
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
-                    return getInheritedSlot(obj, *sym);
+                    return getInheritedSlot(dyn, obj, *sym);
                 } else {
                     throw doEtcError(global, "TypeError", "Slot name must be a symbol");
                 }
@@ -291,12 +291,12 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "accessSlot#", 2, lst.size());
             }
         });
-    callHasSlot.lock()->prim([global](list<ObjectPtr> lst) {
+    callHasSlot.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj, slot;
             if (bindArguments(lst, obj, slot)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
                     return garnish(global,
-                                   hasInheritedSlot(obj, *sym));
+                                   hasInheritedSlot(dyn, obj, *sym));
                 } else {
                     return eval("meta False.", global, global);
                 }
@@ -304,7 +304,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "checkSlot#", 2, lst.size());
             }
         });
-    callPutSlot.lock()->prim([global](list<ObjectPtr> lst) {
+    callPutSlot.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj, slot, value;
             if (bindArguments(lst, obj, slot, value)) {
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
@@ -317,7 +317,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "putSlot#", 3, lst.size());
             }
         });
-    callGensym.lock()->prim([global](list<ObjectPtr> lst) {
+    callGensym.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr symbol;
             if (bindArguments(lst, symbol)) {
                 ObjectPtr gen = clone(symbol);
@@ -327,7 +327,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "gensym#", 1, lst.size());
             }
         });
-    callGensymOf.lock()->prim([global](list<ObjectPtr> lst) {
+    callGensymOf.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr symbol, name;
             if (bindArguments(lst, symbol, name)) {
                 if (auto str = boost::get<std::string>(&name->prim())) {
@@ -342,30 +342,33 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "gensymOf#", 2, lst.size());
             }
         });
-    callCallCC.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, mthd;
-            if (bindArguments(lst, lex, dyn, mthd)) {
+    callCallCC.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr mthd;
+            if (bindArguments(lst, mthd)) {
                 // Dies when it goes out of scope
                 shared_ptr<SignalValidator> livingTag(new SignalValidator());
                 //
-                ObjectPtr dyn1 = clone(dyn);
+                ObjectPtr dyn1 = clone(dyn.lock());
                 Symbolic sym = Symbols::gensym("CONT");
-                ObjectPtr symObj = getInheritedSlot(meta(lex),
+                ObjectPtr symObj = getInheritedSlot(dyn,
+                                                    meta(dyn, lex),
                                                     Symbols::get()["Symbol"]);
                 ObjectPtr symObj1 = clone(symObj);
                 symObj1.lock()->prim(sym);
-                ObjectPtr validator = getInheritedSlot(meta(lex),
+                ObjectPtr validator = getInheritedSlot(dyn,
+                                                       meta(dyn, lex),
                                                        Symbols::get()["ContValidator"]);
                 ObjectPtr validator1 = clone(validator);
                 validator1.lock()->prim(weak_ptr<SignalValidator>(livingTag));
                 dyn1.lock()->put(sym, validator1);
-                ObjectPtr cont = getInheritedSlot(meta(lex),
+                ObjectPtr cont = getInheritedSlot(dyn,
+                                                  meta(dyn, lex),
                                                   Symbols::get()["Cont"]);
                 ObjectPtr cont1 = clone(cont);
                 cont1.lock()->put(Symbols::get()["tag"], symObj1);
                 try {
                     dyn1.lock()->put(Symbols::get()["$1"], cont1);
-                    return callMethod(lex, mthd, dyn1);
+                    return callMethod(lex.lock(), mthd, dyn1);
                 } catch (Signal& signal) {
                     if (signal.match(sym)) {
                         return signal.getObject();
@@ -374,15 +377,15 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     }
                 }
             } else {
-                throw doSystemArgError(global, "callCC#", 3, lst.size());
+                throw doSystemArgError(global, "callCC#", 1, lst.size());
             }
         });
-    callExitCC.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, tag, arg;
-            if (bindArguments(lst, lex, dyn, tag, arg)) {
+    callExitCC.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr tag, arg;
+            if (bindArguments(lst, tag, arg)) {
                 if (auto sym = boost::get<Symbolic>(&tag->prim())) {
-                    if (hasInheritedSlot(dyn, *sym)) {
-                        auto validator = getInheritedSlot(dyn, *sym);
+                    if (hasInheritedSlot(dyn, dyn, *sym)) {
+                        auto validator = getInheritedSlot(dyn, dyn, *sym);
                         if (auto val =
                             boost::get< weak_ptr<SignalValidator> >(&validator.lock()
                                                                     ->prim())) {
@@ -404,10 +407,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 }
                 return eval("meta Nil.", global, global); // Should never happen
             } else {
-                throw doSystemArgError(global, "exitCC#", 4, lst.size());
+                throw doSystemArgError(global, "exitCC#", 2, lst.size());
             }
         });
-    callInstanceof.lock()->prim([global](list<ObjectPtr> lst) {
+    callInstanceof.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj0, obj1;
             if (bindArguments(lst, obj0, obj1)) {
                 auto hier = hierarchy(obj0);
@@ -419,30 +422,30 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "instanceOf#", 2, lst.size());
             }
         });
-    callTryStmt.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, lhs, cond, rhs;
-            if (bindArguments(lst, lex, dyn, lhs, cond, rhs)) {
+    callTryStmt.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr lhs, cond, rhs;
+            if (bindArguments(lst, lhs, cond, rhs)) {
                 try {
                     ObjectPtr dyn1 = clone(dyn);
-                    return callMethod(lex, lhs, dyn1);
+                    return callMethod(lex.lock(), lhs, dyn1);
                 } catch (ProtoError& err) {
                     ObjectPtr dyn1 = clone(dyn);
                     dyn1.lock()->put(Symbols::get()["$1"], err.getObject());
-                    ObjectPtr result1 = callMethod(lex, cond, dyn1);
+                    ObjectPtr result1 = callMethod(lex.lock(), cond, dyn1);
                     auto definitelyTrue = eval("meta True.", global, global).lock();
                     if (result1.lock() == definitelyTrue) {
                         ObjectPtr dyn2 = clone(dyn);
                         dyn2.lock()->put(Symbols::get()["$1"], err.getObject());
-                        return callMethod(lex, rhs, dyn2);
+                        return callMethod(lex.lock(), rhs, dyn2);
                     } else {
                         throw;
                     }
                 }
             } else {
-                throw doSystemArgError(global, "try#", 5, lst.size());
+                throw doSystemArgError(global, "try#", 3, lst.size());
             }
         });
-    callThrowStmt.lock()->prim([global](list<ObjectPtr> lst) {
+    callThrowStmt.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj;
             if (bindArguments(lst, obj)) {
                 throwProtoError(obj);
@@ -451,7 +454,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "throw#", 1, lst.size());
             }
         });
-    callNumAdd.lock()->prim([global](list<ObjectPtr> lst) {
+    callNumAdd.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 auto n0 = boost::get<Number>(&obj1->prim());
@@ -465,7 +468,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "numAdd#", 2, lst.size());
             }
         });
-    callNumSub.lock()->prim([global](list<ObjectPtr> lst) {
+    callNumSub.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 auto n0 = boost::get<Number>(&obj1->prim());
@@ -479,7 +482,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "numSub#", 2, lst.size());
             }
         });
-    callNumMul.lock()->prim([global](list<ObjectPtr> lst) {
+    callNumMul.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 auto n0 = boost::get<Number>(&obj1->prim());
@@ -493,7 +496,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "numMul#", 2, lst.size());
             }
         });
-    callNumDiv.lock()->prim([global](list<ObjectPtr> lst) {
+    callNumDiv.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 auto n0 = boost::get<Number>(&obj1->prim());
@@ -507,7 +510,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "numDiv#", 2, lst.size());
             }
         });
-    callNumMod.lock()->prim([global](list<ObjectPtr> lst) {
+    callNumMod.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 auto n0 = boost::get<Number>(&obj1->prim());
@@ -521,7 +524,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "numMod#", 2, lst.size());
             }
         });
-    callTripleEquals.lock()->prim([global](list<ObjectPtr> lst) {
+    callTripleEquals.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 return garnish(global, obj1 == obj2);
@@ -529,7 +532,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "ptrEquals#", 2, lst.size());
             }
         });
-    callPrimEquals.lock()->prim([global](list<ObjectPtr> lst) {
+    callPrimEquals.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 return garnish(global, primEquals(obj1, obj2));
@@ -537,7 +540,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "primEquals#", 2, lst.size());
             }
         });
-    callStringConcat.lock()->prim([global](list<ObjectPtr> lst) {
+    callStringConcat.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 auto str1 = boost::get<std::string>(&obj1->prim());
@@ -551,7 +554,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "stringConcat#", 2, lst.size());
             }
         });
-    callStreamRead.lock()->prim([global](list<ObjectPtr> lst) {
+    callStreamRead.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr stream;
             if (bindArguments(lst, stream)) {
                 auto stream0 = stream->prim();
@@ -568,9 +571,9 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "streamRead#", 1, lst.size());
             }
         });
-    callScopeProtect.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, block1, block2;
-            if (bindArguments(lst, lex, dyn, block1, block2)) {
+    callScopeProtect.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr block1, block2;
+            if (bindArguments(lst, block1, block2)) {
                 // Runs block1, then block2. Will run block2 even if
                 // block1 throws or exits abnormally. block1 is called
                 // with no args; block2 is called with a single Boolean,
@@ -585,47 +588,48 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                         ObjectPtr status = garnish(global, abnormal);
                         ObjectPtr dyn1 = clone(dyn);
                         dyn1.lock()->put(Symbols::get()["$1"], status);
-                        callMethod(lex, block2, dyn1);
+                        callMethod(lex.lock(), block2, dyn1);
                     } catch (...) {
                         cerr << "Attempted abnormal exit from protected block!" << endl;
                         terminate();
                     }
                 } BOOST_SCOPE_EXIT_END;
-                ObjectPtr result = callMethod(lex, block1, clone(dyn));
+                ObjectPtr result = callMethod(lex.lock(), block1, clone(dyn));
                 abnormal = false;
                 return result;
             } else {
-                throw doSystemArgError(global, "scopeProtect#", 4, lst.size());
+                throw doSystemArgError(global, "scopeProtect#", 2, lst.size());
             }
         });
-    callInvoke.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, self, mthd;
-            if (bindArguments(lst, lex, dyn, self, mthd)) {
+    callInvoke.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr self, mthd;
+            if (bindArguments(lst, self, mthd)) {
                 // Calls the method with "self" bound to the given object,
                 // bypassing the normal self. All arguments ($n) remain the
                 // same.
                 return callMethod(self, mthd, clone(dyn));
             } else {
-                throw doSystemArgError(global, "invoke#", 4, lst.size());
+                throw doSystemArgError(global, "invoke#", 2, lst.size());
             }
         });
-    callOrigin.lock()->prim([global](list<ObjectPtr> lst) {
+    callOrigin.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr self, ref;
             if (bindArguments(lst, self, ref)) {
                 auto sym = boost::get<Symbolic>(&ref->prim());
                 if (!sym)
                     throw doEtcError(global, "TypeError",
                                      "Slot name must be a symbol");
-                return getInheritedOrigin(self, *sym);
+                return getInheritedOrigin(dyn, self, *sym);
             } else {
                 throw doSystemArgError(global, "origin#", 2, lst.size());
             }
         });
-    callIntern.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, self;
-            if (bindArguments(lst, lex, self)) {
+    callIntern.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr self;
+            if (bindArguments(lst, self)) {
                 if (auto str = boost::get<string>(&self->prim())) {
-                    ObjectPtr sym = getInheritedSlot(meta(lex),
+                    ObjectPtr sym = getInheritedSlot(dyn,
+                                                     meta(dyn, lex),
                                                      Symbols::get()["Symbol"]);
                     ObjectPtr sym1 = clone(sym);
                     sym1.lock()->prim(Symbols::get()[*str]);
@@ -635,12 +639,12 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Object to intern is not a string");
                 }
             } else {
-                throw doSystemArgError(global, "intern#", 2, lst.size());
+                throw doSystemArgError(global, "intern#", 1, lst.size());
             }
         });
-    callSymbolic.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, self;
-            if (bindArguments(lst, lex, self)) {
+    callSymbolic.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr self;
+            if (bindArguments(lst, self)) {
                 if (auto sym = boost::get<Symbolic>(&self->prim())) {
                     return garnish(global, Symbols::get()[*sym]);
                 } else {
@@ -648,10 +652,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Object is not symbolic");
                 }
             } else {
-                throw doSystemArgError(global, "symbolic#", 2, lst.size());
+                throw doSystemArgError(global, "symbolic#", 1, lst.size());
             }
         });
-    callNumLevel.lock()->prim([global](list<ObjectPtr> lst) {
+    callNumLevel.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr self;
             if (bindArguments(lst, self)) {
                 if (auto num = boost::get<Number>(&self->prim())) {
@@ -664,7 +668,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "numLevel#", 1, lst.size());
             }
         });
-    callPrimLT.lock()->prim([global](list<ObjectPtr> lst) {
+    callPrimLT.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
                 return garnish(global, primLT(obj1, obj2));
@@ -672,7 +676,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "primLT#", 2, lst.size());
             }
         });
-    callNatSym.lock()->prim([global](list<ObjectPtr> lst) {
+    callNatSym.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
             ObjectSPtr nat;
             if (bindArguments(lst, nat)) {
                 if (auto num = boost::get<Number>(&nat->prim())) {
@@ -692,8 +696,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(global, "natSym#", 1, lst.size());
             }
         });
-    callLoop.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, mthd;
+    callLoop.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr mthd;
             if (bindArguments(lst, lex, dyn, mthd)) {
                 // These are unused except to verify that the prim() is correct
                 auto mthd_ = boost::get<Method>(&mthd->prim());
@@ -702,15 +706,15 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Loop body is not a method");
                 //
                 while (true)
-                    callMethod(lex, mthd, clone(dyn)); // TODO Should this share dynamic state across iterations?
+                    callMethod(lex.lock(), mthd, clone(dyn));
                 return eval("meta Nil.", global, global); // Should never happen
             } else {
-                throw doSystemArgError(global, "loop#", 3, lst.size());
+                throw doSystemArgError(global, "loop#", 1, lst.size());
             }
         });
-    callLoadFile.lock()->prim([global](list<ObjectPtr> lst) {
-            ObjectSPtr lex, dyn, global, filename;
-            if (bindArguments(lst, lex, dyn, global, filename)) {
+    callLoadFile.lock()->prim([global](ObjectPtr lex, ObjectPtr dyn, list<ObjectPtr> lst) {
+            ObjectSPtr global, filename;
+            if (bindArguments(lst, global, filename)) {
                 if (auto fname = boost::get<string>(&filename->prim())) {
                     ifstream file(*fname);
                     BOOST_SCOPE_EXIT(&file) {
@@ -723,7 +727,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "String filename expected");
                 }
             } else {
-                throw doSystemArgError(global, "loadFile#", 4, lst.size());
+                throw doSystemArgError(global, "loadFile#", 2, lst.size());
             }
         });
 
@@ -798,7 +802,7 @@ void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta) {
     slotError.lock()->put(Symbols::get()["message"],
                           eval("\"Could not find slot\".", global, global));
     slotError.lock()->put(Symbols::get()["slotName"],
-                          eval("\"\".", global, global));
+                          eval("meta Nil.", global, global));
     slotError.lock()->put(Symbols::get()["objectInstance"],
                           eval("meta Nil.", global, global));
 
@@ -838,38 +842,38 @@ ProtoError doSystemArgError(ObjectPtr global,
                                 string name,
                                 int expected,
                                 int got) {
-    ObjectPtr meta_ = meta(global);
-    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["SystemArgError"]));
+    ObjectPtr meta_ = meta(global, global);
+    ObjectPtr err = clone(getInheritedSlot(global, meta_, Symbols::get()["SystemArgError"]));
     err.lock()->put(Symbols::get()["gotArguments"], garnish(global, got));
     err.lock()->put(Symbols::get()["expectedArguments"], garnish(global, expected));
     err.lock()->put(Symbols::get()["functionName"], garnish(global, name));
     return ProtoError(err);
 }
 
-ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, string slotName) {
-    ObjectPtr meta_ = meta(global);
-    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["SlotError"]));
+ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, Symbolic slotName) {
+    ObjectPtr meta_ = meta(global, global);
+    ObjectPtr err = clone(getInheritedSlot(global, meta_, Symbols::get()["SlotError"]));
     err.lock()->put(Symbols::get()["slotName"], garnish(global, slotName));
     err.lock()->put(Symbols::get()["objectInstance"], problem);
     return ProtoError(err);
 }
 
 ProtoError doParseError(ObjectPtr global) {
-    ObjectPtr meta_ = meta(global);
-    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["ParseError"]));
+    ObjectPtr meta_ = meta(global, global);
+    ObjectPtr err = clone(getInheritedSlot(global, meta_, Symbols::get()["ParseError"]));
     return ProtoError(err);
 }
 
 ProtoError doParseError(ObjectPtr global, string message) {
-    ObjectPtr meta_ = meta(global);
-    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()["ParseError"]));
+    ObjectPtr meta_ = meta(global, global);
+    ObjectPtr err = clone(getInheritedSlot(global, meta_, Symbols::get()["ParseError"]));
     err.lock()->put(Symbols::get()["message"], garnish(global, message));
     return ProtoError(err);
 }
 
 ProtoError doEtcError(ObjectPtr global, string errorName, string msg) {
-    ObjectPtr meta_ = meta(global);
-    ObjectPtr err = clone(getInheritedSlot(meta_, Symbols::get()[errorName]));
+    ObjectPtr meta_ = meta(global, global);
+    ObjectPtr err = clone(getInheritedSlot(global, meta_, Symbols::get()[errorName]));
     err.lock()->put(Symbols::get()["message"], garnish(global, msg));
     return ProtoError(err);
 }

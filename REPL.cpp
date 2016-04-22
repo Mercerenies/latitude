@@ -8,7 +8,7 @@
 using namespace std;
 
 ObjectPtr spawnREPLObjects(ObjectPtr& global) {
-    ObjectPtr object = getInheritedSlot(meta(global), Symbols::get()["Object"]);
+    ObjectPtr object = getInheritedSlot(global, meta(global, global), Symbols::get()["Object"]);
     ObjectPtr repl = clone(object);
 
     repl.lock()->put(Symbols::get()["toString"],
@@ -42,16 +42,19 @@ void runREPL(ObjectPtr& global) {
     // Simulate a callCC
     shared_ptr<SignalValidator> livingTag(new SignalValidator());
     Symbolic sym = Symbols::gensym("QUIT");
-    ObjectPtr symObj = getInheritedSlot(meta(global),
+    ObjectPtr symObj = getInheritedSlot(global,
+                                        meta(global, global),
                                         Symbols::get()["Symbol"]);
     ObjectPtr symObj1 = clone(symObj);
     symObj1.lock()->prim(sym);
-    ObjectPtr validator = getInheritedSlot(meta(global),
+    ObjectPtr validator = getInheritedSlot(global,
+                                           meta(global, global),
                                            Symbols::get()["ContValidator"]);
     ObjectPtr validator1 = clone(validator);
     validator1.lock()->prim(weak_ptr<SignalValidator>(livingTag));
     global.lock()->put(sym, validator1);
-    ObjectPtr cont = getInheritedSlot(meta(global),
+    ObjectPtr cont = getInheritedSlot(global,
+                                      meta(global, global),
                                       Symbols::get()["Cont"]);
     ObjectPtr cont1 = clone(cont);
     cont1.lock()->put(Symbols::get()["tag"], symObj1);

@@ -1,4 +1,4 @@
-
+; ///// Think about mixins to get a good collections hierarchy then do the collections API and sequences
 ;; Cloning and metaprogramming basics
 meta Object clone := { meta sys doClone#: self. }.
 meta Object is := { meta sys instanceOf#: self, $1. }.
@@ -9,9 +9,7 @@ meta Object has := { meta sys checkSlot#: self, $1. }.
 meta Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 meta Object origin := { meta sys origin#: self, $1. }.
 meta Object invoke := { procd := meta Proc clone.
-                        procd call := { meta sys invoke#: lexical,
-                                                          dynamic,
-                                                          parent self,
+                        procd call := { meta sys invoke#: parent self,
                                                           (parent dynamic hold '$1). }.
                         procd. }.
 meta Object tap := { (self invoke: (dynamic hold '$1)) call.
@@ -38,17 +36,13 @@ global Array := meta Array.
 global Kernel := meta Kernel.
 
 ;; Basics of exception handling
-(hold 'Method) handle := { meta sys try#: lexical,
-                                          dynamic,
-                                          { parent self. },
+(hold 'Method) handle := { meta sys try#: { parent self. },
                                           { (parent dynamic $1: $1) toBool. },
                                           { parent dynamic $2. }. }.
 (hold 'Method) catch := { (parent hold 'self) handle: { $1 is: parent dynamic $1. },
                                                       { parent dynamic $2. }. }.
 Object throw := { meta sys throw#: self. }.
-(hold 'Method) protect := { meta sys scopeProtect#: lexical,
-                                                    dynamic,
-                                                    { parent self. },
+(hold 'Method) protect := { meta sys scopeProtect#: { parent self. },
                                                     { parent dynamic $1. }. }.
 
 ;; Exceptions
@@ -74,7 +68,7 @@ Stream puts := { meta sys streamPuts#: self, $1. }.
 Stream putln := { meta sys streamPutln#: self, $1. }.
 Stream print := { self puts: $1 toString. }.
 Stream println := { self putln: $1 toString. }.
-Stream dump := { meta sys streamDump#: lexical, dynamic, self, $1. }.
+Stream dump := { meta sys streamDump#: self, $1. }.
 Stream readln := { meta sys streamRead#: self. }.
 Stream toString := "Stream".
 
@@ -82,7 +76,13 @@ Stream toString := "Stream".
 global scope := { self. }.
 global $scope := { self. }.
 Object me := { self. }.
-global here := { if: (has 'again), { parent hold 'again. }, { meta Nil. }. }.
+global here := { if: (has 'again),
+                     { parent hold 'again. },
+                     { meta Nil. }. }.
+Object missing := { err := meta SlotError clone.
+                    err slotName := dynamic hold '$1.
+                    err objectInstance := lexical hold 'self.
+                    err throw. }.
 
 ;; Booleans
 Object toBool := True.
@@ -92,9 +92,7 @@ Boolean toString := "Boolean".
 True toString := "True".
 False toString := "False".
 Nil toString := "Nil".
-global if := { meta sys ifThenElse#: lexical,
-                                     dynamic,
-                                     $1 toBool,
+global if := { meta sys ifThenElse#: $1 toBool,
                                      { parent dynamic $2. },
                                      { parent dynamic $3. }. }.
 Object ifTrue := { if: self, { parent dynamic $1. }, { meta Nil. }. }.
@@ -105,9 +103,7 @@ Object or := { fst := self.
 Object not := { if: self, { meta False. }, { meta True. }. }.
 
 ;; Loops
-global loop := { meta sys loop#: lexical,
-                                 dynamic,
-                                 { parent dynamic $1. }. }.
+global loop := { meta sys loop#: { parent dynamic $1. }. }.
 global while := { cond := { parent dynamic $1. }.
                   stmt := { parent dynamic $2. }.
                   callCC { $break := { parent dynamic $1 call. }.
@@ -130,12 +126,12 @@ Kernel toString := "Kernel".
 ;; Symbol functions
 Symbol gensym := { meta sys gensym#: self. }.
 Symbol gensymOf := { meta sys gensymOf#: self, $1. }.
-Symbol asText := { meta sys symbolic#: lexical, self. }.
+Symbol asText := { meta sys symbolic#: self. }.
 Symbol toString := { meta sys primToString#: self. }.
 Symbol pretty := { self asText. }.
 Symbol == := { meta sys primEquals#: self, $1. }.
 Symbol < := { meta sys primLT#: self, $1. }.
-String intern := { meta sys intern#: lexical, self. }.
+String intern := { meta sys intern#: self. }.
 Number ordinal := { meta sys natSym#: self. }.
 
 ;; Strings and stringification
@@ -229,8 +225,8 @@ meta brackets := { ArrayBuilder := self Object clone.
 
 ;; Continuations
 Cont tag := Nil.
-Cont call := { meta sys exitCC#: lexical, dynamic, self tag, $1. }.
-global callCC := { meta sys callCC#: lexical, dynamic, { parent dynamic $1. }. }.
+Cont call := { meta sys exitCC#: self tag, $1. }.
+global callCC := { meta sys callCC#: { parent dynamic $1. }. }.
 
 ;; The $whereAmI variable
 global $whereAmI := Nil.

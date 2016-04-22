@@ -1,6 +1,8 @@
 #include "Proto.hpp"
+#include "Reader.hpp"
 #include "GC.hpp"
 #include "Standard.hpp"
+#include "Garnish.hpp"
 #include <tuple>
 
 using namespace std;
@@ -56,8 +58,8 @@ ObjectPtr clone(ObjectPtr obj) {
     return ptr;
 }
 
-ObjectPtr meta(ObjectPtr obj) {
-    return getInheritedSlot(obj, Symbols::get()["meta"]);
+ObjectPtr meta(ObjectPtr dyn, ObjectPtr obj) {
+    return getInheritedSlot(dyn, obj, Symbols::get()["meta"]);
 }
 
 auto _getInheritedSlot(list<ObjectPtr>& parents, ObjectPtr obj, Symbolic name)
@@ -84,29 +86,49 @@ auto _getInheritedSlot(list<ObjectPtr>& parents, ObjectPtr obj, Symbolic name)
     }
 }
 
-ObjectPtr getInheritedSlot(ObjectPtr obj, Symbolic name) {
+///// Think about it
+auto _tryToGetSlot(ObjectPtr dyn, ObjectPtr obj, Symbolic name)
+    -> tuple<Slot, ObjectPtr> {
     list<ObjectPtr> parents;
-    auto slot = get<0>(_getInheritedSlot(parents, obj, name));
+    auto result = _getInheritedSlot(parents, obj, name);
+    auto slot = get<0>(result);
     if (slot.getType() == SlotType::PTR) {
-        return slot.getPtr();
+        return result;
     } else {
-        throw doSlotError(obj, obj, Symbols::get()[name]);
+        parents.clear();
+        auto result1 = _getInheritedSlot(parents, obj, Symbols::get()["missing"]);
+        auto slot1 = get<0>(result1);
+        if (slot1.getType() == SlotType::PTR) {
+            ObjectPtr dyn1 = clone(dyn);
+            dyn1.lock()->put(Symbols::get()["$1"], garnish(dyn, name)); // TODO Change to lex, not dyn
+            auto mthdResult = callMethod(obj.lock(), slot1.getPtr(), dyn1);
+            return make_tuple(mthdResult, get<1>(result1));
+        } else {
+            return result1;
+        }
     }
 }
 
-bool hasInheritedSlot(ObjectPtr obj, Symbolic name) {
-    list<ObjectPtr> parents;
-    auto slot = get<0>(_getInheritedSlot(parents, obj, name));
+ObjectPtr getInheritedSlot(ObjectPtr dyn, ObjectPtr obj, Symbolic name) {
+    auto slot = get<0>(_tryToGetSlot(dyn, obj, name));
+    if (slot.getType() == SlotType::PTR) {
+        return slot.getPtr();
+    } else {
+        throw doSlotError(obj, obj, name);
+    }
+}
+
+bool hasInheritedSlot(ObjectPtr dyn, ObjectPtr obj, Symbolic name) {
+    auto slot = get<0>(_tryToGetSlot(dyn, obj, name));
     return slot.getType() == SlotType::PTR;
 }
 
-ObjectPtr getInheritedOrigin(ObjectPtr obj, Symbolic name) {
-    list<ObjectPtr> parents;
-    auto origin = get<1>(_getInheritedSlot(parents, obj, name));
+ObjectPtr getInheritedOrigin(ObjectPtr dyn, ObjectPtr obj, Symbolic name) {
+    auto origin = get<1>(_tryToGetSlot(dyn, obj, name));
     if (!origin.expired())
         return origin;
     else
-        throw doSlotError(obj, obj, Symbols::get()[name]);
+        throw doSlotError(obj, obj, name);
 }
 
 void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
@@ -119,7 +141,7 @@ void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
     auto curr = obj.lock()->directKeys();
     for (auto elem : curr)
         result.insert(elem);
-    _keys(parents, result, getInheritedSlot(obj, Symbols::get()["parent"]));
+    _keys(parents, result, (*obj1)[ Symbols::get()["parent"] ].getPtr());
 }
 
 set<Symbolic> keys(ObjectPtr obj) {
@@ -135,7 +157,7 @@ list<ObjectPtr> hierarchy(ObjectPtr obj) {
                 return obj.lock() == obj1.lock();
             }) == parents.end()) {
         parents.push_back(obj);
-        obj = getInheritedSlot(obj.lock(), Symbols::get()["parent"]);
+        obj = (*obj.lock())[ Symbols::get()["parent"] ].getPtr();
     }
     return parents;
 }

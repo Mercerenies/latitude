@@ -170,6 +170,7 @@ bool primLT(ObjectPtr obj1, ObjectPtr obj2) {
                                 obj2.lock()->prim());
 }
 
+/*
 class DumpObjectVisitor : public boost::static_visitor<ObjectPtr> {
 private:
     ObjectPtr curr, mthd, lex, dyn;
@@ -190,22 +191,19 @@ template <>
 ObjectPtr DumpObjectVisitor::operator()<SystemCall>(SystemCall& val) const {
     return val(std::list<ObjectPtr>());
 }
+*/
 
 void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
-    ObjectPtr toString0 = getInheritedSlot(obj, Symbols::get()["toString"]);
-    ObjectPtr asString0 =
-        boost::apply_visitor(DumpObjectVisitor(obj, toString0, lex, dyn),
-                             toString0.lock()->prim());
+    ObjectPtr toString0 = getInheritedSlot(dyn, obj, Symbols::get()["toString"]);
+    ObjectPtr asString0 = callMethod(obj.lock(), toString0, dyn);
     if (auto str = boost::get<std::string>(&asString0.lock()->prim()))
         stream.writeLine(*str);
     else
         stream.writeLine("<?>");
     for (auto key : keys(obj)) {
-        auto value = getInheritedSlot(obj, key);
-        ObjectPtr toString1 = getInheritedSlot(value, Symbols::get()["toString"]);
-        ObjectPtr asString1 =
-            boost::apply_visitor(DumpObjectVisitor(value, toString1, lex, dyn),
-                                 toString1.lock()->prim());
+        auto value = getInheritedSlot(dyn, obj, key);
+        ObjectPtr toString1 = getInheritedSlot(dyn, value, Symbols::get()["toString"]);
+        ObjectPtr asString1 = callMethod(value.lock(), toString1, dyn);
         stream.writeText("  ");
         stream.writeText(Symbols::get()[key]);
         stream.writeText(": ");
@@ -217,10 +215,8 @@ void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
 }
 
 void simplePrintObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
-    ObjectPtr toString0 = getInheritedSlot(obj, Symbols::get()["toString"]);
-    ObjectPtr asString0 =
-        boost::apply_visitor(DumpObjectVisitor(obj, toString0, lex, dyn),
-                             toString0.lock()->prim());
+    ObjectPtr toString0 = getInheritedSlot(dyn, obj, Symbols::get()["toString"]);
+    ObjectPtr asString0 = callMethod(obj.lock(), toString0, dyn);
     if (auto str = boost::get<std::string>(&asString0.lock()->prim()))
         stream.writeLine(*str);
     else

@@ -17,14 +17,16 @@ CC=$(CCPRE) -I $(BOOST) -c -Wall -std=c++1y
 LINK=$(CCPRE) -Wall -std=c++1y
 FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o Number.o
 
-all:	$(FILES)
+all: Project
+
+Project:	$(FILES)
 	$(LINK) $(FILES)
 
 clean:
 	rm *.o
 	rm lex.yy.c lex.yy.h Parser.tab.c Parser.tab.h
 
-Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp
+Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp
 	$(CC) Proto.cpp
 
 Standard.o:	Standard.cpp Standard.hpp Proto.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Cont.hpp

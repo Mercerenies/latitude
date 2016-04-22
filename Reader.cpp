@@ -95,11 +95,11 @@ void clearCurrentLine() {
 }
 
 ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
-    ObjectPtr result = getInheritedSlot(meta(mthd), Symbols::get()["Nil"]);
-    ObjectPtr lex = getInheritedSlot(mthd, Symbols::get()["closure"]);
+    ObjectPtr result = getInheritedSlot(dyn, meta(dyn, mthd), Symbols::get()["Nil"]);
     auto impl = boost::get<Method>(&mthd.lock()->prim());
     if (!impl)
         return mthd;
+    ObjectPtr lex = getInheritedSlot(dyn, mthd, Symbols::get()["closure"]);
     ObjectPtr lex1 = clone(lex);
     // TODO Remove this if-statement and make self-binding mandatory
     //      once we're confident we've removed anywhere that it's not passed in.
@@ -180,7 +180,7 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
               [&lex, &dyn](std::unique_ptr<Stmt>& arg) {
                   return arg->execute(lex, dyn);
               });
-    ObjectPtr target = getInheritedSlot(scope, Symbols::get()[functionName]);
+    ObjectPtr target = getInheritedSlot(dyn, scope, Symbols::get()[functionName]);
     auto prim = (!target.expired()) ? target.lock()->prim() : boost::blank();
     if (target.expired()) {
         // Could not find slot
@@ -192,13 +192,13 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
     } else if (auto sys = boost::get<SystemCall>(&prim)) {
         // System call slot
 #ifdef PRINT_BEFORE_EXEC
-        cout << "Sys" << endl;
+        cout << "Sys " << functionName << endl;
 #endif
-        return (*sys)(parms);
+        return (*sys)(lex, dyn, parms);
     } else if (boost::get<Method>(&prim)) {
         // Standard method call
 #ifdef PRINT_BEFORE_EXEC
-        cout << "Func" << endl;
+        cout << "Func " << functionName << endl;
 #endif
         ObjectPtr dyn1 = clone(dyn);
         // Arguments :D
@@ -214,7 +214,7 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
     } else {
         // Normal object
 #ifdef PRINT_BEFORE_EXEC
-        cout << "Normal" << endl;
+        cout << "Normal " << functionName << endl;
 #endif
         return target;
     }
@@ -243,7 +243,7 @@ StmtMethod::StmtMethod(std::list< std::shared_ptr<Stmt> >& contents)
     : contents(move(contents)) {}
 
 ObjectPtr StmtMethod::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr mthd = clone(getInheritedSlot(meta(lex), Symbols::get()["Method"]));
+    ObjectPtr mthd = clone(getInheritedSlot(dyn, meta(dyn, lex), Symbols::get()["Method"]));
     mthd.lock()->put(Symbols::get()["closure"], lex);
     mthd.lock()->prim(contents);
     return mthd;
@@ -253,7 +253,7 @@ StmtNumber::StmtNumber(double value)
     : value(value) {}
 
 ObjectPtr StmtNumber::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr num = clone(getInheritedSlot(meta(lex), Symbols::get()["Number"]));
+    ObjectPtr num = clone(getInheritedSlot(dyn, meta(dyn, lex), Symbols::get()["Number"]));
     num.lock()->prim(Number(value));
     return num;
 }
@@ -262,7 +262,7 @@ StmtInteger::StmtInteger(long value)
     : value(value) {}
 
 ObjectPtr StmtInteger::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr num = clone(getInheritedSlot(meta(lex), Symbols::get()["Number"]));
+    ObjectPtr num = clone(getInheritedSlot(dyn, meta(dyn, lex), Symbols::get()["Number"]));
     num.lock()->prim(Number(value));
     return num;
 }
@@ -271,7 +271,7 @@ StmtBigInteger::StmtBigInteger(const char* value)
     : value(value) {}
 
 ObjectPtr StmtBigInteger::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr num = clone(getInheritedSlot(meta(lex), Symbols::get()["Number"]));
+    ObjectPtr num = clone(getInheritedSlot(dyn, meta(dyn, lex), Symbols::get()["Number"]));
     auto value1 = static_cast<Number::bigint>(value);
     num.lock()->prim(Number(value1));
     return num;
@@ -281,7 +281,7 @@ StmtString::StmtString(const char* contents)
     : value(contents) {}
 
 ObjectPtr StmtString::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr str = clone(getInheritedSlot(meta(lex), Symbols::get()["String"]));
+    ObjectPtr str = clone(getInheritedSlot(dyn, meta(dyn, lex), Symbols::get()["String"]));
     str.lock()->prim(value);
     return str;
 }
@@ -290,7 +290,7 @@ StmtSymbol::StmtSymbol(const char* contents)
     : value(contents) {}
 
 ObjectPtr StmtSymbol::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr str = clone(getInheritedSlot(meta(lex), Symbols::get()["Symbol"]));
+    ObjectPtr str = clone(getInheritedSlot(dyn, meta(dyn, lex), Symbols::get()["Symbol"]));
     Symbolic sym ( Symbols::get()[value] );
     str.lock()->prim(sym);
     return str;
@@ -303,22 +303,22 @@ StmtList::StmtList(ArgList& arg)
     : args(move(arg)) {}
 
 ObjectPtr StmtList::execute(ObjectPtr lex, ObjectPtr dyn) {
-    ObjectPtr meta_ = meta(lex);
+    ObjectPtr meta_ = meta(dyn, lex);
     list<ObjectPtr> parms( args.size() );
     transform(args.begin(), args.end(), parms.begin(),
               [&lex, &dyn](std::unique_ptr<Stmt>& arg) {
                   return arg->execute(lex, dyn);
               });
-    ObjectPtr builder = getInheritedSlot(meta_, Symbols::get()["brackets"]);
+    ObjectPtr builder = getInheritedSlot(dyn, meta_, Symbols::get()["brackets"]);
     ObjectPtr builder0 = callMethod(meta_.lock(),
                                     builder,
                                     clone(dyn));
     for (ObjectPtr elem : parms) {
-        ObjectPtr mthd = getInheritedSlot(builder0, Symbols::get()["next"]);
+        ObjectPtr mthd = getInheritedSlot(dyn, builder0, Symbols::get()["next"]);
         ObjectPtr dyn1 = clone(dyn);
         dyn1.lock()->put(Symbols::get()["$1"], elem);
         callMethod(builder0.lock(), mthd, dyn1);
     }
-    ObjectPtr mthd1 = getInheritedSlot(builder0, Symbols::get()["finish"]);
+    ObjectPtr mthd1 = getInheritedSlot(dyn, builder0, Symbols::get()["finish"]);
     return callMethod(builder0.lock(), mthd1, clone(dyn));
 }

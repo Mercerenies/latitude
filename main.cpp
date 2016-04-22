@@ -31,7 +31,11 @@ int main(int argc, char** argv) {
     } catch (ProtoError& err) {
         auto stream = errStream();
         stream->writeLine("*** TOPLEVEL EXCEPTION ***");
-        //global.lock()->put(Symbols::get()["$except"], err.getObject());
+        //auto bloop = getInheritedSlot(global, err.getObject(), Symbols::get()["message"]);
+        //auto bleep = getInheritedSlot(global, err.getObject(), Symbols::get()["slotName"]);
+        //cerr << boost::get<string>(bloop.lock()->prim()) << endl;
+        //cerr << boost::get<string>(bleep.lock()->prim()) << endl;
+        global.lock()->put(Symbols::get()["$except"], err.getObject());
         dumpObject(global, global, *stream, err.getObject());
         return 1;
     }
