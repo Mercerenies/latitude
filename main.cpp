@@ -18,23 +18,15 @@ int main(int argc, char** argv) {
 
     ObjectPtr global;
     try {
-        global = spawnObjects();
-    } catch (ProtoError& err) {
-        cerr << "An error occurred while loading the standard library. "
-             << "Please report this." << endl;
-        if (hasInheritedSlot(err.getObject(), Symbols::get()["message"])) {
-            ObjectPtr thing = getInheritedSlot(err.getObject(), Symbols::get()["message"]);
-            if (auto str = boost::get<string>(&thing.lock()->prim()))
-                cerr << "Details: " << *str << endl;
+        try {
+            global = spawnObjects();
+        } catch (ProtoError& err) {
+            cerr << "An error occurred while loading the standard library. "
+                 << "Please report this." << endl;
+            auto stream = errStream();
+            stream->writeLine("*** STD EXCEPTION ***");
+            dumpObject(global, global, *stream, err.getObject());
         }
-        if (hasInheritedSlot(err.getObject(), Symbols::get()["slotName"])) {
-            ObjectPtr thing = getInheritedSlot(err.getObject(), Symbols::get()["slotName"]);
-            if (auto str = boost::get<string>(&thing.lock()->prim()))
-                cerr << "Details: " << *str << endl;
-        }
-        return 1;
-    }
-    try {
         runREPL(global);
     } catch (ProtoError& err) {
         auto stream = errStream();
