@@ -1,8 +1,10 @@
 #ifndef _MACRO_HPP_
 #define _MACRO_HPP_
 
+#include <list>
 #include <tuple>
 #include <iterator>
+#include "Reader.hpp"
 
 template <typename ForwardIterator, typename... Ts>
 void _bindArguments(ForwardIterator& begin, ForwardIterator& end, Ts&... args);
@@ -34,6 +36,14 @@ bool bindArguments(const Iterable& lst, Ts&... args) {
         return false;
     else
         return (_bindArguments(begin, end, args...), true);
+}
+
+/*
+ * Performs a function call given a set of arguments. All of the arguments should be (assignable to) ObjectPtr.
+ */
+template <typename... Ts>
+ObjectPtr doCallWithArgs(ObjectPtr lex, ObjectPtr dyn, ObjectPtr self, ObjectPtr mthd, Ts... args) {
+    return doCall(lex, dyn, self, mthd, std::list<ObjectPtr> { args... });
 }
 
 #endif // _MACRO_HPP_

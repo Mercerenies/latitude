@@ -24,7 +24,13 @@ PtrToList getCurrentLine();
 std::list< std::unique_ptr<Stmt> > translateCurrentLine();
 void clearCurrentLine();
 
-ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn);
+[[ deprecated("Use doCall, as it is much higher level than this") ]]
+ObjectPtr callMethod(ObjectPtr self, ObjectPtr mthd, ObjectPtr dyn);
+
+ObjectPtr doCall(ObjectPtr lex, ObjectPtr dyn,
+                 ObjectPtr self, ObjectPtr mthd,
+                 std::list<ObjectPtr> args,
+                 std::function<void(ObjectPtr&)> dynCall = [](ObjectPtr&){});
 
 /*
  * Parses the string. Will throw an std::string as an exception

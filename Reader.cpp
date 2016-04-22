@@ -6,6 +6,7 @@ extern "C" {
 #include "Symbol.hpp"
 #include "Standard.hpp"
 #include "Garnish.hpp"
+#include "Macro.hpp"
 #include <cstdio>
 #include <list>
 #include <memory>
@@ -94,7 +95,7 @@ void clearCurrentLine() {
     currentLine.reset();
 }
 
-ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
+ObjectPtr _callMethod(ObjectPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     ObjectPtr result = getInheritedSlot(dyn, meta(dyn, mthd), Symbols::get()["Nil"]);
     auto impl = boost::get<Method>(&mthd.lock()->prim());
     if (!impl)
@@ -103,7 +104,7 @@ ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     ObjectPtr lex1 = clone(lex);
     // TODO Remove this if-statement and make self-binding mandatory
     //      once we're confident we've removed anywhere that it's not passed in.
-    if (self)
+    if (!self.expired())
         lex1.lock()->put(Symbols::get()["self"], self);
     lex1.lock()->put(Symbols::get()["again"], mthd);
     lex1.lock()->put(Symbols::get()["lexical"], lex1);
@@ -113,6 +114,26 @@ ObjectPtr callMethod(ObjectSPtr self, ObjectPtr mthd, ObjectPtr dyn) {
     for (auto stmt : *impl)
         result = stmt->execute(lex1, dyn);
     return result;
+}
+
+ObjectPtr callMethod(ObjectPtr self, ObjectPtr mthd, ObjectPtr dyn) {
+    return _callMethod(self, mthd, dyn);
+}
+
+ObjectPtr doCall(ObjectPtr lex, ObjectPtr dyn,
+                 ObjectPtr self, ObjectPtr mthd,
+                 list<ObjectPtr> args, function<void(ObjectPtr&)> dynCall) {
+    ObjectPtr dyn1 = clone(dyn);
+    // Arguments :D
+    int nth = 0;
+    for (ObjectPtr arg : args) {
+        nth++;
+        ostringstream oss;
+        oss << "$" << nth;
+        dyn1.lock()->put(Symbols::get()[oss.str()], arg);
+    }
+    dynCall(dyn1);
+    return _callMethod(self, mthd, dyn1);
 }
 
 std::list< std::unique_ptr<Stmt> > parse(std::string str) {
@@ -153,9 +174,10 @@ ObjectPtr eval(istream& file, string fname, ObjectPtr lexDef, ObjectPtr dynDef, 
             stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
         auto mthdStmt = StmtMethod(stmts1);
         auto mthd = mthdStmt.execute(lexDef, dynDef);
+        // TODO Don't use an intermediate dynamic object here; modify the actual dynamic of the method
         auto dyn1 = clone(dyn);
         hereIAm(dyn1, garnish(lexDef, fname));
-        return callMethod(lexDef.lock(), mthd, dyn1);
+        return doCallWithArgs(lex, dyn, lexDef, mthd, dyn1);
     } catch (std::string parseException) {
         throw doParseError(lex, parseException);
     }
@@ -200,17 +222,8 @@ ObjectPtr StmtCall::execute(ObjectPtr lex, ObjectPtr dyn) {
 #ifdef PRINT_BEFORE_EXEC
         cout << "Func " << functionName << endl;
 #endif
-        ObjectPtr dyn1 = clone(dyn);
-        // Arguments :D
-        int nth = 0;
-        for (ObjectPtr arg : parms) {
-            nth++;
-            ostringstream oss;
-            oss << "$" << nth;
-            dyn1.lock()->put(Symbols::get()[oss.str()], arg);
-        }
         // Call the function
-        return callMethod(scope.lock(), target, dyn1);
+        return doCall(lex, dyn, scope, target, parms);
     } else {
         // Normal object
 #ifdef PRINT_BEFORE_EXEC
@@ -310,15 +323,11 @@ ObjectPtr StmtList::execute(ObjectPtr lex, ObjectPtr dyn) {
                   return arg->execute(lex, dyn);
               });
     ObjectPtr builder = getInheritedSlot(dyn, meta_, Symbols::get()["brackets"]);
-    ObjectPtr builder0 = callMethod(meta_.lock(),
-                                    builder,
-                                    clone(dyn));
+    ObjectPtr builder0 = doCallWithArgs(lex, dyn, meta_, builder);
     for (ObjectPtr elem : parms) {
         ObjectPtr mthd = getInheritedSlot(dyn, builder0, Symbols::get()["next"]);
-        ObjectPtr dyn1 = clone(dyn);
-        dyn1.lock()->put(Symbols::get()["$1"], elem);
-        callMethod(builder0.lock(), mthd, dyn1);
+        doCallWithArgs(lex, dyn, builder0, mthd, elem);
     }
     ObjectPtr mthd1 = getInheritedSlot(dyn, builder0, Symbols::get()["finish"]);
-    return callMethod(builder0.lock(), mthd1, clone(dyn));
+    return doCallWithArgs(lex, dyn, builder0, mthd1);
 }

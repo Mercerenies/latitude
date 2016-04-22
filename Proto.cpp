@@ -3,6 +3,7 @@
 #include "GC.hpp"
 #include "Standard.hpp"
 #include "Garnish.hpp"
+#include "Macro.hpp"
 #include <tuple>
 
 using namespace std;
@@ -99,9 +100,8 @@ auto _tryToGetSlot(ObjectPtr dyn, ObjectPtr obj, Symbolic name)
         auto result1 = _getInheritedSlot(parents, obj, Symbols::get()["missing"]);
         auto slot1 = get<0>(result1);
         if (slot1.getType() == SlotType::PTR) {
-            ObjectPtr dyn1 = clone(dyn);
-            dyn1.lock()->put(Symbols::get()["$1"], garnish(dyn, name)); // TODO Change to lex, not dyn
-            auto mthdResult = callMethod(obj.lock(), slot1.getPtr(), dyn1);
+            // TODO Change to lex, not dyn in this line
+            auto mthdResult = doCallWithArgs(dyn, dyn, obj, slot1.getPtr(), garnish(dyn, name));
             return make_tuple(mthdResult, get<1>(result1));
         } else {
             return result1;

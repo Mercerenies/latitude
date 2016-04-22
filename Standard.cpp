@@ -250,9 +250,9 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 //
                 auto definitelyTrue = eval("meta True.", global, global).lock();
                 if (cond == definitelyTrue)
-                    return callMethod(lex.lock(), tr, clone(dyn.lock()));
+                    return doCallWithArgs(lex, dyn, lex, tr);
                 else
-                    return callMethod(lex.lock(), fl, clone(dyn.lock()));
+                    return doCallWithArgs(lex, dyn, lex, fl);
             } else {
                 throw doSystemArgError(global, "ifThenElse#", 3, lst.size());
             }
@@ -348,7 +348,6 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 // Dies when it goes out of scope
                 shared_ptr<SignalValidator> livingTag(new SignalValidator());
                 //
-                ObjectPtr dyn1 = clone(dyn.lock());
                 Symbolic sym = Symbols::gensym("CONT");
                 ObjectPtr symObj = getInheritedSlot(dyn,
                                                     meta(dyn, lex),
@@ -360,15 +359,15 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                                        Symbols::get()["ContValidator"]);
                 ObjectPtr validator1 = clone(validator);
                 validator1.lock()->prim(weak_ptr<SignalValidator>(livingTag));
-                dyn1.lock()->put(sym, validator1);
+                // Define a callback to store the tagged validator in the dynamic scope of the method
+                auto callback = [sym, validator1](ObjectPtr& dyn1) { dyn1.lock()->put(sym, validator1); };
                 ObjectPtr cont = getInheritedSlot(dyn,
                                                   meta(dyn, lex),
                                                   Symbols::get()["Cont"]);
                 ObjectPtr cont1 = clone(cont);
                 cont1.lock()->put(Symbols::get()["tag"], symObj1);
                 try {
-                    dyn1.lock()->put(Symbols::get()["$1"], cont1);
-                    return callMethod(lex.lock(), mthd, dyn1);
+                    return doCall(lex, dyn, lex, mthd, { cont1 }, callback);
                 } catch (Signal& signal) {
                     if (signal.match(sym)) {
                         return signal.getObject();
@@ -426,17 +425,12 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             ObjectSPtr lhs, cond, rhs;
             if (bindArguments(lst, lhs, cond, rhs)) {
                 try {
-                    ObjectPtr dyn1 = clone(dyn);
-                    return callMethod(lex.lock(), lhs, dyn1);
+                    return doCallWithArgs(lex, dyn, lex, lhs);
                 } catch (ProtoError& err) {
-                    ObjectPtr dyn1 = clone(dyn);
-                    dyn1.lock()->put(Symbols::get()["$1"], err.getObject());
-                    ObjectPtr result1 = callMethod(lex.lock(), cond, dyn1);
+                    ObjectPtr result1 = doCallWithArgs(lex, dyn, lex, cond, err.getObject());
                     auto definitelyTrue = eval("meta True.", global, global).lock();
                     if (result1.lock() == definitelyTrue) {
-                        ObjectPtr dyn2 = clone(dyn);
-                        dyn2.lock()->put(Symbols::get()["$1"], err.getObject());
-                        return callMethod(lex.lock(), rhs, dyn2);
+                        return doCallWithArgs(lex, dyn, lex, rhs, err.getObject());
                     } else {
                         throw;
                     }
@@ -586,15 +580,13 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 BOOST_SCOPE_EXIT(&abnormal, global, block2, lex, dyn) {
                     try {
                         ObjectPtr status = garnish(global, abnormal);
-                        ObjectPtr dyn1 = clone(dyn);
-                        dyn1.lock()->put(Symbols::get()["$1"], status);
-                        callMethod(lex.lock(), block2, dyn1);
+                        doCallWithArgs(lex, dyn, lex, block2, status);
                     } catch (...) {
                         cerr << "Attempted abnormal exit from protected block!" << endl;
                         terminate();
                     }
                 } BOOST_SCOPE_EXIT_END;
-                ObjectPtr result = callMethod(lex.lock(), block1, clone(dyn));
+                ObjectPtr result = doCallWithArgs(lex, dyn, lex, block1);
                 abnormal = false;
                 return result;
             } else {
@@ -607,7 +599,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 // Calls the method with "self" bound to the given object,
                 // bypassing the normal self. All arguments ($n) remain the
                 // same.
-                return callMethod(self, mthd, clone(dyn));
+                return doCallWithArgs(lex, dyn, self, mthd);
             } else {
                 throw doSystemArgError(global, "invoke#", 2, lst.size());
             }
@@ -706,7 +698,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                      "Loop body is not a method");
                 //
                 while (true)
-                    callMethod(lex.lock(), mthd, clone(dyn));
+                    doCallWithArgs(lex, dyn, lex, mthd);
                 return eval("meta Nil.", global, global); // Should never happen
             } else {
                 throw doSystemArgError(global, "loop#", 1, lst.size());
