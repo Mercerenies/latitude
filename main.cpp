@@ -25,18 +25,18 @@ int main(int argc, char** argv) {
                  << "Please report this." << endl;
             auto stream = errStream();
             stream->writeLine("*** STD EXCEPTION ***");
-            dumpObject(global, global, *stream, err.getObject());
+            dumpObject({ global, global }, *stream, err.getObject());
         }
         runREPL(global);
     } catch (ProtoError& err) {
         auto stream = errStream();
         stream->writeLine("*** TOPLEVEL EXCEPTION ***");
-        //auto bloop = getInheritedSlot(global, err.getObject(), Symbols::get()["message"]);
-        //auto bleep = getInheritedSlot(global, err.getObject(), Symbols::get()["slotName"]);
+        //auto bloop = getInheritedSlot({ global, global }, err.getObject(), Symbols::get()["message"]);
+        //auto bleep = getInheritedSlot({ global, global }, err.getObject(), Symbols::get()["slotName"]);
         //cerr << boost::get<string>(bloop.lock()->prim()) << endl;
-        //cerr << boost::get<string>(bleep.lock()->prim()) << endl;
+        //cerr << Symbols::get()[boost::get<Symbolic>(bleep.lock()->prim())] << endl;
         global.lock()->put(Symbols::get()["$except"], err.getObject());
-        dumpObject(global, global, *stream, err.getObject());
+        dumpObject({ global, global }, *stream, err.getObject());
         return 1;
     }
 

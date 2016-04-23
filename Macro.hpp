@@ -42,8 +42,8 @@ bool bindArguments(const Iterable& lst, Ts&... args) {
  * Performs a function call given a set of arguments. All of the arguments should be (assignable to) ObjectPtr.
  */
 template <typename... Ts>
-ObjectPtr doCallWithArgs(ObjectPtr lex, ObjectPtr dyn, ObjectPtr self, ObjectPtr mthd, Ts... args) {
-    return doCall(lex, dyn, self, mthd, std::list<ObjectPtr> { args... });
+ObjectPtr doCallWithArgs(Scope scope, ObjectPtr self, ObjectPtr mthd, Ts... args) {
+    return doCall(scope, self, mthd, std::list<ObjectPtr> { args... });
 }
 
 #endif // _MACRO_HPP_

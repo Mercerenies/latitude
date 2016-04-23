@@ -8,44 +8,44 @@ using namespace std;
 
 // TODO Fix a lot of these to use a local lexical scope rather than global.
 
-ObjectPtr garnish(ObjectPtr global, bool value) {
+ObjectPtr garnish(Scope scope, bool value) {
     if (value)
-        return eval("meta True.", global, global);
+        return getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["True"]);
     else
-        return eval("meta False.", global, global);
+        return getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["False"]);
 }
 
-ObjectPtr garnish(ObjectPtr global, boost::blank value) {
-    return eval("meta Nil.", global, global);
+ObjectPtr garnish(Scope scope, boost::blank value) {
+    return getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["Nil"]);
 }
 
-ObjectPtr garnish(ObjectPtr global, std::string value) {
-    ObjectPtr string = eval("meta String.", global, global);
+ObjectPtr garnish(Scope scope, std::string value) {
+    ObjectPtr string = getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["String"]);
     ObjectPtr val = clone(string);
     val.lock()->prim(value);
     return val;
 }
 
-ObjectPtr garnish(ObjectPtr global, double value) {
-    ObjectPtr num = eval("meta Number.", global, global);
+ObjectPtr garnish(Scope scope, double value) {
+    ObjectPtr num = getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["Symbol"]);
     ObjectPtr val = clone(num);
     val.lock()->prim(value);
     return val;
 }
 
-ObjectPtr garnish(ObjectPtr global, int value) {
-    return garnish(global, (double)value);
+ObjectPtr garnish(Scope scope, int value) {
+    return garnish(scope, (double)value);
 }
 
-ObjectPtr garnish(ObjectPtr global, Number value) {
-    ObjectPtr num = eval("meta Number.", global, global);
+ObjectPtr garnish(Scope scope, Number value) {
+    ObjectPtr num = getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["Number"]);
     ObjectPtr val = clone(num);
     val.lock()->prim(value);
     return val;
 }
 
-ObjectPtr garnish(ObjectPtr global, Symbolic value) {
-    ObjectPtr sym = eval("meta Symbol.", global, global);
+ObjectPtr garnish(Scope scope, Symbolic value) {
+    ObjectPtr sym = getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["Symbol"]);
     ObjectPtr val = clone(sym);
     val.lock()->prim(value);
     return val;
@@ -171,17 +171,17 @@ bool primLT(ObjectPtr obj1, ObjectPtr obj2) {
                                 obj2.lock()->prim());
 }
 
-void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
-    ObjectPtr toString0 = getInheritedSlot(dyn, obj, Symbols::get()["toString"]);
-    ObjectPtr asString0 = doCallWithArgs(lex, dyn, obj, toString0);
+void dumpObject(Scope scope, Stream& stream, ObjectPtr obj) {
+    ObjectPtr toString0 = getInheritedSlot(scope, obj, Symbols::get()["toString"]);
+    ObjectPtr asString0 = doCallWithArgs(scope, obj, toString0);
     if (auto str = boost::get<std::string>(&asString0.lock()->prim()))
         stream.writeLine(*str);
     else
         stream.writeLine("<?>");
     for (auto key : keys(obj)) {
-        auto value = getInheritedSlot(dyn, obj, key);
-        ObjectPtr toString1 = getInheritedSlot(dyn, value, Symbols::get()["toString"]);
-        ObjectPtr asString1 = doCallWithArgs(lex, dyn, value, toString1);
+        auto value = getInheritedSlot(scope, obj, key);
+        ObjectPtr toString1 = getInheritedSlot(scope, value, Symbols::get()["toString"]);
+        ObjectPtr asString1 = doCallWithArgs(scope, value, toString1);
         stream.writeText("  ");
         stream.writeText(Symbols::get()[key]);
         stream.writeText(": ");
@@ -192,9 +192,9 @@ void dumpObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
     }
 }
 
-void simplePrintObject(ObjectPtr lex, ObjectPtr dyn, Stream& stream, ObjectPtr obj) {
-    ObjectPtr toString0 = getInheritedSlot(dyn, obj, Symbols::get()["toString"]);
-    ObjectPtr asString0 = doCallWithArgs(lex, dyn, obj, toString0);
+void simplePrintObject(Scope scope, Stream& stream, ObjectPtr obj) {
+    ObjectPtr toString0 = getInheritedSlot(scope, obj, Symbols::get()["toString"]);
+    ObjectPtr asString0 = doCallWithArgs(scope, obj, toString0);
     if (auto str = boost::get<std::string>(&asString0.lock()->prim()))
         stream.writeLine(*str);
     else

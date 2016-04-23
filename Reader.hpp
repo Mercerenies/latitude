@@ -14,6 +14,11 @@ public:
     void operator()(List* x);
 };
 
+struct Scope {
+    ObjectPtr lex;
+    ObjectPtr dyn;
+};
+
 using PtrToExpr = std::unique_ptr< Expr, ExprDeleter >;
 using PtrToList = std::unique_ptr< List, ExprDeleter >;
 
@@ -24,13 +29,14 @@ PtrToList getCurrentLine();
 std::list< std::unique_ptr<Stmt> > translateCurrentLine();
 void clearCurrentLine();
 
-[[ deprecated("Use doCall, as it is much higher level than this") ]]
-ObjectPtr callMethod(ObjectPtr self, ObjectPtr mthd, ObjectPtr dyn);
-
-ObjectPtr doCall(ObjectPtr lex, ObjectPtr dyn,
+ObjectPtr doCall(Scope scope,
                  ObjectPtr self, ObjectPtr mthd,
                  std::list<ObjectPtr> args,
                  std::function<void(ObjectPtr&)> dynCall = [](ObjectPtr&){});
+
+ObjectPtr determineScope(const std::unique_ptr<Stmt>& className,
+                         const std::string& functionName,
+                         const Scope& scope);
 
 /*
  * Parses the string. Will throw an std::string as an exception
@@ -43,23 +49,22 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str);
 /*
  * Parses and evaluates the expression in the given context.
  */
-ObjectPtr eval(std::string str, ObjectPtr lex, ObjectPtr dyn);
+ObjectPtr eval(std::string str, Scope scope);
 
 /*
  * Parses and evaluates the file, which should be a source file. Note that lexDef and dynDef should almost
  * always be the global scope. The file will be treated as a method who was defined in the lexDef / dynDef
  * scope and called from the lex / dyn scope. The latter should be the "current" scope.
  */
-ObjectPtr eval(std::istream& file, std::string fname, ObjectPtr lexDef, ObjectPtr dynDef,
-               ObjectPtr lex, ObjectPtr dyn);
+ObjectPtr eval(std::istream& file, std::string fname, Scope defScope, Scope scope);
 
 /*
  * A statement. Defines only one method, which executes
- * the statement in a given lexical and dynamic context.
+ * the statement in a given context.
  */
 class Stmt {
 public:
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn) = 0;
+    virtual ObjectPtr execute(Scope scope) = 0;
 };
 
 /*
@@ -74,7 +79,7 @@ private:
     ArgList args;
 public:
     StmtCall(std::unique_ptr<Stmt>& cls, const std::string& func, ArgList& arg);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -90,7 +95,7 @@ private:
 public:
     StmtEqual(std::unique_ptr<Stmt>& cls, const std::string& func,
               std::unique_ptr<Stmt>& asn);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -101,7 +106,7 @@ private:
     std::list< std::shared_ptr<Stmt> > contents;
 public:
     StmtMethod(std::list< std::shared_ptr<Stmt> >& contents);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -112,7 +117,7 @@ private:
     double value;
 public:
     StmtNumber(double value);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -123,7 +128,7 @@ private:
     long value;
 public:
     StmtInteger(long value);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -134,7 +139,7 @@ private:
     std::string value;
 public:
     StmtBigInteger(const char* value);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -145,7 +150,7 @@ private:
     std::string value;
 public:
     StmtString(const char* contents);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -156,7 +161,7 @@ private:
     std::string value;
 public:
     StmtSymbol(const char* contents);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 /*
@@ -169,7 +174,7 @@ private:
     ArgList args;
 public:
     StmtList(ArgList& arg);
-    virtual ObjectPtr execute(ObjectPtr lex, ObjectPtr dyn);
+    virtual ObjectPtr execute(Scope scope);
 };
 
 #endif // _READER_HPP_

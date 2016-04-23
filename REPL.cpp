@@ -8,11 +8,13 @@
 using namespace std;
 
 ObjectPtr spawnREPLObjects(ObjectPtr& global) {
-    ObjectPtr object = getInheritedSlot(global, meta(global, global), Symbols::get()["Object"]);
+    ObjectPtr object = getInheritedSlot({ global, global },
+                                        meta({ global, global }, global),
+                                        Symbols::get()["Object"]);
     ObjectPtr repl = clone(object);
 
     repl.lock()->put(Symbols::get()["toString"],
-                     eval("\"REPL\".", global, global));
+                     eval("\"REPL\".", { global, global }));
 
     global.lock()->put(Symbols::get()["REPL"], repl);
 
@@ -25,14 +27,14 @@ ObjectPtr spawnREPLObjects(ObjectPtr& global, ObjectPtr& cont) {
     repl.lock()->put(Symbols::get()["quitter"], cont);
     repl.lock()->put(Symbols::get()["quit"],
                      eval("{ self quitter call: meta Nil. }.",
-                          global, global));
-    repl.lock()->put(Symbols::get()["exception"], eval("meta Nil.", global, global));
-    repl.lock()->put(Symbols::get()["lastResult"], eval("meta Nil.", global, global));
+                          { global, global }));
+    repl.lock()->put(Symbols::get()["exception"], eval("meta Nil.", { global, global }));
+    repl.lock()->put(Symbols::get()["lastResult"], eval("meta Nil.", { global, global }));
     global.lock()->put(Symbols::get()["quit"],
                        eval("{ self REPL quit. }.",
-                            global, global));
-    global.lock()->put(Symbols::get()["$except"], eval("{ self REPL exception. }.", global, global));
-    global.lock()->put(Symbols::get()["$it"], eval("{ self REPL lastResult. }.", global, global));
+                            { global, global }));
+    global.lock()->put(Symbols::get()["$except"], eval("{ self REPL exception. }.", { global, global }));
+    global.lock()->put(Symbols::get()["$it"], eval("{ self REPL lastResult. }.", { global, global }));
     hereIAm(global, repl);
 
     return repl;
@@ -42,24 +44,25 @@ void runREPL(ObjectPtr& global) {
     // Simulate a callCC
     shared_ptr<SignalValidator> livingTag(new SignalValidator());
     Symbolic sym = Symbols::gensym("QUIT");
-    ObjectPtr symObj = getInheritedSlot(global,
-                                        meta(global, global),
+    ObjectPtr symObj = getInheritedSlot({ global, global },
+                                        meta({ global, global }, global),
                                         Symbols::get()["Symbol"]);
     ObjectPtr symObj1 = clone(symObj);
     symObj1.lock()->prim(sym);
-    ObjectPtr validator = getInheritedSlot(global,
-                                           meta(global, global),
+    ObjectPtr validator = getInheritedSlot({ global, global },
+                                           meta({ global, global }, global),
                                            Symbols::get()["ContValidator"]);
     ObjectPtr validator1 = clone(validator);
     validator1.lock()->prim(weak_ptr<SignalValidator>(livingTag));
     global.lock()->put(sym, validator1);
-    ObjectPtr cont = getInheritedSlot(global,
-                                      meta(global, global),
+    ObjectPtr cont = getInheritedSlot({ global, global },
+                                      meta({ global, global }, global),
                                       Symbols::get()["Cont"]);
     ObjectPtr cont1 = clone(cont);
     cont1.lock()->put(Symbols::get()["tag"], symObj1);
 
     ObjectPtr repl = spawnREPLObjects(global, cont1);
+    GC::get().garbageCollect(global);
     try {
         auto out = outStream();
         ObjectPtr result;
@@ -70,9 +73,9 @@ void runREPL(ObjectPtr& global) {
                     // TODO Allow multi-line statements in REPL
                     cout << "> ";
                     getline(cin, current);
-                    result = eval(current, global, global);
+                    result = eval(current, { global, global });
                     repl.lock()->put(Symbols::get()["lastResult"], result);
-                    simplePrintObject(global, global, *out, result);
+                    simplePrintObject({ global, global }, *out, result);
                 } catch (std::string parseException) {
                     throw doParseError(global, parseException);
                 }
@@ -82,7 +85,7 @@ void runREPL(ObjectPtr& global) {
                 auto stream = errStream();
                 stream->writeLine("*** EXCEPTION ***");
                 repl.lock()->put(Symbols::get()["exception"], err.getObject());
-                dumpObject(global, global, *stream, err.getObject());
+                dumpObject({ global, global }, *stream, err.getObject());
             }
         }
     } catch (Signal& signal) {

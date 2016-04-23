@@ -59,8 +59,10 @@ void GC::garbageCollect(Ts... globals) {
         if (auto curr1 = curr->lock()) {
             for (auto key : curr1->directKeys()) {
                 auto val = (*curr1)[key].getPtr();
-                if (visited.find(val) == visited.end())
+                if (visited.find(val) == visited.end()) {
+                    //std::cout << "Inserting " << val.lock() << " from " << Symbols::get()[key] << std::endl;
                     frontier.insert(val);
+                }
             }
         }
     }
