@@ -1,0 +1,65 @@
+
+;; Array functions
+Array lowerBound := 0.
+Array upperBound := 0.
+Array mapping := { var := $1.
+                   if: { var >= 0. },
+                       { (var * 2) + 1. },
+                       { var * -2. }. }.
+Array empty? := { (self lowerBound) >= (self upperBound). }.
+Array pushFront := { value := $1.
+                     self lowerBound := self lowerBound - 1.
+                     self put: (self mapping: self lowerBound) ordinal, value.
+                     value. }.
+Array pushBack := { value := $1.
+                    self put: (self mapping: self upperBound) ordinal, value.
+                    self upperBound := self upperBound + 1.
+                    value. }.
+Array popFront := { if: self empty?,
+                        { meta BoundsError clone throw. },
+                        { self := parent self.
+                          self lowerBound := self lowerBound + 1.
+                          self get: (self mapping: (self lowerBound - 1)) ordinal. }. }.
+Array popBack := { if: self empty?,
+                       { meta BoundsError clone throw. },
+                       { self := parent self.
+                         self upperBound := self upperBound - 1.
+                         self get: (self mapping: self upperBound) ordinal. }. }.
+Array nth := { pos := if: ($1 < 0),
+                          { (parent self upperBound) + (parent dynamic $1). },
+                          { (parent self lowerBound) + (parent dynamic $1). }.
+               if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
+                   { meta BoundsError clone throw. },
+                   { self := parent self.
+                     self get: (self mapping: pos) ordinal. }. }.
+Array nth= := { pos := if: ($1 < 0),
+                           { (parent self upperBound) + (parent dynamic $1). },
+                           { (parent self lowerBound) + (parent dynamic $1). }.
+                if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
+                    { meta BoundsError clone throw. },
+                    { self := parent self.
+                      self put: (self mapping: pos) ordinal, parent dynamic $2. }. }.
+Array size := { (self upperBound) - (self lowerBound). }.
+Array join := { index := 1.
+                size := self size.
+                delim := { parent dynamic $1. }.
+                str := if: self empty?,
+                           { "". },
+                           { (parent self nth: 0) toString. }.
+                while: { (index) < (size). },
+                       { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
+                         parent index := index + 1. }.
+                str. }.
+Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the infix syntax friendlier
+; TODO Equality and comparability
+
+;; Array Syntax
+meta brackets := { ArrayBuilder := self Object clone.
+                   ArrayBuilder toString := "ArrayBuilder".
+                   ArrayBuilder array := self Array clone.
+                   ArrayBuilder next := { self array pushBack: $1. }.
+                   ArrayBuilder finish := { self array. }.
+                   ArrayBuilder. }.
+
+;; Return the script
+here.

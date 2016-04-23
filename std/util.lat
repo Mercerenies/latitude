@@ -1,0 +1,30 @@
+
+;; Continuations
+Cont tag := Nil.
+Cont call := { meta sys exitCC#: self tag, $1. }.
+global callCC := { meta sys callCC#: { parent dynamic $1. }. }.
+
+;; "Cells" a la MIT Scheme
+global Cell := Object clone.
+Cell value := Nil.
+Cell toString := "Cell".
+
+;; Lockboxes and Latchkeys
+global Latchkey := Object clone.
+global Lockbox := Object clone.
+Latchkey tag := Symbol.
+Latchkey make := { key := self clone.
+                   key tag := key tag gensymOf: "KEY".
+                   key. }.
+Lockbox store := { self put: $1 tag, $2. }.
+Lockbox fits := { self has: $1 tag. }.
+Lockbox retrieve := { if: { parent self fits: parent dynamic $1. },
+                          { parent self get: parent dynamic $1 tag. },
+                          { meta Nil. }. }.
+Lockbox toString := "Lockbox".
+Latchkey toString := "Latchkey".
+Latchkey pretty := { "Key " ++ (self tag pretty). }.
+Latchkey == := { (self tag) == (self tag). }.
+
+;; Return the script
+here.

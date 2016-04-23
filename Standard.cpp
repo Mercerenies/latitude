@@ -16,7 +16,6 @@ using namespace std;
 // TODO Make primitive objects like String and Number clone properly (prim() fields don't clone)
 
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
-void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta);
 
 ProtoError doSystemArgError(ObjectPtr global, string name, int expected, int got);
 ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, Symbolic slotName);
@@ -93,9 +92,8 @@ ObjectPtr spawnObjects() {
     global.lock()->put(Symbols::get()["stdout"], stdout_);
     global.lock()->put(Symbols::get()["global"], global);
 
-    // Method and system call properties / exceptions
+    // Method and system call properties
     spawnSystemCalls(global, systemCall, sys);
-    spawnExceptions(global, systemError, meta);
 
     // Prim Fields
     method.lock()->prim(Method());
@@ -763,71 +761,6 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["loop#"], callLoop);
     sys.lock()->put(Symbols::get()["loadFile#"], callLoadFile);
 
-}
-
-void spawnExceptions(ObjectPtr& global, ObjectPtr& error, ObjectPtr& meta) {
-    // TODO Better messages for these exceptions once we have some kind of
-    //      string formatting capabilities.
-
-    ObjectPtr systemCallError(clone(error));
-    systemCallError.lock()->put(Symbols::get()["message"],
-                                eval("\"Error in system call\".", { global, global }));
-
-    ObjectPtr systemArgError(clone(error));
-    systemArgError.lock()->put(Symbols::get()["message"],
-                               eval("\"Wrong number of arguments to system call\".",
-                                    { global, global }));
-    systemArgError.lock()->put(Symbols::get()["gotArguments"],
-                               eval("0.", { global, global }));
-    systemArgError.lock()->put(Symbols::get()["expectedArguments"],
-                               eval("0.", { global, global }));
-    systemArgError.lock()->put(Symbols::get()["functionName"],
-                               eval("\"\".", { global, global }));
-
-    ObjectPtr streamError(clone(error));
-    streamError.lock()->put(Symbols::get()["message"],
-                            eval("\"Stream error\".", { global, global }));
-
-    ObjectPtr typeError(clone(error));
-    typeError.lock()->put(Symbols::get()["message"],
-                          eval("\"Type error\".", { global, global }));
-
-    ObjectPtr slotError(clone(error));
-    slotError.lock()->put(Symbols::get()["message"],
-                          eval("\"Could not find slot\".", { global, global }));
-    slotError.lock()->put(Symbols::get()["slotName"],
-                          eval("meta Nil.", { global, global }));
-    slotError.lock()->put(Symbols::get()["objectInstance"],
-                          eval("meta Nil.", { global, global }));
-
-    ObjectPtr contError(clone(error));
-    contError.lock()->put(Symbols::get()["message"],
-                          eval("\"Continuation error\".", { global, global }));
-
-    ObjectPtr parseError(clone(error));
-    parseError.lock()->put(Symbols::get()["message"],
-                           eval("\"Parse error\".", { global, global }));
-
-    ObjectPtr boundsError(clone(error));
-    boundsError.lock()->put(Symbols::get()["message"],
-                            eval("\"Bounds error\".", { global, global }));
-
-    meta.lock()->put(Symbols::get()["SystemCallError"], systemCallError);
-    meta.lock()->put(Symbols::get()["SystemArgError"], systemArgError);
-    meta.lock()->put(Symbols::get()["StreamError"], streamError);
-    meta.lock()->put(Symbols::get()["TypeError"], typeError);
-    meta.lock()->put(Symbols::get()["SlotError"], slotError);
-    meta.lock()->put(Symbols::get()["ContError"], contError);
-    meta.lock()->put(Symbols::get()["ParseError"], parseError);
-    meta.lock()->put(Symbols::get()["BoundsError"], boundsError);
-    global.lock()->put(Symbols::get()["SystemCallError"], systemCallError);
-    global.lock()->put(Symbols::get()["SystemArgError"], systemArgError);
-    global.lock()->put(Symbols::get()["StreamError"], streamError);
-    global.lock()->put(Symbols::get()["TypeError"], typeError);
-    global.lock()->put(Symbols::get()["SlotError"], slotError);
-    global.lock()->put(Symbols::get()["ContError"], contError);
-    global.lock()->put(Symbols::get()["ParseError"], parseError);
-    global.lock()->put(Symbols::get()["BoundsError"], boundsError);
 }
 
 // TODO Take a lot of the ', global, global);' statements and make them scoped

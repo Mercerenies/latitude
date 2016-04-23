@@ -1,0 +1,45 @@
+
+;; Exceptions
+Exception message := "Exception!".
+Exception toString := "Exception".
+Exception pretty := { self message. }.
+
+global SystemCallError := SystemError clone tap { self message := "Error in system call".
+                                                  self toString := "SystemCallError". }.
+meta SystemCallError := SystemCallError.
+
+global SystemArgError := SystemError clone tap { self message := "Wrong number of arguments to system call".
+                                                 self gotArguments := 0.
+                                                 self expectedArguments := 0.
+                                                 self functionName := "".
+                                                 self toString := "SystemArgError". }.
+meta SystemArgError := SystemArgError.
+
+global StreamError := SystemError clone tap { self message := "Stream error".
+                                              self toString := "StreamError". }.
+meta StreamError := StreamError.
+
+global TypeError := SystemError clone tap { self message := "Type error".
+                                            self toString := "TypeError". }.
+meta StreamError := StreamError.
+
+global SlotError := SystemError clone tap { self message := "Could not find slot".
+                                            self slotName := meta Nil.
+                                            self objectInstance := meta Nil.
+                                            self toString := "SlotError". }.
+meta SlotError := SlotError.
+
+global ContError := SystemError clone tap { self message := "Continuation error".
+                                            self toString := "ContError". }.
+meta ContError := ContError.
+
+global ParseError := SystemError clone tap { self message := "Parse error".
+                                             self toString := "ParseError". }.
+meta ParseError := ParseError.
+
+global BoundsError := SystemError clone tap { self message := "Bounds error".
+                                              self toString := "BoundsError". }.
+meta BoundsError := BoundsError.
+
+;; We would return the script here, but the `has` function requires flow_control.lat
+1.

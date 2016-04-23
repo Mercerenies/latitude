@@ -35,6 +35,9 @@ global SystemError := meta SystemError.
 global Array := meta Array.
 global Kernel := meta Kernel.
 
+;; The $whereAmI variable
+global $whereAmI := Nil.
+
 ;; Basics of exception handling
 (hold 'Method) handle := { meta sys try#: { parent self. },
                                           { (parent dynamic $1: $1) toBool. },
@@ -44,11 +47,6 @@ global Kernel := meta Kernel.
 Object throw := { meta sys throw#: self. }.
 (hold 'Method) protect := { meta sys scopeProtect#: { parent self. },
                                                     { parent dynamic $1. }. }.
-
-;; Exceptions
-Exception message := "Exception!".
-Exception toString := "Exception".
-Exception pretty := { self message. }.
 
 ;; Procs and Methods handling
 (hold 'Method) closure := global.
@@ -76,40 +74,13 @@ Stream toString := "Stream".
 global scope := { self. }.
 global $scope := { self. }.
 Object me := { self. }.
-global here := { if: (has 'again),
-                     { parent hold 'again. },
+global here := { if: (self has 'again),
+                     { parent self hold 'again. },
                      { meta Nil. }. }.
 Object missing := { err := meta SlotError clone.
                     err slotName := dynamic hold '$1.
                     err objectInstance := lexical hold 'self.
                     err throw. }.
-
-;; Booleans
-Object toBool := True.
-False toBool := False.
-Nil toBool := False.
-Boolean toString := "Boolean".
-True toString := "True".
-False toString := "False".
-Nil toString := "Nil".
-global if := { meta sys ifThenElse#: $1 toBool,
-                                     { parent dynamic $2. },
-                                     { parent dynamic $3. }. }.
-Object ifTrue := { if: self, { parent dynamic $1. }, { meta Nil. }. }.
-Object ifFalse := { if: self, { meta Nil. }, { parent dynamic $1. }. }.
-Object and := { if: self, { parent dynamic $1. }, {meta False. }. }.
-Object or := { fst := self.
-               if: fst, { fst. }, { parent dynamic $1. }. }.
-Object not := { if: self, { meta False. }, { meta True. }. }.
-
-;; Loops
-global loop := { meta sys loop#: { parent dynamic $1. }. }.
-global while := { cond := { parent dynamic $1. }.
-                  stmt := { parent dynamic $2. }.
-                  callCC { $break := { parent dynamic $1 call. }.
-                           loop { if: cond,
-                                      { stmt. },
-                                      { $break: meta Nil. }. }. }. }.
 
 ;; Equality and Comparability
 Object === := { meta sys ptrEquals#: self, $1. }.
@@ -145,113 +116,5 @@ String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
 
-;; Arithmetic and Number Types
-Number toString := { meta sys primToString#: self. }.
-Number == := { meta sys primEquals#: self, $1. }.
-Number < := { meta sys primLT#: self, $1. }.
-Number + := { meta sys numAdd#: self, $1. }.
-Number - := { meta sys numSub#: self, $1. }.
-Number * := { meta sys numMul#: self, $1. }.
-Number / := { meta sys numDiv#: self, $1. }.
-Number mod := { meta sys numMod#: self, $1. }.
-
-;; Numerical Type Checking
-Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.
-Number isInteger?  := { (meta sys numLevel#: self) <= 1. }.
-Number isRational? := { (meta sys numLevel#: self) <= 2. }.
-Number isFloating? := { (meta sys numLevel#: self) == 3. }.
-
-;; Array functions
-Array lowerBound := 0.
-Array upperBound := 0.
-Array mapping := { var := $1.
-                   if: { var >= 0. },
-                       { (var * 2) + 1. },
-                       { var * -2. }. }.
-Array empty? := { (self lowerBound) >= (self upperBound). }.
-Array pushFront := { value := $1.
-                     self lowerBound := self lowerBound - 1.
-                     self put: (self mapping: self lowerBound) ordinal, value.
-                     value. }.
-Array pushBack := { value := $1.
-                    self put: (self mapping: self upperBound) ordinal, value.
-                    self upperBound := self upperBound + 1.
-                    value. }.
-Array popFront := { if: self empty?,
-                        { meta BoundsError clone throw. },
-                        { self := parent self.
-                          self lowerBound := self lowerBound + 1.
-                          self get: (self mapping: (self lowerBound - 1)) ordinal. }. }.
-Array popBack := { if: self empty?,
-                       { meta BoundsError clone throw. },
-                       { self := parent self.
-                         self upperBound := self upperBound - 1.
-                         self get: (self mapping: self upperBound) ordinal. }. }.
-Array nth := { pos := if: ($1 < 0),
-                          { (parent self upperBound) + (parent dynamic $1). },
-                          { (parent self lowerBound) + (parent dynamic $1). }.
-               if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                   { meta BoundsError clone throw. },
-                   { self := parent self.
-                     self get: (self mapping: pos) ordinal. }. }.
-Array nth= := { pos := if: ($1 < 0),
-                           { (parent self upperBound) + (parent dynamic $1). },
-                           { (parent self lowerBound) + (parent dynamic $1). }.
-                if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                    { meta BoundsError clone throw. },
-                    { self := parent self.
-                      self put: (self mapping: pos) ordinal, parent dynamic $2. }. }.
-Array size := { (self upperBound) - (self lowerBound). }.
-Array join := { index := 1.
-                size := self size.
-                delim := { parent dynamic $1. }.
-                str := if: self empty?,
-                           { "". },
-                           { (parent self nth: 0) toString. }.
-                while: { (index) < (size). },
-                       { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
-                         parent index := index + 1. }.
-                str. }.
-Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the infix syntax friendlier
-; TODO Equality and comparability
-
-;; Array Syntax
-meta brackets := { ArrayBuilder := self Object clone.
-                   ArrayBuilder toString := "ArrayBuilder".
-                   ArrayBuilder array := self Array clone.
-                   ArrayBuilder next := { self array pushBack: $1. }.
-                   ArrayBuilder finish := { self array. }.
-                   ArrayBuilder. }.
-
-;; Continuations
-Cont tag := Nil.
-Cont call := { meta sys exitCC#: self tag, $1. }.
-global callCC := { meta sys callCC#: { parent dynamic $1. }. }.
-
-;; The $whereAmI variable
-global $whereAmI := Nil.
-
-;; "Cells" a la MIT Scheme
-global Cell := Object clone.
-Cell value := Nil.
-Cell toString := "Cell".
-
-;; Lockboxes and Latchkeys
-global Latchkey := Object clone.
-global Lockbox := Object clone.
-Latchkey tag := Symbol.
-Latchkey make := { key := self clone.
-                   key tag := key tag gensymOf: "KEY".
-                   key. }.
-Lockbox store := { self put: $1 tag, $2. }.
-Lockbox fits := { self has: $1 tag. }.
-Lockbox retrieve := { if: { parent self fits: parent dynamic $1. },
-                          { parent self get: parent dynamic $1 tag. },
-                          { meta Nil. }. }.
-Lockbox toString := "Lockbox".
-Latchkey toString := "Latchkey".
-Latchkey pretty := { "Key " ++ (self tag pretty). }.
-Latchkey == := { (self tag) == (self tag). }.
-
-;; Return the script
-here.
+;; We would return the script here, but the `has` function requires flow_control.lat
+1.

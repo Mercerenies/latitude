@@ -1,0 +1,30 @@
+
+;; Booleans
+Object toBool := True.
+False toBool := False.
+Nil toBool := False.
+Boolean toString := "Boolean".
+True toString := "True".
+False toString := "False".
+Nil toString := "Nil".
+global if := { meta sys ifThenElse#: $1 toBool,
+                                     { parent dynamic $2. },
+                                     { parent dynamic $3. }. }.
+Object ifTrue := { if: self, { parent dynamic $1. }, { meta Nil. }. }.
+Object ifFalse := { if: self, { meta Nil. }, { parent dynamic $1. }. }.
+Object and := { if: self, { parent dynamic $1. }, {meta False. }. }.
+Object or := { fst := self.
+               if: fst, { fst. }, { parent dynamic $1. }. }.
+Object not := { if: self, { meta False. }, { meta True. }. }.
+
+;; Loops
+global loop := { meta sys loop#: { parent dynamic $1. }. }.
+global while := { cond := { parent dynamic $1. }.
+                  stmt := { parent dynamic $2. }.
+                  callCC { $break := { parent dynamic $1 call. }.
+                           loop { if: cond,
+                                      { stmt. },
+                                      { $break: meta Nil. }. }. }. }.
+
+;; Return the script
+here.
