@@ -59,6 +59,11 @@ global proc := { curr := self Proc clone.
 (hold 'Method) toString := "Method".
 Proc toString := "Proc".
 (hold 'Method) < := { (self) < ($1). }. ; Evaluate the method and then try again
+Proc <| := { proc { r := (parent dynamic hold '$1) call.
+                    (parent hold 'self) call: r. }. }.
+Proc |> := { (dynamic hold '$1) <| (hold 'self). }.
+; ///// Function composition triggers a GC segfault
+; Try `a := { $1. } <| { $1. }.`
 
 ;; Stream general methods
 Stream in? := { meta sys streamIn#: self. }.
