@@ -25,7 +25,8 @@ int main(int argc, char** argv) {
                  << "Please report this." << endl;
             auto stream = errStream();
             stream->writeLine("*** STD EXCEPTION ***");
-            dumpObject({ global, global }, *stream, err.getObject());
+            dumpObject({ err.getObject(), err.getObject() }, *stream, err.getObject());
+            return 1;
         }
         runREPL(global);
     } catch (ProtoError& err) {
