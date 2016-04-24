@@ -50,8 +50,29 @@ Array join := { index := 1.
                        { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
                          parent index := index + 1. }.
                 str. }.
-Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the infix syntax friendlier
+Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the language's infix syntax friendlier
 ; TODO Equality and comparability
+
+;; Collection Methods
+Array map! := { index := 0.
+                size := self size.
+                func := { parent dynamic $1. }.
+                while: { (index) < (size). },
+                       { parent self nth=: index, (func: (parent self nth: index)).
+                         parent index := index + 1. }.
+                self. }.
+Array visit := { index := 0.
+                 size := self size.
+                 func := { parent dynamic $1. }.
+                 while: { (index) < (size). },
+                        { func: (parent self nth: index).
+                          parent index := index + 1. }.
+                 self. }.
+
+;; This is a fix for a problem with `map` from `Collection`
+Array clone := { procd := self invoke: (Object hold 'clone).
+                 procd call tap { self lowerBound := self lowerBound.
+                                  self upperBound := self upperBound. }. }.
 
 ;; Array Syntax
 meta brackets := { ArrayBuilder := self Object clone.

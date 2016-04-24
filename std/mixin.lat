@@ -1,0 +1,17 @@
+
+;; Mixins
+global Mixin := Object clone.
+Mixin toString := "Mixin".
+Mixin interface := '[].
+Mixin inject := { target := $1.
+                  mixin := self.
+                  injector := target parent clone.
+                  injector parent := target parent.
+                  target parent := injector.
+                  injector toString := { mixin toString. }.
+                  self interface visit: { injector put: $1,
+                                                        { procd := self invoke: (mixin hold: parent dynamic $1).
+                                                          procd call. }. }.
+                  injector. }.
+
+here.
