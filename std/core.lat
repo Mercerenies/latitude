@@ -12,9 +12,10 @@ meta Object invoke := { procd := meta Proc clone.
                         procd call := { meta sys invoke#: parent self,
                                                           (parent dynamic hold '$1). }.
                         procd. }.
+meta Object above := { orgn := self origin: $1.
+                       (hold 'orgn) parent hold: $1. }.
 meta Object tap := { (self invoke: (dynamic hold '$1)) call.
                      self. }.
-;; TODO "above" function which acts like super()
 
 ;; Move all of the meta values to the global scope
 global Object := meta Object.

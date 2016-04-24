@@ -1,9 +1,4 @@
 
-;; Continuations
-Cont tag := Nil.
-Cont call := { meta sys exitCC#: self tag, $1. }.
-global callCC := { meta sys callCC#: { parent dynamic $1. }. }.
-
 ;; "Cells" a la MIT Scheme
 global Cell := Object clone.
 Cell value := Nil.

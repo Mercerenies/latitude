@@ -1,4 +1,9 @@
 
+;; Continuations
+Cont tag := Nil.
+Cont call := { meta sys exitCC#: self tag, $1. }.
+global callCC := { meta sys callCC#: { parent dynamic $1. }. }.
+
 ;; Booleans
 Object toBool := True.
 False toBool := False.
