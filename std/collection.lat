@@ -3,13 +3,16 @@
 ; TODO Make the collections functions (as well as the array ones) support Procs, not just Methods.
 global Collection := Mixin clone.
 Collection toString := "Collection".
-Collection interface := '[map, foldl].
+Collection interface := '[map, foldl, foldr].
 Collection map := { coll := self clone.
                     coll map!: { (parent dynamic hold '$1) call. }. }.
 Collection foldl := { accum := $1.
                       self visit: { parent accum := (parent dynamic hold '$2) call: accum, $1. }.
                       accum. }.
-; TODO foldr
+Collection foldr := { func := proc { parent dynamic $2. }.
+                      accum := proc { $1. }. ; TODO Name the identity function in the global scope
+                      self visit: { parent accum := accum <| (proc { func call: parent dynamic $1, $1. }). }.
+                      accum call: $1. }.
 
 Collection inject: Array.
 
