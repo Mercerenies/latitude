@@ -4,6 +4,9 @@
 #include "Proto.hpp"
 #include <set>
 #include <array>
+#include <algorithm>
+
+#define GC_PRINT 0
 
 /*
  * A singleton object representing the global garbage collector. All
@@ -35,6 +38,9 @@ public:
 
 template <typename... Ts>
 void GC::garbageCollect(Ts... globals) {
+#if GC_PRINT > 0
+    std::cout << "<<ENTER GC>>" << std::endl;
+#endif
     struct WeakLess {
         bool operator()(const ObjectPtr& obj0, const ObjectSPtr& obj1) {
             return obj0.lock() < obj1;
@@ -52,15 +58,22 @@ void GC::garbageCollect(Ts... globals) {
     for (auto elem : args)
         frontier.insert(elem);
     while (!frontier.empty()) {
-        auto curr = frontier.begin();
+        auto curr = *(frontier.begin());
         auto stream(outStream());
-        visited.insert(*curr);
+        visited.insert(curr);
         frontier.erase(curr);
-        if (auto curr1 = curr->lock()) {
+        if (auto curr1 = curr.lock()) {
+#if GC_PRINT > 1
+            std::cout << "<<Got lock on " << curr1 << ">>" << std::endl;
+#endif
+            assert(alloc.find(curr1) != alloc.end());
             for (auto key : curr1->directKeys()) {
                 auto val = (*curr1)[key].getPtr();
                 if (visited.find(val) == visited.end()) {
-                    //std::cout << "Inserting " << val.lock() << " from " << Symbols::get()[key] << std::endl;
+#if GC_PRINT > 1
+                    std::cout << "<<Inserting " << val.lock() << " from "
+                              << Symbols::get()[key] << ">>" << std::endl;
+#endif
                     frontier.insert(val);
                 }
             }
@@ -75,6 +88,9 @@ void GC::garbageCollect(Ts... globals) {
         alloc.erase(res);
         res.reset();
     }
+#if GC_PRINT > 0
+    std::cout << "<<EXIT GC>>" << std::endl;
+#endif
 }
 
 #endif // _GC_HPP_
