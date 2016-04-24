@@ -5,9 +5,9 @@ global Collection := Mixin clone.
 Collection toString := "Collection".
 Collection interface := '[map, foldl].
 Collection map := { coll := self clone.
-                    coll map!: { parent dynamic $1. }. }.
+                    coll map!: { (parent dynamic hold '$1) call. }. }.
 Collection foldl := { accum := $1.
-                      self visit: { parent accum := parent dynamic $2: accum, $1. }.
+                      self visit: { parent accum := (parent dynamic hold '$2) call: accum, $1. }.
                       accum. }.
 ; TODO foldr
 

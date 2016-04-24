@@ -56,14 +56,14 @@ Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the languag
 ;; Collection Methods
 Array map! := { index := 0.
                 size := self size.
-                func := { parent dynamic $1. }.
+                func := { (parent dynamic hold '$1) call. }.
                 while: { (index) < (size). },
                        { parent self nth=: index, (func: (parent self nth: index)).
                          parent index := index + 1. }.
                 self. }.
 Array visit := { index := 0.
                  size := self size.
-                 func := { parent dynamic $1. }.
+                 func := { (parent dynamic hold '$1) call. }.
                  while: { (index) < (size). },
                         { func: (parent self nth: index).
                           parent index := index + 1. }.
