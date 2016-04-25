@@ -21,7 +21,7 @@ meta StreamError := StreamError.
 
 global TypeError := SystemError clone tap { self message := "Type error".
                                             self toString := "TypeError". }.
-meta StreamError := StreamError.
+meta TypeError := TypeError.
 
 global SlotError := SystemError clone tap { self message := "Could not find slot".
                                             self slotName := meta Nil.
