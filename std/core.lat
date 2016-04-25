@@ -1,4 +1,4 @@
-; ///// Think about mixins to get a good collections hierarchy then do the collections API and sequences
+
 ;; Cloning and metaprogramming basics
 meta Object clone := { meta sys doClone#: self. }.
 meta Object is := { meta sys instanceOf#: self, $1. }.
@@ -62,8 +62,9 @@ Proc toString := "Proc".
 Proc <| := { proc { r := (parent dynamic hold '$1) call.
                     (parent hold 'self) call: r. }. }.
 Proc |> := { (dynamic hold '$1) <| (hold 'self). }.
-; ///// Function composition triggers a GC segfault
-; Try `a := { $1. } <| { $1. }.`
+Symbol toProc := { sym := self.
+                   proc { obj := ArgList clone fill shift.
+                          (obj invoke (obj hold: sym)) call. }. }.
 
 ;; Stream general methods
 Stream in? := { meta sys streamIn#: self. }.
