@@ -54,6 +54,8 @@ Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the languag
 ; TODO Equality and comparability
 
 ;; Collection Methods
+; (Note that Array needs to implement his own `visit` because the mixin Collection
+;  requires Array's `visit` in order to work)
 Array map! := { index := 0.
                 size := self size.
                 func := { (parent dynamic hold '$1) call. }.

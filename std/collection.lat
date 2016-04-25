@@ -1,9 +1,16 @@
 
-;; Collection implementations are expected to have `map!` and `visit`, as well as a sane `clone`.
+;; In case Array is changed later, we still want toArray to return the original idea of an "array"
+Array := Array.
+
+;; Collection implementations are expected to have `map!`, as well as a sane `clone`.
+;; Implementors are encourages to override these methods where appropriate to make them more efficient,
+;; for example the `size` method.
 ; TODO Make the collections functions (as well as the array ones) support Procs, not just Methods.
 global Collection := Mixin clone.
 Collection toString := "Collection".
-Collection interface := '[map, foldl, foldr].
+Collection interface := '[visit, map, foldl, foldr, size, toArray].
+Collection visit := { self map!: { (parent dynamic hold '$1) call.
+                                   $1. }. }.
 Collection map := { coll := self clone.
                     coll map!: { (parent dynamic hold '$1) call. }. }.
 Collection foldl := { accum := $1.
@@ -13,6 +20,10 @@ Collection foldr := { func := proc { parent dynamic $2. }.
                       accum := proc { $1. }. ; TODO Name the identity function in the global scope
                       self visit: { parent accum := accum <| (proc { func call: parent dynamic $1, $1. }). }.
                       accum call: $1. }.
+Collection size := { self foldl: 0, { $1 + 1. }. }.
+Collection toArray := { arr := Array clone.
+                        self visit: { arr pushBack. }.
+                        arr. }.
 
 Collection inject: Array.
 
