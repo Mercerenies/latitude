@@ -1,0 +1,44 @@
+
+;; The argument list. When cloned, it takes the current dynamic scope and references its argument list.
+global ArgList := Object clone.
+ArgList toString := "ArgList".
+ArgList enclosingScope := global.
+ArgList fill := { self enclosingScope := dynamic parent.
+                  self. }.
+ArgList map! := { func := { (parent dynamic hold '$1) call. }.
+                  arglist := self enclosingScope.
+                  index := 1.
+                  toSym := { (("$") ++ ($1)) intern. }.
+                  while: { arglist has: (toSym: index). },
+                         { arglist put: (toSym: index), (func: (arglist hold: (toSym: index))).
+                           parent index := index + 1. }. }.
+ArgList shift := { if: (self size == 0),
+                       { meta Nil. },
+                       { self := parent self.
+                         first := self enclosingScope $1.
+                         arglist := self.
+                         size := self size.
+                         temp := first.
+                         index := 2.
+                         self map!: { if: ((index) > (size)),
+                                          { hold 'first. },
+                                          { result := arglist enclosingScope hold: ((("$") ++ (index)) intern).
+                                            parent parent index := index + 1.
+                                            hold 'result. }. }.
+                         hold 'first. }. }.
+ArgList unshift := { if: (self size == 0),
+                         { meta Nil. },
+                         { self := parent self.
+                           first := self enclosingScope $1.
+                           arglist := self.
+                           size := self size.
+                           temp := meta Nil.
+                           self map!: { temp1 := temp.
+                                        parent temp := $1.
+                                        temp1. }.
+                           self enclosingScope $1 := temp. }. }.
+
+Collection inject: ArgList.
+
+;; Return the script
+here.
