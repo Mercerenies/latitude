@@ -1,6 +1,8 @@
 
 ;; In case Array is changed later, we still want toArray to return the original idea of an "array"
 Array := Array.
+True := True.
+False := False.
 
 ;; Collection implementations are expected to have `map!`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
@@ -8,7 +10,7 @@ Array := Array.
 ; TODO Make the collections functions (as well as the array ones) support Procs, not just Methods.
 global Collection := Mixin clone.
 Collection toString := "Collection".
-Collection interface := '[visit, map, foldl, foldr, size, toArray].
+Collection interface := '[visit, map, foldl, foldr, size, toArray, all, any, notall, notany].
 Collection visit := { self map!: { (parent dynamic hold '$1) call.
                                    $1. }. }.
 Collection map := { coll := self clone.
@@ -16,7 +18,7 @@ Collection map := { coll := self clone.
 Collection foldl := { accum := $1.
                       self visit: { parent accum := (parent dynamic hold '$2) call: accum, $1. }.
                       accum. }.
-Collection foldr := { func := proc { parent dynamic $2. }.
+Collection foldr := { func := proc { (parent dynamic hold '$2) call. }.
                       accum := proc { $1. }. ; TODO Name the identity function in the global scope
                       self visit: { parent accum := accum <| (proc { func call: parent dynamic $1, $1. }). }.
                       accum call: $1. }.
@@ -24,6 +26,26 @@ Collection size := { self foldl: 0, { $1 + 1. }. }.
 Collection toArray := { arr := Array clone.
                         self visit: { arr pushBack. }.
                         arr. }.
+Collection all := { func := proc { (parent dynamic hold '$1) call. }.
+                    callCC { return := { parent dynamic $1 call. }.
+                             parent self visit: { arg := $1.
+                                                  (func call: arg) ifFalse: { return: False. }. }.
+                             True. }. }.
+Collection any := { func := proc { (parent dynamic hold '$1) call. }.
+                    callCC { return := { parent dynamic $1 call. }.
+                             parent self visit: { arg := $1.
+                                                  (func call: arg) ifTrue: { return: arg. }. }.
+                             False. }. }.
+Collection notall := { func := proc { (parent dynamic hold '$1) call. }.
+                       callCC { return := { parent dynamic $1 call. }.
+                                parent self visit: { arg := $1.
+                                                     (func call: arg) ifFalse: { return: True. }. }.
+                                False. }. }.
+Collection notany := { func := proc { (parent dynamic hold '$1) call. }.
+                       callCC { return := { parent dynamic $1 call. }.
+                                parent self visit: { arg := $1.
+                                                     (func call: arg) ifTrue: { return: False. }. }.
+                                True. }. }.
 
 Collection inject: Array.
 
