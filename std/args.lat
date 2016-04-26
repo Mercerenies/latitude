@@ -5,13 +5,6 @@ ArgList toString := "ArgList".
 ArgList enclosingScope := global.
 ArgList fill := { self enclosingScope := dynamic parent.
                   self. }.
-ArgList map! := { func := { (parent dynamic hold '$1) call. }.
-                  arglist := self enclosingScope.
-                  index := 1.
-                  toSym := { (("$") ++ ($1)) intern. }.
-                  while: { arglist has: (toSym: index). },
-                         { arglist put: (toSym: index), (func: (arglist hold: (toSym: index))).
-                           parent index := index + 1. }. }.
 ArgList shift := { if: (self size == 0),
                        { meta Nil. },
                        { self := parent self.
@@ -37,6 +30,15 @@ ArgList unshift := { if: (self size == 0),
                                         parent temp := $1.
                                         temp1. }.
                            self enclosingScope $1 := temp. }. }.
+ArgList iterator := { ArgIterator := Object clone.
+                      ArgIterator array := self.
+                      ArgIterator toString := "ArgIterator".
+                      ArgIterator index := 1.
+                      ArgIterator next := { self index := self index + 1. }.
+                      ArgIterator end? := { (self array enclosingScope has: ("$" ++ (self index)) intern) not. }.
+                      ArgIterator element := { self array enclosingScope hold: ("$" ++ (self index)) intern. }.
+                      ArgIterator element= := { self array enclosingScope put: ("$" ++ (self index)) intern, $1. }.
+                      ArgIterator. }.
 
 Collection inject: ArgList.
 

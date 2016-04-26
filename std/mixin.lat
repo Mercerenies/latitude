@@ -9,9 +9,13 @@ Mixin inject := { target := $1.
                   injector parent := target parent.
                   target parent := injector.
                   injector toString := { mixin toString. }.
-                  self interface visit: { injector put: $1,
-                                                        { procd := self invoke: (mixin hold: parent dynamic $1).
-                                                          procd call. }. }.
+                  iter := self interface iterator.
+                  while: { iter end? not. },
+                         { curr := iter element.
+                           injector put: curr,
+                                         { procd := self invoke: (mixin hold: curr).
+                                           procd call. }.
+                           iter next. }.
                   injector. }.
 
 here.

@@ -96,6 +96,8 @@ Object > := { ($1) < (self). }.
 Object >= := { ((self) > ($1)) or ((self) == ($1)). }.
 Object <= := { ((self) < ($1)) or ((self) == ($1)). }.
 Object /= := { ((self) == ($1)) not. }.
+Object min := { if: ((self) < ($1)), self, $1. }.
+Object max := { if: ((self) > ($1)), self, $1. }.
 
 ;; Kernel functions
 Kernel toString := "Kernel".

@@ -56,20 +56,15 @@ Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the languag
 ;; Collection Methods
 ; (Note that Array needs to implement his own `visit` because the mixin Collection
 ;  requires Array's `visit` in order to work)
-Array map! := { index := 0.
-                size := self size.
-                func := { (parent dynamic hold '$1) call. }.
-                while: { (index) < (size). },
-                       { parent self nth=: index, (func: (parent self nth: index)).
-                         parent index := index + 1. }.
-                self. }.
-Array visit := { index := 0.
-                 size := self size.
-                 func := { (parent dynamic hold '$1) call. }.
-                 while: { (index) < (size). },
-                        { func: (parent self nth: index).
-                          parent index := index + 1. }.
-                 self. }.
+Array iterator := { ArrayIterator := Object clone.
+                    ArrayIterator toString := "ArrayIterator".
+                    ArrayIterator index := 0.
+                    ArrayIterator array := self.
+                    ArrayIterator next := { self index := self index + 1. }.
+                    ArrayIterator end? := { (self index) >= (self array size). }.
+                    ArrayIterator element := { self array nth: self index. }.
+                    ArrayIterator element= := { self array nth=: self index, $1. }.
+                    ArrayIterator. }.
 
 ;; This is a fix for a problem with `map` from `Collection`
 Array clone := { procd := self invoke: (Object hold 'clone).
