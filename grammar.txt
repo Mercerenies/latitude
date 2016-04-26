@@ -26,7 +26,8 @@
 
 <line> ::= <stmt> "."
 <stmt> ::= <chain> <name> <rhs> |
-           <literal>
+           <literal> |
+           "(" <stmt> ")"
 <rhs> ::= <lambda> |
           <rhschain>
           ":=" <stmt> |

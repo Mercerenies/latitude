@@ -115,7 +115,8 @@ stmt:
         $$->name = $2;
         $$->lhs = $1;
     } |
-    literal
+    literal |
+    '(' stmt ')' { $$ = $2; }
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
