@@ -50,7 +50,7 @@ Array join := { index := 1.
                        { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
                          parent index := index + 1. }.
                 str. }.
-Array toString := { "[" ++ ((self join ", ") ++ "]"). }. ; TODO Make the language's infix syntax friendlier
+Array toString := { "[" ++ (self join ", ") ++ "]". }.
 ; TODO Equality and comparability
 
 ;; Collection Methods

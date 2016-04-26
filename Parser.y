@@ -86,6 +86,7 @@
 %type <argval> literallist
 %type <argval> literallist1
 %type <exprval> listlit
+%type <exprval> rhschain
 
 %token <sval> NAME
 %token <dval> NUMBER
@@ -118,10 +119,7 @@ stmt:
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
-    literal { $$ = new Expr(); $$->args = new List();
-              $$->args->car = $1; $$->args->cdr = new List(); } |
-    '(' stmt ')' { $$ = new Expr(); $$->args = new List();
-                   $$->args->car = $2; $$->args->cdr = new List(); } |
+    rhschain { $$ = new Expr(); $$->args = new List(); $$->args->car = $1; $$->args->cdr = new List(); } |
     '=' stmt { $$ = new Expr(); $$->equals = true; $$->rhs = $2; } |
     ':' arglist { $$ = new Expr(); $$->args = $2; }
     ;
@@ -161,9 +159,11 @@ linelist:
 literallist:
     /* empty */ { $$ = new List(); } |
     listlit literallist1 { $$ = new List(); $$->car = $1; $$->cdr = $2; }
+    ;
 literallist1:
     /* empty */ { $$ = new List(); } |
     ',' listlit literallist1 { $$ = new List(); $$->car = $2; $$->cdr = $3; }
+    ;
 listlit:
     STRING { $$ = new Expr(); $$->isString = true; $$->name = $1; } |
     SYMBOL { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; } |
@@ -172,6 +172,15 @@ listlit:
     BIGINT { $$ = new Expr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = new Expr(); $$->isList = true; $$->args = $2; } |
     NAME { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; }
+    ;
+rhschain:
+    literal { $$ = $1; } |
+    '(' stmt ')' { $$ = $2; } |
+    literal NAME rhschain { $$ = new Expr(); $$->lhs = $1; $$->name = $2; $$->args = new List();
+                            $$->args->car = $3; $$->args->cdr = new List(); } |
+    '(' stmt ')' NAME rhschain { $$ = new Expr(); $$->lhs = $2; $$->name = $4; $$->args = new List();
+                                 $$->args->car = $5; $$->args->cdr = new List(); }
+    ;
 
 %%
 

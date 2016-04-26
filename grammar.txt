@@ -28,8 +28,7 @@
 <stmt> ::= <chain> <name> <rhs> |
            <literal>
 <rhs> ::= <lambda> |
-          "(" <stmt> ")" |
-          <literal> |
+          <rhschain>
           ":=" <stmt> |
           ":" <arglist>
 <arglist> ::= <lambda> |
@@ -64,3 +63,7 @@
               "'" "(" <text> ")" |
               "[" <literallist> "]" |
               <name>
+<rhschain> ::= <literal> |
+               "(" <stmt> ")" |
+               <literal> <name> <rhschain> |
+               "(" <stmt> ")" <name> <rhschain>
