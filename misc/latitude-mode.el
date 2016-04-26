@@ -63,6 +63,8 @@
   (pcase (cons kind token)
     (`(:list-intro . ":") t)))
 
+(add-to-list 'auto-mode-alist '("\\.lat\\'" . latitude-mode))
+
 (defun latitude-mode ()
   (interactive)
   (kill-all-local-variables)
