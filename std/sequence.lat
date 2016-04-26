@@ -1,0 +1,49 @@
+
+Nil := Nil.
+
+;; "Cons" objects, as in Lisp
+global Cons := Object clone.
+Cons toString := "Cons".
+Cons pretty := { "(" ++ (self car pretty) ++ " . " ++ (self cdr pretty) ++ ")". }.
+Cons car := Nil.
+Cons cdr := Nil.
+
+Cons := Cons.
+
+;; Forward linked lists
+global Sequence := Object clone.
+Sequence toString := "Sequence".
+Sequence list := Nil.
+Sequence fromArray := { self clone tap { self list := parent dynamic $1 foldr: Nil,
+                                                                               { cc := Cons clone.
+                                                                                 cc car := $1.
+                                                                                 cc cdr := $2.
+                                                                                 cc. }. }. }.
+Sequence iterator := { SequenceIterator := Object clone.
+                       SequenceIterator toString := SequenceIterator.
+                       SequenceIterator inside := self list.
+                       SequenceIterator next := { self inside := self inside cdr. }.
+                       SequenceIterator end? := { self inside nil?. }.
+                       SequenceIterator element := { self inside car. }.
+                       SequenceIterator element= := { self inside car := $1. }.
+                       SequenceIterator. }.
+{*
+Sequence lazy := { cons0 := self list.
+                   seq := LazySequence clone.
+                   lazyCons := { cc := Cons clone.
+                                 cc car := { parent dynamic $1 car. }.
+                                 cc cdr := { lazyCons: parent dynamic $1 cdr. }. }.
+                   seq list := lazyCons: cons0. }.
+*}
+Collection inject: Sequence. ; ///// Lazy sequences
+
+;; A lazy sequence implementation, designed to allow infinite data structures. To
+;; allow these to work, it is necessary to manually override several Collection
+;; functions.
+{*
+global LazySequence := Object clone.
+LazySequence toString := "LazySequence".
+LazySequence list := Nil.
+*}
+;; Return the script
+here.
