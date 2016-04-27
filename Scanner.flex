@@ -36,6 +36,8 @@
          curr_buffer_pos = 0;
          curr_buffer_size = 0;
      }
+
+     // TODO Make the scanner (and printer) able to handle escape sequences for newlines, etc. (\n, \r, \t, etc)
 %}
 
 NORMAL    [^.,:()\[\]{}\"\' \t\n\r]

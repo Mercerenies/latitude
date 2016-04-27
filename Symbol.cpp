@@ -39,6 +39,8 @@ bool Symbols::isUninterned(const std::string& str) {
 
 bool Symbols::requiresEscape(const std::string& str){
     string str0(str); // Need a copy
+    if ((str0 == "") || (str0 == "~"))
+        return true;
     sort(str0.begin(), str0.end());
     string special(".,:()[]{}\"\' \t\n");
     sort(special.begin(), special.end());
