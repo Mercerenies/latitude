@@ -47,6 +47,8 @@ ID        {SNORMAL}{NORMAL}*
 %x INNER_COMMENT
 %%
 
+#< { yyerror("Unreadable object"); }
+
 [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
     yylval.dval = strtod(yytext, NULL);
     return NUMBER;
