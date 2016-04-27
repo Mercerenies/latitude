@@ -6,6 +6,7 @@
   (let ((map (make-sparse-keymap)))
     map))
 
+; TODO Lisp mode seems to define a lot of symbols as whitespace; change them to words here
 (defvar latitude-mode-syntax-table
    (let ((st (make-syntax-table lisp-mode-syntax-table)))
      (modify-syntax-entry ?\; "<" st)
@@ -20,17 +21,27 @@
      (modify-syntax-entry ?\~ "w" st)
      (modify-syntax-entry ?\? "w" st)
      (modify-syntax-entry ?\! "w" st)
+     (modify-syntax-entry ?\< "w" st)
+     (modify-syntax-entry ?\> "w" st)
+     (modify-syntax-entry ?\| "w" st)
+     (modify-syntax-entry ?\$ "w" st)
      st))
 
-; (regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "dynamic" "parent" "here" "again" "self" "invoke" "get" "has" "put" "slot" "hold") 'symbols)
-; (regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method" "Proc" "Stream" "SystemCall" "Cont" "Exception" "SystemError" "Array" "Kernel") 'symbols)
-
 (defvar latitude-mode-font-lock-keywords
-  (list '("\\_<\\(\\sw+\\)\\s-*:=\\s-*{" (1 font-lock-function-name-face))
-        '("\\_<\\([A-Z]\\sw+\\)\\s-*:=" (1 font-lock-type-face))
-        '("\\_<\\(\\sw+\\)\\s-*:=" (1 font-lock-variable-name-face))
-        '("\\_<\\(again\\|clone\\|dynamic\\|g\\(?:et\\|lobal\\)\\|h\\(?:as\\|ere\\|old\\)\\|invoke\\|lexical\\|meta\\|p\\(?:arent\\|retty\\|ut\\)\\|s\\(?:elf\\|lot\\)\\|toString\\)\\_>" . font-lock-builtin-face)
-        '("\\_<\\(Array\\|Boolean\\|Cont\\|Exception\\|False\\|Kernel\\|Method\\|N\\(?:il\\|umber\\)\\|Object\\|Proc\\|S\\(?:tr\\(?:eam\\|ing\\)\\|y\\(?:mbol\\|stem\\(?:Call\\|Error\\)\\)\\)\\|True\\)\\_>" . font-lock-constant-face)))
+  (list `("\\_<\\(\\sw+\\)\\s-*:=\\s-*{" (1 font-lock-function-name-face))
+        `("\\_<\\([A-Z]\\sw+\\)\\s-*:=" (1 font-lock-type-face))
+        `("\\_<\\(\\sw+\\)\\s-*:=" (1 font-lock-variable-name-face))
+        `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "dynamic" "parent"
+                         "here" "again" "self" "invoke" "get" "has" "put" "slot" "hold" "callCC"
+                         "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
+                         "catch" "handle" "load" "inject")
+                       'symbols) . font-lock-builtin-face)
+        `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
+                         "Proc" "Stream" "SystemCall" "Cont" "Exception" "SystemError" "Array" "Kernel"
+                         "Sequence" "ArgList" "Collection" "StreamError" "SystemArgError"
+                         "SystemCallError" "TypeError" "SlotError" "ContError" "ParseError"
+                         "BoundsError" "Mixin" "Cons" "Cell" "Lockbox" "Latchkey")
+                       'symbols) . font-lock-constant-face)))
 
 ;; (defun latitude-mode-skip-blanks ()
 ;;   (forward-line -1)
