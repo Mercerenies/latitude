@@ -99,7 +99,7 @@ ID        {SNORMAL}{NORMAL}*
     return SYMBOL;
 }
 
-~{NORMAL}* {
+~{NORMAL}+ {
     char* arr = calloc(strlen(yytext) + 1, sizeof(char));
     strcpy(arr, yytext);
     yylval.sval = arr;
