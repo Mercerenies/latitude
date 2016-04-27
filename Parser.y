@@ -37,14 +37,15 @@
         bool equals;
         struct Expr* rhs;
         bool method;
-        bool isNumber;
+        bool isNumber; // Check number
         double number;
-        bool isInt;
+        bool isInt; // Check integer
         long integer;
-        bool isBigInt;
-        bool isString;
-        bool isSymbol;
-        bool isList;
+        bool isBigInt; // Check name
+        bool isString; // Check name
+        bool isSymbol; // Check name
+        bool isList; // Check args
+        bool isSigil; // Check name and rhs
     };
 
     struct List {
@@ -145,6 +146,8 @@ chain:
     /* empty */ { $$ = NULL; }
     ;
 literalish:
+    SYMBOL literalish { if (*$1 != '~') { yyerror("Sigil name must be an interned symbol"); }
+                        $$ = makeExpr(); $$->isSigil = true; $$->name = $1; $$->rhs = $2; } |
     '(' stmt ')' { $$ = $2; } |
     literal
     ;

@@ -55,6 +55,11 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
     } else if (expr->isList) {
         auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
         return unique_ptr<Stmt>(new StmtList(line, args));
+    } else if (expr->isSigil) {
+        // Recall that sigil names are verified to start with a ~ in the parser
+        assert(expr->name[0] == '~');
+        std::string name = expr->name + 1;
+        return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(expr->rhs)));
     } else if (expr->method) {
         auto contents0 = translateList(expr->args);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
@@ -394,5 +399,22 @@ ObjectPtr StmtList::execute(Scope scope) {
 void StmtList::propogateFileName(std::string name) {
     for (auto& ptr : args)
         ptr->propogateFileName(name);
+    Stmt::propogateFileName(name);
+}
+
+StmtSigil::StmtSigil(int line_no, string name, unique_ptr<Stmt> rhs)
+    : Stmt(line_no), name(name), rhs(move(rhs)) {}
+
+ObjectPtr StmtSigil::execute(Scope scope) {
+    establishLocation(scope);
+    ObjectPtr rhs_ = rhs->execute(scope);
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr sigil = getInheritedSlot(scope, meta_, Symbols::get()["sigil"]);
+    ObjectPtr mySigil = getInheritedSlot(scope, sigil, Symbols::get()[name]);
+    return doCallWithArgs(scope, sigil, mySigil, rhs_);
+}
+
+void StmtSigil::propogateFileName(std::string name) {
+    rhs->propogateFileName(name);
     Stmt::propogateFileName(name);
 }

@@ -192,4 +192,17 @@ public:
     virtual void propogateFileName(std::string name);
 };
 
+/*
+ * A sigil, syntax sugar for some function calls
+ */
+class StmtSigil : public Stmt {
+private:
+    std::string name;
+    std::unique_ptr<Stmt> rhs;
+public:
+    StmtSigil(int line_no, std::string name, std::unique_ptr<Stmt> rhs);
+    virtual ObjectPtr execute(Scope scope);
+    virtual void propogateFileName(std::string name);
+};
+
 #endif // _READER_HPP_

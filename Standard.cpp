@@ -50,6 +50,7 @@ ObjectPtr spawnObjects() {
     ObjectPtr array_(clone(object));
 
     ObjectPtr sys(clone(object));
+    ObjectPtr sigil(clone(object));
     ObjectPtr kernel(clone(object));
 
     ObjectPtr nil(clone(object));
@@ -85,6 +86,7 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["meta"], meta);
     object.lock()->put(Symbols::get()["meta"], meta);
     meta.lock()->put(Symbols::get()["sys"], sys);
+    meta.lock()->put(Symbols::get()["sigil"], sigil);
 
     // Global variables not accessible in meta
     global.lock()->put(Symbols::get()["stdin"], stdin_);
