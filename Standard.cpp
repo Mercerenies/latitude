@@ -793,6 +793,7 @@ ProtoError doSystemArgError(Scope scope,
                             int got) {
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["SystemArgError"]));
+    err.lock()->put(Symbols::get()["stack"], scope.dyn);
     err.lock()->put(Symbols::get()["gotArguments"], garnish(scope, got));
     err.lock()->put(Symbols::get()["expectedArguments"], garnish(scope, expected));
     err.lock()->put(Symbols::get()["functionName"], garnish(scope, name));
@@ -802,6 +803,7 @@ ProtoError doSystemArgError(Scope scope,
 ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName) {
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["SlotError"]));
+    err.lock()->put(Symbols::get()["stack"], scope.dyn);
     err.lock()->put(Symbols::get()["slotName"], garnish(scope, slotName));
     err.lock()->put(Symbols::get()["objectInstance"], problem);
     return ProtoError(err);
@@ -810,6 +812,7 @@ ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName) {
 ProtoError doParseError(Scope scope) {
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["ParseError"]));
+    err.lock()->put(Symbols::get()["stack"], scope.dyn);
     return ProtoError(err);
 }
 
@@ -817,12 +820,14 @@ ProtoError doParseError(Scope scope, string message) {
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["ParseError"]));
     err.lock()->put(Symbols::get()["message"], garnish(scope, message));
+    err.lock()->put(Symbols::get()["stack"], scope.dyn);
     return ProtoError(err);
 }
 
 ProtoError doEtcError(Scope scope, string errorName, string msg) {
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()[errorName]));
+    err.lock()->put(Symbols::get()["stack"], scope.dyn);
     err.lock()->put(Symbols::get()["message"], garnish(scope, msg));
     return ProtoError(err);
 }
