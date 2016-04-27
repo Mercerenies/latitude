@@ -4,6 +4,7 @@ Array := Array.
 True := True.
 False := False.
 Nil := Nil.
+proc := hold 'proc.
 
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
@@ -11,7 +12,7 @@ Nil := Nil.
 global Collection := Mixin clone.
 Collection toString := "Collection".
 Collection interface := '[map!, visit, map, foldl, foldr, size, toArray, all, any, notall, notany,
-                          detect, countIf, count, find, containsIf, contains, zip, zip!].
+                          detect, countIf, count, find, containsIf, contains, zip, zip!, take].
 Collection map! := { func := { (parent dynamic hold '$1) call. }.
                      iter := self iterator.
                      while: { iter end? not. },
@@ -87,6 +88,15 @@ Collection zip! := { iter1 := $1 iterator.
                                   if: iter1 end?,
                                       { [curr, Nil]. },
                                       { [curr, iter1 element] tap { iter1 next. }. }. }. }.
+Collection take := { remaining := $1.
+                     decrement := { parent remaining := remaining - 1. }.
+                     arr := Array clone.
+                     callCC { return := { parent dynamic $1 call. }.
+                              parent self visit { if: (remaining > 0),
+                                                      { arr pushBack: parent dynamic $1.
+                                                        decrement. },
+                                                      { return: Nil. }. }. }.
+                     arr. }.
 ; TODO maximum and minimum (need to handle the corner cases well)
 ; TODO filter (probably needs to be done in the individual components, not in terms of visit / map)
 

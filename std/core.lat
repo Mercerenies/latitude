@@ -55,9 +55,6 @@ Exception throw := { self stack := dynamic parent.
 (hold 'Method) closure := global.
 Proc call := (hold 'Method) clone.
 (hold 'Method) call := { self. }.
-global proc := { curr := self Proc clone.
-                 curr call := { parent dynamic $1. }.
-                 curr. }.
 (hold 'Method) toString := "Method".
 Proc toString := "Proc".
 (hold 'Method) < := { (self) < ($1). }. ; Evaluate the method and then try again
@@ -67,6 +64,24 @@ Proc |> := { (dynamic hold '$1) <| (hold 'self). }.
 Symbol toProc := { sym := self.
                    proc { obj := ArgList clone fill shift.
                           (obj invoke (obj hold: sym)) call. }. }.
+
+;; Cached Procedures
+global Cached := Object clone.
+Cached toString := "Cached".
+Cached value := Nil.
+Cached done? := False.
+Cached procedure := {}.
+Cached call := { if: self done?,
+                     { parent self value. },
+                     { parent self done? := True.
+                       parent self value := parent self procedure call. }. }.
+
+global proc := { curr := self Proc clone.
+                 curr call := { parent dynamic $1. }.
+                 curr. }.
+global memo := { curr := self Cached clone.
+                 curr procedure := self proc { parent dynamic $1. }.
+                 curr. }.
 
 ;; Stream general methods
 Stream in? := { meta sys streamIn#: self. }.
