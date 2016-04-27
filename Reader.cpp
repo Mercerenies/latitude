@@ -41,35 +41,36 @@ unique_ptr<Stmt> translateStmt(Expr* expr);
 list< unique_ptr<Stmt> > translateList(List* list);
 
 unique_ptr<Stmt> translateStmt(Expr* expr) {
+    int line = expr->line;
     if (expr->isSymbol) {
-        return unique_ptr<Stmt>(new StmtSymbol(expr->name));
+        return unique_ptr<Stmt>(new StmtSymbol(line, expr->name));
     } else if (expr->isString) {
-        return unique_ptr<Stmt>(new StmtString(expr->name));
+        return unique_ptr<Stmt>(new StmtString(line, expr->name));
     } else if (expr->isNumber) {
-        return unique_ptr<Stmt>(new StmtNumber(expr->number));
+        return unique_ptr<Stmt>(new StmtNumber(line, expr->number));
     } else if (expr->isInt) {
-        return unique_ptr<Stmt>(new StmtInteger(expr->integer));
+        return unique_ptr<Stmt>(new StmtInteger(line, expr->integer));
     } else if (expr->isBigInt) {
-        return unique_ptr<Stmt>(new StmtBigInteger(expr->name));
+        return unique_ptr<Stmt>(new StmtBigInteger(line, expr->name));
     } else if (expr->isList) {
         auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
-        return unique_ptr<Stmt>(new StmtList(args));
+        return unique_ptr<Stmt>(new StmtList(line, args));
     } else if (expr->method) {
         auto contents0 = translateList(expr->args);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
         transform(contents0.begin(), contents0.end(), contents1.begin(),
                   [](auto& cc) { return move(cc); });
-        return unique_ptr<Stmt>(new StmtMethod(contents1));
+        return unique_ptr<Stmt>(new StmtMethod(line, contents1));
     } else if (expr->equals) {
         auto rhs = translateStmt(expr->rhs);
         auto func = expr->name;
         auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
-        return unique_ptr<Stmt>(new StmtEqual(lhs, func, rhs));
+        return unique_ptr<Stmt>(new StmtEqual(line, lhs, func, rhs));
     } else {
         auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
         auto func = expr->name;
         auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
-        return unique_ptr<Stmt>(new StmtCall(lhs, func, args));
+        return unique_ptr<Stmt>(new StmtCall(line, lhs, func, args));
     }
 }
 
@@ -149,6 +150,30 @@ ObjectPtr determineScope(const unique_ptr<Stmt>& className, const string& functi
     }
 }
 
+int grabLineNumber(const Scope& scope, ObjectPtr dyn) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr lineStorage_ = getInheritedSlot(scope, meta_, Symbols::get()["lineStorage"]);
+    Symbolic* lineStorage = boost::get<Symbolic>(&lineStorage_.lock()->prim());
+    if ((lineStorage) && (hasInheritedSlot(scope, dyn, *lineStorage))) {
+        ObjectPtr line = getInheritedSlot(scope, dyn, *lineStorage);
+        if (auto value = boost::get<Number>(&line.lock()->prim()))
+            return value->asSmallInt();
+    }
+    return 0;
+}
+
+std::string grabFileName(const Scope& scope, ObjectPtr dyn) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr fileStorage_ = getInheritedSlot(scope, meta_, Symbols::get()["fileStorage"]);
+    Symbolic* fileStorage = boost::get<Symbolic>(&fileStorage_.lock()->prim());
+    if ((fileStorage) && (hasInheritedSlot(scope, dyn, *fileStorage))) {
+        ObjectPtr file = getInheritedSlot(scope, dyn, *fileStorage);
+        if (auto value = boost::get<std::string>(&file.lock()->prim()))
+            return *value;
+    }
+    return "???";
+}
+
 std::list< std::unique_ptr<Stmt> > parse(std::string str) {
     const char* buffer = str.c_str();
     auto curr = yy_scan_string(buffer);
@@ -169,10 +194,10 @@ ObjectPtr eval(string str, Scope scope) {
                 val = expr->execute(scope);
             return val;
         } else {
-            throw doParseError(scope.lex, "Empty statement encountered; ending parse");
+            throw doParseError(scope, "Empty statement encountered; ending parse");
         }
     } catch (std::string parseException) {
-        throw doParseError(scope.lex, parseException);
+        throw doParseError(scope, parseException);
     }
 }
 
@@ -182,22 +207,44 @@ ObjectPtr eval(istream& file, string fname, Scope defScope, Scope scope) {
     while (file >> str.rdbuf());
     try {
         auto stmts = parse(str.str());
+        for (auto& stmt : stmts)
+            stmt->propogateFileName(fname);
         list< shared_ptr<Stmt> > stmts1;
         for (unique_ptr<Stmt>& stmt : stmts)
             stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
-        auto mthdStmt = StmtMethod(stmts1);
+        auto mthdStmt = StmtMethod(0, stmts1);
         auto mthd = mthdStmt.execute(defScope);
         auto callback = [defScope, fname](ObjectPtr& dyn1) { hereIAm(dyn1, garnish(defScope, fname)); };
         return doCall(scope, defScope.lex, mthd, {}, callback);
     } catch (std::string parseException) {
-        throw doParseError(scope.lex, parseException);
+        throw doParseError(scope, parseException);
     }
 }
 
-StmtCall::StmtCall(unique_ptr<Stmt>& cls, const string& func, ArgList& arg)
-    : className(move(cls)), functionName(func), args(move(arg)) {}
+Stmt::Stmt(int line_no)
+    : file_name("(eval)"), line_no(line_no) {}
+
+void Stmt::establishLocation(const Scope& scope) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr lineStorage_ = getInheritedSlot(scope, meta_, Symbols::get()["lineStorage"]);
+    ObjectPtr fileStorage_ = getInheritedSlot(scope, meta_, Symbols::get()["fileStorage"]);
+    Symbolic* lineStorage = boost::get<Symbolic>(&lineStorage_.lock()->prim());
+    Symbolic* fileStorage = boost::get<Symbolic>(&fileStorage_.lock()->prim());
+    if (lineStorage && fileStorage) {
+        scope.dyn.lock()->put(*lineStorage, garnish(scope, line_no));
+        scope.dyn.lock()->put(*fileStorage, garnish(scope, file_name));
+    }
+}
+
+void Stmt::propogateFileName(std::string name) {
+    file_name = name;
+}
+
+StmtCall::StmtCall(int line_no, unique_ptr<Stmt>& cls, const string& func, ArgList& arg)
+    : Stmt(line_no), className(move(cls)), functionName(func), args(move(arg)) {}
 
 ObjectPtr StmtCall::execute(Scope scope) {
+    establishLocation(scope);
     ObjectPtr scope_ = determineScope(className, functionName, scope);
     list<ObjectPtr> parms( args.size() );
     transform(args.begin(), args.end(), parms.begin(),
@@ -235,69 +282,99 @@ ObjectPtr StmtCall::execute(Scope scope) {
     }
 }
 
-StmtEqual::StmtEqual(unique_ptr<Stmt>& cls, const string& func, unique_ptr<Stmt>& asn)
-    : className(move(cls)), functionName(func), rhs(move(asn)) {}
+void StmtCall::propogateFileName(std::string name) {
+    if (className)
+        className->propogateFileName(name);
+    for (auto& stmt : args)
+        stmt->propogateFileName(name);
+    Stmt::propogateFileName(name);
+}
+
+StmtEqual::StmtEqual(int line_no, unique_ptr<Stmt>& cls, const string& func, unique_ptr<Stmt>& asn)
+    : Stmt(line_no), className(move(cls)), functionName(func), rhs(move(asn)) {}
 
 ObjectPtr StmtEqual::execute(Scope scope) {
+    establishLocation(scope);
     ObjectPtr scope_ = determineScope(className, functionName, scope);
     ObjectPtr result = rhs->execute(scope);
     scope_.lock()->put(Symbols::get()[functionName], result);
     return result;
 }
 
-StmtMethod::StmtMethod(std::list< std::shared_ptr<Stmt> >& contents)
-    : contents(move(contents)) {}
+void StmtEqual::propogateFileName(std::string name) {
+    if (className)
+        className->propogateFileName(name);
+    if (rhs)
+        rhs->propogateFileName(name);
+    Stmt::propogateFileName(name);
+}
+
+StmtMethod::StmtMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents)
+    : Stmt(line_no), contents(move(contents)) {}
 
 ObjectPtr StmtMethod::execute(Scope scope) {
+    establishLocation(scope);
     ObjectPtr mthd = clone(getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["Method"]));
     mthd.lock()->put(Symbols::get()["closure"], scope.lex);
     mthd.lock()->prim(contents);
     return mthd;
 }
 
-StmtNumber::StmtNumber(double value)
-    : value(value) {}
+void StmtMethod::propogateFileName(std::string name) {
+    for (auto& ptr : contents)
+        ptr->propogateFileName(name);
+    Stmt::propogateFileName(name);
+}
+
+StmtNumber::StmtNumber(int line_no, double value)
+    : Stmt(line_no), value(value) {}
 
 ObjectPtr StmtNumber::execute(Scope scope) {
+    establishLocation(scope);
     return garnish(scope, Number(value));
 }
 
-StmtInteger::StmtInteger(long value)
-    : value(value) {}
+StmtInteger::StmtInteger(int line_no, long value)
+    : Stmt(line_no), value(value) {}
 
 ObjectPtr StmtInteger::execute(Scope scope) {
+    establishLocation(scope);
     return garnish(scope, Number(value));
 }
 
-StmtBigInteger::StmtBigInteger(const char* value)
-    : value(value) {}
+StmtBigInteger::StmtBigInteger(int line_no, const char* value)
+    : Stmt(line_no), value(value) {}
 
 ObjectPtr StmtBigInteger::execute(Scope scope) {
+    establishLocation(scope);
     auto value1 = static_cast<Number::bigint>(value);
     return garnish(scope, Number(value1));
 }
 
-StmtString::StmtString(const char* contents)
-    : value(contents) {}
+StmtString::StmtString(int line_no, const char* contents)
+    : Stmt(line_no), value(contents) {}
 
 ObjectPtr StmtString::execute(Scope scope) {
+    establishLocation(scope);
     return garnish(scope, value);
 }
 
-StmtSymbol::StmtSymbol(const char* contents)
-    : value(contents) {}
+StmtSymbol::StmtSymbol(int line_no, const char* contents)
+    : Stmt(line_no), value(contents) {}
 
 ObjectPtr StmtSymbol::execute(Scope scope) {
+    establishLocation(scope);
     return garnish(scope, Symbols::get()[value]);
 }
 
 // TODO Make the builtins (like Symbol, Method, etc.) call the clone method rather than forcing
 //      a system clone operation
 
-StmtList::StmtList(ArgList& arg)
-    : args(move(arg)) {}
+StmtList::StmtList(int line_no, ArgList& arg)
+    : Stmt(line_no), args(move(arg)) {}
 
 ObjectPtr StmtList::execute(Scope scope) {
+    establishLocation(scope);
     ObjectPtr meta_ = meta(scope, scope.lex);
     list<ObjectPtr> parms( args.size() );
     transform(args.begin(), args.end(), parms.begin(),
@@ -312,4 +389,10 @@ ObjectPtr StmtList::execute(Scope scope) {
     }
     ObjectPtr mthd1 = getInheritedSlot(scope, builder0, Symbols::get()["finish"]);
     return doCallWithArgs(scope, builder0, mthd1);
+}
+
+void StmtList::propogateFileName(std::string name) {
+    for (auto& ptr : args)
+        ptr->propogateFileName(name);
+    Stmt::propogateFileName(name);
 }

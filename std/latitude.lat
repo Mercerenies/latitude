@@ -1,5 +1,5 @@
 
-meta Kernel load := { meta sys loadFile#: global, $1. }.
+meta Kernel load := { meta sys loadFile#: $1. }.
 meta Kernel load: "std/core.lat".
 meta Kernel load: "std/exception.lat".
 meta Kernel load: "std/flow_control.lat".

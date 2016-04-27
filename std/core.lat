@@ -46,6 +46,8 @@ global $whereAmI := Nil.
 (hold 'Method) catch := { (parent hold 'self) handle: { $1 is: parent dynamic $1. },
                                                       { parent dynamic $2. }. }.
 Object throw := { meta sys throw#: self. }.
+Exception throw := { self stack := dynamic parent.
+                     (self invoke: (Object hold 'throw)) call. }.
 (hold 'Method) protect := { meta sys scopeProtect#: { parent self. },
                                                     { parent dynamic $1. }. }.
 
@@ -80,6 +82,10 @@ Stream toString := "Stream".
 ;; Scope self-reference
 global scope := { self. }.
 global $scope := { self. }.
+global lexical := global.
+global dynamic := global.
+global $lexical := global.
+global $dynamic := global.
 Object me := { self. }.
 global here := { if: (self has 'again),
                      { parent self hold 'again. },
@@ -124,6 +130,12 @@ String toString := { meta sys primToString#: self. }.
 String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
+
+; Locality information
+global $currentLine := { self get: meta lineStorage. }.
+global $currentFile := { self get: meta fileStorage. }.
+global stackTrace := { meta sys stackDump#: self. }.
+global printStackTrace := { stderr putln: self stackTrace. }.
 
 ;; We would return the script here, but the `has` function requires flow_control.lat
 1.

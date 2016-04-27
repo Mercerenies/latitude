@@ -113,7 +113,7 @@ ObjectPtr getInheritedSlot(Scope scope, ObjectPtr obj, Symbolic name) {
     if (slot.getType() == SlotType::PTR) {
         return slot.getPtr();
     } else {
-        throw doSlotError(obj, obj, name);
+        throw doSlotError(scope, obj, name);
     }
 }
 
@@ -143,7 +143,7 @@ ObjectPtr getInheritedOrigin(Scope scope, ObjectPtr obj, Symbolic name) {
     if (!origin.expired())
         return origin;
     else
-        throw doSlotError(obj, obj, name);
+        throw doSlotError(scope, obj, name);
 }
 
 void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {

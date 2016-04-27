@@ -38,6 +38,10 @@ ObjectPtr determineScope(const std::unique_ptr<Stmt>& className,
                          const std::string& functionName,
                          const Scope& scope);
 
+int grabLineNumber(const Scope& scope, ObjectPtr dyn);
+
+std::string grabFileName(const Scope& scope, ObjectPtr dyn);
+
 /*
  * Parses the string. Will throw an std::string as an exception
  * if a parse error occurs. For this reason, it is often desirable
@@ -63,8 +67,14 @@ ObjectPtr eval(std::istream& file, std::string fname, Scope defScope, Scope scop
  * the statement in a given context.
  */
 class Stmt {
+private:
+    std::string file_name;
+    int line_no;
 public:
+    Stmt(int line_no);
+    void establishLocation(const Scope& scope);
     virtual ObjectPtr execute(Scope scope) = 0;
+    virtual void propogateFileName(std::string name);
 };
 
 /*
@@ -78,8 +88,9 @@ private:
     std::string functionName;
     ArgList args;
 public:
-    StmtCall(std::unique_ptr<Stmt>& cls, const std::string& func, ArgList& arg);
+    StmtCall(int line_no, std::unique_ptr<Stmt>& cls, const std::string& func, ArgList& arg);
     virtual ObjectPtr execute(Scope scope);
+    virtual void propogateFileName(std::string name);
 };
 
 /*
@@ -93,9 +104,11 @@ private:
     std::string functionName;
     std::unique_ptr<Stmt> rhs;
 public:
-    StmtEqual(std::unique_ptr<Stmt>& cls, const std::string& func,
+    StmtEqual(int line_no,
+              std::unique_ptr<Stmt>& cls, const std::string& func,
               std::unique_ptr<Stmt>& asn);
     virtual ObjectPtr execute(Scope scope);
+    virtual void propogateFileName(std::string name);
 };
 
 /*
@@ -105,8 +118,9 @@ class StmtMethod : public Stmt {
 private:
     std::list< std::shared_ptr<Stmt> > contents;
 public:
-    StmtMethod(std::list< std::shared_ptr<Stmt> >& contents);
+    StmtMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents);
     virtual ObjectPtr execute(Scope scope);
+    virtual void propogateFileName(std::string name);
 };
 
 /*
@@ -116,7 +130,7 @@ class StmtNumber : public Stmt {
 private:
     double value;
 public:
-    StmtNumber(double value);
+    StmtNumber(int line_no, double value);
     virtual ObjectPtr execute(Scope scope);
 };
 
@@ -127,7 +141,7 @@ class StmtInteger : public Stmt {
 private:
     long value;
 public:
-    StmtInteger(long value);
+    StmtInteger(int line_no, long value);
     virtual ObjectPtr execute(Scope scope);
 };
 
@@ -138,7 +152,7 @@ class StmtBigInteger : public Stmt {
 private:
     std::string value;
 public:
-    StmtBigInteger(const char* value);
+    StmtBigInteger(int line_no, const char* value);
     virtual ObjectPtr execute(Scope scope);
 };
 
@@ -149,7 +163,7 @@ class StmtString : public Stmt {
 private:
     std::string value;
 public:
-    StmtString(const char* contents);
+    StmtString(int line_no, const char* contents);
     virtual ObjectPtr execute(Scope scope);
 };
 
@@ -160,7 +174,7 @@ class StmtSymbol : public Stmt {
 private:
     std::string value;
 public:
-    StmtSymbol(const char* contents);
+    StmtSymbol(int line_no, const char* contents);
     virtual ObjectPtr execute(Scope scope);
 };
 
@@ -173,8 +187,9 @@ public:
 private:
     ArgList args;
 public:
-    StmtList(ArgList& arg);
+    StmtList(int line_no, ArgList& arg);
     virtual ObjectPtr execute(Scope scope);
+    virtual void propogateFileName(std::string name);
 };
 
 #endif // _READER_HPP_

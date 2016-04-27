@@ -17,11 +17,11 @@ using namespace std;
 
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
 
-ProtoError doSystemArgError(ObjectPtr global, string name, int expected, int got);
-ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, Symbolic slotName);
-ProtoError doParseError(ObjectPtr global);
-ProtoError doParseError(ObjectPtr global, string message);
-ProtoError doEtcError(ObjectPtr global, string errorName, string msg);
+ProtoError doSystemArgError(Scope scope, string name, int expected, int got);
+ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName);
+ProtoError doParseError(Scope scope);
+ProtoError doParseError(Scope scope, string message);
+ProtoError doEtcError(Scope scope, string errorName, string msg);
 
 ObjectPtr spawnObjects() {
 
@@ -105,6 +105,10 @@ ObjectPtr spawnObjects() {
     stdin_.lock()->prim(inStream());
     stderr_.lock()->prim(errStream());
 
+    // Location and line number (necessary for error printing; nice to have anyway)
+    meta.lock()->put(Symbols::get()["lineStorage"], garnish({global, global}, Symbols::gensym("STORE")));
+    meta.lock()->put(Symbols::get()["fileStorage"], garnish({global, global}, Symbols::gensym("STORE")));
+
     // The core libraries
     ifstream file("std/latitude.lat");
     BOOST_SCOPE_EXIT(&file) {
@@ -153,6 +157,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callNatSym(clone(systemCall));
     ObjectPtr callLoop(clone(systemCall));
     ObjectPtr callLoadFile(clone(systemCall));
+    ObjectPtr callStackDump(clone(systemCall));
 
     systemCall.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             return eval("meta Nil.", scope);
@@ -166,7 +171,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 else
                     return eval("meta False.", scope);
             } else {
-                throw doSystemArgError(global, "streamIn#", 1, lst.size());
+                throw doSystemArgError(scope, "streamIn#", 1, lst.size());
             }
         });
     callStreamOut.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -178,7 +183,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 else
                     return eval("meta False.", scope);
             } else {
-                throw doSystemArgError(global, "streamOut#", 1, lst.size());
+                throw doSystemArgError(scope, "streamOut#", 1, lst.size());
             }
         });
     callStreamPuts.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -189,20 +194,20 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
                     if (auto obj1 = boost::get<string>(&obj0)) {
                         if (!(*stream1)->hasOut())
-                            throw doEtcError(global, "StreamError",
+                            throw doEtcError(scope, "StreamError",
                                              "Stream not designated for output");
                         (*stream1)->writeText(*obj1);
                         return eval("meta Nil.", scope);
                     } else {
-                        throw doEtcError(global, "StreamError",
+                        throw doEtcError(scope, "StreamError",
                                          "Object to print is not a string");
                     }
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a stream");
                 }
             } else {
-                throw doSystemArgError(global, "streamPuts#", 2, lst.size());
+                throw doSystemArgError(scope, "streamPuts#", 2, lst.size());
             }
         });
     callStreamPutln.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -213,20 +218,20 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
                     if (auto obj1 = boost::get<string>(&obj0)) {
                         if (!(*stream1)->hasOut())
-                            throw doEtcError(global, "StreamError",
+                            throw doEtcError(scope, "StreamError",
                                              "Stream not designated for output");
                         (*stream1)->writeLine(*obj1);
                         return eval("meta Nil.", scope);
                     } else {
-                        throw doEtcError(global, "StreamError",
+                        throw doEtcError(scope, "StreamError",
                                          "Object to print is not a string");
                     }
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a stream");
                 }
             } else {
-                throw doSystemArgError(global, "streamPutln#", 2, lst.size());
+                throw doSystemArgError(scope, "streamPutln#", 2, lst.size());
             }
         });
     callPrimToString.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -235,7 +240,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 string result = primToString(obj);
                 return garnish(scope, result);
             } else {
-                throw doSystemArgError(global, "primToString#", 1, lst.size());
+                throw doSystemArgError(scope, "primToString#", 1, lst.size());
             }
         });
     callIfStatement.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -245,7 +250,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 auto tr_ = boost::get<Method>(&tr->prim());
                 auto fl_ = boost::get<Method>(&fl->prim());
                 if ((tr_ == NULL) || (fl_ == NULL))
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "If statement body is not a method");
                 //
                 auto definitelyTrue = eval("meta True.", scope).lock();
@@ -254,7 +259,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 else
                     return doCallWithArgs(scope, scope.lex, fl);
             } else {
-                throw doSystemArgError(global, "ifThenElse#", 3, lst.size());
+                throw doSystemArgError(scope, "ifThenElse#", 3, lst.size());
             }
         });
     callStreamDump.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -264,11 +269,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     dumpObject(scope, **stream0, obj);
                     return eval("meta Nil.", scope);
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a stream");
                 }
             } else {
-                throw doSystemArgError(global, "streamDump#", 2, lst.size());
+                throw doSystemArgError(scope, "streamDump#", 2, lst.size());
             }
         });
     callClone.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -276,7 +281,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj)) {
                 return clone(obj);
             } else {
-                throw doSystemArgError(global, "doClone#", 1, lst.size());
+                throw doSystemArgError(scope, "doClone#", 1, lst.size());
             }
         });
     callGetSlot.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -285,10 +290,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto sym = boost::get<Symbolic>(&slot->prim())) {
                     return getInheritedSlot(scope, obj, *sym);
                 } else {
-                    throw doEtcError(global, "TypeError", "Slot name must be a symbol");
+                    throw doEtcError(scope, "TypeError", "Slot name must be a symbol");
                 }
             } else {
-                throw doSystemArgError(global, "accessSlot#", 2, lst.size());
+                throw doSystemArgError(scope, "accessSlot#", 2, lst.size());
             }
         });
     callHasSlot.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -301,7 +306,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     return eval("meta False.", scope);
                 }
             } else {
-                throw doSystemArgError(global, "checkSlot#", 2, lst.size());
+                throw doSystemArgError(scope, "checkSlot#", 2, lst.size());
             }
         });
     callPutSlot.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -311,10 +316,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     obj->put(*sym, value);
                     return ObjectPtr(value);
                 } else {
-                    throw doEtcError(global, "TypeError", "Slot name must be a symbol");
+                    throw doEtcError(scope, "TypeError", "Slot name must be a symbol");
                 }
             } else {
-                throw doSystemArgError(global, "putSlot#", 3, lst.size());
+                throw doSystemArgError(scope, "putSlot#", 3, lst.size());
             }
         });
     callGensym.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -324,7 +329,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 gen.lock()->prim( Symbols::gensym() );
                 return gen;
             } else {
-                throw doSystemArgError(global, "gensym#", 1, lst.size());
+                throw doSystemArgError(scope, "gensym#", 1, lst.size());
             }
         });
     callGensymOf.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -335,11 +340,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     gen.lock()->prim( Symbols::gensym(*str) );
                     return gen;
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Expected string gensym prefix");
                 }
             } else {
-                throw doSystemArgError(global, "gensymOf#", 2, lst.size());
+                throw doSystemArgError(scope, "gensymOf#", 2, lst.size());
             }
         });
     callCallCC.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -376,7 +381,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     }
                 }
             } else {
-                throw doSystemArgError(global, "callCC#", 1, lst.size());
+                throw doSystemArgError(scope, "callCC#", 1, lst.size());
             }
         });
     callExitCC.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -389,24 +394,24 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                             boost::get< weak_ptr<SignalValidator> >(&validator.lock()
                                                                     ->prim())) {
                             if (val->expired())
-                                throw doEtcError(global, "ContError",
+                                throw doEtcError(scope, "ContError",
                                                  "Out of continuation bounds");
                             throw Signal(*sym, arg);
                         } else {
-                            throw doEtcError(global, "TypeError",
+                            throw doEtcError(scope, "TypeError",
                                              "Invalid continuation in exitCC#");
                         }
                     } else {
-                        throw doEtcError(global, "ContError",
+                        throw doEtcError(scope, "ContError",
                                          "Out of continuation bounds");
                     }
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Invalid continuation in exitCC#");
                 }
                 return eval("meta Nil.", scope); // Should never happen
             } else {
-                throw doSystemArgError(global, "exitCC#", 2, lst.size());
+                throw doSystemArgError(scope, "exitCC#", 2, lst.size());
             }
         });
     callInstanceof.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -418,7 +423,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                                != hier.end());
                 return garnish(scope, result);
             } else {
-                throw doSystemArgError(global, "instanceOf#", 2, lst.size());
+                throw doSystemArgError(scope, "instanceOf#", 2, lst.size());
             }
         });
     callTryStmt.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -436,7 +441,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     }
                 }
             } else {
-                throw doSystemArgError(global, "try#", 3, lst.size());
+                throw doSystemArgError(scope, "try#", 3, lst.size());
             }
         });
     callThrowStmt.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -445,7 +450,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throwProtoError(obj);
                 return eval("meta Nil.", scope); // Should never happen
             } else {
-                throw doSystemArgError(global, "throw#", 1, lst.size());
+                throw doSystemArgError(scope, "throw#", 1, lst.size());
             }
         });
     callNumAdd.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -456,10 +461,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (n0 && n1)
                     return garnish(scope, *n0 + *n1);
                 else
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Got non-numeral in arithmetic operation");
             } else {
-                throw doSystemArgError(global, "numAdd#", 2, lst.size());
+                throw doSystemArgError(scope, "numAdd#", 2, lst.size());
             }
         });
     callNumSub.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -470,10 +475,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (n0 && n1)
                     return garnish(scope, *n0 - *n1);
                 else
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Got non-numeral in arithmetic operation");
             } else {
-                throw doSystemArgError(global, "numSub#", 2, lst.size());
+                throw doSystemArgError(scope, "numSub#", 2, lst.size());
             }
         });
     callNumMul.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -484,10 +489,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (n0 && n1)
                     return garnish(scope, *n0 * *n1);
                 else
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Got non-numeral in arithmetic operation");
             } else {
-                throw doSystemArgError(global, "numMul#", 2, lst.size());
+                throw doSystemArgError(scope, "numMul#", 2, lst.size());
             }
         });
     callNumDiv.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -498,10 +503,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (n0 && n1)
                     return garnish(scope, *n0 / *n1);
                 else
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Got non-numeral in arithmetic operation");
             } else {
-                throw doSystemArgError(global, "numDiv#", 2, lst.size());
+                throw doSystemArgError(scope, "numDiv#", 2, lst.size());
             }
         });
     callNumMod.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -512,10 +517,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (n0 && n1)
                     return garnish(scope, *n0 % *n1);
                 else
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Got non-numeral in arithmetic operation");
             } else {
-                throw doSystemArgError(global, "numMod#", 2, lst.size());
+                throw doSystemArgError(scope, "numMod#", 2, lst.size());
             }
         });
     callTripleEquals.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -523,7 +528,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj1, obj2)) {
                 return garnish(scope, obj1 == obj2);
             } else {
-                throw doSystemArgError(global, "ptrEquals#", 2, lst.size());
+                throw doSystemArgError(scope, "ptrEquals#", 2, lst.size());
             }
         });
     callPrimEquals.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -531,7 +536,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj1, obj2)) {
                 return garnish(scope, primEquals(obj1, obj2));
             } else {
-                throw doSystemArgError(global, "primEquals#", 2, lst.size());
+                throw doSystemArgError(scope, "primEquals#", 2, lst.size());
             }
         });
     callStringConcat.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -542,10 +547,10 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (str1 && str2)
                     return garnish(scope, *str1 + *str2);
                 else
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Got non-string in stringConcat#");
             } else {
-                throw doSystemArgError(global, "stringConcat#", 2, lst.size());
+                throw doSystemArgError(scope, "stringConcat#", 2, lst.size());
             }
         });
     callStreamRead.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -554,15 +559,15 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 auto stream0 = stream->prim();
                 if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
                     if (!(*stream1)->hasIn())
-                        throw doEtcError(global, "StreamError",
+                        throw doEtcError(scope, "StreamError",
                                          "Stream not designated for input");
                     return garnish(scope, (*stream1)->readLine());
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a stream");
                 }
             } else {
-                throw doSystemArgError(global, "streamRead#", 1, lst.size());
+                throw doSystemArgError(scope, "streamRead#", 1, lst.size());
             }
         });
     callScopeProtect.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -590,7 +595,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 abnormal = false;
                 return result;
             } else {
-                throw doSystemArgError(global, "scopeProtect#", 2, lst.size());
+                throw doSystemArgError(scope, "scopeProtect#", 2, lst.size());
             }
         });
     callInvoke.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -601,7 +606,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 // same.
                 return doCallWithArgs(scope, self, mthd);
             } else {
-                throw doSystemArgError(global, "invoke#", 2, lst.size());
+                throw doSystemArgError(scope, "invoke#", 2, lst.size());
             }
         });
     callOrigin.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -609,11 +614,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, self, ref)) {
                 auto sym = boost::get<Symbolic>(&ref->prim());
                 if (!sym)
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Slot name must be a symbol");
                 return getInheritedOrigin(scope, self, *sym);
             } else {
-                throw doSystemArgError(global, "origin#", 2, lst.size());
+                throw doSystemArgError(scope, "origin#", 2, lst.size());
             }
         });
     callIntern.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -627,11 +632,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     sym1.lock()->prim(Symbols::get()[*str]);
                     return sym1;
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object to intern is not a string");
                 }
             } else {
-                throw doSystemArgError(global, "intern#", 1, lst.size());
+                throw doSystemArgError(scope, "intern#", 1, lst.size());
             }
         });
     callSymbolic.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -640,11 +645,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto sym = boost::get<Symbolic>(&self->prim())) {
                     return garnish(scope, Symbols::get()[*sym]);
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not symbolic");
                 }
             } else {
-                throw doSystemArgError(global, "symbolic#", 1, lst.size());
+                throw doSystemArgError(scope, "symbolic#", 1, lst.size());
             }
         });
     callNumLevel.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -653,11 +658,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto num = boost::get<Number>(&self->prim())) {
                     return garnish(scope, num->hierarchyLevel());
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not numerical");
                 }
             } else {
-                throw doSystemArgError(global, "numLevel#", 1, lst.size());
+                throw doSystemArgError(scope, "numLevel#", 1, lst.size());
             }
         });
     callPrimLT.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -665,7 +670,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, obj1, obj2)) {
                 return garnish(scope, primLT(obj1, obj2));
             } else {
-                throw doSystemArgError(global, "primLT#", 2, lst.size());
+                throw doSystemArgError(scope, "primLT#", 2, lst.size());
             }
         });
     callNatSym.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -677,15 +682,15 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                         Symbolic sym = Symbols::get().natural(value);
                         return garnish(scope, sym);
                     } else {
-                        throw doEtcError(global, "TypeError",
+                        throw doEtcError(scope, "TypeError",
                                          "Cannot produce natural symbol from numbers <= 0");
                     }
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not numerical");
                 }
             } else {
-                throw doSystemArgError(global, "natSym#", 1, lst.size());
+                throw doSystemArgError(scope, "natSym#", 1, lst.size());
             }
         });
     callLoop.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -694,19 +699,19 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 // These are unused except to verify that the prim() is correct
                 auto mthd_ = boost::get<Method>(&mthd->prim());
                 if (mthd_ == NULL)
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "Loop body is not a method");
                 //
                 while (true)
                     doCallWithArgs(scope, scope.lex, mthd);
                 return eval("meta Nil.", scope); // Should never happen
             } else {
-                throw doSystemArgError(global, "loop#", 1, lst.size());
+                throw doSystemArgError(scope, "loop#", 1, lst.size());
             }
         });
     callLoadFile.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
-            ObjectSPtr global, filename;
-            if (bindArguments(lst, global, filename)) {
+            ObjectSPtr filename;
+            if (bindArguments(lst, filename)) {
                 if (auto fname = boost::get<string>(&filename->prim())) {
                     ifstream file(*fname);
                     BOOST_SCOPE_EXIT(&file) {
@@ -715,11 +720,27 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     ObjectPtr result = eval(file, *fname, { global, global }, scope);
                     return result;
                 } else {
-                    throw doEtcError(global, "TypeError",
+                    throw doEtcError(scope, "TypeError",
                                      "String filename expected");
                 }
             } else {
-                throw doSystemArgError(global, "loadFile#", 2, lst.size());
+                throw doSystemArgError(scope, "loadFile#", 1, lst.size());
+            }
+        });
+    callStackDump.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr dyn0;
+            if (bindArguments(lst, dyn0)) {
+                auto arr = hierarchy(dyn0);
+                ostringstream str;
+                for (ObjectPtr value : arr) {
+                    if (grabFileName(scope, value) != "???") {
+                        str << "'" << grabFileName(scope, value) << "'"
+                            << ":" << grabLineNumber(scope, value) << endl;
+                    }
+                }
+                return garnish(scope, str.str());
+            } else {
+                throw doSystemArgError(scope, "stackDump#", 1, lst.size());
             }
         });
 
@@ -760,48 +781,49 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["natSym#"], callNatSym);
     sys.lock()->put(Symbols::get()["loop#"], callLoop);
     sys.lock()->put(Symbols::get()["loadFile#"], callLoadFile);
+    sys.lock()->put(Symbols::get()["stackDump#"], callStackDump);
 
 }
 
 // TODO Take a lot of the ', global, global);' statements and make them scoped
 
-ProtoError doSystemArgError(ObjectPtr global,
+ProtoError doSystemArgError(Scope scope,
                             string name,
                             int expected,
                             int got) {
-    ObjectPtr meta_ = meta({ global, global }, global);
-    ObjectPtr err = clone(getInheritedSlot({ global, global }, meta_, Symbols::get()["SystemArgError"]));
-    err.lock()->put(Symbols::get()["gotArguments"], garnish({ global, global }, got));
-    err.lock()->put(Symbols::get()["expectedArguments"], garnish({ global, global }, expected));
-    err.lock()->put(Symbols::get()["functionName"], garnish({ global, global }, name));
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["SystemArgError"]));
+    err.lock()->put(Symbols::get()["gotArguments"], garnish(scope, got));
+    err.lock()->put(Symbols::get()["expectedArguments"], garnish(scope, expected));
+    err.lock()->put(Symbols::get()["functionName"], garnish(scope, name));
     return ProtoError(err);
 }
 
-ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, Symbolic slotName) {
-    ObjectPtr meta_ = meta({ global, global }, global);
-    ObjectPtr err = clone(getInheritedSlot({ global, global }, meta_, Symbols::get()["SlotError"]));
-    err.lock()->put(Symbols::get()["slotName"], garnish({ global, global }, slotName));
+ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["SlotError"]));
+    err.lock()->put(Symbols::get()["slotName"], garnish(scope, slotName));
     err.lock()->put(Symbols::get()["objectInstance"], problem);
     return ProtoError(err);
 }
 
-ProtoError doParseError(ObjectPtr global) {
-    ObjectPtr meta_ = meta({ global, global }, global);
-    ObjectPtr err = clone(getInheritedSlot({ global, global }, meta_, Symbols::get()["ParseError"]));
+ProtoError doParseError(Scope scope) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["ParseError"]));
     return ProtoError(err);
 }
 
-ProtoError doParseError(ObjectPtr global, string message) {
-    ObjectPtr meta_ = meta({ global, global }, global);
-    ObjectPtr err = clone(getInheritedSlot({ global, global }, meta_, Symbols::get()["ParseError"]));
-    err.lock()->put(Symbols::get()["message"], garnish({ global, global }, message));
+ProtoError doParseError(Scope scope, string message) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["ParseError"]));
+    err.lock()->put(Symbols::get()["message"], garnish(scope, message));
     return ProtoError(err);
 }
 
-ProtoError doEtcError(ObjectPtr global, string errorName, string msg) {
-    ObjectPtr meta_ = meta({ global, global }, global);
-    ObjectPtr err = clone(getInheritedSlot({ global, global }, meta_, Symbols::get()[errorName]));
-    err.lock()->put(Symbols::get()["message"], garnish({ global, global }, msg));
+ProtoError doEtcError(Scope scope, string errorName, string msg) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()[errorName]));
+    err.lock()->put(Symbols::get()["message"], garnish(scope, msg));
     return ProtoError(err);
 }
 

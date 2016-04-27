@@ -77,7 +77,7 @@ void runREPL(ObjectPtr& global) {
                     repl.lock()->put(Symbols::get()["lastResult"], result);
                     simplePrintObject({ global, global }, *out, result);
                 } catch (std::string parseException) {
-                    throw doParseError(global, parseException);
+                    throw doParseError({ global, global }, parseException);
                 }
                 // TODO Don't garbage collect at every step
                 GC::get().garbageCollect(global);

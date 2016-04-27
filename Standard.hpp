@@ -12,8 +12,8 @@
 ObjectPtr spawnObjects();
 
 // These are convenience functions for various language errors.
-ProtoError doSlotError(ObjectPtr global, ObjectPtr problem, Symbolic slotName);
-ProtoError doParseError(ObjectPtr global);
-ProtoError doParseError(ObjectPtr global, std::string message);
+ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName);
+ProtoError doParseError(Scope scope);
+ProtoError doParseError(Scope scope, std::string message);
 
 #endif // _STANDARD_HPP_

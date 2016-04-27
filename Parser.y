@@ -30,6 +30,7 @@
     struct List;
 
     struct Expr {
+        int line;
         struct Expr* lhs;
         char* name;
         struct List* args;
@@ -57,6 +58,8 @@
         void cleanupE(struct Expr* stmt);
         void cleanupL(struct List* stmt);
         void yyerror(const char*);
+        struct Expr* makeExpr();
+        struct List* makeList();
     #ifdef __cplusplus
     }
     #endif
@@ -102,8 +105,8 @@ toplevel:
     lines { setCurrentLine($1); }
     ;
 lines:
-    line lines { $$ = new List(); $$->car = $1; $$->cdr = $2; } |
-    /* empty */ { $$ = new List(); }
+    line lines { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |
+    /* empty */ { $$ = makeList(); }
 line:
     stmt '.'
     ;
@@ -111,7 +114,7 @@ stmt:
     chain NAME rhs {
         $$ = $3;
         if ($$ == NULL)
-            $$ = new Expr();
+            $$ = makeExpr();
         $$->name = $2;
         $$->lhs = $1;
     } |
@@ -120,67 +123,67 @@ stmt:
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
-    rhschain { $$ = new Expr(); $$->args = new List(); $$->args->car = $1; $$->args->cdr = new List(); } |
-    '=' stmt { $$ = new Expr(); $$->equals = true; $$->rhs = $2; } |
-    ':' arglist { $$ = new Expr(); $$->args = $2; }
+    rhschain { $$ = makeExpr(); $$->args = makeList(); $$->args->car = $1; $$->args->cdr = makeList(); } |
+    '=' stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
+    ':' arglist { $$ = makeExpr(); $$->args = $2; }
     ;
 arglist:
-    /* empty */ { $$ = new List(); } |
-    arg arglist1 { $$ = new List(); $$->car = $1; $$->cdr = $2; }
+    /* empty */ { $$ = makeList(); } |
+    arg arglist1 { $$ = makeList(); $$->car = $1; $$->cdr = $2; }
     ;
 arglist1:
-    /* empty */ { $$ = new List(); } |
-    ',' arg arglist1 { $$ = new List(); $$->car = $2; $$->cdr = $3; }
+    /* empty */ { $$ = makeList(); } |
+    ',' arg arglist1 { $$ = makeList(); $$->car = $2; $$->cdr = $3; }
     ;
 arg:
-    chain NAME { $$ = new Expr(); $$->lhs = $1; $$->name = $2; } |
+    chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     '(' stmt ')' { $$ = $2; } |
     literal
     ;
 chain:
-    chain NAME { $$ = new Expr(); $$->lhs = $1; $$->name = $2; } |
+    chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     '(' stmt ')' { $$ = $2; } |
     literal |
     /* empty */ { $$ = NULL; }
     ;
 literal:
-    '{' linelist '}' { $$ = new Expr(); $$->method = true; $$->args = $2; } |
-    NUMBER { $$ = new Expr(); $$->isNumber = true; $$->number = $1; } |
-    INTEGER { $$ = new Expr(); $$->isInt = true; $$->integer = $1; } |
-    BIGINT { $$ = new Expr(); $$->isBigInt = true; $$->name = $1; } |
-    STRING { $$ = new Expr(); $$->isString = true; $$->name = $1; } |
-    SYMBOL { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; } |
-    '[' arglist ']' { $$ = new Expr(); $$->isList = true; $$->args = $2; } |
-    LISTLIT literallist ']' { $$ = new Expr(); $$->isList = true; $$->args = $2; }
+    '{' linelist '}' { $$ = makeExpr(); $$->method = true; $$->args = $2; } |
+    NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
+    INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
+    BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
+    STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1; } |
+    SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; } |
+    '[' arglist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
+    LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; }
     ;
 linelist:
-    line linelist { $$ = new List(); $$->car = $1; $$->cdr = $2; } |
-    /* empty */ { $$ = new List(); }
+    line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |
+    /* empty */ { $$ = makeList(); }
     ;
 literallist:
-    /* empty */ { $$ = new List(); } |
-    listlit literallist1 { $$ = new List(); $$->car = $1; $$->cdr = $2; }
+    /* empty */ { $$ = makeList(); } |
+    listlit literallist1 { $$ = makeList(); $$->car = $1; $$->cdr = $2; }
     ;
 literallist1:
-    /* empty */ { $$ = new List(); } |
-    ',' listlit literallist1 { $$ = new List(); $$->car = $2; $$->cdr = $3; }
+    /* empty */ { $$ = makeList(); } |
+    ',' listlit literallist1 { $$ = makeList(); $$->car = $2; $$->cdr = $3; }
     ;
 listlit:
-    STRING { $$ = new Expr(); $$->isString = true; $$->name = $1; } |
-    SYMBOL { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; } |
-    NUMBER { $$ = new Expr(); $$->isNumber = true; $$->number = $1; } |
-    INTEGER { $$ = new Expr(); $$->isInt = true; $$->integer = $1; } |
-    BIGINT { $$ = new Expr(); $$->isBigInt = true; $$->name = $1; } |
-    '[' literallist ']' { $$ = new Expr(); $$->isList = true; $$->args = $2; } |
-    NAME { $$ = new Expr(); $$->isSymbol = true; $$->name = $1; }
+    STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1; } |
+    SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; } |
+    NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
+    INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
+    BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
+    '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
+    NAME { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
     ;
 rhschain:
     literal { $$ = $1; } |
     '(' stmt ')' { $$ = $2; } |
-    literal NAME rhschain { $$ = new Expr(); $$->lhs = $1; $$->name = $2; $$->args = new List();
-                            $$->args->car = $3; $$->args->cdr = new List(); } |
-    '(' stmt ')' NAME rhschain { $$ = new Expr(); $$->lhs = $2; $$->name = $4; $$->args = new List();
-                                 $$->args->car = $5; $$->args->cdr = new List(); }
+    literal NAME rhschain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; $$->args = makeList();
+                            $$->args->car = $3; $$->args->cdr = makeList(); } |
+    '(' stmt ')' NAME rhschain { $$ = makeExpr(); $$->lhs = $2; $$->name = $4; $$->args = makeList();
+                                 $$->args->car = $5; $$->args->cdr = makeList(); }
     ;
 
 %%
@@ -219,6 +222,16 @@ void cleanupL(struct List* stmt) {
         cleanupL(stmt->cdr);
         free(stmt->cdr);
     }
+}
+
+struct Expr* makeExpr() {
+    struct Expr* expr = new Expr();
+    expr->line = line_num;
+    return expr;
+}
+
+struct List* makeList() {
+    return new List();
 }
 
 }
