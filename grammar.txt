@@ -26,8 +26,7 @@
 
 <line> ::= <stmt> "."
 <stmt> ::= <chain> <name> <rhs> |
-           <literal> |
-           "(" <stmt> ")"
+           <literalish>
 <rhs> ::= <lambda> |
           <rhschain>
           ":=" <stmt> |
@@ -37,12 +36,12 @@
 <arglist1> ::= <lambda> |
                "," <arg> <arglist1>
 <arg> ::= <chain> <name> |
-          "(" <stmt> ")" |
-          <literal>
+          <literalish>
 <chain> ::= <chain> <name> |
-            "(" <stmt> ")" |
-            <literal> |
+            <literalish>
             <lambda>
+<literalish> ::= "(" <stmt> ")" |
+                 <literal>
 <literal> ::= "{" <linelist> "}" |
               <number> |
               "\"" <text> "\"" |
@@ -64,7 +63,5 @@
               "'" "(" <text> ")" |
               "[" <literallist> "]" |
               <name>
-<rhschain> ::= <literal> |
-               "(" <stmt> ")" |
-               <literal> <name> <rhschain> |
-               "(" <stmt> ")" <name> <rhschain>
+<rhschain> ::= <literalish> |
+               <literalish> <name> <rhschain>

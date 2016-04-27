@@ -84,6 +84,7 @@
 %type <argval> arglist1
 %type <exprval> arg
 %type <exprval> chain
+%type <exprval> literalish
 %type <exprval> literal
 %type <argval> linelist
 %type <argval> literallist
@@ -118,8 +119,7 @@ stmt:
         $$->name = $2;
         $$->lhs = $1;
     } |
-    literal |
-    '(' stmt ')' { $$ = $2; }
+    literalish
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
@@ -137,14 +137,16 @@ arglist1:
     ;
 arg:
     chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    '(' stmt ')' { $$ = $2; } |
-    literal
+    literalish
     ;
 chain:
     chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    '(' stmt ')' { $$ = $2; } |
-    literal |
+    literalish |
     /* empty */ { $$ = NULL; }
+    ;
+literalish:
+    '(' stmt ')' { $$ = $2; } |
+    literal
     ;
 literal:
     '{' linelist '}' { $$ = makeExpr(); $$->method = true; $$->args = $2; } |
@@ -178,12 +180,9 @@ listlit:
     NAME { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
     ;
 rhschain:
-    literal { $$ = $1; } |
-    '(' stmt ')' { $$ = $2; } |
-    literal NAME rhschain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; $$->args = makeList();
-                            $$->args->car = $3; $$->args->cdr = makeList(); } |
-    '(' stmt ')' NAME rhschain { $$ = makeExpr(); $$->lhs = $2; $$->name = $4; $$->args = makeList();
-                                 $$->args->car = $5; $$->args->cdr = makeList(); }
+    literalish |
+    literalish NAME rhschain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; $$->args = makeList();
+                               $$->args->car = $3; $$->args->cdr = makeList(); }
     ;
 
 %%
