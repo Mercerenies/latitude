@@ -16,7 +16,7 @@
      (modify-syntax-entry ?\} "){4n" st)
      (modify-syntax-entry ?\. "." st)
      (modify-syntax-entry ?\, "." st)
-     (modify-syntax-entry ?\: "w" st)
+     (modify-syntax-entry ?\: " " st)
      (modify-syntax-entry ?\= "w" st)
      (modify-syntax-entry ?\~ "w" st)
      (modify-syntax-entry ?\? "w" st)
