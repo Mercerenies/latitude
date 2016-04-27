@@ -15,7 +15,7 @@ struct Symbolic;
  */
 class Symbols {
 public:
-    using index_t = long;
+    using index_t = long long;
     using bimap_t = boost::bimap< boost::bimaps::unordered_set_of<index_t>,
                                   boost::bimaps::unordered_multiset_of<std::string> >;
 private:
