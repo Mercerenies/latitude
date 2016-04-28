@@ -32,7 +32,7 @@ Now the object `myCat` is a new object whose parent object is `Cat`. If `myCat` 
 
 ## Dependencies
 
-Latitude requires a C++ compiler (tested with GCC 5.3.0), as well as the Boost C++ library, which can be acquired [here](http://www.boost.org/). Once you have these, you should be able to build Latitude.
+Latitude requires a C++14 compiler (tested with GCC 5.3.0), as well as the Boost C++ library, which can be acquired [here](http://www.boost.org/). Once you have these, you should be able to build Latitude.
 
      $ make BOOST='/path/to/boost/library'
 
