@@ -145,6 +145,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callNumMul(clone(systemCall));
     ObjectPtr callNumDiv(clone(systemCall));
     ObjectPtr callNumMod(clone(systemCall));
+    ObjectPtr callNumPow(clone(systemCall));
     ObjectPtr callTripleEquals(clone(systemCall));
     ObjectPtr callPrimEquals(clone(systemCall));
     ObjectPtr callStringConcat(clone(systemCall));
@@ -525,6 +526,20 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(scope, "numMod#", 2, lst.size());
             }
         });
+    callNumPow.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr obj1, obj2;
+            if (bindArguments(lst, obj1, obj2)) {
+                auto n0 = boost::get<Number>(&obj1->prim());
+                auto n1 = boost::get<Number>(&obj2->prim());
+                if (n0 && n1)
+                    return garnish(scope, (*n0).pow(*n1));
+                else
+                    throw doEtcError(scope, "TypeError",
+                                     "Got non-numeral in arithmetic operation");
+            } else {
+                throw doSystemArgError(scope, "numPow#", 2, lst.size());
+            }
+        });
     callTripleEquals.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             ObjectSPtr obj1, obj2;
             if (bindArguments(lst, obj1, obj2)) {
@@ -770,6 +785,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["numMul#"], callNumMul);
     sys.lock()->put(Symbols::get()["numDiv#"], callNumDiv);
     sys.lock()->put(Symbols::get()["numMod#"], callNumMod);
+    sys.lock()->put(Symbols::get()["numPow#"], callNumPow);
     sys.lock()->put(Symbols::get()["ptrEquals#"], callTripleEquals);
     sys.lock()->put(Symbols::get()["primEquals#"], callPrimEquals);
     sys.lock()->put(Symbols::get()["stringConcat#"], callStringConcat);

@@ -8,6 +8,7 @@ Number - := { meta sys numSub#: self, $1. }.
 Number * := { meta sys numMul#: self, $1. }.
 Number / := { meta sys numDiv#: self, $1. }.
 Number mod := { meta sys numMod#: self, $1. }.
+Number ^ := { meta sys numPow#: self, $1. }.
 
 ;; Numerical Type Checking
 Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.
