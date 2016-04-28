@@ -25,12 +25,15 @@ From Wikipedia:
 The fundamental idea behind a language like Latitude is that classes are too strict. In traditional class-based languages, it is easy for programmers to get caught up in a strict idea of what a specific object is, by matching it up to its type. In a prototype language, everybody is special. The notion that an object can't do something just because its class says it can't is not a notion that makes sense in a prototype language.
 
 Rather than using inheritance, Latitude uses a special `clone` method to create new objects.
+
     myCat := Cat clone.
+
 Now the object `myCat` is a new object whose parent object is `Cat`. If `myCat` doesn't know what to do when it receives a specific message, it will delegate automatically to its parent, but any changes made to `myCat` are individual to that object. That is, a programmer can override parent methods on individual objects, not just on whole classes at once.
 
 ## Dependencies
 
 Latitude requires a C++ compiler (tested with GCC 5.3.0), as well as the Boost C++ library, which can be acquired [here](http://www.boost.org/). Once you have these, you should be able to build Latitude.
+
      $ make BOOST='/path/to/boost/library'
 
 ## Usage
