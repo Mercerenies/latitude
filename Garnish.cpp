@@ -6,8 +6,6 @@
 
 using namespace std;
 
-// TODO Fix a lot of these to use a local lexical scope rather than global.
-
 ObjectPtr garnish(Scope scope, bool value) {
     if (value)
         return getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["True"]);

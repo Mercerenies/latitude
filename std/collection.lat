@@ -5,6 +5,7 @@ True := True.
 False := False.
 Nil := Nil.
 proc := hold 'proc.
+id := id.
 
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
@@ -27,7 +28,7 @@ Collection foldl := { accum := $1.
                       self visit: { parent accum := (parent dynamic hold '$2) call: accum, $1. }.
                       accum. }.
 Collection foldr := { func := proc { (parent dynamic hold '$2) call. }.
-                      accum := proc { $1. }. ; TODO Name the identity function in the global scope
+                      accum := id.
                       self visit: { parent accum := accum <| (proc { func call: parent dynamic $1, $1. }). }.
                       accum call: $1. }.
 Collection size := { self foldl: 0, { $1 + 1. }. }.

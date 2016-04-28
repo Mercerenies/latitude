@@ -32,7 +32,7 @@ void clearCurrentLine();
 ObjectPtr doCall(Scope scope,
                  ObjectPtr self, ObjectPtr mthd,
                  std::list<ObjectPtr> args,
-                 std::function<void(ObjectPtr&)> dynCall = [](ObjectPtr&){});
+                 std::function<void(Scope)> callback = [](Scope){});
 
 ObjectPtr determineScope(const std::unique_ptr<Stmt>& className,
                          const std::string& functionName,

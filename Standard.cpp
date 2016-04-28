@@ -101,7 +101,7 @@ ObjectPtr spawnObjects() {
     method.lock()->prim(Method());
     number.lock()->prim(0.0);
     string.lock()->prim("");
-    symbol.lock()->prim(Symbols::get()["0"]); // TODO Better default?
+    symbol.lock()->prim(Symbols::get()[""]);
     contValidator.lock()->prim(weak_ptr<SignalValidator>());
     stdout_.lock()->prim(outStream());
     stdin_.lock()->prim(inStream());
@@ -367,7 +367,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 ObjectPtr validator1 = clone(validator);
                 validator1.lock()->prim(weak_ptr<SignalValidator>(livingTag));
                 // Define a callback to store the tagged validator in the dynamic scope of the method
-                auto callback = [sym, validator1](ObjectPtr& dyn1) { dyn1.lock()->put(sym, validator1); };
+                auto callback = [sym, validator1](Scope scope1) { scope1.dyn.lock()->put(sym, validator1); };
                 ObjectPtr cont = getInheritedSlot(scope,
                                                   meta(scope, scope.lex),
                                                   Symbols::get()["Cont"]);
@@ -584,7 +584,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 // would escape the scope on the scopeProtect# call, the behavior
                 // is completely undefined.
                 bool abnormal = true;
-                BOOST_SCOPE_EXIT(&abnormal, global, block2, scope) {
+                BOOST_SCOPE_EXIT(&abnormal, block2, scope) {
                     try {
                         ObjectPtr status = garnish(scope, abnormal);
                         doCallWithArgs(scope, scope.lex, block2, status);
@@ -719,6 +719,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     BOOST_SCOPE_EXIT(&file) {
                         file.close();
                     } BOOST_SCOPE_EXIT_END;
+                    // TODO Should we take global as an argument or capture it like we are now?
                     ObjectPtr result = eval(file, *fname, { global, global }, scope);
                     return result;
                 } else {
@@ -786,8 +787,6 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["stackDump#"], callStackDump);
 
 }
-
-// TODO Take a lot of the ', global, global);' statements and make them scoped
 
 ProtoError doSystemArgError(Scope scope,
                             string name,

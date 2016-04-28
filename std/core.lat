@@ -84,6 +84,7 @@ global memo := { curr := self Cached clone.
                  curr. }.
 meta sigil l := { cache := memo: (dynamic hold '$1).
                   { cache call. }. }.
+global id := proc { $1. }.
 
 ;; Stream general methods
 Stream in? := { meta sys streamIn#: self. }.

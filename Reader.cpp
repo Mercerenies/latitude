@@ -108,10 +108,8 @@ ObjectPtr _callMethod(ObjectPtr self, ObjectPtr mthd, ObjectPtr lex, ObjectPtr d
     ObjectPtr lex1 = clone(lex);
     Scope scope = { lex1, dyn };
     ObjectPtr result = getInheritedSlot(scope, meta(scope, mthd), Symbols::get()["Nil"]);
-    // TODO Remove this if-statement and make self-binding mandatory
-    //      once we're confident we've removed anywhere that it's not passed in.
-    if (!self.expired())
-        lex1.lock()->put(Symbols::get()["self"], self);
+    assert(!self.expired());
+    lex1.lock()->put(Symbols::get()["self"], self);
     lex1.lock()->put(Symbols::get()["again"], mthd);
     lex1.lock()->put(Symbols::get()["lexical"], lex1);
     lex1.lock()->put(Symbols::get()["dynamic"], dyn);
@@ -124,7 +122,7 @@ ObjectPtr _callMethod(ObjectPtr self, ObjectPtr mthd, ObjectPtr lex, ObjectPtr d
 
 ObjectPtr doCall(Scope scope,
                  ObjectPtr self, ObjectPtr mthd,
-                 list<ObjectPtr> args, function<void(ObjectPtr&)> dynCall) {
+                 list<ObjectPtr> args, function<void(Scope)> callback) {
     if (!hasInheritedSlot(scope, mthd, Symbols::get()["closure"]))
         return mthd;
     ObjectPtr lex = getInheritedSlot(scope, mthd, Symbols::get()["closure"]);
@@ -137,7 +135,7 @@ ObjectPtr doCall(Scope scope,
         oss << "$" << nth;
         dyn1.lock()->put(Symbols::get()[oss.str()], arg);
     }
-    dynCall(dyn1); // TODO Pass in the whole scope to this
+    callback({ lex, dyn1 });
     return _callMethod(self, mthd, lex, dyn1);
 }
 
@@ -219,7 +217,7 @@ ObjectPtr eval(istream& file, string fname, Scope defScope, Scope scope) {
             stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
         auto mthdStmt = StmtMethod(0, stmts1);
         auto mthd = mthdStmt.execute(defScope);
-        auto callback = [defScope, fname](ObjectPtr& dyn1) { hereIAm(dyn1, garnish(defScope, fname)); };
+        auto callback = [defScope, fname](Scope scope1) { hereIAm(scope1.dyn, garnish(defScope, fname)); };
         return doCall(scope, defScope.lex, mthd, {}, callback);
     } catch (std::string parseException) {
         throw doParseError(scope, parseException);
@@ -257,15 +255,9 @@ ObjectPtr StmtCall::execute(Scope scope) {
                   return arg->execute(scope);
               });
     ObjectPtr target = getInheritedSlot(scope, scope_, Symbols::get()[functionName]);
-    auto prim = (!target.expired()) ? target.lock()->prim() : boost::blank();
-    if (target.expired()) {
-        // Could not find slot
-        // TODO Better error handling
-#ifdef PRINT_BEFORE_EXEC
-        cout << "No slot " << functionName << endl;
-#endif
-        return target;
-    } else if (auto sys = boost::get<SystemCall>(&prim)) {
+    assert(!target.expired());
+    auto prim = target.lock()->prim();
+    if (auto sys = boost::get<SystemCall>(&prim)) {
         // System call slot
 #ifdef PRINT_BEFORE_EXEC
         cout << "Sys " << functionName << endl;
