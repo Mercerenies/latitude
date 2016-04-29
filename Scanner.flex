@@ -41,7 +41,7 @@
 %}
 
 NORMAL    [^.,:()\[\]{}\"\' \t\n\r]
-SNORMAL   [^.,:()\[\]{}\"\' \t\n\r~0-9]
+SNORMAL   [^.,:()\[\]{}\"\' \t\n\r~0-9#]
 ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING
