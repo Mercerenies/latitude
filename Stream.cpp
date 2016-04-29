@@ -45,6 +45,10 @@ void Stream::writeText(string str) {
         out(ch);
 }
 
+bool Stream::isEof() {
+    return true;
+}
+
 bool CoutStream::hasOut() {
     return true;
 }
@@ -55,6 +59,10 @@ void CoutStream::out(char ch) {
 
 void CoutStream::writeLine(string str) {
     cout << str << endl;
+}
+
+bool CoutStream::isEof() {
+    return cout.eof();
 }
 
 bool CerrStream::hasOut() {
@@ -69,6 +77,10 @@ void CerrStream::writeLine(string str) {
     cerr << str << endl;
 }
 
+bool CerrStream::isEof() {
+    return cerr.eof();
+}
+
 bool CinStream::hasIn() {
     return true;
 }
@@ -81,6 +93,10 @@ string CinStream::readLine() {
     string result;
     getline(cin, result);
     return result;
+}
+
+bool CinStream::isEof() {
+    return cin.eof();
 }
 
 StreamPtr outStream() {

@@ -27,6 +27,7 @@ public:
     virtual std::string readText(int);
     virtual void writeLine(std::string);
     virtual void writeText(std::string);
+    virtual bool isEof();
 };
 
 /*
@@ -37,6 +38,7 @@ public:
     virtual bool hasOut();
     virtual void out(char);
     virtual void writeLine(std::string);
+    virtual bool isEof();
 };
 
 /*
@@ -47,6 +49,7 @@ public:
     virtual bool hasOut();
     virtual void out(char);
     virtual void writeLine(std::string);
+    virtual bool isEof();
 };
 
 /*
@@ -57,6 +60,7 @@ public:
     virtual bool hasIn();
     virtual char in();
     virtual std::string readLine();
+    virtual bool isEof();
 };
 
 // Functions for creating stream objects bound to the three default streams.
