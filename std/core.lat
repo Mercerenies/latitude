@@ -95,6 +95,8 @@ Stream print := { self puts: $1 toString. }.
 Stream println := { self putln: $1 toString. }.
 Stream dump := { meta sys streamDump#: self, $1. }.
 Stream readln := { meta sys streamRead#: self. }.
+Stream read := { meta sys streamReadChar#: self. }.
+Stream eof? := { meta sys streamEof#: self. }.
 Stream toString := "Stream".
 
 ;; Scope self-reference

@@ -43,5 +43,16 @@ global BoundsError := SystemError clone tap { self message := "Bounds error".
                                               self toString := "BoundsError". }.
 meta BoundsError := BoundsError.
 
+global IOError := SystemError clone tap { self message := "IO error".
+                                          self toString := "IOError". }.
+meta IOError := IOError.
+
+; This variable does NOT disable exceptions globally if changed. It is expected to be a Boolean
+; by the system (not a method nor a truthy/falsy value). If false, this value will disable certain
+; system exceptions so that they terminate the program instead. It should almost never be changed
+; and is used only for temporarily disabling exceptions while modifications to `meta` itself are being
+; made.
+meta exceptions? := True.
+
 ;; We would return the script here, but the `has` function requires flow_control.lat
 1.

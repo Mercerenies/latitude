@@ -88,6 +88,10 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["sys"], sys);
     meta.lock()->put(Symbols::get()["sigil"], sigil);
 
+    // This ensures that problems in the core.lat file (before exceptions are well-defined)
+    // do not cause the entire program to crash
+    meta.lock()->put(Symbols::get()["exceptions?"], false_);
+
     // Global variables not accessible in meta
     global.lock()->put(Symbols::get()["stdin"], stdin_);
     global.lock()->put(Symbols::get()["stderr"], stderr_);
@@ -112,11 +116,7 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["fileStorage"], garnish({global, global}, Symbols::gensym("STORE")));
 
     // The core libraries
-    ifstream file("std/latitude.lat");
-    BOOST_SCOPE_EXIT(&file) {
-        file.close();
-    } BOOST_SCOPE_EXIT_END;
-    eval(file, "std/latitude.lat", { global, global }, { global, global });
+    evalFile("std/latitude.lat", { global, global }, { global, global });
 
     return global;
 }
@@ -150,6 +150,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callPrimEquals(clone(systemCall));
     ObjectPtr callStringConcat(clone(systemCall));
     ObjectPtr callStreamRead(clone(systemCall));
+    ObjectPtr callStreamReadChar(clone(systemCall));
+    ObjectPtr callStreamEof(clone(systemCall));
     ObjectPtr callScopeProtect(clone(systemCall));
     ObjectPtr callInvoke(clone(systemCall));
     ObjectPtr callOrigin(clone(systemCall));
@@ -587,6 +589,37 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(scope, "streamRead#", 1, lst.size());
             }
         });
+    callStreamReadChar.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr stream;
+            if (bindArguments(lst, stream)) {
+                auto stream0 = stream->prim();
+                if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
+                    if (!(*stream1)->hasIn())
+                        throw doEtcError(scope, "StreamError",
+                                         "Stream not designated for input");
+                    return garnish(scope, (*stream1)->readText(1));
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "Object is not a stream");
+                }
+            } else {
+                throw doSystemArgError(scope, "streamReadChar#", 1, lst.size());
+            }
+        });
+    callStreamEof.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr stream;
+            if (bindArguments(lst, stream)) {
+                auto stream0 = stream->prim();
+                if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
+                    return garnish(scope, (*stream1)->isEof());
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "Object is not a stream");
+                }
+            } else {
+                throw doSystemArgError(scope, "streamEof#", 1, lst.size());
+            }
+        });
     callScopeProtect.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             ObjectSPtr block1, block2;
             if (bindArguments(lst, block1, block2)) {
@@ -730,12 +763,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             ObjectSPtr filename;
             if (bindArguments(lst, filename)) {
                 if (auto fname = boost::get<string>(&filename->prim())) {
-                    ifstream file(*fname);
-                    BOOST_SCOPE_EXIT(&file) {
-                        file.close();
-                    } BOOST_SCOPE_EXIT_END;
                     // TODO Should we take global as an argument or capture it like we are now?
-                    ObjectPtr result = eval(file, *fname, { global, global }, scope);
+                    ObjectPtr result = evalFile(*fname, { global, global }, scope);
                     return result;
                 } else {
                     throw doEtcError(scope, "TypeError",
@@ -790,6 +819,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["primEquals#"], callPrimEquals);
     sys.lock()->put(Symbols::get()["stringConcat#"], callStringConcat);
     sys.lock()->put(Symbols::get()["streamRead#"], callStreamRead);
+    sys.lock()->put(Symbols::get()["streamReadChar#"], callStreamReadChar);
+    sys.lock()->put(Symbols::get()["streamEof#"], callStreamEof);
     sys.lock()->put(Symbols::get()["scopeProtect#"], callScopeProtect);
     sys.lock()->put(Symbols::get()["invoke#"], callInvoke);
     sys.lock()->put(Symbols::get()["origin#"], callOrigin);
@@ -804,10 +835,29 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
 
 }
 
+// TODO Have a flag in `meta` somewhere to indicate whether exceptions have been loaded or not
+
+bool areExceptionsEnabled(Scope scope) {
+    ObjectPtr meta_ = meta(scope, scope.lex);
+    ObjectPtr definitelyTrue = garnish(scope, true);
+    ObjectPtr exc = getInheritedSlot(scope, meta_, Symbols::get()["exceptions?"]);
+    return (exc.lock() == definitelyTrue.lock());
+}
+
+[[ noreturn ]] void gracefulTerminate(Scope scope, string category, string message) {
+    std::cerr << "Fatal error! " << category << std::endl;
+    std::cerr << message << std::endl;
+    // Throw something that won't get caught until the top-level
+    struct {} expr;
+    throw expr;
+}
+
 ProtoError doSystemArgError(Scope scope,
                             string name,
                             int expected,
                             int got) {
+    if (!areExceptionsEnabled(scope))
+        gracefulTerminate(scope, "SystemArgError", name);
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["SystemArgError"]));
     err.lock()->put(Symbols::get()["stack"], scope.dyn);
@@ -818,6 +868,8 @@ ProtoError doSystemArgError(Scope scope,
 }
 
 ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName) {
+    if (!areExceptionsEnabled(scope))
+        gracefulTerminate(scope, "SlotError", Symbols::get()[slotName]);
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["SlotError"]));
     err.lock()->put(Symbols::get()["stack"], scope.dyn);
@@ -827,6 +879,8 @@ ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName) {
 }
 
 ProtoError doParseError(Scope scope) {
+    if (!areExceptionsEnabled(scope))
+        gracefulTerminate(scope, "ParseError", "");
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["ParseError"]));
     err.lock()->put(Symbols::get()["stack"], scope.dyn);
@@ -834,6 +888,8 @@ ProtoError doParseError(Scope scope) {
 }
 
 ProtoError doParseError(Scope scope, string message) {
+    if (!areExceptionsEnabled(scope))
+        gracefulTerminate(scope, "ParseError", message);
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()["ParseError"]));
     err.lock()->put(Symbols::get()["message"], garnish(scope, message));
@@ -842,6 +898,8 @@ ProtoError doParseError(Scope scope, string message) {
 }
 
 ProtoError doEtcError(Scope scope, string errorName, string msg) {
+    if (!areExceptionsEnabled(scope))
+        gracefulTerminate(scope, errorName, msg);
     ObjectPtr meta_ = meta(scope, scope.lex);
     ObjectPtr err = clone(getInheritedSlot(scope, meta_, Symbols::get()[errorName]));
     err.lock()->put(Symbols::get()["stack"], scope.dyn);

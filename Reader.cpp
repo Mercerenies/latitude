@@ -12,6 +12,8 @@ extern "C" {
 #include <memory>
 #include <algorithm>
 #include <sstream>
+#include <fstream>
+#include <boost/scope_exit.hpp>
 
 //#define PRINT_BEFORE_EXEC
 
@@ -205,22 +207,32 @@ ObjectPtr eval(string str, Scope scope) {
 }
 
 // TODO Throw a ProtoException if an IO error occurs
-ObjectPtr eval(istream& file, string fname, Scope defScope, Scope scope) {
-    stringstream str;
-    while (file >> str.rdbuf());
+ObjectPtr evalFile(string fname, Scope defScope, Scope scope) {
+    ifstream file;
+    file.exceptions(ifstream::failbit | ifstream::badbit);
     try {
-        auto stmts = parse(str.str());
-        for (auto& stmt : stmts)
-            stmt->propogateFileName(fname);
-        list< shared_ptr<Stmt> > stmts1;
-        for (unique_ptr<Stmt>& stmt : stmts)
-            stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
-        auto mthdStmt = StmtMethod(0, stmts1);
-        auto mthd = mthdStmt.execute(defScope);
-        auto callback = [defScope, fname](Scope scope1) { hereIAm(scope1.dyn, garnish(defScope, fname)); };
-        return doCall(scope, defScope.lex, mthd, {}, callback);
-    } catch (std::string parseException) {
-        throw doParseError(scope, parseException);
+        file.open(fname);
+        BOOST_SCOPE_EXIT(&file) {
+            file.close();
+        } BOOST_SCOPE_EXIT_END;
+        stringstream str;
+        while ((file >> str.rdbuf()).good());
+        try {
+            auto stmts = parse(str.str());
+            for (auto& stmt : stmts)
+                stmt->propogateFileName(fname);
+            list< shared_ptr<Stmt> > stmts1;
+            for (unique_ptr<Stmt>& stmt : stmts)
+                stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
+            auto mthdStmt = StmtMethod(0, stmts1);
+            auto mthd = mthdStmt.execute(defScope);
+            auto callback = [defScope, fname](Scope scope1) { hereIAm(scope1.dyn, garnish(defScope, fname)); };
+            return doCall(scope, defScope.lex, mthd, {}, callback);
+        } catch (std::string parseException) {
+            throw doParseError(scope, parseException);
+        }
+    } catch (ios_base::failure err) {
+        throw doEtcError(scope, "IOError", err.what());
     }
 }
 

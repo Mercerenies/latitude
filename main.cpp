@@ -19,25 +19,29 @@ int main(int argc, char** argv) {
     ObjectPtr global;
     try {
         try {
-            global = spawnObjects();
+            try {
+                global = spawnObjects();
+            } catch (ProtoError& err) {
+                cerr << "An error occurred while loading the standard library. "
+                     << "Please report this." << endl;
+                auto stream = errStream();
+                stream->writeLine("*** STD EXCEPTION ***");
+                dumpObject({ err.getObject(), err.getObject() }, *stream, err.getObject());
+                return 1;
+            }
+            runREPL(global);
         } catch (ProtoError& err) {
-            cerr << "An error occurred while loading the standard library. "
-                 << "Please report this." << endl;
             auto stream = errStream();
-            stream->writeLine("*** STD EXCEPTION ***");
-            dumpObject({ err.getObject(), err.getObject() }, *stream, err.getObject());
+            stream->writeLine("*** TOPLEVEL EXCEPTION ***");
+            //auto bloop = getInheritedSlot({ global, global }, err.getObject(), Symbols::get()["message"]);
+            //auto bleep = getInheritedSlot({ global, global }, err.getObject(), Symbols::get()["slotName"]);
+            //cerr << boost::get<string>(bloop.lock()->prim()) << endl;
+            //cerr << Symbols::get()[boost::get<Symbolic>(bleep.lock()->prim())] << endl;
+            global.lock()->put(Symbols::get()["$except"], err.getObject());
+            dumpObject({ global, global }, *stream, err.getObject());
             return 1;
         }
-        runREPL(global);
-    } catch (ProtoError& err) {
-        auto stream = errStream();
-        stream->writeLine("*** TOPLEVEL EXCEPTION ***");
-        //auto bloop = getInheritedSlot({ global, global }, err.getObject(), Symbols::get()["message"]);
-        //auto bleep = getInheritedSlot({ global, global }, err.getObject(), Symbols::get()["slotName"]);
-        //cerr << boost::get<string>(bloop.lock()->prim()) << endl;
-        //cerr << Symbols::get()[boost::get<Symbolic>(bleep.lock()->prim())] << endl;
-        global.lock()->put(Symbols::get()["$except"], err.getObject());
-        dumpObject({ global, global }, *stream, err.getObject());
+    } catch (...) {
         return 1;
     }
 
