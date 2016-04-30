@@ -32,7 +32,7 @@ ObjectPtr garnish(Scope scope, double value) {
 }
 
 ObjectPtr garnish(Scope scope, int value) {
-    return garnish(scope, (double)value);
+    return garnish(scope, Number( (Number::smallint)value ));
 }
 
 ObjectPtr garnish(Scope scope, Number value) {
