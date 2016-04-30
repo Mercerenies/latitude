@@ -1,4 +1,6 @@
 
+ArgList := ArgList.
+
 ;; "Cells" a la MIT Scheme
 global Cell := Object clone.
 Cell value := Nil.
@@ -26,6 +28,14 @@ Latchkey == := { (self tag) == (self tag). }.
 ; will not rebind lexically until that scope exits.
 global this := { dynamic parent $lexical self. }.
 global localize := { dynamic parent $lexical this := dynamic parent $lexical self. }.
+
+; Likewise, the dynamic argument behavior occasonally gets in the way, so this is provided to rebind
+; dynamic arguments to lexical names. It expects a list of symbols (usually a literal list). The name
+; `takes` implies that the method in question takes these arguments. It is designed to be read in English,
+; as it is usually the first line of a method (possibly the second, after a `localize`).
+global takes := { args := ArgList clone fillWith: dynamic parent.
+                  target := dynamic parent $lexical.
+                  ($1 clone zip!: args) map!: { target put: ($1 nth 0), ($1 nth 1). }. }.
 
 ;; Return the script
 here.

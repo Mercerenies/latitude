@@ -2,12 +2,14 @@
 ; TODO Make argument lists cloneable more appropriately (so they don't modify the original
 ;      scope), and also a `realize` function which puts arguments into the current scope.
 
-;; The argument list. When cloned, it takes the current dynamic scope and references its argument list.
+;; The argument list. When filled, it takes the current dynamic scope and references its argument list.
 global ArgList := Object clone.
 ArgList toString := "ArgList".
 ArgList enclosingScope := global.
 ArgList fill := { self enclosingScope := dynamic parent.
                   self. }.
+ArgList fillWith := { self enclosingScope := $1.
+                      self. }.
 ArgList shift := { if: (self size == 0),
                        { meta Nil. },
                        { self := parent self.
@@ -42,6 +44,10 @@ ArgList iterator := { ArgIterator := Object clone.
                       ArgIterator element := { self array enclosingScope hold: ("$" ++ (self index)) intern. }.
                       ArgIterator element= := { self array enclosingScope put: ("$" ++ (self index)) intern, $1. }.
                       ArgIterator. }.
+ArgList dropIn := { target := dynamic parent.
+                    index := 1.
+                    self visit { target put: (("$" ++ (index)) intern), $1.
+                                 parent index := index + 1. }. }.
 
 Collection inject: ArgList.
 
