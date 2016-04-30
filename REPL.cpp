@@ -90,6 +90,7 @@ void runREPL(ObjectPtr& global) {
         }
     } catch (Signal& signal) {
         if (signal.match(sym)) {
+            GC::get().garbageCollect();
             cout << "Goodbye." << endl;
         } else {
             throw;
