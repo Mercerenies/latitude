@@ -172,7 +172,7 @@ void FileStream::close() {
 
 InFileStream::InFileStream(string name, FileMode mode)
     : stream(name, translateMode(mode)) {
-    stream.exceptions( ios_base::failbit | ios_base::badbit );
+    stream.exceptions( ios_base::badbit );
 }
 
 InFileStream::~InFileStream() {
@@ -199,7 +199,7 @@ bool InFileStream::isEof() {
 
 OutFileStream::OutFileStream(string name, FileMode mode)
     : stream(name, translateMode(mode)) {
-    stream.exceptions( ios_base::failbit | ios_base::badbit );
+    stream.exceptions( ios_base::badbit );
 }
 
 OutFileStream::~OutFileStream() {
