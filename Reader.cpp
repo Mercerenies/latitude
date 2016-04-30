@@ -21,11 +21,11 @@ using namespace std;
 
 PtrToList currentLine;
 
-void ExprDeleter::operator()(Expr* x) {
+void ExprDeleter::operator()(Expr* x) const {
     cleanupE(x);
 }
 
-void ExprDeleter::operator()(List* x) {
+void ExprDeleter::operator()(List* x) const {
     cleanupL(x);
 }
 
@@ -99,7 +99,7 @@ list< unique_ptr<Stmt> > translateCurrentLine() {
         return list< unique_ptr<Stmt> >();
 }
 
-void clearCurrentLine() {
+void clearCurrentLine() noexcept {
     currentLine.reset();
 }
 

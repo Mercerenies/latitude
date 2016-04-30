@@ -28,7 +28,7 @@ public:
     static Symbolic gensym();
     static Symbolic gensym(std::string prefix);
     static Symbolic natural(int n);
-    static Symbols& get();
+    static Symbols& get() noexcept;
     static bool isUninterned(const std::string& str);
     static bool requiresEscape(const std::string& str);
     Symbolic operator[](const std::string& str);
@@ -46,13 +46,13 @@ struct Symbolic {
 /*
  * Symbols are comparable for equality in constant time.
  */
-bool operator ==(const Symbolic& a, const Symbolic& b);
+bool operator ==(const Symbolic& a, const Symbolic& b) noexcept;
 /*
  * Symbols follow an arbitrary but consistent total ordering
  * to allow their admission into tree-like structures such
  * as `std::map` and `std::set`.
  */
-bool operator <(const Symbolic& a, const Symbolic& b);
+bool operator <(const Symbolic& a, const Symbolic& b) noexcept;
 
 namespace std {
     /*

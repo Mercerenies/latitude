@@ -63,7 +63,7 @@ Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp
 Number.o:	Number.cpp Number.hpp
 	$(CXX) $(CXXFLAGS) Number.cpp
 
-REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp
+REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Cont.hpp
 	$(CXX) $(CXXFLAGS) REPL.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp REPL.hpp

@@ -19,7 +19,7 @@ private:
     std::set<ObjectSPtr> alloc;
     GC() = default;
 public:
-    static GC& get();
+    static GC& get() noexcept;
     /*
      * Creates an object and returns a pointer to it.
      */
@@ -36,6 +36,7 @@ public:
     void garbageCollect(Ts... globals);
 };
 
+// TODO Can we make a noexcept guarantee here?
 template <typename... Ts>
 void GC::garbageCollect(Ts... globals) {
 #if GC_PRINT > 0

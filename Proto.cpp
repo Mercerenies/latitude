@@ -9,25 +9,25 @@
 
 using namespace std;
 
-Slot::Slot() {}
+Slot::Slot() noexcept {}
 
-Slot::Slot(ObjectPtr ptr) : obj(ptr) {}
+Slot::Slot(ObjectPtr ptr) noexcept : obj(ptr) {}
 
-SlotType Slot::getType() {
+SlotType Slot::getType() const noexcept{
     if (!obj.expired())
         return SlotType::PTR;
     else
         return SlotType::INH;
 }
 
-ObjectPtr Slot::getPtr() {
+ObjectPtr Slot::getPtr() const {
     if (getType() == SlotType::PTR)
         return obj;
     else
         return ObjectPtr();
 }
 
-Slot Object::operator [](Symbolic key) {
+Slot Object::operator [](Symbolic key) const {
     auto iter = slots.find(key);
     if (iter == slots.end())
         return Slot();
@@ -42,14 +42,14 @@ void Object::put(Symbolic key, ObjectPtr ptr) {
         slots[key] = Slot(ptr);
 }
 
-set<Symbolic> Object::directKeys() {
+set<Symbolic> Object::directKeys() const {
     set<Symbolic> result;
     for (auto curr : slots)
         result.insert(curr.first);
     return result;
 }
 
-Prim& Object::prim() {
+Prim& Object::prim() noexcept {
     return primitive;
 }
 

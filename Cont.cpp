@@ -1,20 +1,20 @@
 #include "Cont.hpp"
 
-Signal::Signal(Symbolic id, ObjectPtr obj)
+Signal::Signal(Symbolic id, ObjectPtr obj) noexcept
     : identifier(id) , object(obj) {}
 
-bool Signal::match(Symbolic other) {
+bool Signal::match(Symbolic other) const noexcept {
     return (other == identifier);
 }
 
-ObjectPtr Signal::getObject() {
+ObjectPtr Signal::getObject() const noexcept {
     return object;
 }
 
-ProtoError::ProtoError(ObjectPtr obj)
+ProtoError::ProtoError(ObjectPtr obj) noexcept
     : object(obj) {}
 
-ObjectPtr ProtoError::getObject() {
+ObjectPtr ProtoError::getObject() const noexcept {
     return object;
 }
 

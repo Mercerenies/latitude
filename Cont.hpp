@@ -19,9 +19,9 @@ private:
     Symbolic identifier;
     ObjectPtr object;
 public:
-    Signal(Symbolic id, ObjectPtr obj);
-    bool match(Symbolic other);
-    ObjectPtr getObject();
+    Signal(Symbolic id, ObjectPtr obj) noexcept;
+    bool match(Symbolic other) const noexcept;
+    ObjectPtr getObject() const noexcept;
 };
 
 /*
@@ -31,8 +31,8 @@ class ProtoError {
 private:
     ObjectPtr object;
 public:
-    ProtoError(ObjectPtr obj);
-    ObjectPtr getObject();
+    ProtoError(ObjectPtr obj) noexcept;
+    ObjectPtr getObject() const noexcept;
 };
 
 /*

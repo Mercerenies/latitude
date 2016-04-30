@@ -41,10 +41,10 @@ class Slot {
 private:
     ObjectPtr obj;
 public:
-    Slot();
-    Slot(ObjectPtr ptr);
-    SlotType getType();
-    ObjectPtr getPtr();
+    Slot() noexcept;
+    Slot(ObjectPtr ptr) noexcept;
+    SlotType getType() const noexcept;
+    ObjectPtr getPtr() const;
 };
 
 /*
@@ -62,10 +62,10 @@ private:
     Prim primitive;
 public:
     virtual ~Object() = default;
-    virtual Slot operator [](Symbolic key);
+    virtual Slot operator [](Symbolic key) const;
     virtual void put(Symbolic key, ObjectPtr ptr);
-    virtual std::set<Symbolic> directKeys();
-    Prim& prim();
+    virtual std::set<Symbolic> directKeys() const;
+    Prim& prim() noexcept;
     template <typename T>
     Prim prim(const T& prim0);
 };

@@ -2,7 +2,7 @@
 
 GC GC::instance = GC();
 
-GC& GC::get() {
+GC& GC::get() noexcept {
     return instance;
 }
 

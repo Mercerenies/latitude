@@ -27,7 +27,7 @@ Symbolic Symbols::natural(int n) {
     return sym;
 }
 
-Symbols& Symbols::get() {
+Symbols& Symbols::get() noexcept {
     return instance;
 }
 
@@ -76,10 +76,10 @@ std::string Symbols::operator[](const Symbolic& str) {
     return (*data.find(str.index)).second;
 }
 
-bool operator ==(const Symbolic& a, const Symbolic& b) {
+bool operator ==(const Symbolic& a, const Symbolic& b) noexcept {
     return a.index == b.index;
 }
 
-bool operator <(const Symbolic& a, const Symbolic& b) {
+bool operator <(const Symbolic& a, const Symbolic& b) noexcept {
     return a.index < b.index;
 }

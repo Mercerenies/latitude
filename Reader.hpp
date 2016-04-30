@@ -10,8 +10,8 @@ extern "C" {
 
 class ExprDeleter {
 public:
-    void operator()(Expr* x);
-    void operator()(List* x);
+    void operator()(Expr* x) const;
+    void operator()(List* x) const;
 };
 
 struct Scope {
@@ -27,7 +27,7 @@ class Stmt;
 extern "C" void setCurrentLine(List* stmt);
 PtrToList getCurrentLine();
 std::list< std::unique_ptr<Stmt> > translateCurrentLine();
-void clearCurrentLine();
+void clearCurrentLine() noexcept;
 
 ObjectPtr doCall(Scope scope,
                  ObjectPtr self, ObjectPtr mthd,
@@ -73,6 +73,7 @@ private:
 public:
     Stmt(int line_no);
     void establishLocation(const Scope& scope);
+    // TODO Can we make execute() a const method?
     virtual ObjectPtr execute(Scope scope) = 0;
     virtual void propogateFileName(std::string name);
 };

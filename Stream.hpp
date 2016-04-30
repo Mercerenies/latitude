@@ -7,6 +7,8 @@
 #include <string>
 #include <ios>
 
+// TODO Const and noexcept correctness in this file
+
 class Stream;
 
 using StreamPtr = std::shared_ptr<Stream>;
