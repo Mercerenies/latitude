@@ -21,5 +21,11 @@ Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.
 Latchkey == := { (self tag) == (self tag). }.
 
+; It's very easy to lose track of a `self` in nested method calls, and calling `parent` repeatedly
+; can be annoying, so the `localize` method will bind `this` to `self` in the calling scope. `this`
+; will not rebind lexically until that scope exits.
+global this := { dynamic parent $lexical self. }.
+global localize := { dynamic parent $lexical this := dynamic parent $lexical self. }.
+
 ;; Return the script
 here.
