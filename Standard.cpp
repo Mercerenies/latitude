@@ -121,6 +121,8 @@ ObjectPtr spawnObjects() {
     return global;
 }
 
+// TODO Stack protection (a variable which sets a finite limit to the stack depth to avoid overflow)
+
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) {
     ObjectPtr callStreamIn(clone(systemCall));
     ObjectPtr callStreamOut(clone(systemCall));
@@ -152,6 +154,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callStreamRead(clone(systemCall));
     ObjectPtr callStreamReadChar(clone(systemCall));
     ObjectPtr callStreamEof(clone(systemCall));
+    ObjectPtr callStreamClose(clone(systemCall));
+    ObjectPtr callStreamFileOpen(clone(systemCall));
     ObjectPtr callScopeProtect(clone(systemCall));
     ObjectPtr callInvoke(clone(systemCall));
     ObjectPtr callOrigin(clone(systemCall));
@@ -201,8 +205,12 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                         if (!(*stream1)->hasOut())
                             throw doEtcError(scope, "StreamError",
                                              "Stream not designated for output");
-                        (*stream1)->writeText(*obj1);
-                        return eval("meta Nil.", scope);
+                        try {
+                            (*stream1)->writeText(*obj1);
+                            return eval("meta Nil.", scope);
+                        } catch (ios_base::failure err) {
+                            throw doEtcError(scope, "IOError", err.what());
+                        }
                     } else {
                         throw doEtcError(scope, "StreamError",
                                          "Object to print is not a string");
@@ -225,8 +233,12 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                         if (!(*stream1)->hasOut())
                             throw doEtcError(scope, "StreamError",
                                              "Stream not designated for output");
-                        (*stream1)->writeLine(*obj1);
-                        return eval("meta Nil.", scope);
+                        try {
+                            (*stream1)->writeLine(*obj1);
+                            return eval("meta Nil.", scope);
+                        } catch (ios_base::failure err) {
+                            throw doEtcError(scope, "IOError", err.what());
+                        }
                     } else {
                         throw doEtcError(scope, "StreamError",
                                          "Object to print is not a string");
@@ -271,8 +283,12 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             ObjectSPtr stream, obj;
             if (bindArguments(lst, stream, obj)) {
                 if (auto stream0 = boost::get<StreamPtr>(&stream->prim())) {
-                    dumpObject(scope, **stream0, obj);
-                    return eval("meta Nil.", scope);
+                    try {
+                        dumpObject(scope, **stream0, obj);
+                        return eval("meta Nil.", scope);
+                    } catch (ios_base::failure err) {
+                        throw doEtcError(scope, "IOError", err.what());
+                    }
                 } else {
                     throw doEtcError(scope, "TypeError",
                                      "Object is not a stream");
@@ -580,7 +596,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     if (!(*stream1)->hasIn())
                         throw doEtcError(scope, "StreamError",
                                          "Stream not designated for input");
-                    return garnish(scope, (*stream1)->readLine());
+                    try {
+                        return garnish(scope, (*stream1)->readLine());
+                    } catch (ios_base::failure err) {
+                        throw doEtcError(scope, "IOError", err.what());
+                    }
                 } else {
                     throw doEtcError(scope, "TypeError",
                                      "Object is not a stream");
@@ -597,7 +617,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     if (!(*stream1)->hasIn())
                         throw doEtcError(scope, "StreamError",
                                          "Stream not designated for input");
-                    return garnish(scope, (*stream1)->readText(1));
+                    try {
+                        return garnish(scope, (*stream1)->readText(1));
+                    } catch (ios_base::failure err) {
+                        throw doEtcError(scope, "IOError", err.what());
+                    }
                 } else {
                     throw doEtcError(scope, "TypeError",
                                      "Object is not a stream");
@@ -618,6 +642,57 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 }
             } else {
                 throw doSystemArgError(scope, "streamEof#", 1, lst.size());
+            }
+        });
+    callStreamClose.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr stream;
+            if (bindArguments(lst, stream)) {
+                auto stream0 = stream->prim();
+                if (auto stream1 = boost::get<StreamPtr>(&stream0)) {
+                    (*stream1)->close();
+                    return garnish(scope, boost::blank());
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "Object is not a stream");
+                }
+            } else {
+                throw doSystemArgError(scope, "streamClose#", 1, lst.size());
+            }
+        });
+    callStreamFileOpen.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr stream, filename, access, mode;
+            if (bindArguments(lst, stream, filename, access, mode)) {
+                auto newStream = clone(stream); // TODO Call clone in-language rather than forcing it
+                auto filename0 = boost::get<string>(&filename->prim());
+                auto access0 = boost::get<Symbolic>(&access->prim());
+                auto mode0 = boost::get<Symbolic>(&mode->prim());
+                if (filename0 && access0 && mode0) {
+                    auto access1 = Symbols::get()[*access0];
+                    auto mode1 = Symbols::get()[*mode0];
+                    FileAccess access2;
+                    FileMode mode2;
+                    if (access1 == "read")
+                        access2 = FileAccess::READ;
+                    else if (access1 == "write")
+                        access2 = FileAccess::WRITE;
+                    else
+                        throw doEtcError(scope, "SystemCallError",
+                                         "Invalid access specifier when opening file");
+                    if (mode1 == "text")
+                        mode2 = FileMode::TEXT;
+                    else if (mode1 == "binary")
+                        mode2 = FileMode::BINARY;
+                    else
+                        throw doEtcError(scope, "SystemCallError",
+                                         "Invalid mode specifier when opening file");
+                    newStream.lock()->prim( StreamPtr(new FileStream(*filename0, access2, mode2)) );
+                    return newStream;
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "Type error while opening file");
+                }
+            } else {
+                throw doSystemArgError(scope, "streamFileOpen#", 4, lst.size());
             }
         });
     callScopeProtect.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
@@ -821,6 +896,8 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["streamRead#"], callStreamRead);
     sys.lock()->put(Symbols::get()["streamReadChar#"], callStreamReadChar);
     sys.lock()->put(Symbols::get()["streamEof#"], callStreamEof);
+    sys.lock()->put(Symbols::get()["streamClose#"], callStreamClose);
+    sys.lock()->put(Symbols::get()["streamFileOpen#"], callStreamFileOpen);
     sys.lock()->put(Symbols::get()["scopeProtect#"], callScopeProtect);
     sys.lock()->put(Symbols::get()["invoke#"], callInvoke);
     sys.lock()->put(Symbols::get()["origin#"], callOrigin);

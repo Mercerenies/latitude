@@ -206,7 +206,6 @@ ObjectPtr eval(string str, Scope scope) {
     }
 }
 
-// TODO Throw a ProtoException if an IO error occurs
 ObjectPtr evalFile(string fname, Scope defScope, Scope scope) {
     ifstream file;
     file.exceptions(ifstream::failbit | ifstream::badbit);
