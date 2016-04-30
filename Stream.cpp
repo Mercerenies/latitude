@@ -3,6 +3,8 @@
 
 using namespace std;
 
+// TODO Binary file prints a \377 at the end for some odd reason
+
 class InFileStream : public Stream {
 private:
     ifstream stream;
