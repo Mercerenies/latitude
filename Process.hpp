@@ -19,6 +19,7 @@ protected:
     virtual int _run() = 0;
 public:
     Process(std::string cmd);
+    virtual ~Process() = default;
     bool run(); // Returns whether successful
     StreamPtr stdIn() const noexcept;
     StreamPtr stdOut() const noexcept;

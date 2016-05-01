@@ -176,7 +176,167 @@ ProcessPtr makeProcess(string cmd) {
 #endif // USE_POSIX
 
 #ifdef USE_WINDOWS
-// TODO This
+#define WINVER 0x0500
+#include <windows.h>
+
+class HandleStream : public Stream {
+private:
+    HANDLE handle;
+    bool isIn;
+    bool isOut;
+    bool eof;
+public:
+    HandleStream(HANDLE file, bool in, bool out)
+        : handle(file), isIn(in), isOut(out), eof(false) {}
+    virtual ~HandleStream() {
+        close();
+    }
+    virtual bool hasOut() {
+        return isOut;
+    }
+    virtual bool hasIn() {
+        return isIn;
+    }
+    virtual void out(char ch) {
+        DWORD ignore; // The system requires that this be non-null for some reason
+        WriteFile(handle, &ch, 1, &ignore, NULL);
+    }
+    virtual char in() {
+        DWORD result;
+        char ch;
+        ReadFile(handle, &ch, 1, &result, NULL);
+        if (result == 0)
+            eof = true;
+        return ch;
+    }
+    virtual bool isEof() {
+        return eof;
+    }
+    virtual void close() {
+        CloseHandle(handle);
+    }
+};
+
+class WindowsProcess : public Process {
+private:
+    HANDLE handle;
+    bool flagged;
+    bool done;
+    int exitCode;
+    virtual int _run();
+    void refreshCodes();
+public:
+    WindowsProcess(string cmd)
+        : Process(cmd), handle(nullptr), flagged(false), done(false), exitCode(-1) {}
+    virtual ~WindowsProcess() {
+        if (handle)
+            CloseHandle(handle);
+    }
+    virtual bool isRunning() {
+        refreshCodes();
+        return (handle) && (!done);
+    }
+    virtual bool isDone() {
+        refreshCodes();
+        return (handle) && (done);
+    }
+    virtual int getExitCode() {
+        refreshCodes();
+        return exitCode;
+    }
+};
+
+void WindowsProcess::refreshCodes() {
+    if (!flagged) {
+        if (handle) {
+            DWORD result = WaitForSingleObject(handle, 0);
+            if (result == WAIT_OBJECT_0) {
+                // Done; handle the flag
+                DWORD status;
+                GetExitCodeProcess(handle, &status);
+                flagged = true;
+                done = true;
+                exitCode = status;
+            }
+        }
+    }
+}
+
+typedef std::tuple<HANDLE, HANDLE, HANDLE> HandleTriple;
+
+void CALLBACK waitCallback(PVOID param, BOOLEAN fired) {
+    HandleTriple* triple = (HandleTriple*)param;
+    CloseHandle(get<0>(*triple));
+    CloseHandle(get<1>(*triple));
+    CloseHandle(get<2>(*triple));
+    delete triple;
+}
+
+int WindowsProcess::_run() {
+    HANDLE inPipeRd, inPipeWr, outPipeRd, outPipeWr, errPipeRd, errPipeWr;
+    SECURITY_ATTRIBUTES attr;
+    PROCESS_INFORMATION proc;
+    STARTUPINFO start;
+
+    attr.nLength = sizeof(attr);
+    attr.bInheritHandle = TRUE;
+    attr.lpSecurityDescriptor = NULL;
+    if (!CreatePipe(&inPipeRd, &inPipeWr, &attr, 0))
+        return 1;
+    if (!CreatePipe(&outPipeRd, &outPipeWr, &attr, 0))
+        return 1;
+    if (!CreatePipe(&errPipeRd, &errPipeWr, &attr, 0))
+        return 1;
+    if (!SetHandleInformation(inPipeWr, HANDLE_FLAG_INHERIT, 0))
+        return 1;
+    if (!SetHandleInformation(outPipeRd, HANDLE_FLAG_INHERIT, 0))
+        return 1;
+    if (!SetHandleInformation(errPipeRd, HANDLE_FLAG_INHERIT, 0))
+        return 1;
+
+    ZeroMemory(&proc, sizeof(proc));
+    ZeroMemory(&start, sizeof(start));
+
+    start.cb = sizeof(start);
+    start.hStdError = errPipeWr;
+    start.hStdOutput = outPipeWr;
+    start.hStdInput = inPipeRd;
+    start.dwFlags = STARTF_USESTDHANDLES;
+
+    string temp(cmd);
+    char* buffer = new char[temp.size() + 1];
+    strcpy(buffer, temp.c_str());
+    BOOL success = CreateProcess(nullptr, buffer,
+                                 nullptr, nullptr,
+                                 TRUE,
+                                 0,
+                                 nullptr, nullptr,
+                                 &start, &proc);
+    delete[] buffer;
+
+    if (!success)
+        return 1;
+
+    HANDLE wait;
+    RegisterWaitForSingleObject(&wait, proc.hProcess, &waitCallback,
+                                new HandleTriple(inPipeRd, outPipeWr, errPipeWr),
+                                INFINITE, WT_EXECUTEONLYONCE);
+
+    CloseHandle(proc.hThread);
+    this->handle = proc.hProcess;
+
+    this->in  = StreamPtr( new HandleStream( inPipeWr, false, true ) );
+    this->out = StreamPtr( new HandleStream(outPipeRd, true , false) );
+    this->err = StreamPtr( new HandleStream(errPipeRd, true , false) );
+
+    return 0;
+
+}
+
+ProcessPtr makeProcess(string cmd) {
+    return ProcessPtr(new WindowsProcess(cmd));
+}
+
 #endif // USE_WINDOWS
 
 Process::Process(std::string cmd)
