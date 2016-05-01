@@ -46,7 +46,7 @@ bool Stream::hasOut() {
 string Stream::readLine() {
     ostringstream out;
     char ch = in();
-    while ((ch != 13) && (ch != 10)) {
+    while ((ch != 13) && (ch != 10) && (!isEof())) {
         out << ch;
         ch = in();
     }
