@@ -25,6 +25,7 @@ global Number := meta Number.
 global String := meta String.
 global Symbol := meta Symbol.
 global Stream := meta Stream.
+global Process := meta Process.
 global SystemCall := meta SystemCall.
 global True := meta True.
 global False := meta False.
@@ -102,6 +103,17 @@ Stream open := { meta sys streamFileOpen#: self, $1, $2, $3. }.
 Stream closeAfter := { stream := self.
                        { (stream invoke: (parent dynamic hold '$1)) call. } protect { stream close. }. }.
 Stream toString := "Stream".
+
+;; Process basics
+Process toString := "Process".
+Process stdin := { meta sys processInStream#: self. }.
+Process stdout := { meta sys processOutStream#: self. }.
+Process stderr := { meta sys processErrStream#: self. }.
+Process spawn := { meta sys processCreate#: self, $1. }.
+Process finished? := { meta sys processFinished#: self. }.
+Process running? := { meta sys processRunning#: self. }.
+Process exitCode := { meta sys processExitCode#: self. }.
+Process execute := { meta sys processExec#: self. }.
 
 ;; Scope self-reference
 global scope := { self. }.

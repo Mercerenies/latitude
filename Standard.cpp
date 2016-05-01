@@ -42,6 +42,7 @@ ObjectPtr spawnObjects() {
     ObjectPtr exception(clone(object));
     ObjectPtr systemError(clone(exception));
 
+    ObjectPtr process(clone(object));
     ObjectPtr stream(clone(object));
     ObjectPtr stdout_(clone(stream));
     ObjectPtr stdin_(clone(stream));
@@ -66,6 +67,7 @@ ObjectPtr spawnObjects() {
     meta.lock()->put(Symbols::get()["String"], string);
     meta.lock()->put(Symbols::get()["Symbol"], symbol);
     meta.lock()->put(Symbols::get()["Stream"], stream);
+    meta.lock()->put(Symbols::get()["Process"], process);
     meta.lock()->put(Symbols::get()["SystemCall"], systemCall);
     meta.lock()->put(Symbols::get()["True"], true_);
     meta.lock()->put(Symbols::get()["False"], false_);
@@ -167,6 +169,14 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callLoop(clone(systemCall));
     ObjectPtr callLoadFile(clone(systemCall));
     ObjectPtr callStackDump(clone(systemCall));
+    ObjectPtr callProcessCreate(clone(systemCall));
+    ObjectPtr callProcessInStream(clone(systemCall));
+    ObjectPtr callProcessOutStream(clone(systemCall));
+    ObjectPtr callProcessErrStream(clone(systemCall));
+    ObjectPtr callProcessExec(clone(systemCall));
+    ObjectPtr callProcessFinished(clone(systemCall));
+    ObjectPtr callProcessRunning(clone(systemCall));
+    ObjectPtr callProcessExitCode(clone(systemCall));
 
     systemCall.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             return eval("meta Nil.", scope);
@@ -865,6 +875,117 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(scope, "stackDump#", 1, lst.size());
             }
         });
+    callProcessCreate.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process, str;
+            if (bindArguments(lst, process, str)) {
+                ObjectPtr process0 = clone(process);
+                if (auto string0 = boost::get<string>(&str->prim())) {
+                    process0.lock()->prim(makeProcess(*string0));
+                    return process0;
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "String command expected");
+                }
+            } else {
+                throw doSystemArgError(scope, "processCreate#", 2, lst.size());
+            }
+        });
+    callProcessInStream.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process;
+            if (bindArguments(lst, process)) {
+                if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
+                    return garnish(scope, (*process0)->stdIn());
+                } else {
+                    throw doEtcError(scope, "ProcessError",
+                                     "Object is not a process");
+                }
+            } else {
+                throw doSystemArgError(scope, "processInStream#", 1, lst.size());
+            }
+        });
+    callProcessOutStream.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process;
+            if (bindArguments(lst, process)) {
+                if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
+                    return garnish(scope, (*process0)->stdOut());
+                } else {
+                    throw doEtcError(scope, "ProcessError",
+                                     "Object is not a process");
+                }
+            } else {
+                throw doSystemArgError(scope, "processOutStream#", 1, lst.size());
+            }
+        });
+    callProcessErrStream.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process;
+            if (bindArguments(lst, process)) {
+                if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
+                    return garnish(scope, (*process0)->stdErr());
+                } else {
+                    throw doEtcError(scope, "ProcessError",
+                                     "Object is not a process");
+                }
+            } else {
+                throw doSystemArgError(scope, "processErrStream#", 1, lst.size());
+            }
+        });
+    callProcessExec.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process;
+            if (bindArguments(lst, process)) {
+                if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
+                    bool status = (*process0)->run();
+                    if (status)
+                        return garnish(scope, boost::blank());
+                    else
+                        throw doEtcError(scope, "IOError",
+                                         "Could not start process");
+                } else {
+                    throw doEtcError(scope, "ProcessError",
+                                     "Object is not a process");
+                }
+            } else {
+                throw doSystemArgError(scope, "processExec#", 1, lst.size());
+            }
+        });
+    callProcessFinished.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process;
+            if (bindArguments(lst, process)) {
+                if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
+                    return garnish(scope, (*process0)->isDone());
+                } else {
+                    throw doEtcError(scope, "ProcessError",
+                                     "Object is not a process");
+                }
+            } else {
+                throw doSystemArgError(scope, "processFinished#", 1, lst.size());
+            }
+        });
+    callProcessRunning.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process;
+            if (bindArguments(lst, process)) {
+                if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
+                    return garnish(scope, (*process0)->isRunning());
+                } else {
+                    throw doEtcError(scope, "ProcessError",
+                                     "Object is not a process");
+                }
+            } else {
+                throw doSystemArgError(scope, "processRunning#", 1, lst.size());
+            }
+        });
+    callProcessExitCode.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr process;
+            if (bindArguments(lst, process)) {
+                if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
+                    return garnish(scope, (*process0)->getExitCode());
+                } else {
+                    throw doEtcError(scope, "ProcessError",
+                                     "Object is not a process");
+                }
+            } else {
+                throw doSystemArgError(scope, "processExitCode#", 1, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -909,6 +1030,14 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["loop#"], callLoop);
     sys.lock()->put(Symbols::get()["loadFile#"], callLoadFile);
     sys.lock()->put(Symbols::get()["stackDump#"], callStackDump);
+    sys.lock()->put(Symbols::get()["processCreate#"], callProcessCreate);
+    sys.lock()->put(Symbols::get()["processInStream#"], callProcessInStream);
+    sys.lock()->put(Symbols::get()["processOutStream#"], callProcessOutStream);
+    sys.lock()->put(Symbols::get()["processErrStream#"], callProcessErrStream);
+    sys.lock()->put(Symbols::get()["processExec#"], callProcessExec);
+    sys.lock()->put(Symbols::get()["processFinished#"], callProcessFinished);
+    sys.lock()->put(Symbols::get()["processRunning#"], callProcessRunning);
+    sys.lock()->put(Symbols::get()["processExitCode#"], callProcessExitCode);
 
 }
 

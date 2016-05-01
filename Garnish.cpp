@@ -49,6 +49,13 @@ ObjectPtr garnish(Scope scope, Symbolic value) {
     return val;
 }
 
+ObjectPtr garnish(Scope scope, StreamPtr value) {
+    ObjectPtr stream = getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["Stream"]);
+    ObjectPtr val = clone(stream);
+    val.lock()->prim(value);
+    return val;
+}
+
 class PrimToStringVisitor : public boost::static_visitor<std::string> {
 public:
     std::string operator()(boost::blank& val) const {
@@ -112,6 +119,11 @@ public:
     std::string operator()(std::weak_ptr<SignalValidator>& val) const {
         ostringstream oss;
         oss << &val;
+        return oss.str();
+    }
+    std::string operator()(ProcessPtr& val) const {
+        ostringstream oss;
+        oss << val;
         return oss.str();
     }
 };

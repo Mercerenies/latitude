@@ -1,6 +1,7 @@
 #ifndef _PROTO_HPP_
 #define _PROTO_HPP_
 
+#include "Process.hpp"
 #include "Stream.hpp"
 #include "Symbol.hpp"
 #include "Number.hpp"
@@ -27,7 +28,10 @@ using SystemCall = std::function<ObjectPtr(Scope, std::list<ObjectPtr>)>;
 using Method = LStmt;
 using Prim = boost::variant<boost::blank, Number, std::string,
                             Method, SystemCall, StreamPtr, Symbolic,
-                            std::weak_ptr<SignalValidator> >;
+                            std::weak_ptr<SignalValidator>, ProcessPtr>;
+
+// TODO Overhaul the prim() interface and probably switch to using subclasses to represent "primitives",
+//      as the boost::variant approach to primitives is starting to explode in complexity.
 
 enum class SlotType { PTR, INH };
 

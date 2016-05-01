@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=-I $(BOOST) -c -Wall -std=c++1y
 LINKFLAGS=-I $(BOOST) -Wall -std=c++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=c++1y
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o Number.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o Cont.o REPL.o Number.o Process.o
 
 all: Project
 
@@ -24,10 +24,10 @@ clean:
 	rm *.o
 	rm lex.yy.c lex.yy.h Parser.tab.c Parser.tab.h
 
-Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Cont.hpp
+Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Cont.hpp Process.hpp
 	$(CXX) $(CXXFLAGS) Proto.cpp
 
-Standard.o:	Standard.cpp Standard.hpp Proto.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Cont.hpp
+Standard.o:	Standard.cpp Standard.hpp Proto.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Cont.hpp
 	$(CXX) $(CXXFLAGS) Standard.cpp
 
 Scanner.o:	lex.yy.c lex.yy.h
@@ -42,29 +42,32 @@ lex.yy.c:	Scanner.flex Parser.tab.c
 Parser.tab.c:	Parser.y
 	bison -d Parser.y
 
-Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp
+Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp Process.hpp
 	$(CXX) $(CXXFLAGS) Reader.cpp
 
 Stream.o:	Stream.cpp Stream.hpp
 	$(CXX) $(CXXFLAGS) Stream.cpp
 
-Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp Macro.hpp
+Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp Macro.hpp Process.hpp
 	$(CXX) $(CXXFLAGS) Garnish.cpp
 
-GC.o:	GC.cpp GC.hpp Proto.hpp
+GC.o:	GC.cpp GC.hpp Proto.hpp Process.hpp
 	$(CXX) $(CXXFLAGS) GC.cpp
 
 Symbol.o:	Symbol.cpp Symbol.hpp
 	$(CXX) $(CXXFLAGS) Symbol.cpp
 
-Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp
+Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp Process.hpp Stream.hpp
 	$(CXX) $(CXXFLAGS) Cont.cpp
 
 Number.o:	Number.cpp Number.hpp
 	$(CXX) $(CXXFLAGS) Number.cpp
 
-REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Cont.hpp
+REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Cont.hpp Process.hpp Stream.hpp
 	$(CXX) $(CXXFLAGS) REPL.cpp
+
+Process.o:	Process.cpp Process.hpp Stream.hpp
+	$(CXX) $(CXXFLAGS) Process.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp REPL.hpp
 	$(CXX) $(CXXFLAGS) main.cpp

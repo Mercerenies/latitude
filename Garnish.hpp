@@ -33,6 +33,10 @@ ObjectPtr garnish(Scope scope, Number value);
  * Garnishes a symbol, returning a Symbol
  */
 ObjectPtr garnish(Scope scope, Symbolic value);
+/*
+ * Garnishes a stream pointer, returning a Stream
+ */
+ObjectPtr garnish(Scope scope, StreamPtr value);
 
 /*
  * Converts the object's `prim` field to a string, using the
