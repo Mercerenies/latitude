@@ -15,6 +15,8 @@ using namespace std;
 
 // TODO Make primitive objects like String and Number clone properly (prim() fields don't clone)
 
+///// Some syntax sugar for pattern matching key-value pairs (So we can do a `capture3` which returns three values)
+
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
 
 ProtoError doSystemArgError(Scope scope, string name, int expected, int got);

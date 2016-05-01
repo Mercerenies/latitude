@@ -138,6 +138,8 @@ arglist1:
     ;
 arg:
     chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
+    chain NAME rhschain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; $$->args = makeList();
+                          $$->args->car = $3; $$->args->cdr = makeList(); } |
     literalish
     ;
 chain:

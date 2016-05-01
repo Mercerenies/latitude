@@ -36,6 +36,7 @@
 <arglist1> ::= <lambda> |
                "," <arg> <arglist1>
 <arg> ::= <chain> <name> |
+          <chain> <name> <rhschain> |
           <literalish>
 <chain> ::= <chain> <name> |
             <literalish>
