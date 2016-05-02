@@ -6,6 +6,7 @@ Mixin interface := '[].
 Mixin inject := { target := $1.
                   mixin := self.
                   injector := target parent clone.
+                  injector mixin := mixin.
                   injector parent := target parent.
                   target parent := injector.
                   injector toString := { mixin toString. }.
@@ -17,5 +18,9 @@ Mixin inject := { target := $1.
                                            procd call. }.
                            iter next. }.
                   injector. }.
+
+Object implements := { takes '[mxn].
+                       (self hierarchy detect: { ($1 has 'mixin) and
+                                                     { (mxn) === (parent dynamic $1 mixin). }. }) toBool. }.
 
 here.
