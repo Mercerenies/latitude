@@ -81,6 +81,13 @@ ID        {SNORMAL}{NORMAL}*
     return NAME;
 }
 
+\.\.\. { // Ellipsis is a valid identifier name
+    char* arr = calloc(4, sizeof(char));
+    strcpy(arr, "...");
+    yylval.sval = arr;
+    return NAME;
+}
+
 \" { BEGIN(INNER_STRING); clear_buffer(); }
 <INNER_STRING>\n { append_buffer(yytext[1]); ++line_num; }
 <INNER_STRING>[^\\\"] { append_buffer(yytext[0]); }

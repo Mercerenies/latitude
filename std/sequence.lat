@@ -98,6 +98,7 @@ LazySequence foldr := { func := { (parent dynamic hold '$2) call. }.
 Sequence := Sequence.
 LazySequence := LazySequence.
 
+; TODO Make this use memoization to be more efficient
 Proc iterate := { procd := proc { (parent hold 'self) call. }.
                   recurse := { curr := $1.
                                cell := Cons clone.
