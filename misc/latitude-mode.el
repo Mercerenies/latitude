@@ -6,7 +6,7 @@
   (let ((map (make-sparse-keymap)))
     map))
 
-; TODO Lisp mode seems to define a lot of symbols as whitespace; change them to words here
+; TODO Lisp mode seems to define a lot of symbols as whitespace; change them to symbols here
 (defvar latitude-mode-syntax-table
    (let ((st (make-syntax-table lisp-mode-syntax-table)))
      (modify-syntax-entry ?\; "<" st)
@@ -17,13 +17,13 @@
      (modify-syntax-entry ?\. "." st)
      (modify-syntax-entry ?\, "." st)
      (modify-syntax-entry ?\: " " st)
-     (modify-syntax-entry ?\= "w" st)
-     (modify-syntax-entry ?\~ "w" st)
-     (modify-syntax-entry ?\? "w" st)
-     (modify-syntax-entry ?\! "w" st)
-     (modify-syntax-entry ?\< "w" st)
-     (modify-syntax-entry ?\> "w" st)
-     (modify-syntax-entry ?\| "w" st)
+     (modify-syntax-entry ?\= "_" st)
+     (modify-syntax-entry ?\~ "_" st)
+     (modify-syntax-entry ?\? "_" st)
+     (modify-syntax-entry ?\! "_" st)
+     (modify-syntax-entry ?\< "_" st)
+     (modify-syntax-entry ?\> "_" st)
+     (modify-syntax-entry ?\| "_" st)
      (modify-syntax-entry ?\$ "w" st)
      st))
 
