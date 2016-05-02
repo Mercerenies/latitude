@@ -1,6 +1,6 @@
 
 ; TODO Make argument lists cloneable more appropriately (so they don't modify the original
-;      scope), and also a `realize` function which puts arguments into the current scope.
+;      scope)
 
 ;; The argument list. When filled, it takes the current dynamic scope and references its argument list.
 global ArgList := Object clone.
