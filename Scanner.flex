@@ -50,6 +50,7 @@ ID        {SNORMAL}{NORMAL}*
 %%
 
 #< { yyerror("Unreadable object"); }
+= { return '='; }
 
 [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
     yylval.dval = strtod(yytext, NULL);
@@ -116,7 +117,7 @@ ID        {SNORMAL}{NORMAL}*
 \{ { return '{'; }
 \} { return '}'; }
 : { return ':'; }
-:= { return '='; }
+:= { return CEQUALS; }
 , { return ','; }
 \[ { return '['; }
 \] { return ']'; }

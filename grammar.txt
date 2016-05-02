@@ -30,7 +30,9 @@
 <rhs> ::= <lambda> |
           <rhschain>
           ":=" <stmt> |
-          ":" <arglist>
+          ":" <arglist> |
+          "=" <stmt> |
+          <rhschain> "=" <stmt>
 <arglist> ::= <lambda> |
               <arg> <arglist1>
 <arglist1> ::= <lambda> |

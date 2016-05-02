@@ -75,7 +75,11 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         return unique_ptr<Stmt>(new StmtEqual(line, lhs, func, rhs));
     } else {
         auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
-        auto func = expr->name;
+        string func = expr->name;
+        if (expr->isEquality) {
+            args.push_back(translateStmt(expr->rhs));
+            func = func + "=";
+        }
         auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtCall(line, lhs, func, args));
     }

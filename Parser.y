@@ -46,6 +46,7 @@
         bool isSymbol; // Check name
         bool isList; // Check args
         bool isSigil; // Check name and rhs
+        bool isEquality; // Treated like call with a rhs
     };
 
     struct List {
@@ -100,6 +101,7 @@
 %token <sval> STRING
 %token <sval> SYMBOL
 %token LISTLIT
+%token CEQUALS
 
 %%
 
@@ -125,8 +127,11 @@ stmt:
 rhs:
     /* empty */ { $$ = NULL; } |
     rhschain { $$ = makeExpr(); $$->args = makeList(); $$->args->car = $1; $$->args->cdr = makeList(); } |
-    '=' stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
-    ':' arglist { $$ = makeExpr(); $$->args = $2; }
+    CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
+    ':' arglist { $$ = makeExpr(); $$->args = $2; } |
+    '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
+    rhschain '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = new List(); $$->args->car = $1;
+                        $$->args->cdr = new List(); $$->isEquality = true; }
     ;
 arglist:
     /* empty */ { $$ = makeList(); } |
