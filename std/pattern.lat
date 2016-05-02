@@ -1,0 +1,116 @@
+
+True := True.
+False := False.
+Symbol := Symbol.
+Array := Array.
+proc := hold 'proc.
+
+;; Pattern matching functionality
+Wildcard := Object clone.
+Wildcard symbol := Nil.
+Wildcard named? := { self symbol is: Symbol. }.
+Wildcard toString := { if: self named?,
+                           { "#<Wildcard " ++ (parent self symbol) ++ ">". },
+                           { "Wildcard". }. }.
+global Wildcard := Wildcard.
+
+Ellipsis := Wildcard clone.
+Ellipsis toString := { if: self named?,
+                           { "#<Ellipsis " ++ (parent self symbol) ++ ">". },
+                           { "Ellipsis". }. }.
+global Ellipsis := Ellipsis.
+
+; The "match" object is a Proc. If no match was found, the match object is falsy and its `call`
+; is a no-op. If a match was made, the object is truthy and the `call` expects a single argument,
+; a method which it will evaluate after dropping in all of the matched names.
+Match := Proc clone.
+Match toString := "Match".
+Match callback := {}.
+Match call := { (self invokeSpecial: dynamic hold '$1, self hold 'callback) call. }.
+global Match := Match.
+
+NoMatch := Match clone.
+NoMatch toString := "NoMatch".
+NoMatch call := {}.
+NoMatch toBool := False.
+global NoMatch := NoMatch.
+
+; * - A wildcard that matches (and ignores) anything
+global * := { Wildcard clone. }.
+
+; ~m 'name - A wildcard that matches anything and binds it to 'name
+meta sigil m := { Wildcard clone tap { self symbol := parent dynamic $1. }. }.
+
+; ... - A wildcard that matches potentially multiple list elements and ignores them
+global ... := { Ellipsis clone. }.
+
+; ~m 'name ... - A wildcard that matches multiple list elements and binds the array containing them to 'name
+Wildcard ... := { ellipsis := self clone.
+                  ellipsis symbol := self symbol.
+                  ellipsis parent := Ellipsis. ; TODO Is there a better way than reassigning the parent?
+                  ellipsis. }.
+
+; The actual matching behavior is defined here.
+Object =~ := { if: (self) == ($1),
+                   { Match clone. },
+                   { NoMatch clone. }. }.
+Wildcard =~ := { localize.
+                 takes '[arg].
+                 if: this named?,
+                     { Match clone tap { self callback := { $1 put: this symbol, hold 'arg. }. }. },
+                     { Match clone. }. }.
+
+; Collection matching always binds a finite collection on the RHS to an array on the LHS. The array
+; can have at most one ellipsis element.
+Array =~ := { localize.
+              takes '[rhs].
+              callCC { return := { parent dynamic $1 call. }.
+                       (rhs implements: Collection) ifFalse: { return: NoMatch clone. }.
+                       isEllipsis := (this detect { $1 is: Ellipsis. }) toBool.
+                       (if: isEllipsis,
+                            { (this size - 1) <= (rhs size). },
+                            { (this size) == (rhs size). }) ifFalse: { return: NoMatch clone. }.
+                       afterIndex := ({ checking := False.
+                                        check := { parent checking := True. }.
+                                        after := 0.
+                                        increment := { parent after := after + 1. }.
+                                        this visit { takes '[elem].
+                                                     if: checking,
+                                                         { increment. },
+                                                         { (elem is: Ellipsis) ifTrue: { check. }. }. }.
+                                        (rhs size) - (after). }) me.
+                       currIndex := 0.
+                       currIter := rhs iterator.
+                       iterNext := { currIter next.
+                                     parent currIndex := currIndex + 1. }.
+                       result := proc {}.
+                       newResult := { oldProc := result.
+                                      parent result := $1: oldProc. }.
+                       sequenceResult := { takes '[procd].
+                                           newResult: { proc { parent dynamic $1 call.
+                                                               procd callback. }. }. }.
+                       this visit { curr := $1.
+                                    if: (curr is: Ellipsis),
+                                        { accum := Array clone.
+                                          while: { (currIndex) < (afterIndex). },
+                                                 { accum pushBack: currIter element.
+                                                   iterNext. }.
+                                          currMatch := (curr) =~ (accum).
+                                          currMatch ifFalse: { return currMatch. }.
+                                          sequenceResult: currMatch. },
+                                        { currMatch := (curr) =~ (currIter element).
+                                          currMatch ifFalse: { return currMatch. }.
+                                          sequenceResult: currMatch.
+                                          iterNext. }. }.
+                       Match clone tap { self callback := { result call. }. }. }. }.
+
+Cons =~ := { localize.
+             takes '[rhs].
+             callCC { return := { parent dynamic $1 call. }.
+                      (rhs is: Cons) ifFalse: { return: NoMatch clone. }.
+                      carPart := (this car) =~ (rhs car).
+                      cdrPart := (this cdr) =~ (rhs cdr).
+                      if: ((carPart) and (cdrPart)),
+                          { Match clone tap := { self callback := { carPart callback.
+                                                                    cdrPart callback. }. }. },
+                          { NoMatch clone. }. }. }.
