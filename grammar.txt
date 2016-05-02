@@ -43,7 +43,8 @@
 <chain> ::= <chain> <name> |
             <literalish>
             <lambda>
-<literalish> ::= "(" <stmt> ")" |
+<literalish> ::= "~" <text> <literalish> |
+                 "(" <stmt> ")" |
                  <literal>
 <literal> ::= "{" <linelist> "}" |
               <number> |
