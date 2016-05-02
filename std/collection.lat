@@ -25,11 +25,12 @@ Collection visit := { self map!: { (parent dynamic hold '$1) call.
 Collection map := { coll := self clone.
                     coll map!: { (parent dynamic hold '$1) call. }. }.
 Collection foldl := { accum := $1.
-                      self visit: { parent accum := (parent dynamic hold '$2) call: accum, $1. }.
+                      self visit: { parent accum := (parent dynamic hold '$2) call: accum, dynamic hold '$1. }.
                       accum. }.
 Collection foldr := { func := proc { (parent dynamic hold '$2) call. }.
                       accum := id.
-                      self visit: { parent accum := accum <| (proc { func call: parent dynamic $1, $1. }). }.
+                      self visit: { parent accum := accum <| (proc { func call: parent dynamic $1,
+                                                                                dynamic hold '$1. }). }.
                       accum call: $1. }.
 Collection size := { self foldl: 0, { $1 + 1. }. }.
 Collection toArray := { arr := Array clone.
