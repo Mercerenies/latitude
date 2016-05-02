@@ -1,4 +1,24 @@
 
+;; "Cons" objects, as in Lisp
+global Cons := Object clone.
+Cons toString := "Cons".
+Cons pretty := { chain := { curr := $1.
+                            if: curr cdr nil?,
+                                { curr car toString. },
+                                { if: (curr cdr is: Cons),
+                                      { (curr car toString) ++ " " ++ (chain: curr cdr). },
+                                      { (curr car toString) ++ " . " ++ (curr cdr toString). }. }. }.
+                 "(" ++ (chain: self) ++ ")". }.
+Cons car := Nil.
+Cons cdr := Nil.
+
+global cons := { cc := Cons clone.
+                 cc car := $1.
+                 cc cdr := $2.
+                 cc. }.
+
+Cons := Cons.
+
 ;; Array functions
 Array lowerBound := 0.
 Array upperBound := 0.

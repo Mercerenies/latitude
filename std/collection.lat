@@ -80,15 +80,15 @@ Collection zip := { iter0 := self iterator.
                     iter1 := $1 iterator.
                     arr := Array clone.
                     while: { (iter0 end? not) and (iter1 end? not). },
-                           { arr pushBack: [iter0 element, iter1 element].
+                           { arr pushBack: (cons: iter0 element, iter1 element).
                              iter0 next.
                              iter1 next. }.
                     arr. }.
 Collection zip! := { iter1 := $1 iterator.
                      self map!: { curr := $1.
                                   if: iter1 end?,
-                                      { [curr, Nil]. },
-                                      { [curr, iter1 element] tap { iter1 next. }. }. }. }.
+                                      { cons: curr, Nil. },
+                                      { (cons: curr, iter1 element) tap { iter1 next. }. }. }. }.
 Collection take := { remaining := $1.
                      decrement := { parent remaining := remaining - 1. }.
                      arr := Array clone.
@@ -99,7 +99,6 @@ Collection take := { remaining := $1.
                                                       { return: Nil. }. }. }.
                      arr. }.
 ; TODO maximum and minimum (need to handle the corner cases well)
-; TODO filter (probably needs to be done in the individual components, not in terms of visit / map)
 
 Collection inject: Array.
 
