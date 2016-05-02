@@ -13,10 +13,10 @@ ArgList fillWith := { self enclosingScope := $1.
 ArgList shift := { if: (self size == 0),
                        { meta Nil. },
                        { self := parent self.
-                         first := self enclosingScope $1.
+                         first := self enclosingScope hold '$1.
                          arglist := self.
                          size := self size.
-                         temp := first.
+                         temp := hold 'first.
                          index := 2.
                          self map!: { if: ((index) > (size)),
                                           { hold 'first. },
@@ -42,7 +42,8 @@ ArgList iterator := { ArgIterator := Object clone.
                       ArgIterator next := { self index := self index + 1. }.
                       ArgIterator end? := { (self array enclosingScope has: ("$" ++ (self index)) intern) not. }.
                       ArgIterator element := { self array enclosingScope hold: ("$" ++ (self index)) intern. }.
-                      ArgIterator element= := { self array enclosingScope put: ("$" ++ (self index)) intern, $1. }.
+                      ArgIterator element= := { self array enclosingScope put: ("$" ++ (self index)) intern,
+                                                                               dynamic hold '$1. }.
                       ArgIterator. }.
 ArgList dropIn := { target := dynamic parent.
                     index := 1.
