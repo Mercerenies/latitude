@@ -111,16 +111,9 @@ ObjectPtr _callMethod(ObjectPtr self, ObjectPtr mthd, ObjectPtr lex, ObjectPtr d
     auto impl = boost::get<Method>(&mthd.lock()->prim());
     if (!impl)
         return mthd;
-    ObjectPtr lex1 = clone(lex);
-    Scope scope = { lex1, dyn };
-    ObjectPtr result = getInheritedSlot(scope, meta(scope, mthd), Symbols::get()["Nil"]);
+    Scope scope = { lex, dyn };
+    ObjectPtr result = garnish(scope, boost::blank());
     assert(!self.expired());
-    lex1.lock()->put(Symbols::get()["self"], self);
-    lex1.lock()->put(Symbols::get()["again"], mthd);
-    lex1.lock()->put(Symbols::get()["lexical"], lex1);
-    lex1.lock()->put(Symbols::get()["dynamic"], dyn);
-    dyn.lock()->put(Symbols::get()["$lexical"], lex1);
-    dyn.lock()->put(Symbols::get()["$dynamic"], dyn);
     for (auto stmt : *impl)
         result = stmt->execute(scope);
     return result;
@@ -132,6 +125,7 @@ ObjectPtr doCall(Scope scope,
     if (!hasInheritedSlot(scope, mthd, Symbols::get()["closure"]))
         return mthd;
     ObjectPtr lex = getInheritedSlot(scope, mthd, Symbols::get()["closure"]);
+    ObjectPtr lex1 = clone(lex);
     ObjectPtr dyn1 = clone(scope.dyn);
     // Arguments :D
     int nth = 0;
@@ -141,8 +135,14 @@ ObjectPtr doCall(Scope scope,
         oss << "$" << nth;
         dyn1.lock()->put(Symbols::get()[oss.str()], arg);
     }
-    callback({ lex, dyn1 });
-    return _callMethod(self, mthd, lex, dyn1);
+    lex1.lock()->put(Symbols::get()["self"], self);
+    lex1.lock()->put(Symbols::get()["again"], mthd);
+    lex1.lock()->put(Symbols::get()["lexical"], lex1);
+    lex1.lock()->put(Symbols::get()["dynamic"], dyn1);
+    dyn1.lock()->put(Symbols::get()["$lexical"], lex1);
+    dyn1.lock()->put(Symbols::get()["$dynamic"], dyn1);
+    callback({ lex1, dyn1 });
+    return _callMethod(self, mthd, lex1, dyn1);
 }
 
 ObjectPtr determineScope(const unique_ptr<Stmt>& className, const string& functionName, const Scope& scope) {
