@@ -12,6 +12,11 @@ meta Object invoke := { procd := meta Proc clone.
                         procd call := { meta sys invoke#: parent self,
                                                           (parent dynamic hold '$1). }.
                         procd. }.
+meta Object invokeSpecial := { procd := meta Proc clone.
+                               procd call := { meta sys doWithCallback#: parent self,
+                                                                         (parent dynamic hold '$1),
+                                                                         (parent dynamic hold '$2). }.
+                               procd. }.
 meta Object above := { orgn := self origin: $1.
                        (hold 'orgn) parent hold: $1. }.
 meta Object tap := { (self invoke: (dynamic hold '$1)) call.

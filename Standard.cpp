@@ -16,6 +16,7 @@ using namespace std;
 // TODO Make primitive objects like String and Number clone properly (prim() fields don't clone)
 
 ///// Some syntax sugar for pattern matching key-value pairs (So we can do a `capture3` which returns three values)
+//    (Or maybe a "variable bomb" method which introduces variables into the local scope)
 ///// Pattern matching with =~ using a sigil (~m maybe) to match variable names
 //    as in [1, ~m 'var, 3] =~ [1, 2, 3]
 
@@ -181,6 +182,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callProcessFinished(clone(systemCall));
     ObjectPtr callProcessRunning(clone(systemCall));
     ObjectPtr callProcessExitCode(clone(systemCall));
+    ObjectPtr callDoWithCallback(clone(systemCall));
 
     systemCall.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             return eval("meta Nil.", scope);
@@ -990,6 +992,16 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(scope, "processExitCode#", 1, lst.size());
             }
         });
+    callDoWithCallback.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr self, mthd0, mthd1;
+            if (bindArguments(lst, self, mthd0, mthd1)) {
+                return doCall(scope, self, mthd0, {}, [&scope, &self, &mthd1](Scope scope1) {
+                        doCallWithArgs(scope, self, mthd1, scope1.lex, scope1.dyn);
+                    });
+            } else {
+                throw doSystemArgError(scope, "doWithCallback#", 3, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -1042,6 +1054,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["processFinished#"], callProcessFinished);
     sys.lock()->put(Symbols::get()["processRunning#"], callProcessRunning);
     sys.lock()->put(Symbols::get()["processExitCode#"], callProcessExitCode);
+    sys.lock()->put(Symbols::get()["doWithCallback#"], callDoWithCallback);
 
 }
 
