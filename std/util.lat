@@ -35,7 +35,7 @@ global localize := { dynamic parent $lexical this := dynamic parent $lexical sel
 ; as it is usually the first line of a method (possibly the second, after a `localize`).
 global takes := { args := ArgList clone fillWith: dynamic parent.
                   target := dynamic parent $lexical.
-                  ($1 clone zip!: args) map!: { target put: ($1 car), ($1 cdr). }. }.
+                  ($1 clone zip!: args) map!: { target put: ($1 car), ($1 hold 'cdr). $1 car. }. }.
 
 ;; Return the script
 here.

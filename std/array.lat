@@ -13,8 +13,8 @@ Cons car := Nil.
 Cons cdr := Nil.
 
 global cons := { cc := Cons clone.
-                 cc car := $1.
-                 cc cdr := $2.
+                 cc car := dynamic hold '$1.
+                 cc cdr := dynamic hold '$2.
                  cc. }.
 
 Cons := Cons.
