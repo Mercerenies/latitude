@@ -35,6 +35,10 @@ ObjectPtr garnish(Scope scope, int value) {
     return garnish(scope, Number( (Number::smallint)value ));
 }
 
+ObjectPtr garnish(Scope scope, long value) {
+    return garnish(scope, Number( (Number::smallint)value ));
+}
+
 ObjectPtr garnish(Scope scope, Number value) {
     ObjectPtr num = getInheritedSlot(scope, meta(scope, scope.lex), Symbols::get()["Number"]);
     ObjectPtr val = clone(num);

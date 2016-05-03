@@ -26,6 +26,10 @@ ObjectPtr garnish(Scope scope, double value);
  */
 ObjectPtr garnish(Scope scope, int value);
 /*
+ * Garnishes an integer, returning a Number.
+ */
+ObjectPtr garnish(Scope scope, long value);
+/*
  * Garnishes a Number, returning a Number.
  */
 ObjectPtr garnish(Scope scope, Number value);

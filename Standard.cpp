@@ -17,8 +17,6 @@ using namespace std;
 
 ///// Some syntax sugar for pattern matching key-value pairs (So we can do a `capture3` which returns three values)
 //    (Or maybe a "variable bomb" method which introduces variables into the local scope)
-///// Pattern matching with =~ using a sigil (~m maybe) to match variable names
-//    as in [1, ~m 'var, 3] =~ [1, 2, 3]
 
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
 
@@ -183,6 +181,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callProcessRunning(clone(systemCall));
     ObjectPtr callProcessExitCode(clone(systemCall));
     ObjectPtr callDoWithCallback(clone(systemCall));
+    ObjectPtr callStringReplace(clone(systemCall));
 
     systemCall.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             return eval("meta Nil.", scope);
@@ -902,7 +901,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
                     return garnish(scope, (*process0)->stdIn());
                 } else {
-                    throw doEtcError(scope, "ProcessError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a process");
                 }
             } else {
@@ -915,7 +914,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
                     return garnish(scope, (*process0)->stdOut());
                 } else {
-                    throw doEtcError(scope, "ProcessError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a process");
                 }
             } else {
@@ -928,7 +927,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
                     return garnish(scope, (*process0)->stdErr());
                 } else {
-                    throw doEtcError(scope, "ProcessError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a process");
                 }
             } else {
@@ -946,7 +945,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                         throw doEtcError(scope, "IOError",
                                          "Could not start process");
                 } else {
-                    throw doEtcError(scope, "ProcessError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a process");
                 }
             } else {
@@ -959,7 +958,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
                     return garnish(scope, (*process0)->isDone());
                 } else {
-                    throw doEtcError(scope, "ProcessError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a process");
                 }
             } else {
@@ -972,7 +971,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
                     return garnish(scope, (*process0)->isRunning());
                 } else {
-                    throw doEtcError(scope, "ProcessError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a process");
                 }
             } else {
@@ -985,7 +984,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 if (auto process0 = boost::get<ProcessPtr>(&process->prim())) {
                     return garnish(scope, (*process0)->getExitCode());
                 } else {
-                    throw doEtcError(scope, "ProcessError",
+                    throw doEtcError(scope, "TypeError",
                                      "Object is not a process");
                 }
             } else {
@@ -1000,6 +999,60 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                     });
             } else {
                 throw doSystemArgError(scope, "doWithCallback#", 3, lst.size());
+            }
+        });
+    callStringReplace.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr str, substr, mthd;
+            if (bindArguments(lst, str, substr, mthd)) {
+                // Calls the method with a single argument (the index of the match start) to determine
+                // the replacement at each step
+                auto str0 = boost::get<string>(&str->prim());
+                auto substr0 = boost::get<string>(&substr->prim());
+                if (str0 && substr0) {
+                    string str1 = *str0;
+                    string substr1 = *substr0;
+                    string result = "";
+                    string buffer = "";
+                    size_t i = 0;
+                    size_t j = 0;
+                    size_t startIndex = 0;
+                    for (char ch : str1) {
+                        if (ch == substr1[j]) {
+                            // Match
+                            buffer += ch;
+                            if (j == 0)
+                                startIndex = i;
+                            j++;
+                            if (j == substr1.length()) {
+                                // Full match
+                                j = 0;
+                                buffer = "";
+                                ObjectPtr newStr = doCallWithArgs(scope,
+                                                                  str,
+                                                                  mthd,
+                                                                  garnish(scope, (long)startIndex));
+                                if (auto newStr0 = boost::get<string>(&newStr.lock()->prim())) {
+                                    result += *newStr0;
+                                } else {
+                                    throw doEtcError(scope, "TypeError",
+                                                     "String expected in replacement");
+                                }
+                            }
+                        } else {
+                            // No match
+                            j = 0;
+                            result += buffer + ch;
+                            buffer = "";
+                        }
+                        i++;
+                    }
+                    return garnish(scope, result);
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "String expected in replacement");
+                }
+            } else {
+                throw doSystemArgError(scope, "stringReplace#", 3, lst.size());
             }
         });
 
@@ -1055,6 +1108,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["processRunning#"], callProcessRunning);
     sys.lock()->put(Symbols::get()["processExitCode#"], callProcessExitCode);
     sys.lock()->put(Symbols::get()["doWithCallback#"], callDoWithCallback);
+    sys.lock()->put(Symbols::get()["stringReplace#"], callStringReplace);
 
 }
 
