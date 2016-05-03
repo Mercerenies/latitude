@@ -1,4 +1,6 @@
 
+Array := Array.
+
 ; While the basic string functionality is defined in core.lat, this file defines more sophisticated
 ; methods on strings.
 
@@ -10,3 +12,19 @@ String replace := { takes '[substr, mthd].
                                                    { substr. },
                                                    { flipChanged.
                                                      mthd. }. }. }.
+
+String find := { takes '[substr].
+                 index := Nil.
+                 found := { parent index := if: index nil?,
+                                                { parent dynamic $1. },
+                                                { index. }. }.
+                 self replaceAll: substr, { found: $1.
+                                            substr. }.
+                 index. }.
+String findAll := { takes '[substr].
+                    indices := Array clone.
+                    self replaceAll: substr, { indices pushBack: $1.
+                                               substr. }.
+                    indices. }.
+
+String substring := { meta sys stringSubstring#: self, $1, $2. }.

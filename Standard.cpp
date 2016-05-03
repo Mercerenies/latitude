@@ -182,6 +182,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callProcessExitCode(clone(systemCall));
     ObjectPtr callDoWithCallback(clone(systemCall));
     ObjectPtr callStringReplace(clone(systemCall));
+    ObjectPtr callStringSubstring(clone(systemCall));
 
     systemCall.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             return eval("meta Nil.", scope);
@@ -1055,6 +1056,40 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(scope, "stringReplace#", 3, lst.size());
             }
         });
+    callStringSubstring.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr str, start, end;
+            if (bindArguments(lst, str, start, end)) {
+                auto str0 = boost::get<string>(&str->prim());
+                auto start0 = boost::get<Number>(&start->prim());
+                auto end0 = boost::get<Number>(&end->prim());
+                if (str0 && start0 && end0) {
+                    long start1 = (*start0).asSmallInt();
+                    long end1 = (*end0).asSmallInt();
+                    long size = (*str0).length();
+                    if (start1 < 0)
+                        start1 += size;
+                    if (end1 < 0)
+                        end1 += size;
+                    if (start1 >= size)
+                        start1 = size;
+                    if (end1 >= size)
+                        end1 = size;
+                    if (start1 < 0)
+                        start1 = 0;
+                    if (end1 < 0)
+                        end1 = 0;
+                    long len = end1 - start1;
+                    if (len < 0)
+                        len = 0;
+                    return garnish(scope, str0->substr(start1, len));
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "Invalid argument in substring access");
+                }
+            } else {
+                throw doSystemArgError(scope, "stringSubstring#", 3, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -1109,6 +1144,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["processExitCode#"], callProcessExitCode);
     sys.lock()->put(Symbols::get()["doWithCallback#"], callDoWithCallback);
     sys.lock()->put(Symbols::get()["stringReplace#"], callStringReplace);
+    sys.lock()->put(Symbols::get()["stringSubstring#"], callStringSubstring);
 
 }
 
