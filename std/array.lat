@@ -71,11 +71,19 @@ Array join := { index := 1.
                          parent index := index + 1. }.
                 str. }.
 Array toString := { "[" ++ (self join ", ") ++ "]". }.
-; TODO Equality and comparability
+Array == := { localize.
+              takes '[arr].
+              { arr is: Array. } and
+                  { ((this size) == (arr size)) and { (this zip: arr) all: { ($1 car) == ($1 cdr). }. }. }. }.
+Array < := { localize.
+             takes '[arr].
+             callCC { return := { parent dynamic $1 call. }.
+                      (arr is: Array) ifFalse { return: False. }.
+                      (this zip: arr) visit: { (($1 car) < ($1 cdr)) ifTrue: { return: True. }.
+                                               (($1 car) > ($1 cdr)) ifTrue: { return: False. }. }.
+                      (this size) < (arr size). }. }.
 
 ;; Collection Methods
-; (Note that Array needs to implement his own `visit` because the mixin Collection
-;  requires Array's `visit` in order to work)
 Array iterator := { ArrayIterator := Object clone.
                     ArrayIterator toString := "ArrayIterator".
                     ArrayIterator index := 0.
