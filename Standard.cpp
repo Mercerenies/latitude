@@ -183,6 +183,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     ObjectPtr callDoWithCallback(clone(systemCall));
     ObjectPtr callStringReplace(clone(systemCall));
     ObjectPtr callStringSubstring(clone(systemCall));
+    ObjectPtr callStringLength(clone(systemCall));
 
     systemCall.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
             return eval("meta Nil.", scope);
@@ -886,7 +887,11 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
             if (bindArguments(lst, process, str)) {
                 ObjectPtr process0 = clone(process);
                 if (auto string0 = boost::get<string>(&str->prim())) {
-                    process0.lock()->prim(makeProcess(*string0));
+                    ProcessPtr proc = makeProcess(*string0);
+                    if (!proc)
+                        throw doEtcError(scope, "NotSupportedError",
+                                         "Asynchronous processes not supported on this system");
+                    process0.lock()->prim(proc);
                     return process0;
                 } else {
                     throw doEtcError(scope, "TypeError",
@@ -1090,6 +1095,19 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
                 throw doSystemArgError(scope, "stringSubstring#", 3, lst.size());
             }
         });
+    callStringLength.lock()->prim([global](Scope scope, list<ObjectPtr> lst) {
+            ObjectSPtr str;
+            if (bindArguments(lst, str)) {
+                if (auto str0 = boost::get<string>(&str->prim())) {
+                    return garnish(scope, (long)(str0->length()));
+                } else {
+                    throw doEtcError(scope, "TypeError",
+                                     "String expected in length check");
+                }
+            } else {
+                throw doSystemArgError(scope, "stringLength#", 1, lst.size());
+            }
+        });
 
     sys.lock()->put(Symbols::get()["streamIn#"], callStreamIn);
     sys.lock()->put(Symbols::get()["streamOut#"], callStreamOut);
@@ -1145,6 +1163,7 @@ void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys) 
     sys.lock()->put(Symbols::get()["doWithCallback#"], callDoWithCallback);
     sys.lock()->put(Symbols::get()["stringReplace#"], callStringReplace);
     sys.lock()->put(Symbols::get()["stringSubstring#"], callStringSubstring);
+    sys.lock()->put(Symbols::get()["stringLength#"], callStringLength);
 
 }
 

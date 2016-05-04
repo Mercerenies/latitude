@@ -13,6 +13,8 @@ using namespace std;
 #  define USE_POSIX
 #elif defined(_WIN32)
 #  define USE_WINDOWS
+#else
+#  define USE_NULL
 #endif
 
 #ifdef USE_POSIX
@@ -338,6 +340,14 @@ ProcessPtr makeProcess(string cmd) {
 }
 
 #endif // USE_WINDOWS
+
+#ifdef USE_NULL
+
+ProcessPtr makeProcess(string cmd) {
+    return ProcessPtr();
+}
+
+#endif // USE_NULL
 
 Process::Process(std::string cmd)
     : cmd(cmd), in(new NullStream()), out(new NullStream()), err(new NullStream()) {}

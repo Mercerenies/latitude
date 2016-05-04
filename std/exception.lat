@@ -47,6 +47,10 @@ global IOError := SystemError clone tap { self message := "IO error".
                                           self toString := "IOError". }.
 meta IOError := IOError.
 
+global NotSupportedError := SystemError clone tap { self message := "Not supported".
+                                                    self toString := "NotSupportedException". }.
+meta NotSupportedError := NotSupportedError.
+
 ; This variable does NOT disable exceptions globally if changed. It is expected to be a Boolean
 ; by the system (not a method nor a truthy/falsy value). If false, this value will disable certain
 ; system exceptions so that they terminate the program instead. It should almost never be changed
