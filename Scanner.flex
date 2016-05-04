@@ -47,6 +47,7 @@ ID        {SNORMAL}{NORMAL}*
 %x INNER_STRING
 %x INNER_SYMBOL
 %x INNER_COMMENT
+%x INNER_RSTRING
 %%
 
 #< { yyerror("Unreadable object"); }
@@ -101,6 +102,12 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
 <INNER_SYMBOL>\) { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return SYMBOL; }
 <INNER_SYMBOL><<EOF>> { yyerror("Unterminated symbol"); }
+
+#\" { BEGIN(INNER_RSTRING); clear_buffer(); }
+<INNER_RSTRING>\n { append_buffer(yytext[1]); ++line_num; }
+<INNER_RSTRING>\"# { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
+<INNER_RSTRING>. { append_buffer(yytext[0]); }
+<INNER_RSTRING><<EOF>> { yyerror("Unterminated string"); }
 
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
