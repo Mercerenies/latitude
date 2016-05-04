@@ -27,4 +27,17 @@ String findAll := { takes '[substr].
                                                substr. }.
                     indices. }.
 
+String size := { meta sys stringLength#: self. }.
+
 String substring := { meta sys stringSubstring#: self, $1, $2. }.
+
+String split := { localize.
+                  takes '[delim].
+                  index := 0.
+                  found := { parent index := ($1) + (delim size). }.
+                  arr := Array clone.
+                  this replaceAll: delim, { arr pushBack: (this substring: index, $1).
+                                            found: $1.
+                                            delim. }.
+                  arr pushBack: (this substring: index, this size).
+                  arr. }.
