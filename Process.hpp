@@ -4,12 +4,6 @@
 #include "Stream.hpp"
 #include <string>
 
-class Mutex {
-public:
-    virtual void lock() = 0;
-    virtual void unlock() = 0;
-};
-
 class Process {
 protected:
     std::string cmd;

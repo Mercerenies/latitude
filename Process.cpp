@@ -61,18 +61,6 @@ public:
     }
 };
 
-class StdMutex : public Mutex {
-private:
-    mutex impl;
-public:
-    virtual void lock() {
-        impl.lock();
-    }
-    virtual void unlock() {
-        impl.unlock();
-    }
-};
-
 class UnixProcess : public Process {
 private:
     int pid;
