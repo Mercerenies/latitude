@@ -1,0 +1,60 @@
+
+One-byte opcodes, followed by whatever arguments the system expects
+ - STR String arguments are encoded in the obvious way, concluded by a null terminator
+ - INT Integer arguments are encoded using four bytes, in little endian byte order
+       (begins with a single "sign byte")
+ - REG Registers have their own indices and occupy one byte for storage
+
+ == ObjectPtr ==
+%ptr (01) - Working register, holds an ObjectPtr
+%slf (02) - The self ObjectPtr, used for method calls and lookups
+%ret (03) - The return value register, holds an ObjectPtr
+
+ == Stack of ObjectPtr ==
+%lex (04) - A stack of lexical scopes
+%dyn (05) - A stack of dynamic scopes
+%arg (06) - The current argument list (the top of the stack is $1)
+%sto (07) - General-purpose storage stack for intermediate computations
+
+ == Continuation ==
+%cont (08) - The current continuation (a sequence of instructions)
+%stack (09) - The continuation stack
+
+ == Etc ==
+%err0 (0A) - A boolean value that gets set by some computations if they err
+%err1 (0B) - Can be swapped with %err0 for storage of error status
+%sym (0C) - A symbol
+%num0 (0D) - A number
+%num1 (0E) - Another number
+
+mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
+push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
+pop STACK (03 REG) - Pop from stack into %ptr, sets %err0 if empty
+
+getl (04) - Get the top of %lex and put it in %ptr without popping, sets %err0 if empty
+getd (05) - Get the top of %dyn and put it in %ptr without popping, sets %err0 if empty
+
+eswap (06) - Swap %err0 and %err1
+eclr (07) - Clear %err0
+eset (08) - Set %err0
+
+sym STRING (09 STR) - Intern the string in the global symbol table and put its symbolic index in %sym
+num STRING (0A STR)- Read the string as a big integer into %num0
+int INT (0B INT) - Put the small integer into %num0
+float STRING (0C STR) - Read the string into a double into %num0
+nswap (0D) - Swap %num0 and %num1
+
+call (0E) - Bind everything in %arg (popping them off as well), then call %sym on %slf, putting result in %ret
+xcall (0F) - Bind %arg, then call %ptr (a method) on %slf, putting result in %ret
+xcall0 (10) - Bind %arg, then call %ptr on %slf with %ret as the callback, putting result in %ret
+ret (11) - Pop %lex and %dyn, discarding both values, sets %err0 if either is empty
+
+clone (12) - Perform the primitive clone operation on %slf, put result in %ret
+
+((( The call instructions )))
+1. Symbol looking (for `call`)
+2. Push %lex and %dyn
+3. Argument bindings to %dyn
+4. Empty %arg completely
+5. Push %cont onto %stack
+6. Create a new %cont based on the instructions to be executed
