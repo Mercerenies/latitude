@@ -3,6 +3,7 @@
 extern "C" {
 #include "Parser.tab.h"
 }
+#include "Bytecode.hpp"
 #include "Proto.hpp"
 #include <memory>
 #include <functional>
@@ -75,6 +76,7 @@ public:
     void establishLocation(const Scope& scope);
     // TODO Can we make execute() a const method?
     virtual ObjectPtr execute(Scope scope) = 0;
+    virtual InstrSeq translate() = 0;
     virtual void propogateFileName(std::string name);
 };
 
@@ -91,6 +93,7 @@ private:
 public:
     StmtCall(int line_no, std::unique_ptr<Stmt>& cls, const std::string& func, ArgList& arg);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
 
@@ -109,6 +112,7 @@ public:
               std::unique_ptr<Stmt>& cls, const std::string& func,
               std::unique_ptr<Stmt>& asn);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
 
@@ -121,6 +125,7 @@ private:
 public:
     StmtMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
 
@@ -133,6 +138,7 @@ private:
 public:
     StmtNumber(int line_no, double value);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
 };
 
 /*
@@ -144,6 +150,7 @@ private:
 public:
     StmtInteger(int line_no, long value);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
 };
 
 /*
@@ -155,6 +162,7 @@ private:
 public:
     StmtBigInteger(int line_no, const char* value);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
 };
 
 /*
@@ -166,6 +174,7 @@ private:
 public:
     StmtString(int line_no, const char* contents);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
 };
 
 /*
@@ -177,6 +186,7 @@ private:
 public:
     StmtSymbol(int line_no, const char* contents);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
 };
 
 /*
@@ -190,6 +200,7 @@ private:
 public:
     StmtList(int line_no, ArgList& arg);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
 
@@ -203,6 +214,7 @@ private:
 public:
     StmtSigil(int line_no, std::string name, std::unique_ptr<Stmt> rhs);
     virtual ObjectPtr execute(Scope scope);
+    virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
 

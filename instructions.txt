@@ -4,6 +4,7 @@ One-byte opcodes, followed by whatever arguments the system expects
  - INT Integer arguments are encoded using four bytes, in little endian byte order
        (begins with a single "sign byte")
  - REG Registers have their own indices and occupy one byte for storage
+ - SPC "Special" instruction arguments, which specify their length in eight bytes (as with INT but w/o sign bit), followed by a bytestring of instructions of that length
 
  == ObjectPtr ==
 %ptr (01) - Working register, holds an ObjectPtr
@@ -26,6 +27,8 @@ One-byte opcodes, followed by whatever arguments the system expects
 %sym (0C) - A symbol
 %num0 (0D) - A number
 %num1 (0E) - Another number
+%str0 (0F) - A string
+%str1 (10) - Another string
 
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
@@ -44,17 +47,32 @@ int INT (0B INT) - Put the small integer into %num0
 float STRING (0C STR) - Read the string into a double into %num0
 nswap (0D) - Swap %num0 and %num1
 
-call (0E) - Bind everything in %arg (popping them off as well), then call %sym on %slf, putting result in %ret
-xcall (0F) - Bind %arg, then call %ptr (a method) on %slf, putting result in %ret
+call (0E) - Bind everything in %arg (popping them off as well), then call %ptr on %slf, putting result in %ret
+xcall (0F) - (Reserved for future use)
 xcall0 (10) - Bind %arg, then call %ptr on %slf with %ret as the callback, putting result in %ret
 ret (11) - Pop %lex and %dyn, discarding both values, sets %err0 if either is empty
 
 clone (12) - Perform the primitive clone operation on %slf, put result in %ret
 
+rtrv (13) - Lookup the name %sym on %slf and put the value at %ret (may incur a call if `missing` is used)
+rtrvd (14) - Retrieve directly; do not look into the parents or `missing` (sets %err0 if not found)
+
+str STRING (15 STR) - Put the string into %str0
+sswap (16) - Swap %str0 and %str1
+
+expd (17 REG) - Try to put %ptr's prim() into the register given, %err0 if not possible
+
+
 ((( The call instructions )))
-1. Symbol looking (for `call`)
-2. Push %lex and %dyn
-3. Argument bindings to %dyn
-4. Empty %arg completely
+1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
+2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)
+3. Push a clone of `closure` onto %lex
+4. Empty %arg into %dyn
 5. Push %cont onto %stack
-6. Create a new %cont based on the instructions to be executed
+6. Make a new %cont based on what needs to be done
+
+((( expd )))
+It can be passed
+ - %sym - To convert to sym
+ - %str0, %str1 - To convert to string
+ - %num0, %num1 - To convert to num

@@ -294,6 +294,10 @@ ObjectPtr StmtCall::execute(Scope scope) {
     }
 }
 
+InstrSeq StmtCall::translate() {
+    ////
+}
+
 void StmtCall::propogateFileName(std::string name) {
     if (className)
         className->propogateFileName(name);
@@ -311,6 +315,10 @@ ObjectPtr StmtEqual::execute(Scope scope) {
     ObjectPtr result = rhs->execute(scope);
     scope_.lock()->put(Symbols::get()[functionName], result);
     return result;
+}
+
+InstrSeq StmtEqual::translate() {
+    ////
 }
 
 void StmtEqual::propogateFileName(std::string name) {
@@ -332,6 +340,10 @@ ObjectPtr StmtMethod::execute(Scope scope) {
     return mthd;
 }
 
+InstrSeq StmtMethod::translate() {
+    ////
+}
+
 void StmtMethod::propogateFileName(std::string name) {
     for (auto& ptr : contents)
         ptr->propogateFileName(name);
@@ -346,12 +358,20 @@ ObjectPtr StmtNumber::execute(Scope scope) {
     return garnish(scope, Number(value));
 }
 
+InstrSeq StmtNumber::translate() {
+    ////
+}
+
 StmtInteger::StmtInteger(int line_no, long value)
     : Stmt(line_no), value(value) {}
 
 ObjectPtr StmtInteger::execute(Scope scope) {
     establishLocation(scope);
     return garnish(scope, Number(value));
+}
+
+InstrSeq StmtInteger::translate() {
+    ////
 }
 
 StmtBigInteger::StmtBigInteger(int line_no, const char* value)
@@ -363,6 +383,10 @@ ObjectPtr StmtBigInteger::execute(Scope scope) {
     return garnish(scope, Number(value1));
 }
 
+InstrSeq StmtBigInteger::translate() {
+    ////
+}
+
 StmtString::StmtString(int line_no, const char* contents)
     : Stmt(line_no), value(contents) {}
 
@@ -371,12 +395,20 @@ ObjectPtr StmtString::execute(Scope scope) {
     return garnish(scope, value);
 }
 
+InstrSeq StmtString::translate() {
+    ////
+}
+
 StmtSymbol::StmtSymbol(int line_no, const char* contents)
     : Stmt(line_no), value(contents) {}
 
 ObjectPtr StmtSymbol::execute(Scope scope) {
     establishLocation(scope);
     return garnish(scope, Symbols::get()[value]);
+}
+
+InstrSeq StmtSymbol::translate() {
+    ////
 }
 
 // TODO Make the builtins (like Symbol, Method, etc.) call the clone method rather than forcing
@@ -403,6 +435,10 @@ ObjectPtr StmtList::execute(Scope scope) {
     return doCallWithArgs(scope, builder0, mthd1);
 }
 
+InstrSeq StmtList::translate() {
+    ////
+}
+
 void StmtList::propogateFileName(std::string name) {
     for (auto& ptr : args)
         ptr->propogateFileName(name);
@@ -419,6 +455,10 @@ ObjectPtr StmtSigil::execute(Scope scope) {
     ObjectPtr sigil = getInheritedSlot(scope, meta_, Symbols::get()["sigil"]);
     ObjectPtr mySigil = getInheritedSlot(scope, sigil, Symbols::get()[name]);
     return doCallWithArgs(scope, sigil, mySigil, rhs_);
+}
+
+InstrSeq StmtSigil::translate() {
+    ////
 }
 
 void StmtSigil::propogateFileName(std::string name) {

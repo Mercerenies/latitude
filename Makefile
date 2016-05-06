@@ -42,7 +42,7 @@ lex.yy.c:	Scanner.flex Parser.tab.c
 Parser.tab.c:	Parser.y
 	bison -d Parser.y
 
-Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp Process.hpp
+Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp Process.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) Reader.cpp
 
 Stream.o:	Stream.cpp Stream.hpp
@@ -69,7 +69,7 @@ REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.h
 Process.o:	Process.cpp Process.hpp Stream.hpp
 	$(CXX) $(CXXFLAGS) Process.cpp
 
-Bytecode.o:	Bytecode.cpp Bytecode.hpp
+Bytecode.o:	Bytecode.cpp Bytecode.hpp Symbol.hpp Number.hpp Proto.hpp Reader.hpp
 	$(CXX) $(CXXFLAGS) Bytecode.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp REPL.hpp
