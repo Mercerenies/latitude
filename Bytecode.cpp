@@ -34,9 +34,9 @@ void InstructionSet::initialize() {
     props[Instr::INT] = { isLongRegisterArg };
     props[Instr::FLOAT] = { isStringRegisterArg };
     props[Instr::NSWAP] = { };
-    props[Instr::CALL] = { };
+    props[Instr::CALL] = { isLongRegisterArg };
     props[Instr::XCALL] = { };
-    props[Instr::XCALL0] = { };
+    props[Instr::XCALL0] = { isLongRegisterArg };
     props[Instr::RET] = { };
     props[Instr::CLONE] = { };
     props[Instr::RTRV] = { };
@@ -44,6 +44,10 @@ void InstructionSet::initialize() {
     props[Instr::STR] = { isStringRegisterArg };
     props[Instr::SSWAP] = { };
     props[Instr::EXPD] = { isRegister };
+    props[Instr::MTHD] = { isAsmRegisterArg };
+    props[Instr::LOAD] = { isRegister };
+    props[Instr::SETF] = { };
+    props[Instr::PEEK] = { isStackRegister };
 }
 
 AssemblerError::AssemblerError()
@@ -85,10 +89,19 @@ struct AppendVisitor {
         }
     }
 
-    void operator()(const std::vector<AssemblerLine>& line) {
-        InstrSeq seq;
-        for (auto& stmt : line)
-            stmt.appendOnto(seq);
+    void operator()(const InstrSeq& seq) {
+        unsigned long length = seq.size();
+        unsigned long length2 = 0;
+        unsigned long temp = length;
+        while (temp > 0) {
+            temp /= 256;
+            length2++;
+        }
+        instructions->push_back((unsigned char)length2);
+        for (unsigned long i = 0; i < length2; i++) {
+            instructions->push_back((unsigned char)(length % 256));
+            length /= 256;
+        }
         for (auto& ch : seq)
             instructions->push_back((unsigned char)ch);
     }
@@ -126,7 +139,7 @@ bool isLongRegisterArg(const RegisterArg& arg) {
 }
 
 bool isAsmRegisterArg(const RegisterArg& arg) {
-    return (bool)boost::get<std::vector<AssemblerLine>>(&arg);
+    return (bool)boost::get<InstrSeq>(&arg);
 }
 
 void appendRegisterArg(const RegisterArg& arg, InstrSeq& seq) {
@@ -178,6 +191,8 @@ IntState intState() {
     // err0, err1 default to false
     state.sym = Symbols::get()[""];
     // num0, num1 default to smallint(0)
+    // str0, str1 default to empty string
+    // mthd default to empty
     return state;
 }
 
@@ -217,6 +232,19 @@ Reg popReg(InstrSeq& state) {
 Instr popInstr(InstrSeq& state) {
     unsigned char ch = popChar(state);
     return (Instr)ch;
+}
+
+InstrSeq popLine(InstrSeq& state) {
+    InstrSeq result;
+    unsigned long length2 = (unsigned long)popChar(state);
+    unsigned long length = 0;
+    for (unsigned long i = 0; i < length2; i++) {
+        length *= 256;
+        length += (unsigned long)popChar(state);
+    }
+    for (unsigned long i = 0; i < length; i++)
+        result.push_back(popChar(state));
+    return result;
 }
 
 void executeInstr(Instr instr, IntState& state) {
@@ -317,7 +345,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
-                state.ret = stack->top();
+                state.ptr = stack->top();
                 stack->pop();
             } else {
                 state.err0 = true;
@@ -377,6 +405,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::CALL: {
+        long args = popLong(state.cont);
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
         Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
@@ -391,12 +420,12 @@ void executeInstr(Instr instr, IntState& state) {
             state.lex.push( clone(closure.getPtr()) );
             // (4) Bind all of the arguments
             if (!state.dyn.empty()) {
-                int index = 1;
-                while (!state.arg.empty()) {
+                int index = state.arg.size();
+                for (long n = 0; n < args; n++) {
                     ObjectPtr arg = state.arg.top();
                     state.arg.pop();
                     state.dyn.top().lock()->put(Symbols::get()[ "$" + to_string(index) ], arg);
-                    index++;
+                    index--;
                 }
             }
             // (5) Push %cont onto %stack
@@ -411,6 +440,9 @@ void executeInstr(Instr instr, IntState& state) {
             }
         } else {
             // It's not a method; just return it
+            for (long n = 0; n < args; n++) {
+                state.arg.pop(); // For consistency, we must pop and discard these anyway
+            }
             state.ret = state.ptr;
         }
     }
@@ -502,11 +534,59 @@ void executeInstr(Instr instr, IntState& state) {
                 state.err0 = true;
         }
             break;
+        case Reg::MTHD: {
+            ////
+        }
+            break;
         default:
             state.err0 = true; // TODO Error handling?
             break;
         }
+    }
         break;
+    case Instr::MTHD: {
+        ////
+    }
+        break;
+    case Instr::LOAD: {
+        ////
+    }
+        break;
+    case Instr::SETF: {
+        if (state.slf.expired())
+            state.err0 = true;
+        else
+            state.slf.lock()->put(state.sym, state.ptr);
+    }
+        break;
+    case Instr::PEEK: {
+        stack<ObjectPtr>* stack;
+        switch (popReg(state.cont)) {
+        case Reg::LEX:
+            stack = &state.lex;
+            break;
+        case Reg::DYN:
+            stack = &state.dyn;
+            break;
+        case Reg::ARG:
+            stack = &state.dyn;
+            break;
+        case Reg::STO:
+            stack = &state.dyn;
+            break;
+        default:
+            // TODO Error handling?
+            stack = nullptr;
+            state.err0 = true;
+        }
+        if (stack != nullptr) {
+            if (!stack->empty()) {
+                state.ptr = stack->top();
+            } else {
+                state.err0 = true;
+            }
+        }
+
     }
         break;
     }
@@ -527,4 +607,4 @@ void doOneStep(IntState& state) {
     }
 }
 
-///// Some more instructions for moving around ASM instruction sets (need a new register for this, etc.)
+///// Fill in the unimplemented instructions, then bridge the gap and make everything work together

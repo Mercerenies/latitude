@@ -295,7 +295,48 @@ ObjectPtr StmtCall::execute(Scope scope) {
 }
 
 InstrSeq StmtCall::translate() {
-    ////
+    InstrSeq seq;
+
+    // Evaluate the class name
+    if (className) {
+        InstrSeq cls = className->translate();
+        seq.insert(seq.end(), cls.begin(), cls.end());
+    } else if ((functionName != "") && (functionName[0] == '$')) {
+        (makeAssemblerLine(Instr::GETD)).appendOnto(seq);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+    } else {
+        (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+    }
+
+    // Store the class name object
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+    // "Evaluate" the name to lookup (may incur `missing`)
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+
+    // Store the method/slot object
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+    // Evaluate each of the arguments, in order
+    for (auto& arg : args) {
+        InstrSeq arg0 = arg->translate();
+        seq.insert(seq.end(), arg0.begin(), arg0.end());
+        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+    }
+
+    // Make the call
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, (unsigned long)args.size())).appendOnto(seq);
+
+    return seq;
+
 }
 
 void StmtCall::propogateFileName(std::string name) {
@@ -318,7 +359,40 @@ ObjectPtr StmtEqual::execute(Scope scope) {
 }
 
 InstrSeq StmtEqual::translate() {
-    ////
+    InstrSeq seq;
+
+    // Evaluate the class name
+    if (className) {
+        InstrSeq cls = className->translate();
+        seq.insert(seq.end(), cls.begin(), cls.end());
+    } else if ((functionName != "") && (functionName[0] == '$')) {
+        (makeAssemblerLine(Instr::GETD)).appendOnto(seq);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+    } else {
+        (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+    }
+
+    // Store the class name
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+    // Evaluate the right-hand-side
+    InstrSeq rhs0 = rhs->translate();
+    seq.insert(seq.end(), rhs0.begin(), rhs0.end());
+
+    // Load the appropriate values into the registers they need to be in
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+
+    // Put the name in the symbol field
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
+
+    // Put the value
+    (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
+
+    return seq;
+
 }
 
 void StmtEqual::propogateFileName(std::string name) {
@@ -341,7 +415,34 @@ ObjectPtr StmtMethod::execute(Scope scope) {
 }
 
 InstrSeq StmtMethod::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "Method")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Translate the method sequence
+    InstrSeq mthd;
+    for (auto& val : contents) {
+        InstrSeq curr = val->translate();
+        mthd.insert(mthd.end(), curr.begin(), curr.end());
+    }
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MTHD, mthd)).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::MTHD)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+
+    return seq;
+
 }
 
 void StmtMethod::propogateFileName(std::string name) {
@@ -359,7 +460,27 @@ ObjectPtr StmtNumber::execute(Scope scope) {
 }
 
 InstrSeq StmtNumber::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::FLOAT, to_string(value))).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+
+    return seq;
+
 }
 
 StmtInteger::StmtInteger(int line_no, long value)
@@ -371,7 +492,27 @@ ObjectPtr StmtInteger::execute(Scope scope) {
 }
 
 InstrSeq StmtInteger::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::INT, value)).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+
+    return seq;
+
 }
 
 StmtBigInteger::StmtBigInteger(int line_no, const char* value)
@@ -384,7 +525,27 @@ ObjectPtr StmtBigInteger::execute(Scope scope) {
 }
 
 InstrSeq StmtBigInteger::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::NUM, value)).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+
+    return seq;
+
 }
 
 StmtString::StmtString(int line_no, const char* contents)
@@ -396,7 +557,27 @@ ObjectPtr StmtString::execute(Scope scope) {
 }
 
 InstrSeq StmtString::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "String")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::STR, value)).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::STR0)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+
+    return seq;
+
 }
 
 StmtSymbol::StmtSymbol(int line_no, const char* contents)
@@ -408,7 +589,27 @@ ObjectPtr StmtSymbol::execute(Scope scope) {
 }
 
 InstrSeq StmtSymbol::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "String")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, value)).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+
+    return seq;
+
 }
 
 // TODO Make the builtins (like Symbol, Method, etc.) call the clone method rather than forcing
@@ -436,7 +637,59 @@ ObjectPtr StmtList::execute(Scope scope) {
 }
 
 InstrSeq StmtList::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "brackets")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+
+    // Call the `brackets` function properly
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+    // Add all of the elements
+    for (auto& arg : args) {
+
+        // Evaluate the argument
+        InstrSeq arg0 = arg->translate();
+        seq.insert(seq.end(), arg0.begin(), arg0.end());
+        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+
+        // Grab `next` and call it
+        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+        (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
+        (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+        (makeAssemblerLine(Instr::PEEK)).appendOnto(seq);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+        (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
+
+    }
+
+    // Now call finish
+    (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PEEK)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
+
+    // Leave %sto the way we found it
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+
+    return seq;
+
 }
 
 void StmtList::propogateFileName(std::string name) {
@@ -458,7 +711,43 @@ ObjectPtr StmtSigil::execute(Scope scope) {
 }
 
 InstrSeq StmtSigil::translate() {
-    ////
+    InstrSeq seq;
+
+    // Find the `sigil` object
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "sigil")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Store the sigil object
+    (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq);
+
+    // Evaluate the argument
+    InstrSeq arg0 = rhs->translate();
+    seq.insert(seq.end(), arg0.begin(), arg0.end());
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+
+    // Get the correct sigil out
+    (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, name)).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
+
+    // Call the sigil with the single argument
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
+
+    // Leave %sto the way we found it
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+
+    return seq;
+
 }
 
 void StmtSigil::propogateFileName(std::string name) {

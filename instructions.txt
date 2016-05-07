@@ -4,7 +4,8 @@ One-byte opcodes, followed by whatever arguments the system expects
  - INT Integer arguments are encoded using four bytes, in little endian byte order
        (begins with a single "sign byte")
  - REG Registers have their own indices and occupy one byte for storage
- - SPC "Special" instruction arguments, which specify their length in eight bytes (as with INT but w/o sign bit), followed by a bytestring of instructions of that length
+ - SPC "Special" instruction arguments
+   * (1 byte n) (n bytes L) (L bytes content)
 
  == ObjectPtr ==
 %ptr (01) - Working register, holds an ObjectPtr
@@ -14,7 +15,7 @@ One-byte opcodes, followed by whatever arguments the system expects
  == Stack of ObjectPtr ==
 %lex (04) - A stack of lexical scopes
 %dyn (05) - A stack of dynamic scopes
-%arg (06) - The current argument list (the top of the stack is $1)
+%arg (06) - The current argument list (the bottom of the stack is $1)
 %sto (07) - General-purpose storage stack for intermediate computations
 
  == Continuation ==
@@ -29,6 +30,7 @@ One-byte opcodes, followed by whatever arguments the system expects
 %num1 (0E) - Another number
 %str0 (0F) - A string
 %str1 (10) - Another string
+%mthd (11) - A method (sequence of instructions)
 
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
@@ -47,9 +49,9 @@ int INT (0B INT) - Put the small integer into %num0
 float STRING (0C STR) - Read the string into a double into %num0
 nswap (0D) - Swap %num0 and %num1
 
-call (0E) - Bind everything in %arg (popping them off as well), then call %ptr on %slf, putting result in %ret
+call INT (0E INT) - Bind N args in %arg (popping them off as well), then call %ptr on %slf, putting result in %ret
 xcall (0F) - (Reserved for future use)
-xcall0 (10) - Bind %arg, then call %ptr on %slf with %ret as the callback, putting result in %ret
+xcall0 INT (10 INT) - Bind %arg, then call %ptr on %slf with %ret as the callback, putting result in %ret
 ret (11) - Pop %lex and %dyn, discarding both values, sets %err0 if either is empty
 
 clone (12) - Perform the primitive clone operation on %slf, put result in %ret
@@ -61,7 +63,11 @@ str STRING (15 STR) - Put the string into %str0
 sswap (16) - Swap %str0 and %str1
 
 expd (17 REG) - Try to put %ptr's prim() into the register given, %err0 if not possible
+mthd (18 SPC) - Put the argument into %mthd
+load (19 REG) - Inverse of expd, try to put register into %ptr's prim(), %err0 if invalid register
 
+setf (1A) - Put %ptr into %slf at the %sym slot, sets %err0 if %slf is null
+peek (1B REG) - Like pop but don't remove the element; sets %err0 if empty
 
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
@@ -76,3 +82,4 @@ It can be passed
  - %sym - To convert to sym
  - %str0, %str1 - To convert to string
  - %num0, %num1 - To convert to num
+ - %mthd - To convert to method

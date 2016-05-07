@@ -76,7 +76,7 @@ public:
     void establishLocation(const Scope& scope);
     // TODO Can we make execute() a const method?
     virtual ObjectPtr execute(Scope scope) = 0;
-    virtual InstrSeq translate() = 0;
+    virtual InstrSeq translate() = 0; // TODO Make translate() work with the line_no / file_name system
     virtual void propogateFileName(std::string name);
 };
 
