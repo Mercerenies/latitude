@@ -96,7 +96,9 @@ global memo := { curr := self Cached clone.
                  curr. }.
 meta sigil l := { cache := memo: (dynamic hold '$1).
                   { cache call. }. }.
-global id := proc { $1. }.
+global id := proc { $1. }. {* ///// Need to make `hold` work to be able to get a lot of these; then
+                                    start working on everything else. Good luck, Silvio, you're going
+                                    to need it :)
 
 ;; Stream general methods
 Stream in? := { meta sys streamIn#: self. }.
@@ -185,4 +187,4 @@ global stackTrace := { meta sys stackDump#: self. }.
 global printStackTrace := { stderr putln: self stackTrace. }.
 
 ;; We would return the script here, but the `has` function requires flow_control.lat
-1.
+1. *}

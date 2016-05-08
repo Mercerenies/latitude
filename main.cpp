@@ -16,6 +16,19 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
+    IntState state;
+    ObjectPtr global = spawnObjectsNew(state);
+
+    cout << hex;
+    for (unsigned char ch : state.cont) {
+        cout << (long)ch << " ";
+    }
+    cout << endl;
+
+    while (!isIdling(state))
+        doOneStep(state);
+
+    /*
     ObjectPtr global;
     try {
         try {
@@ -44,6 +57,7 @@ int main(int argc, char** argv) {
     } catch (...) {
         return 1;
     }
+    */
 
     return 0;
 }

@@ -63,6 +63,8 @@ ObjectPtr eval(std::string str, Scope scope);
  */
 ObjectPtr evalFile(std::string fname, Scope defScope, Scope scope);
 
+void readFileNew(std::string fname, Scope defScope, IntState& state);
+
 /*
  * A statement. Defines only one method, which executes
  * the statement in a given context.

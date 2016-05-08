@@ -24,10 +24,10 @@ clean:
 	rm *.o
 	rm lex.yy.c lex.yy.h Parser.tab.c Parser.tab.h
 
-Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Cont.hpp Process.hpp
+Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Cont.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Cont.hpp Process.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) Proto.cpp
 
-Standard.o:	Standard.cpp Standard.hpp Proto.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Cont.hpp
+Standard.o:	Standard.cpp Standard.hpp Proto.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Cont.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) Standard.cpp
 
 Scanner.o:	lex.yy.c lex.yy.h

@@ -1239,3 +1239,132 @@ ProtoError doEtcError(Scope scope, string errorName, string msg) {
     return ProtoError(err);
 }
 
+ObjectPtr defineMethod(ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
+    ObjectPtr obj = clone(method);
+    (makeAssemblerLine(Instr::RET)).appendOnto(code);
+    obj.lock()->prim(code);
+    obj.lock()->put(Symbols::get()["closure"], global);
+    return obj;
+}
+
+void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntState& state) {
+    static constexpr long
+        KERNEL_LOAD = 1;
+
+    // TODO Make these respond better to invalid (or not enough) arguments
+
+    // kernelLoad#: filename, global.
+    state.cpp[KERNEL_LOAD] = [](IntState& state0) {
+        ObjectPtr dyn = state0.dyn.top();
+        ObjectPtr str = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
+        ObjectPtr global = (*dyn.lock())[ Symbols::get()["$2"] ].getPtr();
+        auto str0 = boost::get<string>(&str.lock()->prim());
+        if ((!str.expired()) && (!global.expired()) && str0)
+            readFileNew(*str0, { global, global }, state0);
+    };
+    sys.lock()->put(Symbols::get()["kernelLoad#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, KERNEL_LOAD))));
+}
+
+ObjectPtr spawnObjectsNew(IntState& state) {
+
+    ObjectPtr object(GC::get().allocate());
+    ObjectPtr meta(clone(object));
+    ObjectPtr global(clone(object));
+
+    ObjectPtr proc(clone(object));
+    ObjectPtr method(clone(proc));
+    ObjectPtr systemCall(clone(method));
+    ObjectPtr number(clone(object));
+    ObjectPtr string(clone(object));
+    ObjectPtr symbol(clone(object));
+
+    ObjectPtr cont(clone(proc));
+    ObjectPtr contValidator(clone(object));
+
+    ObjectPtr exception(clone(object));
+    ObjectPtr systemError(clone(exception));
+
+    ObjectPtr process(clone(object));
+    ObjectPtr stream(clone(object));
+    ObjectPtr stdout_(clone(stream));
+    ObjectPtr stdin_(clone(stream));
+    ObjectPtr stderr_(clone(stream));
+
+    ObjectPtr array_(clone(object));
+
+    ObjectPtr sys(clone(object));
+    ObjectPtr sigil(clone(object));
+    ObjectPtr kernel(clone(object));
+
+    ObjectPtr nil(clone(object));
+    ObjectPtr boolean(clone(object));
+    ObjectPtr true_(clone(boolean));
+    ObjectPtr false_(clone(boolean));
+
+    // Meta calls for basic types
+    meta.lock()->put(Symbols::get()["Object"], object);
+    meta.lock()->put(Symbols::get()["Proc"], proc);
+    meta.lock()->put(Symbols::get()["Method"], method);
+    meta.lock()->put(Symbols::get()["Number"], number);
+    meta.lock()->put(Symbols::get()["String"], string);
+    meta.lock()->put(Symbols::get()["Symbol"], symbol);
+    meta.lock()->put(Symbols::get()["Stream"], stream);
+    meta.lock()->put(Symbols::get()["Process"], process);
+    meta.lock()->put(Symbols::get()["SystemCall"], systemCall);
+    meta.lock()->put(Symbols::get()["True"], true_);
+    meta.lock()->put(Symbols::get()["False"], false_);
+    meta.lock()->put(Symbols::get()["Nil"], nil);
+    meta.lock()->put(Symbols::get()["Boolean"], boolean);
+    meta.lock()->put(Symbols::get()["Cont"], cont);
+    meta.lock()->put(Symbols::get()["ContValidator"], contValidator);
+    meta.lock()->put(Symbols::get()["sys"], sys);
+    meta.lock()->put(Symbols::get()["Exception"], exception);
+    meta.lock()->put(Symbols::get()["SystemError"], systemError);
+    meta.lock()->put(Symbols::get()["Array"], array_);
+    meta.lock()->put(Symbols::get()["Kernel"], kernel);
+
+    // Object is its own parent
+    object.lock()->put(Symbols::get()["parent"], object);
+
+    // Meta linkage
+    meta.lock()->put(Symbols::get()["meta"], meta);
+    object.lock()->put(Symbols::get()["meta"], meta);
+    meta.lock()->put(Symbols::get()["sys"], sys);
+    meta.lock()->put(Symbols::get()["sigil"], sigil);
+
+    // This ensures that problems in the core.lat file (before exceptions are well-defined)
+    // do not cause the entire program to crash
+    meta.lock()->put(Symbols::get()["exceptions?"], false_);
+
+    // Global variables not accessible in meta
+    global.lock()->put(Symbols::get()["stdin"], stdin_);
+    global.lock()->put(Symbols::get()["stderr"], stderr_);
+    global.lock()->put(Symbols::get()["stdout"], stdout_);
+    global.lock()->put(Symbols::get()["global"], global);
+
+    state.lex.push(global);
+    state.dyn.push(global);
+
+    // Method and system call properties
+    spawnSystemCallsNew(global, method, sys, state);
+
+    // Prim Fields
+    method.lock()->prim(Method());
+    number.lock()->prim(0.0);
+    string.lock()->prim("");
+    symbol.lock()->prim(Symbols::get()[""]);
+    contValidator.lock()->prim(weak_ptr<SignalValidator>());
+    stdout_.lock()->prim(outStream());
+    stdin_.lock()->prim(inStream());
+    stderr_.lock()->prim(errStream());
+
+    // Location and line number (necessary for error printing; nice to have anyway)
+    meta.lock()->put(Symbols::get()["lineStorage"], garnish({global, global}, Symbols::gensym("STORE")));
+    meta.lock()->put(Symbols::get()["fileStorage"], garnish({global, global}, Symbols::gensym("STORE")));
+
+    // The core libraries
+    readFileNew("std/latitude.lat", { global, global }, state);
+
+    return global;
+}

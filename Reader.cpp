@@ -239,6 +239,42 @@ ObjectPtr evalFile(string fname, Scope defScope, Scope scope) {
     }
 }
 
+void readFileNew(string fname, Scope defScope, IntState& state) {
+    ifstream file;
+    file.exceptions(ifstream::failbit | ifstream::badbit);
+    try {
+        file.open(fname);
+        BOOST_SCOPE_EXIT(&file) {
+            file.close();
+        } BOOST_SCOPE_EXIT_END;
+        stringstream str;
+        while ((file >> str.rdbuf()).good());
+        try {
+            auto stmts = parse(str.str());
+            for (auto& stmt : stmts)
+                stmt->propogateFileName(fname);
+            list< shared_ptr<Stmt> > stmts1;
+            for (unique_ptr<Stmt>& stmt : stmts)
+                stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
+            InstrSeq seq;
+            for (auto& stmt : stmts1) {
+                auto tr = stmt->translate();
+                seq.insert(seq.end(), tr.begin(), tr.end());
+            }
+            (makeAssemblerLine(Instr::RET)).appendOnto(seq);
+            if (!state.dyn.empty())
+                state.dyn.push( clone(state.dyn.top()) );
+            state.lex.push(defScope.lex);
+            state.stack.push(state.cont);
+            state.cont = seq;
+        } catch (std::string parseException) {
+            throw doParseError(defScope, parseException); // TODO Something better again
+        }
+    } catch (ios_base::failure err) {
+        throw doEtcError(defScope, "IOError", err.what()); // TODO Something better here (in the scheduler)
+    }
+}
+
 Stmt::Stmt(int line_no)
     : file_name("(eval)"), line_no(line_no) {}
 
@@ -390,6 +426,7 @@ InstrSeq StmtEqual::translate() {
 
     // Put the value
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
     return seq;
 
@@ -440,7 +477,13 @@ InstrSeq StmtMethod::translate() {
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::MTHD, mthd)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::MTHD)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+
+    // Give the object an appropriate closure
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(seq);
 
     return seq;
 

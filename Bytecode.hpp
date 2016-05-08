@@ -88,9 +88,18 @@ AssemblerLine makeAssemblerLine(Instr instr, Ts... args) {
     return line;
 }
 
+template <typename... Ts>
+InstrSeq asmCode(Ts... args) {
+    InstrSeq seq;
+    std::array<AssemblerLine, sizeof...(args)> args0 = { args... };
+    for (auto& arg : args0)
+        arg.appendOnto(seq);
+    return seq;
+}
+
 struct IntState;
 
-using CppFunction = std::function<void(IntState)>;
+using CppFunction = std::function<void(IntState&)>;
 
 struct IntState {
     ObjectPtr ptr, slf, ret;
@@ -117,5 +126,7 @@ InstrSeq popLine(InstrSeq& state);
 void executeInstr(Instr instr, IntState& state);
 
 void doOneStep(IntState& state);
+
+bool isIdling(IntState& state);
 
 #endif // _BYTECODE_HPP_

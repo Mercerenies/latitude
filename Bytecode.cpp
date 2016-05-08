@@ -1,6 +1,8 @@
 #include "Bytecode.hpp"
 #include "Reader.hpp"
 
+#define DEBUG_INSTR
+
 using namespace std;
 
 InstructionSet InstructionSet::iset;
@@ -202,8 +204,8 @@ IntState intState() {
 unsigned char popChar(InstrSeq& state) {
     if (state.empty())
         return 0;
-    char val = state.back();
-    state.pop_back();
+    char val = state.front();
+    state.pop_front();
     return val;
 }
 
@@ -211,10 +213,11 @@ long popLong(InstrSeq& state) {
     int sign = 1;
     if (popChar(state) > 0)
         sign *= -1;
-    int value = 0;
+    long value = 0;
+    long pow = 1;
     for (int i = 0; i < 4; i++) {
-        value *= 256;
-        value += (long)popChar(state);
+        value += pow * (long)popChar(state);
+        pow <<= 8;
     }
     return sign * value;
 }
@@ -255,6 +258,9 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::MOV: {
         Reg src = popReg(state.cont);
         Reg dest = popReg(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "MOV " << (long)src << " " << (long)dest << endl;
+#endif
         ObjectPtr mid;
         switch (src) {
         case Reg::PTR:
@@ -291,6 +297,9 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::PUSH: {
         Reg src = popReg(state.cont);
         Reg stack = popReg(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "PUSH " << (long)src << " " << (long)stack << endl;
+#endif
         ObjectPtr mid;
         switch (src) {
         case Reg::PTR:
@@ -315,10 +324,10 @@ void executeInstr(Instr instr, IntState& state) {
             state.dyn.push(mid);
             break;
         case Reg::ARG:
-            state.dyn.push(mid);
+            state.arg.push(mid);
             break;
         case Reg::STO:
-            state.dyn.push(mid);
+            state.sto.push(mid);
             break;
         default:
             // TODO Error handling?
@@ -328,7 +337,11 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::POP: {
         stack<ObjectPtr>* stack;
-        switch (popReg(state.cont)) {
+        Reg reg = popReg(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "POP " << (long)reg << endl;
+#endif
+        switch (reg) {
         case Reg::LEX:
             stack = &state.lex;
             break;
@@ -336,10 +349,10 @@ void executeInstr(Instr instr, IntState& state) {
             stack = &state.dyn;
             break;
         case Reg::ARG:
-            stack = &state.dyn;
+            stack = &state.arg;
             break;
         case Reg::STO:
-            stack = &state.dyn;
+            stack = &state.sto;
             break;
         default:
             // TODO Error handling?
@@ -357,6 +370,9 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::GETL: {
+#ifdef DEBUG_INSTR
+        cout << "GETL " << endl;
+#endif
         if (state.lex.empty())
             state.err0 = true;
         else
@@ -364,6 +380,9 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::GETD: {
+#ifdef DEBUG_INSTR
+        cout << "GETD" << endl;
+#endif
         if (state.dyn.empty())
             state.err0 = true;
         else
@@ -371,39 +390,63 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::ESWAP: {
+#ifdef DEBUG_INSTR
+        cout << "ESWAP" << endl;
+#endif
         swap(state.err0, state.err1);
     }
         break;
     case Instr::ECLR: {
+#ifdef DEBUG_INSTR
+        cout << "ECLR" << endl;
+#endif
         state.err0 = false;
     }
         break;
     case Instr::ESET: {
+#ifdef DEBUG_INSTR
+        cout << "ESET" << endl;
+#endif
         state.err0 = true;
     }
         break;
     case Instr::SYM: {
         string str = popString(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "SYM \"" << str << "\"" << endl;
+#endif
         state.sym = Symbols::get()[str];
     }
         break;
     case Instr::NUM: {
         string str = popString(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "NUM \"" << str << "\"" << endl;
+#endif
         state.num0 = Number(static_cast<Number::bigint>(str));
     }
         break;
     case Instr::INT: {
         long val = popLong(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "INT " << val << endl;
+#endif
         state.num0 = Number(val);
     }
         break;
     case Instr::FLOAT: {
         string str = popString(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "FLOAT \"" << str << "\"" << endl;
+#endif
         double dd = strtod(str.c_str(), NULL);
         state.num0 = Number(dd);
     }
         break;
     case Instr::NSWAP: {
+#ifdef DEBUG_INSTR
+        cout << "NSWAP" << endl;
+#endif
         swap(state.num0, state.num1);
     }
         break;
@@ -413,6 +456,19 @@ void executeInstr(Instr instr, IntState& state) {
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
         auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
         Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
+#ifdef DEBUG_INSTR
+        cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "* Method Properties " << state.ptr.lock() <<
+            " " << (closure.getType() == SlotType::PTR) << " " <<
+            stmt << " " << stmtNew << endl;
+        /*
+          for (auto& xx : keys(state.ptr.lock()))
+          cout << Symbols::get()[xx] << "  ";
+          cout << endl;
+          cout << "SIZE = " << hierarchy(state.ptr.lock()).size() << endl;
+          cout << "VARIANT = " << state.ptr.lock()->prim().which() << endl;
+        */
+#endif
         if ((closure.getType() == SlotType::PTR) && (stmt || stmtNew)) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
@@ -433,7 +489,7 @@ void executeInstr(Instr instr, IntState& state) {
             }
             // (5) Bind all of the arguments
             if (!state.dyn.empty()) {
-                int index = state.arg.size();
+                int index = args;
                 for (long n = 0; n < args; n++) {
                     ObjectPtr arg = state.arg.top();
                     state.arg.pop();
@@ -463,6 +519,9 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::XCALL: {
+#ifdef DEBUG_INSTR
+        cout << "XCALL (" << Symbols::get()[state.sym] << ")" << endl;
+#endif
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
         auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
         if (stmt || stmtNew) {
@@ -483,6 +542,9 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::XCALL0: {
         long args = popLong(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "XCALL0 " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
+#endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
         auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
@@ -507,7 +569,7 @@ void executeInstr(Instr instr, IntState& state) {
             }
             // (5) Bind all of the arguments
             if (!state.dyn.empty()) {
-                int index = state.arg.size();
+                int index = args;
                 for (long n = 0; n < args; n++) {
                     ObjectPtr arg = state.arg.top();
                     state.arg.pop();
@@ -525,6 +587,9 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::RET: {
+#ifdef DEBUG_INSTR
+        cout << "RET" << endl;
+#endif
         if (state.lex.empty())
             state.err0 = true;
         else
@@ -536,10 +601,16 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::CLONE: {
+#ifdef DEBUG_INSTR
+        cout << "CLONE" << endl;
+#endif
         state.ret = clone(state.slf);
     }
         break;
     case Instr::RTRV: {
+#ifdef DEBUG_INSTR
+        cout << "RTRV (" << Symbols::get()[state.sym] << ")" << endl;
+#endif
         list<ObjectSPtr> parents;
         ObjectSPtr curr = state.slf.lock();
         Symbolic name = state.sym;
@@ -599,6 +670,9 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::RTRVD: {
+#ifdef DEBUG_INSTR
+        cout << "RTRVD (" << Symbols::get()[state.sym] << ")" << endl;
+#endif
         Slot slot = (*state.slf.lock())[state.sym];
         if (slot.getType() == SlotType::PTR)
             state.ret = slot.getPtr();
@@ -608,15 +682,24 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::STR: {
         string str = popString(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "STR \"" << str << "\"" << endl;
+#endif
         state.str0 = str;
     }
         break;
     case Instr::SSWAP: {
+#ifdef DEBUG_INSTR
+        cout << "SSWAP" << endl;
+#endif
         swap(state.str0, state.str1);
     }
         break;
     case Instr::EXPD: {
         Reg expd = popReg(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "EXPD " << (long)expd << endl;
+#endif
         switch (expd) {
         case Reg::SYM: {
             auto test = boost::get<Symbolic>(&state.ptr.lock()->prim());
@@ -673,12 +756,18 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::MTHD: {
+#ifdef DEBUG_INSTR
+        cout << "MTHD ..." << endl;
+#endif
         InstrSeq seq = popLine(state.cont);
         state.mthd = std::move(seq);
     }
         break;
     case Instr::LOAD: {
         Reg ld = popReg(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "LOAD " << (long)ld << endl;
+#endif
         switch (ld) {
         case Reg::SYM: {
             state.ptr.lock()->prim(state.sym);
@@ -711,6 +800,9 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::SETF: {
+#ifdef DEBUG_INSTR
+        cout << "SETF (" << Symbols::get()[state.sym] << ")" << endl;
+#endif
         if (state.slf.expired())
             state.err0 = true;
         else
@@ -719,7 +811,11 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::PEEK: {
         stack<ObjectPtr>* stack;
-        switch (popReg(state.cont)) {
+        Reg reg = popReg(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "PEEK " << (long)reg << endl;
+#endif
+        switch (reg) {
         case Reg::LEX:
             stack = &state.lex;
             break;
@@ -727,10 +823,10 @@ void executeInstr(Instr instr, IntState& state) {
             stack = &state.dyn;
             break;
         case Reg::ARG:
-            stack = &state.dyn;
+            stack = &state.arg;
             break;
         case Reg::STO:
-            stack = &state.dyn;
+            stack = &state.sto;
             break;
         default:
             // TODO Error handling?
@@ -749,11 +845,17 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::SYMN: {
         long val = popLong(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "SYMN " << val << endl;
+#endif
         state.sym = { val };
     }
         break;
     case Instr::CPP: {
         long val = popLong(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "CPP " << val << endl;
+#endif
         auto func = state.cpp[val];
         if (func)
             func(state);
@@ -767,6 +869,7 @@ void executeInstr(Instr instr, IntState& state) {
 void doOneStep(IntState& state) {
     if (state.cont.empty()) {
         // Pop off the stack
+        cout << "<><><>" << endl;
         if (!state.stack.empty()) {
             state.cont = state.stack.top();
             state.stack.pop();
@@ -775,7 +878,12 @@ void doOneStep(IntState& state) {
     } else {
         // Run one command
         Instr instr = popInstr(state.cont);
+        cout << (long)instr << endl;
         executeInstr(instr, state);
     }
+}
+
+bool isIdling(IntState& state) {
+    return (state.cont.empty() && state.stack.empty());
 }
 

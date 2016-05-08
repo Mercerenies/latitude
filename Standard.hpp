@@ -4,6 +4,7 @@
 #include <string>
 #include "Proto.hpp"
 #include "Cont.hpp"
+#include "Bytecode.hpp"
 
 /*
  * Using the global garbage collector, spawns the standard library set of objects
@@ -20,5 +21,7 @@ ProtoError doSlotError(Scope scope, ObjectPtr problem, Symbolic slotName);
 ProtoError doParseError(Scope scope);
 ProtoError doParseError(Scope scope, std::string message);
 ProtoError doEtcError(Scope scope, std::string errorName, std::string msg);
+
+ObjectPtr spawnObjectsNew(IntState& state);
 
 #endif // _STANDARD_HPP_
