@@ -433,6 +433,7 @@ InstrSeq StmtMethod::translate() {
         InstrSeq curr = val->translate();
         mthd.insert(mthd.end(), curr.begin(), curr.end());
     }
+    (makeAssemblerLine(Instr::RET)).appendOnto(mthd);
 
     // Clone and put a prim() onto it
     (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
@@ -597,7 +598,7 @@ InstrSeq StmtSymbol::translate() {
     (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "String")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "Symbol")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 

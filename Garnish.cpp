@@ -87,6 +87,11 @@ public:
         oss << &val;
         return oss.str();
     }
+    std::string operator()(NewMethod& val) const {
+        ostringstream oss;
+        oss << &val;
+        return oss.str();
+    }
     std::string operator()(SystemCall& val) const {
         ostringstream oss;
         oss << &val;

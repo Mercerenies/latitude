@@ -48,6 +48,8 @@ void InstructionSet::initialize() {
     props[Instr::LOAD] = { isRegister };
     props[Instr::SETF] = { };
     props[Instr::PEEK] = { isStackRegister };
+    props[Instr::SYMN] = { isLongRegisterArg };
+    props[Instr::CPP] = { isLongRegisterArg };
 }
 
 AssemblerError::AssemblerError()
@@ -193,6 +195,7 @@ IntState intState() {
     // num0, num1 default to smallint(0)
     // str0, str1 default to empty string
     // mthd default to empty
+    // cpp default to empty map
     return state;
 }
 
@@ -408,8 +411,9 @@ void executeInstr(Instr instr, IntState& state) {
         long args = popLong(state.cont);
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
+        auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
         Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
-        if ((closure.getType() == SlotType::PTR) && (stmt)) {
+        if ((closure.getType() == SlotType::PTR) && (stmt || stmtNew)) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
             if (!state.dyn.empty())
@@ -418,7 +422,16 @@ void executeInstr(Instr instr, IntState& state) {
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
             state.lex.push( clone(closure.getPtr()) );
-            // (4) Bind all of the arguments
+            // (4) Bind all the local variables
+            state.lex.top().lock()->put(Symbols::get()["self"], state.slf);
+            state.lex.top().lock()->put(Symbols::get()["again"], state.ptr);
+            state.lex.top().lock()->put(Symbols::get()["lexical"], state.lex.top());
+            if (!state.dyn.empty()) {
+                state.lex.top().lock()->put(Symbols::get()["dynamic"], state.dyn.top());
+                state.dyn.top().lock()->put(Symbols::get()["$lexical"], state.lex.top());
+                state.dyn.top().lock()->put(Symbols::get()["$dynamic"], state.dyn.top());
+            }
+            // (5) Bind all of the arguments
             if (!state.dyn.empty()) {
                 int index = state.arg.size();
                 for (long n = 0; n < args; n++) {
@@ -428,15 +441,17 @@ void executeInstr(Instr instr, IntState& state) {
                     index--;
                 }
             }
-            // (5) Push %cont onto %stack
+            // (6) Push %cont onto %stack
             state.stack.push(state.cont);
-            // (6) Make a new %cont
-            // TODO We want to make methods pre-compile, not compile here every time
-            // This current (very inefficient) approach is for backward compatibility
-            state.cont = InstrSeq();
-            for (auto stmt0 : *stmt) {
-                auto ref = stmt0->translate();
-                state.cont.insert(state.cont.end(), ref.begin(), ref.end());
+            // (7) Make a new %cont
+            if (stmtNew) {
+                state.cont = std::move(*stmtNew);
+            } else {
+                state.cont = InstrSeq();
+                for (auto stmt0 : *stmt) {
+                    auto ref = stmt0->translate();
+                    state.cont.insert(state.cont.end(), ref.begin(), ref.end());
+                }
             }
         } else {
             // It's not a method; just return it
@@ -448,11 +463,65 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::XCALL: {
-        // Reserved
+        auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
+        auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
+        if (stmt || stmtNew) {
+            // (6) Push %cont onto %stack
+            state.stack.push(state.cont);
+            // (7) Make a new %cont
+            if (stmtNew) {
+                state.cont = std::move(*stmtNew);
+            } else {
+                state.cont = InstrSeq();
+                for (auto stmt0 : *stmt) {
+                    auto ref = stmt0->translate();
+                    state.cont.insert(state.cont.end(), ref.begin(), ref.end());
+                }
+            }
+        }
     }
         break;
     case Instr::XCALL0: {
-        ////
+        long args = popLong(state.cont);
+        // (1) Perform a hard check for `closure`
+        auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
+        auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
+        Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
+        if ((closure.getType() == SlotType::PTR) && (stmt || stmtNew)) {
+            // It's a method; get ready to call it
+            // (2) Try to clone the top of %dyn
+            if (!state.dyn.empty())
+                state.dyn.push( clone(state.dyn.top()) );
+            else
+                state.err0 = true;
+            // (3) Push a clone of the closure onto %lex
+            state.lex.push( clone(closure.getPtr()) );
+            // (4) Bind all the local variables
+            state.lex.top().lock()->put(Symbols::get()["self"], state.slf);
+            state.lex.top().lock()->put(Symbols::get()["again"], state.ptr);
+            state.lex.top().lock()->put(Symbols::get()["lexical"], state.lex.top());
+            if (!state.dyn.empty()) {
+                state.lex.top().lock()->put(Symbols::get()["dynamic"], state.dyn.top());
+                state.dyn.top().lock()->put(Symbols::get()["$lexical"], state.lex.top());
+                state.dyn.top().lock()->put(Symbols::get()["$dynamic"], state.dyn.top());
+            }
+            // (5) Bind all of the arguments
+            if (!state.dyn.empty()) {
+                int index = state.arg.size();
+                for (long n = 0; n < args; n++) {
+                    ObjectPtr arg = state.arg.top();
+                    state.arg.pop();
+                    state.dyn.top().lock()->put(Symbols::get()[ "$" + to_string(index) ], arg);
+                    index--;
+                }
+            }
+        } else {
+            // It's not a method; just return it
+            for (long n = 0; n < args; n++) {
+                state.arg.pop(); // For consistency, we must pop and discard these anyway
+            }
+            state.ret = state.ptr;
+        }
     }
         break;
     case Instr::RET: {
@@ -471,7 +540,62 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::RTRV: {
-        ////
+        list<ObjectSPtr> parents;
+        ObjectSPtr curr = state.slf.lock();
+        Symbolic name = state.sym;
+        ObjectPtr value;
+        // Try to find the value itself
+        while (find(parents.begin(), parents.end(), curr) == parents.end()) {
+            parents.push_back(curr);
+            Slot slot = (*curr)[name];
+            if (slot.getType() == SlotType::PTR) {
+                value = slot.getPtr();
+                break;
+            }
+            curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
+        }
+        if (value.expired()) {
+            // Now try for missing
+            name = Symbols::get()["missing"];
+            parents.clear();
+            curr = state.slf.lock();
+            while (find(parents.begin(), parents.end(), curr) == parents.end()) {
+                parents.push_back(curr);
+                Slot slot = (*curr)[name];
+                if (slot.getType() == SlotType::PTR) {
+                    value = slot.getPtr();
+                    break;
+                }
+                curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
+            }
+            state.ret = value;
+            // TODO What if we don't find a `missing`?
+            InstrSeq seq0;
+            // Find the literal object to use for the argument
+            (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::GETL)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq0);
+            (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::SYM, "Symbol")).appendOnto(seq0);
+            (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
+            // Clone and put a prim() onto it
+            (makeAssemblerLine(Instr::CLONE)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::SYMN, name.index)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
+            // Call it
+            (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
+        } else {
+            state.ret = value;
+        }
     }
         break;
     case Instr::RTRVD: {
@@ -535,7 +659,11 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHD: {
-            ////
+            auto test = boost::get<NewMethod>(&state.ptr.lock()->prim());
+            if (test)
+                state.mthd = *test;
+            else
+                state.err0 = true;
         }
             break;
         default:
@@ -545,11 +673,41 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::MTHD: {
-        ////
+        InstrSeq seq = popLine(state.cont);
+        state.mthd = std::move(seq);
     }
         break;
     case Instr::LOAD: {
-        ////
+        Reg ld = popReg(state.cont);
+        switch (ld) {
+        case Reg::SYM: {
+            state.ptr.lock()->prim(state.sym);
+        }
+            break;
+        case Reg::NUM0: {
+            state.ptr.lock()->prim(state.num0);
+        }
+            break;
+        case Reg::NUM1: {
+            state.ptr.lock()->prim(state.num1);
+        }
+            break;
+        case Reg::STR0: {
+            state.ptr.lock()->prim(state.str0);
+        }
+            break;
+        case Reg::STR1: {
+            state.ptr.lock()->prim(state.str1);
+        }
+            break;
+        case Reg::MTHD: {
+            state.ptr.lock()->prim(state.mthd);
+        }
+            break;
+        default:
+            state.err0 = true; // TODO Error handling?
+            break;
+        }
     }
         break;
     case Instr::SETF: {
@@ -589,6 +747,20 @@ void executeInstr(Instr instr, IntState& state) {
 
     }
         break;
+    case Instr::SYMN: {
+        long val = popLong(state.cont);
+        state.sym = { val };
+    }
+        break;
+    case Instr::CPP: {
+        long val = popLong(state.cont);
+        auto func = state.cpp[val];
+        if (func)
+            func(state);
+        else
+            state.err0 = true;
+    }
+        break;
     }
 }
 
@@ -607,4 +779,3 @@ void doOneStep(IntState& state) {
     }
 }
 
-///// Fill in the unimplemented instructions, then bridge the gap and make everything work together
