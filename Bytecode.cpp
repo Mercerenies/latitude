@@ -198,6 +198,8 @@ IntState intState() {
     // str0, str1 default to empty string
     state.mthd = asmCode(makeAssemblerLine(Instr::RET));
     // cpp default to empty map
+    // strm default to null
+    // prcs default to null
     return state;
 }
 
@@ -781,6 +783,22 @@ void executeInstr(Instr instr, IntState& state) {
                 state.err0 = true;
         }
             break;
+        case Reg::STRM: {
+            auto test = boost::get<StreamPtr>(&state.ptr.lock()->prim());
+            if (test)
+                state.strm = *test;
+            else
+                state.err0 = true;
+        }
+            break;
+        case Reg::PRCS: {
+            auto test = boost::get<ProcessPtr>(&state.ptr.lock()->prim());
+            if (test)
+                state.prcs = *test;
+            else
+                state.err0 = true;
+        }
+            break;
         default:
             state.err0 = true; // TODO Error handling?
             break;
@@ -826,6 +844,14 @@ void executeInstr(Instr instr, IntState& state) {
             cout << "* Method Length " << state.mthd.size() << endl;
 #endif
             state.ptr.lock()->prim(state.mthd);
+        }
+            break;
+        case Reg::STRM: {
+            state.ptr.lock()->prim(state.strm);
+        }
+            break;
+        case Reg::PRCS: {
+            state.ptr.lock()->prim(state.prcs);
         }
             break;
         default:

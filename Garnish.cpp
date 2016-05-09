@@ -219,3 +219,46 @@ void simplePrintObject(Scope scope, Stream& stream, ObjectPtr obj) {
     else
         stream.writeLine("<?>");
 }
+
+void garnishNew(IntState& state, bool value) {
+    if (value) {
+        evalNew(state, "meta True.");
+    } else {
+        evalNew(state, "meta False.");
+    }
+}
+
+void garnishNew(IntState& state, boost::blank value) {
+    evalNew(state, "meta Nil.");
+}
+
+void garnishNew(IntState& state, std::string value) {
+    evalNew(state, "meta String.");
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                           makeAssemblerLine(Instr::STR, value),
+                           makeAssemblerLine(Instr::LOAD, Reg::STR0),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
+    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+}
+
+void garnishNew(IntState& state, int value) {
+    garnishNew(state, (long)value);
+}
+
+void garnishNew(IntState& state, long value) {
+    evalNew(state, "meta Number.");
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                           makeAssemblerLine(Instr::INT, value),
+                           makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
+    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+}
+
+void garnishNew(IntState& state, Symbolic value) {
+    evalNew(state, "meta Symbol.");
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                           makeAssemblerLine(Instr::SYM, value.index),
+                           makeAssemblerLine(Instr::LOAD, Reg::SYM),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
+    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+}

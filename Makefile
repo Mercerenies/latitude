@@ -48,7 +48,7 @@ Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp
 Stream.o:	Stream.cpp Stream.hpp
 	$(CXX) $(CXXFLAGS) Stream.cpp
 
-Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp Macro.hpp Process.hpp
+Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp Macro.hpp Process.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) Garnish.cpp
 
 GC.o:	GC.cpp GC.hpp Proto.hpp Process.hpp

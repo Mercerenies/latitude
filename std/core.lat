@@ -160,7 +160,7 @@ Kernel toString := "Kernel".
 Symbol gensym := { meta sys gensym#: self. }.
 Symbol gensymOf := { meta sys gensymOf#: self, $1. }.
 Symbol asText := { meta sys symbolic#: self. }.
-Symbol toString := { meta sys primToString#: self. }.
+Symbol toString := { meta sys symToString#: self. }.
 Symbol pretty := { self asText. }.
 Symbol == := { meta sys primEquals#: self, $1. }.
 Symbol < := { meta sys primLT#: self, $1. }.
@@ -173,7 +173,7 @@ String stringify := { self. }.
 Object ++ := { meta sys stringConcat#: self stringify, $1 stringify. }.
 Object toString := "Object".
 Object pretty := { (hold 'self) toString. }.
-String toString := { meta sys primToString#: self. }.
+String toString := { meta sys strToString#: self. }.
 String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.

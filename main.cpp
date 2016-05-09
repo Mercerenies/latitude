@@ -17,6 +17,7 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
+    // TODO Teach the new REPL to call the garbage collector
     IntState state = intState();
     ObjectPtr global = spawnObjectsNew(state);
 

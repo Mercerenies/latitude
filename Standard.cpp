@@ -11,11 +11,14 @@
 
 using namespace std;
 
+///// Check hashes.txt; it's a lengthy to-do list for you.
+
 // TODO More objects should have toString so they don't all default to showing "Object"
 
 // TODO Make primitive objects like String and Number clone properly (prim() fields don't clone)
 
-///// Some syntax sugar for pattern matching key-value pairs (So we can do a `capture3` which returns three values)
+// TODO Some syntax sugar for pattern matching key-value pairs
+//    (So we can do a `capture3` which returns three values)
 //    (Or maybe a "variable bomb" method which introduces variables into the local scope)
 
 void spawnSystemCalls(ObjectPtr& global, ObjectPtr& systemCall, ObjectPtr& sys);
@@ -1249,18 +1252,25 @@ ObjectPtr defineMethod(ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
 
 void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntState& state) {
     static constexpr long
-        KERNEL_LOAD = 1;
+        KERNEL_LOAD = 1,
+        STREAM_DIR = 2,
+        STREAM_PUT = 3,
+        TO_STRING = 4;
 
     // TODO Make these respond better to invalid (or not enough) arguments
 
+    // KERNEL_LOAD ($1 = filename, $2 = global)
     // kernelLoad#: filename, global.
     state.cpp[KERNEL_LOAD] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr str = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr global = (*dyn.lock())[ Symbols::get()["$2"] ].getPtr();
-        auto str0 = boost::get<string>(&str.lock()->prim());
-        if ((!str.expired()) && (!global.expired()) && str0)
-            readFileNew(*str0, { global, global }, state0);
+        if ((!str.expired()) && (!global.expired())) { // ERROR?
+            auto str0 = boost::get<string>(&str.lock()->prim());
+            if (str0) // ERROR?
+                readFileNew(*str0, { global, global }, state0);
+        }
+        // TODO Error handling at all the 'ERROR?' points
     };
     sys.lock()->put(Symbols::get()["kernelLoad#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, KERNEL_LOAD))));
@@ -1277,7 +1287,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // TODO Failure?
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // TODO ERROR?
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV))));
@@ -1312,6 +1322,143 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          // values onto the stack for it to pop
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::LEX),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::DYN))));
+
+    // STREAM_DIR ($1 = argument) (where %num0 specifies the direction; 0 = in, 1 = out)
+    // streamIn#: stream.
+    // streamOut#: stream.
+    state.cpp[STREAM_DIR] = [](IntState& state0) {
+        ObjectPtr dyn = state0.dyn.top();
+        ObjectPtr stream = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
+        if (!stream.expired()) { // ERROR?
+            auto stream0 = boost::get<StreamPtr>(&stream.lock()->prim());
+            if (stream0) { // ERROR?
+                switch (state0.num0.asSmallInt()) {
+                case 0:
+                    garnishNew(state0, (*stream0)->hasIn());
+                    break;
+                case 1:
+                    garnishNew(state0, (*stream0)->hasOut());
+                    break;
+                }
+            }
+        }
+    };
+    sys.lock()->put(Symbols::get()["streamIn#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::INT, 0L),
+                                                         makeAssemblerLine(Instr::CPP, STREAM_DIR))));
+    sys.lock()->put(Symbols::get()["streamOut#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::INT, 1L),
+                                                         makeAssemblerLine(Instr::CPP, STREAM_DIR))));
+
+    // STREAM_PUT ($1 = stream, $2 = string) (where %num0 specifies whether a newline is added; 0 = no, 1 = yes)
+    // streamPuts#: stream, str.
+    // streamPutln#: stream, str.
+    state.cpp[STREAM_PUT] = [](IntState& state0) {
+        ObjectPtr dyn = state0.dyn.top();
+        ObjectPtr stream = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
+        ObjectPtr str = (*dyn.lock())[ Symbols::get()["$2"] ].getPtr();
+        if ((!stream.expired()) && (!str.expired())) { // ERROR?
+            auto stream0 = boost::get<StreamPtr>(&stream.lock()->prim());
+            auto str0 = boost::get<string>(&str.lock()->prim());
+            if (stream0 && str0) { // ERROR?
+                if ((*stream0)->hasOut()) { // ERROR?
+                    switch (state0.num0.asSmallInt()) {
+                    case 0:
+                        (*stream0)->writeText(*str0);
+                        break;
+                    case 1:
+                        (*stream0)->writeLine(*str0);
+                        break;
+                    }
+                    garnishNew(state0, boost::blank());
+                }
+            }
+        }
+    };
+    sys.lock()->put(Symbols::get()["streamPuts#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::INT, 0L),
+                                                         makeAssemblerLine(Instr::CPP, STREAM_PUT))));
+    sys.lock()->put(Symbols::get()["streamPutln#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::INT, 1L),
+                                                         makeAssemblerLine(Instr::CPP, STREAM_PUT))));
+
+    // TO_STRING (where %num0 specifies which register to use)
+    //   0 = %num1
+    //   1 = %str0
+    //   2 = %sym
+    // numToString#: num
+    // strToString#: str
+    // symToString#: sym
+    state.cpp[TO_STRING] = [](IntState& state0) {
+        ostringstream oss;
+        switch (state0.num0.asSmallInt()) {
+        case 0:
+            oss << state0.num1.asString();
+            break;
+        case 1:
+            oss << '"';
+            for (char ch : state0.str0) {
+                if (ch == '"')
+                    oss << "\\\"";
+                else if (ch == '\\')
+                    oss << "\\\\";
+                else
+                    oss << ch;
+            }
+            oss << '"';
+            break;
+        case 2: {
+            string str = Symbols::get()[state0.sym];
+            if (Symbols::requiresEscape(str)) {
+                oss << "'(";
+                for (char ch : str) {
+                    if (ch == '(')
+                        oss << "\\(";
+                    else if (ch == ')')
+                        oss << "\\)";
+                    else if (ch == '\\')
+                        oss << "\\\\";
+                    else
+                        oss << ch;
+                }
+                oss << ")";
+            } else {
+                if (!Symbols::isUninterned(str))
+                    oss << '\'';
+                oss << str;
+            }
+        }
+            break;
+        }
+        garnishNew(state0, oss.str());
+    };
+    sys.lock()->put(Symbols::get()["numToString#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::INT, 0L),
+                                                         makeAssemblerLine(Instr::CPP, TO_STRING))));
+    sys.lock()->put(Symbols::get()["strToString#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::INT, 1L),
+                                                         makeAssemblerLine(Instr::CPP, TO_STRING))));
+    sys.lock()->put(Symbols::get()["symToString#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::INT, 2L),
+                                                         makeAssemblerLine(Instr::CPP, TO_STRING))));
 
 }
 

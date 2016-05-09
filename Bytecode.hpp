@@ -26,7 +26,8 @@ enum class Instr : unsigned char {
 enum class Reg : unsigned char {
     PTR = 0x01, SLF = 0x02, RET = 0x03, LEX = 0x04, DYN = 0x05, ARG = 0x06, STO = 0x07,
         CONT = 0x08, STACK = 0x09, ERR0 = 0x0A, ERR1 = 0x0B, SYM = 0x0C, NUM0 = 0x0D,
-        NUM1 = 0x0E, STR0 = 0x0F, STR1 = 0x10, MTHD = 0x11, CPP = 0x12
+        NUM1 = 0x0E, STR0 = 0x0F, STR1 = 0x10, MTHD = 0x11, CPP = 0x12, STRM = 0x13,
+        PRCS = 0x14
         };
 
 using RegisterArg = boost::variant<Reg, long, std::string, InstrSeq>;
@@ -112,6 +113,8 @@ struct IntState {
     std::string str0, str1;
     InstrSeq mthd;
     std::map<long, CppFunction> cpp;
+    StreamPtr strm;
+    ProcessPtr prcs;
 };
 
 IntState intState();

@@ -1,6 +1,7 @@
 
 ;; Arithmetic and Number Types
-Number toString := { meta sys primToString#: self. }.
+Number toString := { meta sys numToString#: self. }.
+{*
 Number == := { meta sys primEquals#: self, $1. }.
 Number < := { meta sys primLT#: self, $1. }.
 Number + := { meta sys numAdd#: self, $1. }.
@@ -18,3 +19,4 @@ Number isFloating? := { (meta sys numLevel#: self) == 3. }.
 
 ;; Return the script
 here.
+*}

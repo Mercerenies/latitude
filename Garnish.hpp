@@ -4,6 +4,7 @@
 #include <string>
 #include <boost/blank.hpp>
 #include "Proto.hpp"
+#include "Bytecode.hpp"
 
 /*
  * Garnishes a Boolean value, returning True or False.
@@ -68,5 +69,12 @@ void dumpObject(Scope scope, Stream& stream, ObjectPtr obj);
  * Calls `toString` on the object and prints it to the stream specified.
  */
 void simplePrintObject(Scope scope, Stream& stream, ObjectPtr obj);
+
+void garnishNew(IntState& state, bool value);
+void garnishNew(IntState& state, boost::blank value);
+void garnishNew(IntState& state, std::string value);
+void garnishNew(IntState& state, int value);
+void garnishNew(IntState& state, long value);
+void garnishNew(IntState& state, Symbolic value);
 
 #endif // _GARNISH_HPP_

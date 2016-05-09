@@ -3,9 +3,9 @@ meta Kernel load := { meta sys kernelLoad#: $1, global. }.
 
 meta Kernel load: "std/core.lat".
 meta Kernel load: "std/exception.lat".
+meta Kernel load: "std/flow_control.lat". ; TODO Some of flow_control is commented out at the moment
+meta Kernel load: "std/arithmetic.lat". ; TODO Some parts of this are missing too
 {*
-meta Kernel load: "std/flow_control.lat".
-meta Kernel load: "std/arithmetic.lat".
 meta Kernel load: "std/array.lat".
 meta Kernel load: "std/mixin.lat".
 meta Kernel load: "std/collection.lat".
