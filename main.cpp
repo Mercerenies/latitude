@@ -8,6 +8,7 @@ extern "C" {
 #include "GC.hpp"
 #include "Symbol.hpp"
 #include "Cont.hpp"
+#include "Bytecode.hpp"
 #include "REPL.hpp"
 #include <iostream>
 #include <cstring>
@@ -16,17 +17,43 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-    IntState state;
+    IntState state = intState();
     ObjectPtr global = spawnObjectsNew(state);
 
-    cout << hex;
-    for (unsigned char ch : state.cont) {
-        cout << (long)ch << " ";
+    bool first = true;
+    string current;
+    while (true) {
+        while (!isIdling(state))
+            doOneStep(state);
+        auto str = boost::get<string>(&state.ret.lock()->prim());
+        if (!first) {
+            if (str)
+                cout << *str << endl;
+            else
+                cout << "(Invalid toString)" << endl;
+        }
+        first = false;
+        cout << "> ";
+        getline(cin, current);
+        if (current == "quit.") {
+            break;
+        } else {
+            evalNew(state, current);
+            if (!state.stack.empty()) {
+                // Append the toString instructions
+                InstrSeq& seq = state.stack.top();
+                seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                              makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                              makeAssemblerLine(Instr::SYM, "toString"),
+                              makeAssemblerLine(Instr::RTRV),
+                              makeAssemblerLine(Instr::POP, Reg::STO),
+                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                              makeAssemblerLine(Instr::CALL, 0L));
+            }
+        }
+        // TODO Make it print the result
     }
-    cout << endl;
-
-    while (!isIdling(state))
-        doOneStep(state);
 
     /*
     ObjectPtr global;

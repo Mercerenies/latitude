@@ -1264,6 +1264,55 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     };
     sys.lock()->put(Symbols::get()["kernelLoad#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, KERNEL_LOAD))));
+
+    // accessSlot#: obj, sym.
+    sys.lock()->put(Symbols::get()["accessSlot#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // TODO Failure?
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV))));
+
+    // doClone#: obj, sym.
+    sys.lock()->put(Symbols::get()["doClone#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE))));
+
+    // invoke#: obj, mthd.
+    sys.lock()->put(Symbols::get()["invoke#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         // We want to forward the parent's arguments
+                                                         makeAssemblerLine(Instr::RET),
+                                                         makeAssemblerLine(Instr::CALL, 0L),
+                                                         // The method ends in a RET, throw some dummy
+                                                         // values onto the stack for it to pop
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::LEX),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::DYN))));
+
 }
 
 ObjectPtr spawnObjectsNew(IntState& state) {
@@ -1350,7 +1399,7 @@ ObjectPtr spawnObjectsNew(IntState& state) {
     spawnSystemCallsNew(global, method, sys, state);
 
     // Prim Fields
-    method.lock()->prim(Method());
+    method.lock()->prim(asmCode(makeAssemblerLine(Instr::RET)));
     number.lock()->prim(0.0);
     string.lock()->prim("");
     symbol.lock()->prim(Symbols::get()[""]);

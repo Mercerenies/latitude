@@ -210,6 +210,25 @@ ObjectPtr eval(string str, Scope scope) {
     }
 }
 
+void evalNew(IntState& state, string str) {
+    // TODO Better errors here
+    try {
+        auto result = parse(str);
+        if (!result.empty()) {
+            InstrSeq seq;
+            for (auto& stmt : result) {
+                auto tr = stmt->translate();
+                seq.insert(seq.end(), tr.begin(), tr.end());
+            }
+            state.stack.push(state.cont);
+            state.cont = seq;
+        }
+    } catch (std::string str) {
+        // TODO Something better here
+        cerr << "Parse error: " << str << endl;
+    }
+}
+
 ObjectPtr evalFile(string fname, Scope defScope, Scope scope) {
     ifstream file;
     file.exceptions(ifstream::failbit | ifstream::badbit);

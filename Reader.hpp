@@ -56,6 +56,8 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str);
  */
 ObjectPtr eval(std::string str, Scope scope);
 
+void evalNew(IntState& state, std::string str);
+
 /*
  * Parses and evaluates the file, which should be a source file. Note that lexDef and dynDef should almost
  * always be the global scope. The file will be treated as a method who was defined in the lexDef / dynDef

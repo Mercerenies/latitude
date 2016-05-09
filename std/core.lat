@@ -89,16 +89,14 @@ Cached call := { if: self done?,
                        parent self value := parent self procedure call. }. }.
 
 global proc := { curr := self Proc clone.
-                 curr call := dynamic hold '$1.
+                 ;curr call := dynamic hold '$1.
                  curr. }.
 global memo := { curr := self Cached clone.
                  curr procedure := self proc: (dynamic hold '$1).
                  curr. }.
 meta sigil l := { cache := memo: (dynamic hold '$1).
                   { cache call. }. }.
-global id := proc { $1. }. {* ///// Need to make `hold` work to be able to get a lot of these; then
-                                    start working on everything else. Good luck, Silvio, you're going
-                                    to need it :)
+global id := proc { $1. }.
 
 ;; Stream general methods
 Stream in? := { meta sys streamIn#: self. }.
@@ -187,4 +185,4 @@ global stackTrace := { meta sys stackDump#: self. }.
 global printStackTrace := { stderr putln: self stackTrace. }.
 
 ;; We would return the script here, but the `has` function requires flow_control.lat
-1. *}
+1.

@@ -1,7 +1,7 @@
 #include "Bytecode.hpp"
 #include "Reader.hpp"
 
-#define DEBUG_INSTR
+//#define DEBUG_INSTR
 
 using namespace std;
 
@@ -196,7 +196,7 @@ IntState intState() {
     state.sym = Symbols::get()[""];
     // num0, num1 default to smallint(0)
     // str0, str1 default to empty string
-    // mthd default to empty
+    state.mthd = asmCode(makeAssemblerLine(Instr::RET));
     // cpp default to empty map
     return state;
 }
@@ -244,9 +244,10 @@ InstrSeq popLine(InstrSeq& state) {
     InstrSeq result;
     unsigned long length2 = (unsigned long)popChar(state);
     unsigned long length = 0;
+    unsigned long pow = 1;
     for (unsigned long i = 0; i < length2; i++) {
-        length *= 256;
-        length += (unsigned long)popChar(state);
+        length += pow * (unsigned long)popChar(state);
+        pow <<= 8;
     }
     for (unsigned long i = 0; i < length; i++)
         result.push_back(popChar(state));
@@ -371,7 +372,8 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::GETL: {
 #ifdef DEBUG_INSTR
-        cout << "GETL " << endl;
+        cout << "GETL" << endl;
+        cout << "* " << state.lex.top().lock() << endl;
 #endif
         if (state.lex.empty())
             state.err0 = true;
@@ -382,6 +384,7 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::GETD: {
 #ifdef DEBUG_INSTR
         cout << "GETD" << endl;
+        cout << "* " << state.dyn.top().lock() << endl;
 #endif
         if (state.dyn.empty())
             state.err0 = true;
@@ -452,22 +455,18 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::CALL: {
         long args = popLong(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "* Method Properties " << state.ptr.lock() << endl;
+#endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
         auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
         Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
 #ifdef DEBUG_INSTR
-        cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
-        cout << "* Method Properties " << state.ptr.lock() <<
-            " " << (closure.getType() == SlotType::PTR) << " " <<
+        cout << "* Method Properties " <<
+            (closure.getType() == SlotType::PTR) << " " <<
             stmt << " " << stmtNew << endl;
-        /*
-          for (auto& xx : keys(state.ptr.lock()))
-          cout << Symbols::get()[xx] << "  ";
-          cout << endl;
-          cout << "SIZE = " << hierarchy(state.ptr.lock()).size() << endl;
-          cout << "VARIANT = " << state.ptr.lock()->prim().which() << endl;
-        */
 #endif
         if ((closure.getType() == SlotType::PTR) && (stmt || stmtNew)) {
             // It's a method; get ready to call it
@@ -501,13 +500,36 @@ void executeInstr(Instr instr, IntState& state) {
             state.stack.push(state.cont);
             // (7) Make a new %cont
             if (stmtNew) {
-                state.cont = std::move(*stmtNew);
+#ifdef DEBUG_INSTR
+                cout << "* (cont) " << stmtNew->size() << endl;
+                if (stmtNew->size() == 0) {
+                    // What are we looking at...?
+                    cout << "* * Where ptr has" << endl;
+                    for (auto& x : keys(state.ptr))
+                        cout << "  " << Symbols::get()[x];
+                    cout << endl;
+                    cout << "* * Directly" << endl;
+                    for (auto& x : (state.ptr.lock())->directKeys())
+                        cout << "  " << Symbols::get()[x];
+                    cout << endl;
+                    cout << "* * Parents of ptr" << endl;
+                    for (auto& x : hierarchy(state.ptr))
+                        cout << "  " << x.lock();
+                    cout << endl;
+                    cout << "* * Following the prims of ptr" << endl;
+                    for (auto& x : hierarchy(state.ptr))
+                        cout << "  " << x.lock()->prim().which();
+                    cout << endl;
+                }
+#endif
+                state.cont = *stmtNew;
             } else {
                 state.cont = InstrSeq();
                 for (auto stmt0 : *stmt) {
                     auto ref = stmt0->translate();
                     state.cont.insert(state.cont.end(), ref.begin(), ref.end());
                 }
+                // TODO Add a `ret` instruction here
             }
         } else {
             // It's not a method; just return it
@@ -529,7 +551,7 @@ void executeInstr(Instr instr, IntState& state) {
             state.stack.push(state.cont);
             // (7) Make a new %cont
             if (stmtNew) {
-                state.cont = std::move(*stmtNew);
+                state.cont = *stmtNew;
             } else {
                 state.cont = InstrSeq();
                 for (auto stmt0 : *stmt) {
@@ -626,6 +648,13 @@ void executeInstr(Instr instr, IntState& state) {
             curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
         }
         if (value.expired()) {
+#ifdef DEBUG_INSTR
+            cout << "* Looking for missing" << endl;
+            cout << "* Information:" << endl;
+            cout << "* * Lex: " << state.lex.top().lock() << endl;
+            cout << "* * Dyn: " << state.dyn.top().lock() << endl;
+            cout << "* * Slf: " << state.slf.lock() << endl;
+#endif
             // Now try for missing
             name = Symbols::get()["missing"];
             parents.clear();
@@ -665,6 +694,9 @@ void executeInstr(Instr instr, IntState& state) {
             (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
             (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
         } else {
+#ifdef DEBUG_INSTR
+            cout << "* Found " << value.lock() << endl;
+#endif
             state.ret = value;
         }
     }
@@ -790,6 +822,9 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHD: {
+#ifdef DEBUG_INSTR
+            cout << "* Method Length " << state.mthd.size() << endl;
+#endif
             state.ptr.lock()->prim(state.mthd);
         }
             break;
@@ -802,6 +837,10 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::SETF: {
 #ifdef DEBUG_INSTR
         cout << "SETF (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "* Information:" << endl;
+        cout << "* * Lex: " << state.lex.top().lock() << endl;
+        cout << "* * Dyn: " << state.dyn.top().lock() << endl;
+        cout << "* * Slf: " << state.slf.lock() << endl;
 #endif
         if (state.slf.expired())
             state.err0 = true;
@@ -869,7 +908,9 @@ void executeInstr(Instr instr, IntState& state) {
 void doOneStep(IntState& state) {
     if (state.cont.empty()) {
         // Pop off the stack
+#ifdef DEBUG_INSTR
         cout << "<><><>" << endl;
+#endif
         if (!state.stack.empty()) {
             state.cont = state.stack.top();
             state.stack.pop();
@@ -878,7 +919,9 @@ void doOneStep(IntState& state) {
     } else {
         // Run one command
         Instr instr = popInstr(state.cont);
+#ifdef DEBUG_INSTR
         cout << (long)instr << endl;
+#endif
         executeInstr(instr, state);
     }
 }

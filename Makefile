@@ -72,5 +72,5 @@ Process.o:	Process.cpp Process.hpp Stream.hpp
 Bytecode.o:	Bytecode.cpp Bytecode.hpp Symbol.hpp Number.hpp Proto.hpp Reader.hpp
 	$(CXX) $(CXXFLAGS) Bytecode.cpp
 
-main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp REPL.hpp
+main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp Cont.hpp REPL.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
