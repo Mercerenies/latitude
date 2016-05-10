@@ -14,10 +14,14 @@
 #include <boost/blank.hpp>
 #include <set>
 
+// Yes, this is probably horrible from a design standpoint, but I needed some
+// way to resolve the circular dependencies.
 struct SignalValidator; // From Cont.hpp
 class Stmt; // From Reader.hpp
 struct Scope; // From Reader.hpp
 using InstrSeq = std::deque<unsigned char>; // From Bytecode.hpp
+struct IntState; // From Bytecode.hpp
+using StatePtr = std::shared_ptr<IntState>; // From Bytecode.hpp
 
 class Slot;
 class Object;
@@ -31,7 +35,7 @@ using NewMethod = InstrSeq;
 using Prim = boost::variant<boost::blank, Number, std::string,
                             Method, SystemCall, StreamPtr, Symbolic,
                             std::weak_ptr<SignalValidator>, ProcessPtr,
-                            NewMethod>;
+                            NewMethod, StatePtr>;
 
 // TODO Overhaul the prim() interface and probably switch to using subclasses to represent "primitives",
 //      as the boost::variant approach to primitives is starting to explode in complexity.

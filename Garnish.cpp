@@ -135,6 +135,11 @@ public:
         oss << val;
         return oss.str();
     }
+    std::string operator()(StatePtr& val) const {
+        ostringstream oss;
+        oss << val;
+        return oss.str();
+    }
 };
 
 std::string primToString(ObjectPtr obj) {

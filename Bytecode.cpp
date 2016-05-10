@@ -1,5 +1,6 @@
 #include "Bytecode.hpp"
 #include "Reader.hpp"
+#include "Garnish.hpp"
 
 //#define DEBUG_INSTR
 
@@ -52,6 +53,9 @@ void InstructionSet::initialize() {
     props[Instr::PEEK] = { isStackRegister };
     props[Instr::SYMN] = { isLongRegisterArg };
     props[Instr::CPP] = { isLongRegisterArg };
+    props[Instr::BOL] = { };
+    props[Instr::TEST] = { };
+    props[Instr::BRANCH] = { };
 }
 
 AssemblerError::AssemblerError()
@@ -200,7 +204,13 @@ IntState intState() {
     // cpp default to empty map
     // strm default to null
     // prcs default to null
+    state.mthdz = asmCode(makeAssemblerLine(Instr::RET));
+    // flag default to false
     return state;
+}
+
+StatePtr statePtr(const IntState& state) {
+    return make_shared<IntState, const IntState&>(state);
 }
 
 unsigned char popChar(InstrSeq& state) {
@@ -799,6 +809,14 @@ void executeInstr(Instr instr, IntState& state) {
                 state.err0 = true;
         }
             break;
+        case Reg::MTHDZ: {
+            auto test = boost::get<NewMethod>(&state.ptr.lock()->prim());
+            if (test)
+                state.mthdz = *test;
+            else
+                state.err0 = true;
+        }
+            break;
         default:
             state.err0 = true; // TODO Error handling?
             break;
@@ -852,6 +870,13 @@ void executeInstr(Instr instr, IntState& state) {
             break;
         case Reg::PRCS: {
             state.ptr.lock()->prim(state.prcs);
+        }
+            break;
+        case Reg::MTHDZ: {
+#ifdef DEBUG_INSTR
+            cout << "* Method Length " << state.mthdz.size() << endl;
+#endif
+            state.ptr.lock()->prim(state.mthdz);
         }
             break;
         default:
@@ -926,6 +951,41 @@ void executeInstr(Instr instr, IntState& state) {
             func(state);
         else
             state.err0 = true;
+    }
+        break;
+    case Instr::BOL: {
+#ifdef DEBUG_INSTR
+        cout << "BOL (" << state.flag << ")" << endl;
+#endif
+        garnishNew(state, state.flag);
+    }
+        break;
+    case Instr::TEST: {
+#ifdef DEBUG_INSTR
+        cout << "TEST" << endl;
+#endif
+        if (state.slf.expired() || state.ptr.expired())
+            state.flag = false;
+        else
+            state.flag = (state.slf.lock() == state.ptr.lock());
+    }
+        break;
+    case Instr::BRANCH: {
+#ifdef DEBUG_INSTR
+        cout << "BRANCH (" << state.flag << ")" << endl;
+#endif
+        state.stack.push(state.cont);
+        if (state.flag) {
+#ifdef DEBUG_INSTR
+            cout << "* Method ( ) Length " << state.mthd.size() << endl;
+#endif
+            state.cont = state.mthd;
+        } else {
+#ifdef DEBUG_INSTR
+            cout << "* Method (Z) Length " << state.mthdz.size() << endl;
+#endif
+            state.cont = state.mthdz;
+        }
     }
         break;
     }

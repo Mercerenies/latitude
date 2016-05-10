@@ -18,8 +18,8 @@ Boolean toString := "Boolean".
 True toString := "True".
 False toString := "False".
 Nil toString := "Nil".
-{*
-global if := { meta sys ifThenElse#: $1 toBool,
+global if := { meta sys ifThenElse#: meta True,
+                                     $1 toBool,
                                      { parent dynamic $2. },
                                      { parent dynamic $3. }. }.
 Object ifTrue := { if: self, { parent dynamic $1. }, { meta Nil. }. }.
@@ -28,7 +28,7 @@ Object and := { if: self, { parent dynamic $1. }, {meta False. }. }.
 Object or := { fst := self.
                if: fst, { fst. }, { parent dynamic $1. }. }.
 Object not := { if: self, { meta False. }, { meta True. }. }.
-
+{*
 ;; Loops
 global loop := { meta sys loop#: { parent dynamic $1. }. }.
 global while := { cond := { parent dynamic $1. }.

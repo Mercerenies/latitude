@@ -12,6 +12,11 @@
 using namespace std;
 
 ///// Check hashes.txt; it's a lengthy to-do list for you.
+// But first, working on StatePtr and getting it to work as a continuation,
+// specifically by adding a few instructions to load and store the current
+// continuation. It'll have to be atomic with the act of calling the "inner"
+// callCC function since the continuation needs to reflect that the function
+// was already called.
 
 // TODO More objects should have toString so they don't all default to showing "Object"
 
@@ -1250,12 +1255,20 @@ ObjectPtr defineMethod(ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
     return obj;
 }
 
+ObjectPtr defineMethodNoRet(ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
+    ObjectPtr obj = clone(method);
+    obj.lock()->prim(code);
+    obj.lock()->put(Symbols::get()["closure"], global);
+    return obj;
+}
+
 void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntState& state) {
     static constexpr long
         KERNEL_LOAD = 1,
         STREAM_DIR = 2,
         STREAM_PUT = 3,
-        TO_STRING = 4;
+        TO_STRING = 4,
+        GENSYM = 5;
 
     // TODO Make these respond better to invalid (or not enough) arguments
 
@@ -1438,7 +1451,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
                                                          makeAssemblerLine(Instr::INT, 0L),
                                                          makeAssemblerLine(Instr::CPP, TO_STRING))));
     sys.lock()->put(Symbols::get()["strToString#"],
@@ -1447,7 +1460,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
                                                          makeAssemblerLine(Instr::INT, 1L),
                                                          makeAssemblerLine(Instr::CPP, TO_STRING))));
     sys.lock()->put(Symbols::get()["symToString#"],
@@ -1456,9 +1469,150 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // ERROR?
                                                          makeAssemblerLine(Instr::INT, 2L),
                                                          makeAssemblerLine(Instr::CPP, TO_STRING))));
+
+    // GENSYM (if %num0 is 1 then use %str0 as prefix, else if %num0 is 0 use default prefix; store in %sym)
+    // gensym#: self.
+    // gensymOf#: self, prefix.
+    state.cpp[GENSYM] = [](IntState& state0) {
+        switch (state0.num0.asSmallInt()) {
+        case 0:
+            state0.sym = Symbols::gensym();
+            break;
+        case 1:
+            state0.sym = Symbols::gensym(state0.str0);
+            break;
+        }
+    };
+    sys.lock()->put(Symbols::get()["gensym#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::INT, 0L),
+                                                         makeAssemblerLine(Instr::CPP, GENSYM),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["gensymOf#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
+                                                         makeAssemblerLine(Instr::INT, 1L),
+                                                         makeAssemblerLine(Instr::CPP, GENSYM),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // ptrEquals#: obj1, obj2.
+    sys.lock()->put(Symbols::get()["ptrEquals#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::TEST),
+                                                         makeAssemblerLine(Instr::BOL))));
+
+    // ifThenElse#: trueValue, cond, mthd0, mthd1.
+    // _onTrue# and _onFalse# have underscores in front of their names for a reason.
+    // DON'T call them directly; they will corrupt your call stack if called from
+    // anywhere other than ifThenElse#.
+    sys.lock()->put(Symbols::get()["_onTrue#"],
+                    defineMethodNoRet(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                              makeAssemblerLine(Instr::SYM, "$3"),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                                              makeAssemblerLine(Instr::RTRV),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                              makeAssemblerLine(Instr::CALL, 0L))));
+    sys.lock()->put(Symbols::get()["_onFalse#"],
+                    defineMethodNoRet(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                              makeAssemblerLine(Instr::SYM, "$4"),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                                              makeAssemblerLine(Instr::RTRV),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                              makeAssemblerLine(Instr::CALL, 0L))));
+    sys.lock()->put(Symbols::get()["ifThenElse#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "self"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "_onTrue#"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "self"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "_onFalse#"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::MTHDZ), // ERROR?
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::MTHD), // ERROR?
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::TEST),
+                                                         makeAssemblerLine(Instr::BRANCH))));
+
+    // putSlot#: obj, sym, val
+    sys.lock()->put(Symbols::get()["putSlot#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$3"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // ERROR?
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::SETF),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
 }
 
