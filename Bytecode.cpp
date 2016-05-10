@@ -56,6 +56,9 @@ void InstructionSet::initialize() {
     props[Instr::BOL] = { };
     props[Instr::TEST] = { };
     props[Instr::BRANCH] = { };
+    props[Instr::CCALL] = { };
+    props[Instr::CGOTO] = { };
+    props[Instr::CRET] = { };
 }
 
 AssemblerError::AssemblerError()
@@ -985,6 +988,47 @@ void executeInstr(Instr instr, IntState& state) {
             cout << "* Method (Z) Length " << state.mthdz.size() << endl;
 #endif
             state.cont = state.mthdz;
+        }
+    }
+        break;
+    case Instr::CCALL: {
+#ifdef DEBUG_INSTR
+        cout << "CCALL" << endl;
+#endif
+        // TODO What if %slf is null?
+        state.slf.lock()->prim( statePtr(state) );
+        state.arg.push(state.slf);
+        InstrSeq seq = asmCode( makeAssemblerLine(Instr::CALL, 1L) );
+        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+    }
+        break;
+    case Instr::CGOTO: {
+#ifdef DEBUG_INSTR
+        cout << "CGOTO" << endl;
+#endif
+        auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
+        if (cont) {
+            state = *cont;
+        } else {
+#ifdef DEBUG_INSTR
+            cout << "* Not a continuation" << endl;
+#endif
+        }
+    }
+        break;
+    case Instr::CRET: {
+#ifdef DEBUG_INSTR
+        cout << "CRET" << endl;
+#endif
+        auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
+        auto ret = state.ret;
+        if (cont) {
+            state = *cont;
+            state.ret = ret;
+        } else {
+#ifdef DEBUG_INSTR
+            cout << "* Not a continuation" << endl;
+#endif
         }
     }
         break;

@@ -18,6 +18,8 @@ using namespace std;
 int main(int argc, char** argv) {
 
     // TODO Teach the new REPL to call the garbage collector
+    // TODO Have the new REPL perform the entire print operation in the assembler, as opposed
+    //      to having the system print out a toString'd form.
     IntState state = intState();
     ObjectPtr global = spawnObjectsNew(state);
 

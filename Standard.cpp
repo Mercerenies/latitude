@@ -1590,7 +1590,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::TEST),
                                                          makeAssemblerLine(Instr::BRANCH))));
 
-    // putSlot#: obj, sym, val
+    // putSlot#: obj, sym, val.
     sys.lock()->put(Symbols::get()["putSlot#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$3"),
@@ -1613,6 +1613,34 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::SETF),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // callCC#: newCont, mthd.
+    // exitCC#: cont, ret.
+    sys.lock()->put(Symbols::get()["callCC#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::CCALL))));
+    sys.lock()->put(Symbols::get()["exitCC#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::CRET))));
 
 }
 
@@ -1705,6 +1733,7 @@ ObjectPtr spawnObjectsNew(IntState& state) {
     string.lock()->prim("");
     symbol.lock()->prim(Symbols::get()[""]);
     contValidator.lock()->prim(weak_ptr<SignalValidator>());
+    cont.lock()->prim(StatePtr());
     stdout_.lock()->prim(outStream());
     stdin_.lock()->prim(inStream());
     stderr_.lock()->prim(errStream());

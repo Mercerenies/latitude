@@ -1,9 +1,9 @@
-{*
+
 ;; Continuations
 Cont tag := Nil.
-Cont call := { meta sys exitCC#: self tag, $1. }.
-global callCC := { meta sys callCC#: { parent dynamic $1. }. }.
-*}
+Cont call := { meta sys exitCC#: self, $1. }.
+global callCC := { meta sys callCC#: meta Cont clone, { parent dynamic $1. }. }.
+
 ;; Booleans
 Object toBool := True.
 False toBool := False.
@@ -28,16 +28,18 @@ Object and := { if: self, { parent dynamic $1. }, {meta False. }. }.
 Object or := { fst := self.
                if: fst, { fst. }, { parent dynamic $1. }. }.
 Object not := { if: self, { meta False. }, { meta True. }. }.
-{*
+
 ;; Loops
-global loop := { meta sys loop#: { parent dynamic $1. }. }.
+global loop := { restart := callCC { $1. }.
+                 $1.
+                 restart call: restart. }.
 global while := { cond := { parent dynamic $1. }.
                   stmt := { parent dynamic $2. }.
                   callCC { $break := { parent dynamic $1 call. }.
                            loop { if: cond,
                                       { stmt. },
                                       { $break: meta Nil. }. }. }. }.
-
+{*
 ;; Return the script
 here.
 *}
