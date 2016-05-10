@@ -32,6 +32,10 @@ One-byte opcodes, followed by whatever arguments the system expects
 %str1 (10) - Another string
 %mthd (11) - A method (sequence of instructions)
 %cpp (12) - A table of C++ function calls, indexed by integers
+%strm (13) - A stream pointer
+%prcs (14) - A process pointer
+%mthdz (15) - An extra method
+%flag (16) - An arbitrary boolean value
 
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
@@ -73,6 +77,10 @@ peek (1B REG) - Like pop but don't remove the element; sets %err0 if empty
 symn INT (1C INT) - Like sym except grab the symbol with the given index
 cpp INT (1D INT) - Call the system function at the specified index in %cpp, set %err0 if invalid
 
+bol (1E) - Put `meta True` or `meta False` into %ret, depending on %flag (Boolean instruction)
+test (1F) - Compare %slf and %ptr for equality, store result in %flag
+branch (20) - Push %cont on %stack, then move %mthd (if true) or %mthdz (if false) to %cont based on %flag
+
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)
@@ -92,9 +100,12 @@ cpp INT (1D INT) - Call the system function at the specified index in %cpp, set 
 (xcall ) 7. Make a new %cont based on what needs to be done
 (Note that xcall is a no-op if %ptr is not a method)
 
-((( expd )))
+((( expd / load )))
 It can be passed
  - %sym - To convert to sym
  - %str0, %str1 - To convert to string
  - %num0, %num1 - To convert to num
  - %mthd - To convert to method
+ - %strm - To convert to stream ptr
+ - %prcs - To convert to process ptr
+ - %mthdz - To convert to method (as with %mthd)
