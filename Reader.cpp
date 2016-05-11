@@ -485,9 +485,20 @@ InstrSeq StmtMethod::translate() {
 
     // Translate the method sequence
     InstrSeq mthd;
-    for (auto& val : contents) {
-        InstrSeq curr = val->translate();
-        mthd.insert(mthd.end(), curr.begin(), curr.end());
+    if (contents.empty()) {
+        // If the method is empty, it defaults to `meta Nil.`
+        mthd = asmCode(makeAssemblerLine(Instr::GETL),
+                       makeAssemblerLine(Instr::SYM, "meta"),
+                       makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                       makeAssemblerLine(Instr::RTRV),
+                       makeAssemblerLine(Instr::SYM, "Nil"),
+                       makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                       makeAssemblerLine(Instr::RTRV));
+    } else {
+        for (auto& val : contents) {
+            InstrSeq curr = val->translate();
+            mthd.insert(mthd.end(), curr.begin(), curr.end());
+        }
     }
     (makeAssemblerLine(Instr::RET)).appendOnto(mthd);
 

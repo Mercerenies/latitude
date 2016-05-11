@@ -59,6 +59,8 @@ void InstructionSet::initialize() {
     props[Instr::CCALL] = { };
     props[Instr::CGOTO] = { };
     props[Instr::CRET] = { };
+    props[Instr::WND] = { };
+    props[Instr::UNWND] = { };
 }
 
 AssemblerError::AssemblerError()
@@ -209,11 +211,43 @@ IntState intState() {
     // prcs default to null
     state.mthdz = asmCode(makeAssemblerLine(Instr::RET));
     // flag default to false
+    // wind default to empty
     return state;
 }
 
 StatePtr statePtr(const IntState& state) {
     return make_shared<IntState, const IntState&>(state);
+}
+
+void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWind) {
+    deque<WindPtr> exits;
+    deque<WindPtr> enters;
+    while (!oldWind.empty()) {
+        exits.push_back(oldWind.top());
+        oldWind.pop();
+    }
+    while (!newWind.empty()) {
+        enters.push_front(newWind.top());
+        newWind.pop();
+    }
+    // Determine what the two scopes have in common and remove them
+    // (There's no reason to run an 'after' and then a corresponding 'before' from the same thunk)
+    while ((!exits.empty()) && (!enters.empty()) && (exits.back() == enters.front())) {
+        exits.pop_back();
+        enters.pop_front();
+    }
+    state.stack.push(state.cont);
+    state.cont.clear();
+    for (WindPtr ptr : exits) {
+        state.lex.push( clone(ptr->after.lex) );
+        state.dyn.push( clone(ptr->after.dyn) );
+        state.stack.push(ptr->after.code);
+    }
+    for (WindPtr ptr : enters) {
+        state.lex.push( clone(ptr->before.lex) );
+        state.dyn.push( clone(ptr->before.dyn) );
+        state.stack.push(ptr->before.code);
+    }
 }
 
 unsigned char popChar(InstrSeq& state) {
@@ -1008,7 +1042,10 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
         if (cont) {
+            auto oldWind = state.wind;
+            auto newWind = cont->wind;
             state = *cont;
+            resolveThunks(state, oldWind, newWind);
         } else {
 #ifdef DEBUG_INSTR
             cout << "* Not a continuation" << endl;
@@ -1023,13 +1060,51 @@ void executeInstr(Instr instr, IntState& state) {
         auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
         auto ret = state.ret;
         if (cont) {
+            auto oldWind = state.wind;
+            auto newWind = cont->wind;
             state = *cont;
-            state.ret = ret;
+            state.sto.push(ret);
+            InstrSeq pop = asmCode( makeAssemblerLine(Instr::POP, Reg::STO),
+                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
+            state.cont.insert(state.cont.begin(), pop.begin(), pop.end());
+            resolveThunks(state, oldWind, newWind);
         } else {
 #ifdef DEBUG_INSTR
             cout << "* Not a continuation" << endl;
 #endif
         }
+    }
+        break;
+    case Instr::WND: {
+#ifdef DEBUG_INSTR
+        cout << "WND" << endl;
+#endif
+        // TODO What if %slf / %ptr are null
+        auto before = boost::get<NewMethod>(&state.slf.lock()->prim()),
+             after  = boost::get<NewMethod>(&state.ptr.lock()->prim());
+        if (before && after) {
+            // TODO What if empty dyn stack?
+            WindPtr frame = make_shared<WindFrame>();
+            frame->before.code = *before;
+            frame->before.lex = (*state.slf.lock())[ Symbols::get()["closure"] ].getPtr();
+            frame->before.dyn = state.dyn.top();
+            frame->after.code = *after;
+            frame->after.lex = (*state.ptr.lock())[ Symbols::get()["closure"] ].getPtr();
+            frame->before.dyn = state.dyn.top();
+            state.wind.push(frame);
+        } else {
+#ifdef DEBUG_INSTR
+        cout << "* Not methods" << endl;
+#endif
+            state.err0 = true;
+        }
+    }
+        break;
+    case Instr::UNWND: {
+#ifdef DEBUG_INSTR
+        cout << "UNWND" << endl;
+#endif
+        state.wind.pop();
     }
         break;
     }

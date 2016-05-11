@@ -36,6 +36,7 @@ One-byte opcodes, followed by whatever arguments the system expects
 %prcs (14) - A process pointer
 %mthdz (15) - An extra method
 %flag (16) - An arbitrary boolean value
+%wind (17) - A stack of "wind frames" (thunk pairs)
 
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
@@ -81,9 +82,13 @@ bol (1E) - Put `meta True` or `meta False` into %ret, depending on %flag (Boolea
 test (1F) - Compare %slf and %ptr for equality, store result in %flag
 branch (20) - Push %cont on %stack, then move %mthd (if true) or %mthdz (if false) to %cont based on %flag
 
+(Note that the continuation jump instructions, cgoto and cret, resolve the %wind stack as well)
 ccall (21) - Store the current continuation in %slf, then push %slf onto %arg and do "call 1L" (uses %ptr)
-cgoto (22) - Restore the continuation from %ptr, no-op if %ptr does not contain a continuation (does not use %err0)
-cret (23) - Like cgoto except that %ret is retained, not restored from the continuation
+cgoto (22) - Restore the continuation from %ptr, resolving %wind in the process
+cret (23) - Restore continuation from %ptr, store %ret on %sto, resolve %wind, then restore %ret (%slf / %ptr are undefined)
+
+wnd (24) - Push %slf and %ptr (as before and after) onto %wind, sets %err0 if either is non-method
+unwnd (25) - Pop %wind and discard the resulting frame
 
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions

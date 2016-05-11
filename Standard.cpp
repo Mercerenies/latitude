@@ -1642,6 +1642,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::CRET))));
 
+    // Note that these two "methods" in particular do not have well-defined return values.
+    // thunk#: before, after.
+    // unthunk#.
+    sys.lock()->put(Symbols::get()["thunk#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::WND)))); // ERROR?
+    sys.lock()->put(Symbols::get()["unthunk#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::UNWND))));
+
 }
 
 ObjectPtr spawnObjectsNew(IntState& state) {
