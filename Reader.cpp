@@ -224,8 +224,7 @@ void evalNew(IntState& state, string str) {
             state.cont = seq;
         }
     } catch (std::string str) {
-        // TODO Something better here
-        cerr << "Parse error: " << str << endl;
+        throwError(state, "ParseError", str);
     }
 }
 
@@ -287,10 +286,10 @@ void readFileNew(string fname, Scope defScope, IntState& state) {
             state.stack.push(state.cont);
             state.cont = seq;
         } catch (std::string parseException) {
-            throw doParseError(defScope, parseException); // TODO Something better again
+            throwError(state, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
-        throw doEtcError(defScope, "IOError", err.what()); // TODO Something better here (in the scheduler)
+        throwError(state, "IOError", err.what());
     }
 }
 

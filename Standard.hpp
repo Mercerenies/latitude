@@ -24,4 +24,6 @@ ProtoError doEtcError(Scope scope, std::string errorName, std::string msg);
 
 ObjectPtr spawnObjectsNew(IntState& state);
 
+void throwError(IntState& state, std::string name, std::string msg);
+
 #endif // _STANDARD_HPP_

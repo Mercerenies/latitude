@@ -175,7 +175,7 @@ Object max := { if: ((self) > ($1)), self, $1. }.
 ;; Kernel functions
 Kernel toString := "Kernel".
 Kernel kill := { meta sys kill#. }.
-Kernel eval := { meta sys eval#: $1. }.
+Kernel eval := { meta sys eval#: $1, $2, $3. }.
 ; (The load function is defined in the main latitude.lat file)
 
 ;; Symbol functions

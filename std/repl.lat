@@ -22,7 +22,7 @@ global $it := { self REPL lastResult. }.
 
 REPL read := { stdout puts: "> ".
                stdin readln. }.
-REPL eval := { Kernel eval: $1. }.
+REPL eval := { Kernel eval: global, global, $1. }.
 REPL print := { stdout println: $1. }.
 REPL loop := { repl := self. ; TODO Use `localize` here once we're sure it will work again
                loop { { expr := repl read.

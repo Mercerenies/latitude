@@ -1734,6 +1734,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, STREAM_READ))));
 
     // EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
+    // eval#: lex, dyn, str.
     state.cpp[EVAL] = [](IntState& state0) {
         evalNew(state0, state0.str0);
     };
@@ -1742,9 +1743,24 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$3"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                                          makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
-                                                         makeAssemblerLine(Instr::CPP, EVAL))));
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::DYN),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::LEX),
+                                                         makeAssemblerLine(Instr::CPP, EVAL),
+                                                         makeAssemblerLine(Instr::RET))));
 
 }
 
@@ -1850,4 +1866,30 @@ ObjectPtr spawnObjectsNew(IntState& state) {
     readFileNew("std/latitude.lat", { global, global }, state);
 
     return global;
+}
+
+void throwError(IntState& state, std::string name, std::string msg) {
+    // TODO Make the throw / throq instructions terminate if exceptions are disabled
+    state.stack.push(state.cont);
+    state.cont = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                         makeAssemblerLine(Instr::GETL),
+                         makeAssemblerLine(Instr::SYM, "meta"),
+                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                         makeAssemblerLine(Instr::RTRV),
+                         makeAssemblerLine(Instr::SYM, name),
+                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                         makeAssemblerLine(Instr::RTRV),
+                         makeAssemblerLine(Instr::POP, Reg::STO),
+                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                         makeAssemblerLine(Instr::CLONE),
+                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                         makeAssemblerLine(Instr::SYM, "message"),
+                         makeAssemblerLine(Instr::SETF),
+                         makeAssemblerLine(Instr::GETD),
+                         makeAssemblerLine(Instr::SYM, "stack"),
+                         makeAssemblerLine(Instr::SETF),
+                         makeAssemblerLine(Instr::THROW));
+    state.stack.push(state.cont);
+    state.cont.clear();
+    garnishNew(state, msg);
 }
