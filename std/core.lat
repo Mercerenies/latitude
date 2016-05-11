@@ -53,11 +53,25 @@ global Kernel := meta Kernel.
 global $whereAmI := Nil.
 
 ;; Basics of exception handling
-(hold 'Method) handle := { meta sys try#: { parent self. },
-                                          { (parent dynamic $1: $1) toBool. },
-                                          { parent dynamic $2. }. }.
-(hold 'Method) catch := { (parent hold 'self) handle: { $1 is: parent dynamic $1. },
-                                                      { parent dynamic $2. }. }.
+(hold 'Method) handle := { meta sys handler#: dynamic hold '$1.
+                           result := self.
+                           meta sys unhandler#.
+                           hold 'result. }.
+(hold 'Method) resolve := { mthd := hold 'self.
+                            cond := dynamic hold '$1.
+                            catcher := dynamic hold '$2.
+                            jump := Nil.
+                            setJump := { parent jump := $1. }.
+                            callCC { outer := $1.
+                                     callCC { inner := $1.
+                                              result := callCC { setJump: $1.
+                                                                 inner call: meta Nil. }.
+                                              outer call: (catcher: result). }.
+                                     (hold 'mthd) handle { exc := $1.
+                                                           (cond: exc) ifTrue: { jump call: exc. }. }. }. }.
+(hold 'Method) catch := { (hold 'self) resolve: { $1 is: parent dynamic $1. }, dynamic hold '$2. }.
+; Observe that `rethrow` is not overriden in `Exception`, so it will never set the `stack` field.
+Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
 Exception throw := { self stack := dynamic parent.
                      (self invoke: (Object hold 'throw)) call. }.
@@ -160,6 +174,8 @@ Object max := { if: ((self) > ($1)), self, $1. }.
 
 ;; Kernel functions
 Kernel toString := "Kernel".
+Kernel kill := { meta sys kill#. }.
+Kernel eval := { meta sys eval#: $1. }.
 ; (The load function is defined in the main latitude.lat file)
 
 ;; Symbol functions

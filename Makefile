@@ -63,7 +63,7 @@ Cont.o:	Cont.cpp Cont.hpp Symbol.hpp Proto.hpp Process.hpp Stream.hpp
 Number.o:	Number.cpp Number.hpp
 	$(CXX) $(CXXFLAGS) Number.cpp
 
-REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Cont.hpp Process.hpp Stream.hpp
+REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Cont.hpp Process.hpp Stream.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) REPL.cpp
 
 Process.o:	Process.cpp Process.hpp Stream.hpp

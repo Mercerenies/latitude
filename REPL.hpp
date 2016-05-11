@@ -2,6 +2,7 @@
 #define _REPL_HPP_
 
 #include "Proto.hpp"
+#include "Bytecode.hpp"
 
 /*
  * Creates a `REPL` object and gives it basic methods for manipulating the
@@ -20,5 +21,7 @@ ObjectPtr spawnREPLObjects(ObjectPtr& global, ObjectPtr& cont);
  * form of `spawnREPLObjects`, and then loops.
  */
 void runREPL(ObjectPtr& global);
+
+void runREPLNew(ObjectPtr global, IntState& state);
 
 #endif // _REPL_HPP_

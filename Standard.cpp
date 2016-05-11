@@ -12,11 +12,7 @@
 using namespace std;
 
 ///// Check hashes.txt; it's a lengthy to-do list for you.
-// But first, working on StatePtr and getting it to work as a continuation,
-// specifically by adding a few instructions to load and store the current
-// continuation. It'll have to be atomic with the act of calling the "inner"
-// callCC function since the continuation needs to reflect that the function
-// was already called.
+// Think about exceptions next (will probably need instanceOf# for it)
 
 // TODO More objects should have toString so they don't all default to showing "Object"
 
@@ -1264,13 +1260,25 @@ ObjectPtr defineMethodNoRet(ObjectPtr global, ObjectPtr method, InstrSeq&& code)
 
 void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntState& state) {
     static constexpr long
+        TERMINATE = 0,
         KERNEL_LOAD = 1,
         STREAM_DIR = 2,
         STREAM_PUT = 3,
         TO_STRING = 4,
-        GENSYM = 5;
+        GENSYM = 5,
+        INSTANCE_OF = 6,
+        STREAM_READ = 7,
+        EVAL = 8;
 
     // TODO Make these respond better to invalid (or not enough) arguments
+
+    // TERMINATE
+    state.cpp[TERMINATE] = [](IntState& state0) {
+        // A last-resort termination of a fiber that malfunctioned; this should ONLY
+        // be used as a last resort, as it does not correctly unwind the frames
+        // before aborting
+        state0 = intState();
+    };
 
     // KERNEL_LOAD ($1 = filename, $2 = global)
     // kernelLoad#: filename, global.
@@ -1660,6 +1668,83 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::WND)))); // ERROR?
     sys.lock()->put(Symbols::get()["unthunk#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::UNWND))));
+
+    // INSTANCE_OF (check if %slf is an instance of %ptr, put result in %flag)
+    // instanceOf#: obj, anc
+    state.cpp[INSTANCE_OF] = [](IntState& state0) {
+        auto hier = hierarchy(state0.slf);
+        state0.flag = (find_if(hier.begin(), hier.end(),
+                               [&state0](auto& o){ return o.lock() == state0.ptr.lock(); }) != hier.end());
+    };
+    sys.lock()->put(Symbols::get()["instanceOf#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::CPP, INSTANCE_OF),
+                                                         makeAssemblerLine(Instr::BOL))));
+
+    // throw#: obj.
+    sys.lock()->put(Symbols::get()["throw#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::THROW))));
+
+    // handler#: obj.
+    // unhandler#.
+    sys.lock()->put(Symbols::get()["handler#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::HAND))));
+    sys.lock()->put(Symbols::get()["unhandler#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::POP, Reg::HAND),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // kill#.
+    sys.lock()->put(Symbols::get()["kill#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, 0L))));
+
+    // STREAM_READ ($1 = stream) (constructs and stores the resulting string in %ret)
+    // streamRead#: stream.
+    state.cpp[STREAM_READ] = [](IntState& state0) {
+        ObjectPtr dyn = state0.dyn.top();
+        ObjectPtr stream = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
+        if (!stream.expired()) {
+            auto stream0 = boost::get<StreamPtr>(&stream.lock()->prim());
+            if (stream0) { // ERROR?
+                if ((*stream0)->hasIn()) { // ERROR?
+                    garnishNew(state0, (*stream0)->readLine());
+                }
+            }
+        }
+    };
+    sys.lock()->put(Symbols::get()["streamRead#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, STREAM_READ))));
+
+    // EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
+    state.cpp[EVAL] = [](IntState& state0) {
+        evalNew(state0, state0.str0);
+    };
+    sys.lock()->put(Symbols::get()["eval#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
+                                                         makeAssemblerLine(Instr::CPP, EVAL))));
 
 }
 

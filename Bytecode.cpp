@@ -61,6 +61,8 @@ void InstructionSet::initialize() {
     props[Instr::CRET] = { };
     props[Instr::WND] = { };
     props[Instr::UNWND] = { };
+    props[Instr::THROW] = { };
+    props[Instr::THROQ] = { };
 }
 
 AssemblerError::AssemblerError()
@@ -136,6 +138,8 @@ bool isObjectRegister(const RegisterArg& arg) {
 
 bool isStackRegister(const RegisterArg& arg) {
     if (const Reg* reg = boost::get<Reg>(&arg)) {
+        if (*reg == Reg::HAND)
+            return true;
         if (((unsigned char)(*reg) > 0x03) && ((unsigned char)(*reg) <= 0x07))
             return true;
         return false;
@@ -379,6 +383,9 @@ void executeInstr(Instr instr, IntState& state) {
         case Reg::STO:
             state.sto.push(mid);
             break;
+        case Reg::HAND:
+            state.hand.push(mid);
+            break;
         default:
             // TODO Error handling?
             state.err0 = true;
@@ -403,6 +410,9 @@ void executeInstr(Instr instr, IntState& state) {
             break;
         case Reg::STO:
             stack = &state.sto;
+            break;
+        case Reg::HAND:
+            stack = &state.hand;
             break;
         default:
             // TODO Error handling?
@@ -955,6 +965,9 @@ void executeInstr(Instr instr, IntState& state) {
         case Reg::STO:
             stack = &state.sto;
             break;
+        case Reg::HAND:
+            stack = &state.hand;
+            break;
         default:
             // TODO Error handling?
             stack = nullptr;
@@ -1105,6 +1118,47 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "UNWND" << endl;
 #endif
         state.wind.pop();
+    }
+        break;
+    case Instr::THROW: {
+#ifdef DEBUG_INSTR
+        cout << "THROW" << endl;
+#endif
+        ObjectPtr exc = state.slf;
+        state.stack.push(state.cont);
+        deque<ObjectPtr> handlers;
+        std::function<void(stack<ObjectPtr>&)> recurse = [&recurse, &handlers](stack<ObjectPtr>& st) {
+            if (!st.empty()) {
+                ObjectPtr temp = st.top();
+                handlers.push_front(temp);
+                st.pop();
+                recurse(st);
+                st.push(temp);
+            }
+        };
+        recurse(state.hand);
+        state.cont.clear();
+        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PEEK, Reg::ARG),
+                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                               makeAssemblerLine(Instr::POP, Reg::STO),
+                               makeAssemblerLine(Instr::CALL, 1L));
+        for (ObjectPtr handler : handlers) {
+            state.arg.push(exc);
+            state.sto.push(handler);
+            state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+        }
+        InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0L)); // CPP 0 should always be a terminate function
+        state.cont.insert(state.cont.end(), term.begin(), term.end());
+    }
+        break;
+    case Instr::THROQ: {
+#ifdef DEBUG_INSTR
+        cout << "THROQ (" << state.err0 << ")" << endl;
+#endif
+        if (state.err0) {
+            state.stack.push(state.cont);
+            state.cont = asmCode( makeAssemblerLine(Instr::THROW) );
+        }
     }
         break;
     }

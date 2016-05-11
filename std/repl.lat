@@ -1,0 +1,35 @@
+; This is NOT imported through latitude.lat; it is imported later during the spawning
+; of the REPL object itself
+
+Kernel := Kernel.
+
+REPL := Object clone.
+
+REPL quitter := { jump := Nil.
+                  setJump := { parent jump := $1. }.
+                  callCC { inner := $1.
+                           callCC { setJump: $1.
+                                    inner call: meta Nil. }.
+                           Kernel kill. }.
+                  jump. }.
+REPL quit := { self quitter call: meta Nil. }.
+REPL exception := meta Nil.
+REPL lastResult := meta Nil.
+
+global quit := { self REPL quit. }.
+global $except := { self REPL exception. }.
+global $it := { self REPL lastResult. }.
+
+REPL read := { stdout puts: "> ".
+               stdin readln. }.
+REPL eval := { Kernel eval: $1. }.
+REPL print := { stdout println: $1. }.
+REPL loop := { repl := self. ; TODO Use `localize` here once we're sure it will work again
+               loop { { expr := repl read.
+                        repl lastResult := repl eval: expr.
+                        repl print: repl lastResult. } resolve: { meta True. },
+                                                                { repl exception := $1.
+                                                                  ; TODO Dump the object (and possibly the stack)
+                                                                  repl print: repl exception. }. }. }.
+
+global REPL := REPL.

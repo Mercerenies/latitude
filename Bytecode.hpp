@@ -21,14 +21,14 @@ enum class Instr : unsigned char {
         XCALL = 0x0F, XCALL0 = 0x10, RET = 0x11, CLONE = 0x12, RTRV = 0x13, RTRVD = 0x14, STR = 0x15,
         SSWAP = 0x16, EXPD = 0x17, MTHD = 0x18, LOAD = 0x19, SETF = 0x1A, PEEK = 0x1B, SYMN = 0x1C,
         CPP = 0x1D, BOL = 0x1E, TEST = 0x1F, BRANCH = 0x20, CCALL = 0x21, CGOTO = 0x22, CRET = 0x23,
-        WND = 0x24, UNWND = 0x25
+        WND = 0x24, UNWND = 0x25, THROW = 0x26, THROQ = 0x27
         };
 
 enum class Reg : unsigned char {
     PTR = 0x01, SLF = 0x02, RET = 0x03, LEX = 0x04, DYN = 0x05, ARG = 0x06, STO = 0x07,
         CONT = 0x08, STACK = 0x09, ERR0 = 0x0A, ERR1 = 0x0B, SYM = 0x0C, NUM0 = 0x0D,
         NUM1 = 0x0E, STR0 = 0x0F, STR1 = 0x10, MTHD = 0x11, CPP = 0x12, STRM = 0x13,
-        PRCS = 0x14, MTHDZ = 0x15, FLAG = 0x16, WIND = 0x17
+        PRCS = 0x14, MTHDZ = 0x15, FLAG = 0x16, WIND = 0x17, HAND = 0x18
         };
 
 using RegisterArg = boost::variant<Reg, long, std::string, InstrSeq>;
@@ -123,6 +123,7 @@ struct IntState {
     InstrSeq mthdz;
     bool flag;
     std::stack<WindPtr> wind;
+    std::stack<ObjectPtr> hand;
 };
 
 struct Thunk {

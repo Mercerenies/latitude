@@ -97,3 +97,15 @@ void runREPL(ObjectPtr& global) {
         }
     }
 }
+
+void runREPLNew(ObjectPtr global, IntState& state) {
+    // Run all the "standard library" loading code first
+    while (!isIdling(state))
+        doOneStep(state);
+    readFileNew("std/repl.lat", { global, global }, state);
+    while (!isIdling(state))
+        doOneStep(state);
+    evalNew(state, "REPL loop.");
+    while (!isIdling(state))
+        doOneStep(state);
+}

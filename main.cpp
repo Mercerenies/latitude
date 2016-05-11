@@ -18,22 +18,23 @@ using namespace std;
 int main(int argc, char** argv) {
 
     // TODO Teach the new REPL to call the garbage collector
-    // TODO Have the new REPL perform the entire print operation in the assembler, as opposed
-    //      to having the system print out a toString'd form.
     IntState state = intState();
     ObjectPtr global = spawnObjectsNew(state);
-
+    runREPLNew(global, state);
+    /*
     bool first = true;
     string current;
     while (true) {
         while (!isIdling(state))
             doOneStep(state);
-        auto str = boost::get<string>(&state.ret.lock()->prim());
-        if (!first) {
-            if (str)
-                cout << *str << endl;
-            else
-                cout << "(Invalid toString)" << endl;
+        if (!state.ret.expired()) {
+            auto str = boost::get<string>(&state.ret.lock()->prim());
+            if (!first) {
+                if (str)
+                    cout << *str << endl;
+                else
+                    cout << "(Invalid toString)" << endl;
+            }
         }
         first = false;
         cout << "> ";
@@ -55,8 +56,8 @@ int main(int argc, char** argv) {
                               makeAssemblerLine(Instr::CALL, 0L));
             }
         }
-        // TODO Make it print the result
     }
+    */
 
     /*
     ObjectPtr global;
