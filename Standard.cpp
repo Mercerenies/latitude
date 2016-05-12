@@ -1267,7 +1267,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         GENSYM = 5,
         INSTANCE_OF = 6,
         STREAM_READ = 7,
-        EVAL = 8;
+        EVAL = 8,
+        SYM_NAME = 9,
+        SYM_NUM = 10;
 
     // TODO Make these respond better to invalid (or not enough) arguments
 
@@ -1944,6 +1946,40 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // SYM_NAME (takes %sym, looks up its name, and outputs a string as %ret)
+    // symName#: sym.
+    state.cpp[SYM_NAME] = [](IntState& state0) {
+        std::string name = Symbols::get()[ state0.sym ];
+        garnishNew(state0, name);
+    };
+    sys.lock()->put(Symbols::get()["symName#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // ERROR?
+                                                         makeAssemblerLine(Instr::CPP, SYM_NAME))));
+
+    // SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
+    // natSym#: num.
+    state.cpp[SYM_NUM] = [](IntState& state0) {
+        if (state0.num0.asSmallInt() <= 0) {
+            throwError(state0, "TypeError", "Cannot produce symbols from non-positive numbers");
+        } else {
+            Symbolic sym = Symbols::natural((int)state0.num0.asSmallInt());
+            garnishNew(state0, sym);
+        }
+    };
+    sys.lock()->put(Symbols::get()["natSym#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::CPP, SYM_NUM))));
 
 }
 

@@ -183,7 +183,7 @@ Kernel eval := { meta sys eval#: $1, $2, $3. }.
 ;; Symbol functions
 Symbol gensym := { meta sys gensym#: self clone. }.
 Symbol gensymOf := { meta sys gensymOf#: self clone, $1. }.
-Symbol asText := { meta sys symbolic#: self. }.
+Symbol asText := { meta sys symName#: self. }.
 Symbol toString := { meta sys symToString#: self. }.
 Symbol pretty := { self asText. }.
 Symbol == := { meta sys primEquals#: self, $1. }.

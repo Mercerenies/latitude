@@ -262,7 +262,7 @@ void garnishNew(IntState& state, long value) {
 void garnishNew(IntState& state, Symbolic value) {
     evalNew(state, "meta Symbol.");
     InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                           makeAssemblerLine(Instr::SYM, value.index),
+                           makeAssemblerLine(Instr::SYMN, value.index),
                            makeAssemblerLine(Instr::LOAD, Reg::SYM),
                            makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
     state.cont.insert(state.cont.end(), seq.begin(), seq.end());
