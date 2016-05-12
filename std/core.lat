@@ -6,7 +6,9 @@ meta Object slot := { meta sys accessSlot#: self, $1. }.
 meta Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 meta Object hold := { meta sys accessSlot#: self, $1. }.
 meta Object get := { self hold me. }.
-meta Object has := { meta sys checkSlot#: self, $1. }.
+meta Object has := { { (parent hold 'self) slot: parent dynamic $1.
+                       meta True. } catch: SlotError,
+                                           { meta False. }. }.
 meta Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 meta Object origin := { meta sys origin#: self, $1. }.
 meta Object invoke := { procd := meta Proc clone.

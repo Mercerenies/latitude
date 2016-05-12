@@ -63,6 +63,8 @@ void InstructionSet::initialize() {
     props[Instr::UNWND] = { };
     props[Instr::THROW] = { };
     props[Instr::THROQ] = { };
+    props[Instr::ADDS] = { };
+    props[Instr::ARITH] = { isLongRegisterArg };
 }
 
 AssemblerError::AssemblerError()
@@ -729,6 +731,12 @@ void executeInstr(Instr instr, IntState& state) {
             }
             state.ret = value;
             // TODO What if we don't find a `missing`?
+#ifdef DEBUG_INSTR
+            if (value.expired())
+                cout << "* Found no missing" << endl;
+            else
+                cout << "* Found missing" << endl;
+#endif
             InstrSeq seq0;
             // Find the literal object to use for the argument
             (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
@@ -752,6 +760,8 @@ void executeInstr(Instr instr, IntState& state) {
             (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
             (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
             (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
+            state.stack.push(state.cont);
+            state.cont = seq0;
         } else {
 #ifdef DEBUG_INSTR
             cout << "* Found " << value.lock() << endl;
@@ -1158,6 +1168,43 @@ void executeInstr(Instr instr, IntState& state) {
         if (state.err0) {
             state.stack.push(state.cont);
             state.cont = asmCode( makeAssemblerLine(Instr::THROW) );
+        }
+    }
+        break;
+    case Instr::ADDS: {
+#ifdef DEBUG_INSTR
+        cout << "ADDS" << endl;
+#endif
+        state.str0 += state.str1;
+    }
+        break;
+    case Instr::ARITH: {
+        long val = popLong(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "ARITH " << val << endl;
+#endif
+        switch (val) {
+        case 1L:
+            state.num0 += state.num1;
+            break;
+        case 2L:
+            state.num0 -= state.num1;
+            break;
+        case 3L:
+            state.num0 *= state.num1;
+            break;
+        case 4L:
+            state.num0 /= state.num1;
+            break;
+        case 5L:
+            state.num0 %= state.num1;
+            break;
+        case 6L:
+            state.num0 = state.num0.pow(state.num1);
+            break;
+        default:
+            state.err0 = true;
+            break;
         }
     }
         break;

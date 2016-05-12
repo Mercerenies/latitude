@@ -96,6 +96,9 @@ unwnd (25) - Pop %wind and discard the resulting frame
 throw (26) - Using %slf as the exception, call all of %hand in sequence (ignoring non-methods), then terminate
 throq (27) - Perform the throw instruction if %err0 is true, otherwise do nothing
 
+adds (28) - Take %str0 and append %str1 to it
+arith OP (29 INT) - Perform an operation on %num0 and %num1, storing result in %num0, sets %err0 if invalid arg
+
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)
@@ -114,6 +117,14 @@ throq (27) - Perform the throw instruction if %err0 is true, otherwise do nothin
 (xcall ) 6. Push %cont onto %stack
 (xcall ) 7. Make a new %cont based on what needs to be done
 (Note that xcall is a no-op if %ptr is not a method)
+
+((( arith )))
+ - 1L - Addition
+ - 2L - Subtraction
+ - 3L - Multiplication
+ - 4L - Division
+ - 5L - Modulo
+ - 6L - Power
 
 ((( expd / load )))
 It can be passed

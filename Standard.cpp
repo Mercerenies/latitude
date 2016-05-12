@@ -12,7 +12,6 @@
 using namespace std;
 
 ///// Check hashes.txt; it's a lengthy to-do list for you.
-// Think about exceptions next (will probably need instanceOf# for it)
 
 // TODO More objects should have toString so they don't all default to showing "Object"
 
@@ -1761,6 +1760,190 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::LEX),
                                                          makeAssemblerLine(Instr::CPP, EVAL),
                                                          makeAssemblerLine(Instr::RET))));
+
+    // stringConcat#: str1, str2.
+    sys.lock()->put(Symbols::get()["stringConcat#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "String"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR1), // ERROR?
+                                                         makeAssemblerLine(Instr::ADDS),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // numAdd#: n1, n2.
+    // numSub#: n1, n2.
+    // numMul#: n1, n2.
+    // numDiv#: n1, n2.
+    // numMod#: n1, n2.
+    // numPow#: n1, n2.
+    sys.lock()->put(Symbols::get()["numAdd#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ARITH, 1L),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numSub#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ARITH, 2L),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numMul#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ARITH, 3L),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numDiv#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ARITH, 4L),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numMod#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ARITH, 5L),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numPow#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETL),
+                                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ARITH, 6L),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
 }
 

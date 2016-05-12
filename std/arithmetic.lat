@@ -4,13 +4,14 @@ Number toString := { meta sys numToString#: self. }.
 {*
 Number == := { meta sys primEquals#: self, $1. }.
 Number < := { meta sys primLT#: self, $1. }.
+*}
 Number + := { meta sys numAdd#: self, $1. }.
 Number - := { meta sys numSub#: self, $1. }.
 Number * := { meta sys numMul#: self, $1. }.
 Number / := { meta sys numDiv#: self, $1. }.
 Number mod := { meta sys numMod#: self, $1. }.
 Number ^ := { meta sys numPow#: self, $1. }.
-
+{*
 ;; Numerical Type Checking
 Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.
 Number isInteger?  := { (meta sys numLevel#: self) <= 1. }.
