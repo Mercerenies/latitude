@@ -1269,7 +1269,10 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         STREAM_READ = 7,
         EVAL = 8,
         SYM_NAME = 9,
-        SYM_NUM = 10;
+        SYM_NUM = 10,
+        SYM_INTERN = 11,
+        SIMPLE_CMP = 12,
+        NUM_LEVEL = 13;
 
     // TODO Make these respond better to invalid (or not enough) arguments
 
@@ -1287,12 +1290,15 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr str = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr global = (*dyn.lock())[ Symbols::get()["$2"] ].getPtr();
-        if ((!str.expired()) && (!global.expired())) { // ERROR?
+        if ((!str.expired()) && (!global.expired())) {
             auto str0 = boost::get<string>(&str.lock()->prim());
-            if (str0) // ERROR?
+            if (str0)
                 readFileNew(*str0, { global, global }, state0);
+            else
+                throwError(state0, "TypeError", "String expected");
+        } else {
+            throwError(state0, "SystemArgError", "Wrong number of arguments");
         }
-        // TODO Error handling at all the 'ERROR?' points
     };
     sys.lock()->put(Symbols::get()["kernelLoad#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, KERNEL_LOAD))));
@@ -1309,7 +1315,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // TODO ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV))));
@@ -1342,6 +1350,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::CALL, 0L),
                                                          // The method ends in a RET, throw some dummy
                                                          // values onto the stack for it to pop
+                                                         // TODO Can we remove this if we call the NoRet version?
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::LEX),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::DYN))));
 
@@ -1351,9 +1360,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     state.cpp[STREAM_DIR] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
-        if (!stream.expired()) { // ERROR?
+        if (!stream.expired()) {
             auto stream0 = boost::get<StreamPtr>(&stream.lock()->prim());
-            if (stream0) { // ERROR?
+            if (stream0) {
                 switch (state0.num0.asSmallInt()) {
                 case 0:
                     garnishNew(state0, (*stream0)->hasIn());
@@ -1362,7 +1371,11 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                     garnishNew(state0, (*stream0)->hasOut());
                     break;
                 }
+            } else {
+                throwError(state0, "TypeError", "Stream expected");
             }
+        } else {
+            throwError(state0, "SystemArgError", "Wrong number of arguments");
         }
     };
     sys.lock()->put(Symbols::get()["streamIn#"],
@@ -1379,11 +1392,11 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr str = (*dyn.lock())[ Symbols::get()["$2"] ].getPtr();
-        if ((!stream.expired()) && (!str.expired())) { // ERROR?
+        if ((!stream.expired()) && (!str.expired())) {
             auto stream0 = boost::get<StreamPtr>(&stream.lock()->prim());
             auto str0 = boost::get<string>(&str.lock()->prim());
-            if (stream0 && str0) { // ERROR?
-                if ((*stream0)->hasOut()) { // ERROR?
+            if (stream0 && str0) {
+                if ((*stream0)->hasOut()) {
                     switch (state0.num0.asSmallInt()) {
                     case 0:
                         (*stream0)->writeText(*str0);
@@ -1393,8 +1406,12 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                         break;
                     }
                     garnishNew(state0, boost::blank());
+                } else {
+                    throwError(state0, "IOError", "Stream not designated for output");
                 }
             }
+        } else {
+            throwError(state0, "SystemArgError", "Wrong number of arguments");
         }
     };
     sys.lock()->put(Symbols::get()["streamPuts#"],
@@ -1460,7 +1477,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::INT, 0L),
                                                          makeAssemblerLine(Instr::CPP, TO_STRING))));
     sys.lock()->put(Symbols::get()["strToString#"],
@@ -1469,7 +1488,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
                                                          makeAssemblerLine(Instr::INT, 1L),
                                                          makeAssemblerLine(Instr::CPP, TO_STRING))));
     sys.lock()->put(Symbols::get()["symToString#"],
@@ -1478,7 +1499,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                                          makeAssemblerLine(Instr::INT, 2L),
                                                          makeAssemblerLine(Instr::CPP, TO_STRING))));
 
@@ -1516,7 +1539,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
                                                          makeAssemblerLine(Instr::INT, 1L),
                                                          makeAssemblerLine(Instr::CPP, GENSYM),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
@@ -1590,9 +1615,13 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::MTHDZ), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::MTHDZ),
+                                                         makeAssemblerLine(Instr::THROA, "Method expected"),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::MTHD), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::MTHD),
+                                                         makeAssemblerLine(Instr::THROA, "Method expected"),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
@@ -1616,7 +1645,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
@@ -1666,7 +1697,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
-                                                         makeAssemblerLine(Instr::WND)))); // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::WND),
+                                                         makeAssemblerLine(Instr::THROA, "Method expected"))));
     sys.lock()->put(Symbols::get()["unthunk#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::UNWND))));
 
@@ -1724,10 +1757,14 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         ObjectPtr stream = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
         if (!stream.expired()) {
             auto stream0 = boost::get<StreamPtr>(&stream.lock()->prim());
-            if (stream0) { // ERROR?
-                if ((*stream0)->hasIn()) { // ERROR?
+            if (stream0) {
+                if ((*stream0)->hasIn()) {
                     garnishNew(state0, (*stream0)->readLine());
+                } else {
+                    throwError(state0, "IOError", "Stream not designated for output");
                 }
+            } else {
+                throwError(state0, "TypeError", "Stream expected");
             }
         }
     };
@@ -1755,7 +1792,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::DYN),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
@@ -1772,19 +1811,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "String"),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$2"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::STR1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR1),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
                                                          makeAssemblerLine(Instr::ADDS),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::STR0),
@@ -1804,19 +1849,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "Number"),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$2"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::ARITH, 1L),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
@@ -1829,19 +1880,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "Number"),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$2"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::ARITH, 2L),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
@@ -1854,19 +1911,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "Number"),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$2"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::ARITH, 3L),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
@@ -1879,19 +1942,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "Number"),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$2"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::ARITH, 4L),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
@@ -1904,19 +1973,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "Number"),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$2"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::ARITH, 5L),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
@@ -1929,19 +2004,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::SYM, "Number"),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CLONE),
                                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$1"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::GETD),
                                                          makeAssemblerLine(Instr::SYM, "$2"),
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::ARITH, 6L),
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
@@ -1959,7 +2040,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                                          makeAssemblerLine(Instr::CPP, SYM_NAME))));
 
     // SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
@@ -1978,8 +2061,152 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                                          makeAssemblerLine(Instr::RTRV),
                                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0), // ERROR?
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::CPP, SYM_NUM))));
+
+    // doWithCallback#: self, mthd, modifier
+    // (This one manipulates the call stack a bit, so there is no RET at the end; there's one
+    //  in the middle though that has basically the same effect)
+    sys.lock()->put(Symbols::get()["doWithCallback#"],
+                    defineMethodNoRet(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                              makeAssemblerLine(Instr::SYM, "$3"),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::RTRV),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                              makeAssemblerLine(Instr::GETD),
+                                                              makeAssemblerLine(Instr::SYM, "$2"),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::RTRV),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                              makeAssemblerLine(Instr::GETD),
+                                                              makeAssemblerLine(Instr::SYM, "$1"),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::RTRV),
+                                                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::RET),
+                                                              makeAssemblerLine(Instr::XCALL0, 0L),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                                              makeAssemblerLine(Instr::POP, Reg::LEX),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
+                                                              makeAssemblerLine(Instr::POP, Reg::DYN),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
+                                                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                              makeAssemblerLine(Instr::CALL, 2L),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::DYN),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::LEX),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::XCALL))));
+
+    // SYM_INTERN (takes %str0, looks it up, and puts the result as a symbol in %ret)
+    // intern#: str.
+    state.cpp[SYM_INTERN] = [](IntState& state0) {
+        Symbolic name = Symbols::get()[ state0.str0 ];
+        garnishNew(state0, name);
+    };
+    sys.lock()->put(Symbols::get()["intern#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::CPP, SYM_INTERN))));
+
+    // SIMPLE_CMP (compares %slf's and %ptr's respective prim fields based on the value of %num0)
+    // - 0 - Compare for equality and put the result in %flag
+    // - 1 - Compare for LT and put the result in %flag
+    // In any case, if either argument lacks a prim or the prim fields have different types, false
+    // is returned by default.
+    // SIMPLE_CMP will compare strings, numbers, and symbols. Anything else returns false.
+    // primEquals#: lhs, rhs.
+    // primLT#: lhs, rhs.
+    state.cpp[SIMPLE_CMP] = [](IntState& state0) {
+        bool doLT = false;
+        if (state0.num0.asSmallInt() == 1)
+            doLT = true;
+        auto magicCmp = [doLT, &state0](auto x, auto y) {
+            if (doLT)
+                state0.flag = (*x < *y);
+            else
+                state0.flag = (*x == *y);
+        };
+        state0.flag = false;
+        auto prim0 = state0.slf.lock()->prim();
+        auto prim1 = state0.ptr.lock()->prim();
+        auto n0 = boost::get<Number>(&prim0);
+        auto n1 = boost::get<Number>(&prim1);
+        auto st0 = boost::get<string>(&prim0);
+        auto st1 = boost::get<string>(&prim1);
+        auto sy0 = boost::get<Symbolic>(&prim0);
+        auto sy1 = boost::get<Symbolic>(&prim1);
+        if (n0 && n1)
+            magicCmp(n0, n1);
+        else if (st0 && st1)
+            magicCmp(st0, st1);
+        else if (sy0 && sy1)
+            magicCmp(sy0, sy1);
+    };
+    sys.lock()->put(Symbols::get()["primEquals#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::INT, 0L),
+                                                         makeAssemblerLine(Instr::CPP, SIMPLE_CMP),
+                                                         makeAssemblerLine(Instr::BOL))));
+    sys.lock()->put(Symbols::get()["primLT#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::INT, 1L),
+                                                         makeAssemblerLine(Instr::CPP, SIMPLE_CMP),
+                                                         makeAssemblerLine(Instr::BOL))));
+
+    // NUM_LEVEL (determine the "level" of %num0 and put the result in %ret)
+    // numLevel#: num.
+    state.cpp[NUM_LEVEL] = [](IntState& state0) {
+        garnishNew(state0, state0.num0.hierarchyLevel());
+    };
+    sys.lock()->put(Symbols::get()["numLevel#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
+                                                         makeAssemblerLine(Instr::CPP, NUM_LEVEL))));
 
 }
 
@@ -2088,7 +2315,7 @@ ObjectPtr spawnObjectsNew(IntState& state) {
 }
 
 void throwError(IntState& state, std::string name, std::string msg) {
-    // TODO Make the throw / throq instructions terminate if exceptions are disabled
+    // TODO Make the throw / throq / throa instructions terminate if exceptions are disabled
     state.stack.push(state.cont);
     state.cont = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                          makeAssemblerLine(Instr::GETL),
@@ -2111,4 +2338,23 @@ void throwError(IntState& state, std::string name, std::string msg) {
     state.stack.push(state.cont);
     state.cont.clear();
     garnishNew(state, msg);
+}
+
+void throwError(IntState& state, std::string name) {
+    // TODO Make the throw / throq / throa instructions terminate if exceptions are disabled
+    state.stack.push(state.cont);
+    state.cont = asmCode(makeAssemblerLine(Instr::GETL),
+                         makeAssemblerLine(Instr::SYM, "meta"),
+                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                         makeAssemblerLine(Instr::RTRV),
+                         makeAssemblerLine(Instr::SYM, name),
+                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                         makeAssemblerLine(Instr::RTRV),
+                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                         makeAssemblerLine(Instr::CLONE),
+                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                         makeAssemblerLine(Instr::GETD),
+                         makeAssemblerLine(Instr::SYM, "stack"),
+                         makeAssemblerLine(Instr::SETF),
+                         makeAssemblerLine(Instr::THROW));
 }

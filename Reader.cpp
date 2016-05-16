@@ -741,7 +741,7 @@ InstrSeq StmtList::translate() {
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
         (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
         (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-        (makeAssemblerLine(Instr::PEEK)).appendOnto(seq);
+        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
         (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
@@ -753,7 +753,7 @@ InstrSeq StmtList::translate() {
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PEEK)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);

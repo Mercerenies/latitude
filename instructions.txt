@@ -58,6 +58,7 @@ int INT (0B INT) - Put the small integer into %num0
 float STRING (0C STR) - Read the string into a double into %num0
 nswap (0D) - Swap %num0 and %num1
 
+(All of the call-ish instructions call method %ptr on %slf, putting end result in %ret)
 call INT (0E INT) - (See below)
 xcall (0F) - (See below)
 xcall0 INT (10 INT) - (See below)
@@ -98,6 +99,8 @@ throq (27) - Perform the throw instruction if %err0 is true, otherwise do nothin
 
 adds (28) - Take %str0 and append %str1 to it
 arith OP (29 INT) - Perform an operation on %num0 and %num1, storing result in %num0, sets %err0 if invalid arg
+
+throa MSG (2A STR) - Throw on attribute, construct a generic `meta TypeError` and throw it if %err0 is true
 
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions

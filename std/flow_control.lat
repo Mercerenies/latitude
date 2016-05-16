@@ -39,7 +39,6 @@ global while := { cond := { parent dynamic $1. }.
                            loop { if: cond,
                                       { stmt. },
                                       { $break: meta Nil. }. }. }. }.
-{*
+
 ;; Return the script
 here.
-*}

@@ -11,12 +11,10 @@ global SystemCallError := SystemError clone tap { self message := "Error in syst
 meta SystemCallError := SystemCallError.
 
 global SystemArgError := SystemError clone tap { self message := "Wrong number of arguments to system call".
-                                                 self gotArguments := 0.
-                                                 self expectedArguments := 0.
-                                                 self functionName := "".
                                                  self toString := "SystemArgError". }.
 meta SystemArgError := SystemArgError.
 
+; TODO Remove StreamError and use IOError instead
 global StreamError := SystemError clone tap { self message := "Stream error".
                                               self toString := "StreamError". }.
 meta StreamError := StreamError.

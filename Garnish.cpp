@@ -238,7 +238,7 @@ void garnishNew(IntState& state, boost::blank value) {
 }
 
 void garnishNew(IntState& state, std::string value) {
-    evalNew(state, "meta String.");
+    evalNew(state, "meta String clone.");
     InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                            makeAssemblerLine(Instr::STR, value),
                            makeAssemblerLine(Instr::LOAD, Reg::STR0),
@@ -251,7 +251,7 @@ void garnishNew(IntState& state, int value) {
 }
 
 void garnishNew(IntState& state, long value) {
-    evalNew(state, "meta Number.");
+    evalNew(state, "meta Number clone.");
     InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                            makeAssemblerLine(Instr::INT, value),
                            makeAssemblerLine(Instr::LOAD, Reg::NUM0),
@@ -260,7 +260,7 @@ void garnishNew(IntState& state, long value) {
 }
 
 void garnishNew(IntState& state, Symbolic value) {
-    evalNew(state, "meta Symbol.");
+    evalNew(state, "meta Symbol clone.");
     InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                            makeAssemblerLine(Instr::SYMN, value.index),
                            makeAssemblerLine(Instr::LOAD, Reg::SYM),

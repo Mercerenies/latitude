@@ -1,6 +1,7 @@
 #include "Bytecode.hpp"
 #include "Reader.hpp"
 #include "Garnish.hpp"
+#include "Standard.hpp"
 
 //#define DEBUG_INSTR
 
@@ -65,6 +66,7 @@ void InstructionSet::initialize() {
     props[Instr::THROQ] = { };
     props[Instr::ADDS] = { };
     props[Instr::ARITH] = { isLongRegisterArg };
+    props[Instr::THROA] = { isStringRegisterArg };
 }
 
 AssemblerError::AssemblerError()
@@ -1206,6 +1208,15 @@ void executeInstr(Instr instr, IntState& state) {
             state.err0 = true;
             break;
         }
+    }
+        break;
+    case Instr::THROA: {
+        string msg = popString(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "THROA \"" << msg << "\"" << endl;
+#endif
+        if (state.err0)
+            throwError(state, "TypeError", msg);
     }
         break;
     }
