@@ -102,6 +102,9 @@ arith OP (29 INT) - Perform an operation on %num0 and %num1, storing result in %
 
 throa MSG (2A STR) - Throw on attribute, construct a generic `meta TypeError` and throw it if %err0 is true
 
+locfn STR (2B STR) - Set the filename
+locln INT (2C INT) - Set the line number
+
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)

@@ -67,6 +67,8 @@ void InstructionSet::initialize() {
     props[Instr::ADDS] = { };
     props[Instr::ARITH] = { isLongRegisterArg };
     props[Instr::THROA] = { isStringRegisterArg };
+    props[Instr::LOCFN] = { isStringRegisterArg };
+    props[Instr::LOCLN] = { isLongRegisterArg };
 }
 
 AssemblerError::AssemblerError()
@@ -1217,6 +1219,51 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         if (state.err0)
             throwError(state, "TypeError", msg);
+    }
+        break;
+    case Instr::LOCFN: {
+        string msg = popString(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "LOCFN \"" << msg << "\"" << endl;
+#endif
+        // TODO Should we do error handling here and in LOCLN if `meta` is corrupted?
+        state.stack.push(state.cont);
+        state.cont.clear();
+        garnishNew(state, msg);
+        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                               makeAssemblerLine(Instr::GETL),
+                               makeAssemblerLine(Instr::SYM, "fileStorage"),
+                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                               makeAssemblerLine(Instr::RTRV),
+                               makeAssemblerLine(Instr::GETD),
+                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                               makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                               makeAssemblerLine(Instr::POP, Reg::STO),
+                               makeAssemblerLine(Instr::SETF));
+        state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+    }
+        break;
+    case Instr::LOCLN: {
+        long num = popLong(state.cont);
+#ifdef DEBUG_INSTR
+        cout << "LOCLN " << num << endl;
+#endif
+        state.stack.push(state.cont);
+        state.cont.clear();
+        garnishNew(state, num);
+        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                               makeAssemblerLine(Instr::GETL),
+                               makeAssemblerLine(Instr::SYM, "lineStorage"),
+                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                               makeAssemblerLine(Instr::RTRV),
+                               makeAssemblerLine(Instr::GETD),
+                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                               makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                               makeAssemblerLine(Instr::POP, Reg::STO),
+                               makeAssemblerLine(Instr::SETF));
+        state.cont.insert(state.cont.end(), seq.begin(), seq.end());
     }
         break;
     }

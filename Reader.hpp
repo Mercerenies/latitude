@@ -78,6 +78,8 @@ private:
 public:
     Stmt(int line_no);
     void establishLocation(const Scope& scope);
+    void stateLine(InstrSeq&);
+    void stateFile(InstrSeq&);
     // TODO Can we make execute() a const method?
     virtual ObjectPtr execute(Scope scope) = 0;
     virtual InstrSeq translate() = 0; // TODO Make translate() work with the line_no / file_name system
