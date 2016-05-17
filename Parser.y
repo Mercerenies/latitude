@@ -235,7 +235,7 @@ void cleanupL(struct List* stmt) {
 
 struct Expr* makeExpr() {
     struct Expr* expr = new Expr();
-    expr->line = line_num;
+    expr->line = line_num + 1; // TODO No idea why this '+ 1' is necessary but it makes things work right
     return expr;
 }
 

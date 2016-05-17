@@ -275,7 +275,7 @@ void readFileNew(string fname, Scope defScope, IntState& state) {
             for (unique_ptr<Stmt>& stmt : stmts)
                 stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
             InstrSeq seq;
-            //(makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(seq);
+            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(seq);
             for (auto& stmt : stmts1) {
                 auto tr = stmt->translate();
                 seq.insert(seq.end(), tr.begin(), tr.end());
@@ -309,20 +309,14 @@ void Stmt::establishLocation(const Scope& scope) {
     }
 }
 
-///// These two (stateLine and stateFile) in such a way that they don't destroy everything
-
 void Stmt::stateLine(InstrSeq& seq) {
-    /*
-      InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCLN, line_no));
-      seq.insert(seq.end(), seq0.begin(), seq0.end());
-    */
+    InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCLN, line_no));
+    seq.insert(seq.end(), seq0.begin(), seq0.end());
 }
 
 void Stmt::stateFile(InstrSeq& seq) {
-    /*
-      InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCFN, file_name));
-      seq.insert(seq.end(), seq0.begin(), seq0.end());
-    */
+    InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCFN, file_name));
+    seq.insert(seq.end(), seq0.begin(), seq0.end());
 }
 
 void Stmt::propogateFileName(std::string name) {
@@ -368,7 +362,8 @@ ObjectPtr StmtCall::execute(Scope scope) {
 InstrSeq StmtCall::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    if (!className)
+        stateLine(seq);
 
     // Evaluate the class name
     if (className) {
@@ -434,7 +429,8 @@ ObjectPtr StmtEqual::execute(Scope scope) {
 InstrSeq StmtEqual::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    if (!className)
+        stateLine(seq);
 
     // Evaluate the class name
     if (className) {
@@ -493,7 +489,7 @@ ObjectPtr StmtMethod::execute(Scope scope) {
 InstrSeq StmtMethod::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
@@ -560,7 +556,7 @@ ObjectPtr StmtNumber::execute(Scope scope) {
 InstrSeq StmtNumber::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
@@ -594,7 +590,7 @@ ObjectPtr StmtInteger::execute(Scope scope) {
 InstrSeq StmtInteger::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
@@ -629,7 +625,7 @@ ObjectPtr StmtBigInteger::execute(Scope scope) {
 InstrSeq StmtBigInteger::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
@@ -663,7 +659,7 @@ ObjectPtr StmtString::execute(Scope scope) {
 InstrSeq StmtString::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
@@ -697,7 +693,7 @@ ObjectPtr StmtSymbol::execute(Scope scope) {
 InstrSeq StmtSymbol::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
@@ -747,7 +743,7 @@ ObjectPtr StmtList::execute(Scope scope) {
 InstrSeq StmtList::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
@@ -823,7 +819,7 @@ ObjectPtr StmtSigil::execute(Scope scope) {
 InstrSeq StmtSigil::translate() {
     InstrSeq seq;
 
-    stateLine(seq);
+    //stateLine(seq);
 
     // Find the `sigil` object
     (makeAssemblerLine(Instr::GETL)).appendOnto(seq);

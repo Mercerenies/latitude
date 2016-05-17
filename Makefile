@@ -17,6 +17,11 @@ debug:	CCFLAGS += -g
 debug:	LINKFLAGS += -g
 debug:	Project
 
+profile:	CXXFLAGS += -pg
+profile:	CCFLAGS += -pg
+profile:	LINKFLAGS += -pg
+profile:	Project
+
 Project:	$(FILES)
 	$(LINK) $(FILES)
 

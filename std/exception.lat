@@ -4,7 +4,7 @@ Exception message := "Exception!".
 Exception toString := "Exception".
 Exception pretty := { self message. }.
 Exception stack := Nil.
-Exception printStackTrace := { self stack printStackTrace. }.
+Exception printStackTrace := { self stack dump. }.
 
 global SystemCallError := SystemError clone tap { self message := "Error in system call".
                                                   self toString := "SystemCallError". }.

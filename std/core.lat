@@ -75,7 +75,7 @@ global $whereAmI := Nil.
 ; Observe that `rethrow` is not overriden in `Exception`, so it will never set the `stack` field.
 Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
-Exception throw := { self stack := dynamic parent.
+Exception throw := { self stack := currentStackTrace parent.
                      (self invoke: (Object hold 'throw)) call. }.
 (hold 'Method) protect := { thunk: { }, hold 'self, dynamic hold '$1. }.
 global thunk := { meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
@@ -139,9 +139,9 @@ Stream toString := "Stream".
 
 ;; Process basics
 Process toString := "Process".
-Process stdin := { meta sys processInStream#: self. }.
-Process stdout := { meta sys processOutStream#: self. }.
-Process stderr := { meta sys processErrStream#: self. }.
+Process stdin := { meta sys processInStream#: meta Stream clone, self. }.
+Process stdout := { meta sys processOutStream#: meta Stream clone, self. }.
+Process stderr := { meta sys processErrStream#: meta Stream clone, self. }.
 Process spawn := { meta sys processCreate#: self, $1. }.
 Process finished? := { meta sys processFinished#: self. }.
 Process running? := { meta sys processRunning#: self. }.
@@ -203,10 +203,14 @@ String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
 
 ; Locality information
-global $currentLine := { self get: meta lineStorage. }.
-global $currentFile := { self get: meta fileStorage. }.
-global stackTrace := { meta sys stackDump#: self. }.
-global printStackTrace := { stderr putln: self stackTrace. }.
+meta StackFrame line := 0.
+meta StackFrame file := "".
+meta StackFrame dump := { if: { (parent self) === (meta StackFrame). },
+                              { meta Nil. },
+                              { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
+                                parent self parent dump. }. }.
+global currentStackTrace := { meta sys stackTrace# parent. }. ; TODO Is the parent here good?
+global printStackTrace := { self stackTrace parent dump. }. ; TODO Is the parent here good too?
 
 ;; We would return the script here, but the `has` function requires flow_control.lat
 1.

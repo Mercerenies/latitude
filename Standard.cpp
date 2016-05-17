@@ -1242,6 +1242,10 @@ ProtoError doEtcError(Scope scope, string errorName, string msg) {
     return ProtoError(err);
 }
 
+// TODO Something about the fact that system calls cause Latitude to "double report" stack frames
+//  std/core.lat: 180
+//  std/core.lat: 180
+// Where one of these is technically a system call that isn't in core.lat
 ObjectPtr defineMethod(ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
     ObjectPtr obj = clone(method);
     (makeAssemblerLine(Instr::RET)).appendOnto(code);
@@ -1272,9 +1276,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         SYM_NUM = 10,
         SYM_INTERN = 11,
         SIMPLE_CMP = 12,
-        NUM_LEVEL = 13;
-
-    // TODO Make these respond better to invalid (or not enough) arguments
+        NUM_LEVEL = 13,
+        ORIGIN = 14,
+        PROCESS_TASK = 15;
 
     // TERMINATE
     state.cpp[TERMINATE] = [](IntState& state0) {
@@ -1333,26 +1337,21 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // invoke#: obj, mthd.
     sys.lock()->put(Symbols::get()["invoke#"],
-                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
-                                                         makeAssemblerLine(Instr::SYM, "$1"),
-                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                                                         makeAssemblerLine(Instr::RTRV),
-                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                                                         makeAssemblerLine(Instr::GETD),
-                                                         makeAssemblerLine(Instr::SYM, "$2"),
-                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                                                         makeAssemblerLine(Instr::RTRV),
-                                                         makeAssemblerLine(Instr::POP, Reg::STO),
-                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                                         // We want to forward the parent's arguments
-                                                         makeAssemblerLine(Instr::RET),
-                                                         makeAssemblerLine(Instr::CALL, 0L),
-                                                         // The method ends in a RET, throw some dummy
-                                                         // values onto the stack for it to pop
-                                                         // TODO Can we remove this if we call the NoRet version?
-                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::LEX),
-                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::DYN))));
+                    defineMethodNoRet(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                              makeAssemblerLine(Instr::SYM, "$1"),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::RTRV),
+                                                              makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                              makeAssemblerLine(Instr::GETD),
+                                                              makeAssemblerLine(Instr::SYM, "$2"),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::RTRV),
+                                                              makeAssemblerLine(Instr::POP, Reg::STO),
+                                                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                              // We want to forward the parent's arguments
+                                                              makeAssemblerLine(Instr::RET),
+                                                              makeAssemblerLine(Instr::CALL, 0L))));
 
     // STREAM_DIR ($1 = argument) (where %num0 specifies the direction; 0 = in, 1 = out)
     // streamIn#: stream.
@@ -2208,6 +2207,232 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::CPP, NUM_LEVEL))));
 
+    // stackTrace#.
+    // stackTrace# only includes %trace, not %line nor %file. %line and %file are often
+    // undesired in this case as they represent only the line and file of the stackTrace#
+    // call, which is bogus, as stackTrace# is not defined in a file.
+    sys.lock()->put(Symbols::get()["stackTrace#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::LOCRT))));
+
+    // ORIGIN (find the origin of %sym in %slf, store resulting object in %ret, throw SlotError otherwise
+    // origin#: self, sym.
+    state.cpp[ORIGIN] = [](IntState& state0) {
+        list<ObjectSPtr> parents;
+        ObjectSPtr curr = state0.slf.lock();
+        Symbolic name = state0.sym;
+        ObjectPtr value;
+        while (find(parents.begin(), parents.end(), curr) == parents.end()) {
+            parents.push_back(curr);
+            Slot slot = (*curr)[name];
+            if (slot.getType() == SlotType::PTR) {
+                value = curr;
+                break;
+            }
+            curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
+        }
+        if (value.expired()) {
+            throwError(state0, "SlotError", "Cannot find origin of nonexistent slot");
+        } else {
+            state0.ret = value;
+        }
+    };
+    sys.lock()->put(Symbols::get()["origin#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                                         makeAssemblerLine(Instr::THROA, "Symbol expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CPP, ORIGIN))));
+
+    // PROCESS_TASK - Do something with %slf and possibly other registers, based on %num0
+    // - 0 - Create (%slf should be `Process`, %str0 should be the command, and %ret will be a new clone)
+    // - 1 - Exec (%prcs should be the process, no return value)
+    // - 2 - OutStream (%prcs should be the process, %ptr a stream object)
+    // - 3 - InStream (%prcs should be the process, %ptr a stream object)
+    // - 4 - ErrStream (%prcs should be the process, %ptr a stream object)
+    // - 5 - IsRunning (%prcs should be the process, %ret will be a boolean)
+    // - 6 - ExitCode (%prcs should be the process, %ret will be the number)
+    // - 7 - IsFinished (%prcs should be the process, %ret will be a boolean)
+    // processInStream#: strm, prc.
+    // processOutStream#: strm, prc.
+    // processErrStream#: strm, prc.
+    // processCreate#: self, str.
+    // processFinished#: prc.
+    // processRunning#: prc.
+    // processExitCode#: prc.
+    // processExec#: prc.
+    state.cpp[PROCESS_TASK] = [](IntState& state0) {
+        switch (state0.num0.asSmallInt()) {
+        case 0: {
+            ProcessPtr proc = makeProcess(state0.str0);
+            if (!proc)
+                throwError(state0, "NotSupportedError",
+                           "Asynchronous processes not supported on this system");
+            state0.ret = clone(state0.slf);
+            state0.ret.lock()->prim(proc);
+            break;
+        }
+        case 1: {
+            bool status = state0.prcs->run();
+            if (!status)
+                throwError(state0, "IOError",
+                           "Could not start process");
+            break;
+        }
+        case 2: {
+            state0.ptr.lock()->prim(state0.prcs->stdOut());
+            break;
+        }
+        case 3: {
+            state0.ptr.lock()->prim(state0.prcs->stdIn());
+            break;
+        }
+        case 4: {
+            state0.ptr.lock()->prim(state0.prcs->stdErr());
+            break;
+        }
+        case 5: {
+            garnishNew(state0, state0.prcs->isRunning());
+            break;
+        }
+        case 6: {
+            garnishNew(state0, state0.prcs->getExitCode());
+            break;
+        }
+        case 7: {
+            garnishNew(state0, state0.prcs->isDone());
+            break;
+        }
+        }
+    };
+    sys.lock()->put(Symbols::get()["processInStream#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::PRCS),
+                                                         makeAssemblerLine(Instr::THROA, "Process expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::INT, 3L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["processOutStream#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::PRCS),
+                                                         makeAssemblerLine(Instr::THROA, "Process expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::INT, 2L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["processErrStream#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::PRCS),
+                                                         makeAssemblerLine(Instr::THROA, "Process expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::INT, 4L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["processCreate#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::INT, 0L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK))));
+    sys.lock()->put(Symbols::get()["processFinished#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::PRCS),
+                                                         makeAssemblerLine(Instr::THROA, "Process expected"),
+                                                         makeAssemblerLine(Instr::INT, 7L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK))));
+    sys.lock()->put(Symbols::get()["processRunning#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::PRCS),
+                                                         makeAssemblerLine(Instr::THROA, "Process expected"),
+                                                         makeAssemblerLine(Instr::INT, 5L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK))));
+    sys.lock()->put(Symbols::get()["processExitCode#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::PRCS),
+                                                         makeAssemblerLine(Instr::THROA, "Process expected"),
+                                                         makeAssemblerLine(Instr::INT, 6L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK))));
+    sys.lock()->put(Symbols::get()["processExec#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::PRCS),
+                                                         makeAssemblerLine(Instr::THROA, "Process expected"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET),
+                                                         makeAssemblerLine(Instr::INT, 1L),
+                                                         makeAssemblerLine(Instr::CPP, PROCESS_TASK))));
+
 }
 
 ObjectPtr spawnObjectsNew(IntState& state) {
@@ -2239,6 +2464,7 @@ ObjectPtr spawnObjectsNew(IntState& state) {
 
     ObjectPtr sys(clone(object));
     ObjectPtr sigil(clone(object));
+    ObjectPtr stackFrame(clone(object));
     ObjectPtr kernel(clone(object));
 
     ObjectPtr nil(clone(object));
@@ -2276,6 +2502,7 @@ ObjectPtr spawnObjectsNew(IntState& state) {
     object.lock()->put(Symbols::get()["meta"], meta);
     meta.lock()->put(Symbols::get()["sys"], sys);
     meta.lock()->put(Symbols::get()["sigil"], sigil);
+    meta.lock()->put(Symbols::get()["StackFrame"], stackFrame);
 
     // This ensures that problems in the core.lat file (before exceptions are well-defined)
     // do not cause the entire program to crash

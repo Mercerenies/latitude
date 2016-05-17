@@ -70,11 +70,23 @@ void dumpObject(Scope scope, Stream& stream, ObjectPtr obj);
  */
 void simplePrintObject(Scope scope, Stream& stream, ObjectPtr obj);
 
-void garnishNew(IntState& state, bool value);
-void garnishNew(IntState& state, boost::blank value);
-void garnishNew(IntState& state, std::string value);
-void garnishNew(IntState& state, int value);
-void garnishNew(IntState& state, long value);
-void garnishNew(IntState& state, Symbolic value);
+InstrSeq garnishSeq(bool value);
+InstrSeq garnishSeq(boost::blank value);
+InstrSeq garnishSeq(std::string value);
+InstrSeq garnishSeq(int value);
+InstrSeq garnishSeq(long value);
+InstrSeq garnishSeq(Symbolic value);
+
+template <typename T>
+void garnishNew(IntState& state, T value) {
+    InstrSeq seq = garnishSeq(value);
+    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+}
+
+template <typename T>
+void garnishBegin(IntState& state, T value) {
+    InstrSeq seq = garnishSeq(value);
+    state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+}
 
 #endif // _GARNISH_HPP_

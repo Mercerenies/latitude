@@ -13,5 +13,6 @@ meta Kernel load: "std/sequence.lat".
 meta Kernel load: "std/pattern.lat".
 meta Kernel load: "std/string.lat".
 meta Kernel load: "std/util.lat".
-
+{*
 here.
+*}

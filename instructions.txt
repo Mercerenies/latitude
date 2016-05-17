@@ -41,6 +41,11 @@ One-byte opcodes, followed by whatever arguments the system expects
  == Stack of ObjectPtr ==
 %hand (18) - A stack of exception handlers
 
+ == Position ==
+%line (19) - The current line number, as a long (NOT an instance of the Number class)
+%file (1A) - The current file name, as a string
+%trace (1B) - A stack of number-name pairs
+
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
 pop STACK (03 REG) - Pop from stack into %ptr, sets %err0 if empty
@@ -62,7 +67,7 @@ nswap (0D) - Swap %num0 and %num1
 call INT (0E INT) - (See below)
 xcall (0F) - (See below)
 xcall0 INT (10 INT) - (See below)
-ret (11) - Pop %lex and %dyn, discarding both values, sets %err0 if either is empty
+ret (11) - Pop %lex and %dyn, discarding both values, sets %err0 if either is empty, also pops %trace
 
 clone (12) - Perform the primitive clone operation on %slf, put result in %ret
 
@@ -104,24 +109,27 @@ throa MSG (2A STR) - Throw on attribute, construct a generic `meta TypeError` an
 
 locfn STR (2B STR) - Set the filename
 locln INT (2C INT) - Set the line number
+locrt (2D) - Retrieve the stack trace, storing a StackFrame object in %ret
 
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)
 3. Push a clone of `closure` onto %lex
 4. Bind all of the local lexical variables
-5. Pop N args from %arg into %dyn
-6. Push %cont onto %stack
-7. Make a new %cont based on what needs to be done from %ptr
+5. Push %line and %file together onto %trace
+6. Pop N args from %arg into %dyn
+7. Push %cont onto %stack
+8. Make a new %cont based on what needs to be done from %ptr
 
 ((( xcall and xcall0 )))
 (xcall0) 1. Check for `closure`; if no `closure`, stop
 (xcall0) 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)
 (xcall0) 3. Push a clone of `closure` onto %lex
 (xcall0) 4. Bind all of the local lexical variables
-(xcall0) 5. Pop N args from %arg into %dyn
-(xcall ) 6. Push %cont onto %stack
-(xcall ) 7. Make a new %cont based on what needs to be done
+(xcall0) 5. Push %line and %file together onto %trace
+(xcall0) 6. Pop N args from %arg into %dyn
+(xcall ) 7. Push %cont onto %stack
+(xcall ) 8. Make a new %cont based on what needs to be done
 (Note that xcall is a no-op if %ptr is not a method)
 
 ((( arith )))

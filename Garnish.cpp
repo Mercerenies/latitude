@@ -225,45 +225,90 @@ void simplePrintObject(Scope scope, Stream& stream, ObjectPtr obj) {
         stream.writeLine("<?>");
 }
 
-void garnishNew(IntState& state, bool value) {
+InstrSeq garnishSeq(bool value) {
+    InstrSeq seq;
     if (value) {
-        evalNew(state, "meta True.");
+        seq = asmCode(makeAssemblerLine(Instr::GETL),
+                      makeAssemblerLine(Instr::SYM, "meta"),
+                      makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                      makeAssemblerLine(Instr::RTRV),
+                      makeAssemblerLine(Instr::SYM, "True"),
+                      makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                      makeAssemblerLine(Instr::RTRV));
     } else {
-        evalNew(state, "meta False.");
+        seq = asmCode(makeAssemblerLine(Instr::GETL),
+                      makeAssemblerLine(Instr::SYM, "meta"),
+                      makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                      makeAssemblerLine(Instr::RTRV),
+                      makeAssemblerLine(Instr::SYM, "False"),
+                      makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                      makeAssemblerLine(Instr::RTRV));
     }
+    return seq;
 }
 
-void garnishNew(IntState& state, boost::blank value) {
-    evalNew(state, "meta Nil.");
+InstrSeq garnishSeq(boost::blank value) {
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+                           makeAssemblerLine(Instr::SYM, "meta"),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::SYM, "Nil"),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV));
+    return seq;
 }
 
-void garnishNew(IntState& state, std::string value) {
-    evalNew(state, "meta String clone.");
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+InstrSeq garnishSeq(std::string value) {
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+                           makeAssemblerLine(Instr::SYM, "meta"),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::SYM, "String"),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::CLONE),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                            makeAssemblerLine(Instr::STR, value),
                            makeAssemblerLine(Instr::LOAD, Reg::STR0),
                            makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
-    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+    return seq;
 }
 
-void garnishNew(IntState& state, int value) {
-    garnishNew(state, (long)value);
+InstrSeq garnishSeq(int value) {
+    return garnishSeq((long)value);
 }
 
-void garnishNew(IntState& state, long value) {
-    evalNew(state, "meta Number clone.");
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+InstrSeq garnishSeq(long value) {
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+                           makeAssemblerLine(Instr::SYM, "meta"),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::SYM, "Number"),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::CLONE),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                            makeAssemblerLine(Instr::INT, value),
                            makeAssemblerLine(Instr::LOAD, Reg::NUM0),
                            makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
-    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+    return seq;
 }
 
-void garnishNew(IntState& state, Symbolic value) {
-    evalNew(state, "meta Symbol clone.");
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+InstrSeq garnishSeq(Symbolic value) {
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+                           makeAssemblerLine(Instr::SYM, "meta"),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::SYM, "Symbol"),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::CLONE),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                            makeAssemblerLine(Instr::SYMN, value.index),
                            makeAssemblerLine(Instr::LOAD, Reg::SYM),
                            makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
-    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+    return seq;
 }

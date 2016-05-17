@@ -69,6 +69,7 @@ void InstructionSet::initialize() {
     props[Instr::THROA] = { isStringRegisterArg };
     props[Instr::LOCFN] = { isStringRegisterArg };
     props[Instr::LOCLN] = { isLongRegisterArg };
+    props[Instr::LOCRT] = { };
 }
 
 AssemblerError::AssemblerError()
@@ -551,7 +552,9 @@ void executeInstr(Instr instr, IntState& state) {
                 state.dyn.top().lock()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top().lock()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
-            // (5) Bind all of the arguments
+            // (5) Push the trace information
+            state.trace.push( make_tuple(state.line, state.file) );
+            // (6) Bind all of the arguments
             if (!state.dyn.empty()) {
                 int index = args;
                 for (long n = 0; n < args; n++) {
@@ -561,9 +564,9 @@ void executeInstr(Instr instr, IntState& state) {
                     index--;
                 }
             }
-            // (6) Push %cont onto %stack
+            // (7) Push %cont onto %stack
             state.stack.push(state.cont);
-            // (7) Make a new %cont
+            // (8) Make a new %cont
             if (stmtNew) {
 #ifdef DEBUG_INSTR
                 cout << "* (cont) " << stmtNew->size() << endl;
@@ -654,7 +657,9 @@ void executeInstr(Instr instr, IntState& state) {
                 state.dyn.top().lock()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top().lock()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
-            // (5) Bind all of the arguments
+            // (5) Push the trace information
+            state.trace.push( make_tuple(state.line, state.file) );
+            // (6) Bind all of the arguments
             if (!state.dyn.empty()) {
                 int index = args;
                 for (long n = 0; n < args; n++) {
@@ -685,6 +690,10 @@ void executeInstr(Instr instr, IntState& state) {
             state.err0 = true;
         else
             state.dyn.pop();
+        if (state.trace.empty())
+            state.err0 = true;
+        else
+            state.trace.pop();
     }
         break;
     case Instr::CLONE: {
@@ -1226,14 +1235,15 @@ void executeInstr(Instr instr, IntState& state) {
 #ifdef DEBUG_INSTR
         cout << "LOCFN \"" << msg << "\"" << endl;
 #endif
-        // TODO Should we do error handling here and in LOCLN if `meta` is corrupted?
-        state.stack.push(state.cont);
-        state.cont.clear();
-        garnishNew(state, msg);
+        state.file = msg;
+        /*
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                makeAssemblerLine(Instr::GETL),
-                               makeAssemblerLine(Instr::SYM, "fileStorage"),
+                               makeAssemblerLine(Instr::SYM, "meta"),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                               makeAssemblerLine(Instr::RTRV),
+                               makeAssemblerLine(Instr::SYM, "fileStorage"),
+                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
                                makeAssemblerLine(Instr::GETD),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
@@ -1241,7 +1251,9 @@ void executeInstr(Instr instr, IntState& state) {
                                makeAssemblerLine(Instr::EXPD, Reg::SYM),
                                makeAssemblerLine(Instr::POP, Reg::STO),
                                makeAssemblerLine(Instr::SETF));
-        state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+        garnishBegin(state, msg);
+        */
     }
         break;
     case Instr::LOCLN: {
@@ -1249,13 +1261,15 @@ void executeInstr(Instr instr, IntState& state) {
 #ifdef DEBUG_INSTR
         cout << "LOCLN " << num << endl;
 #endif
-        state.stack.push(state.cont);
-        state.cont.clear();
-        garnishNew(state, num);
+        state.line = num;
+        /*
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                makeAssemblerLine(Instr::GETL),
-                               makeAssemblerLine(Instr::SYM, "lineStorage"),
+                               makeAssemblerLine(Instr::SYM, "meta"),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                               makeAssemblerLine(Instr::RTRV),
+                               makeAssemblerLine(Instr::SYM, "lineStorage"),
+                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
                                makeAssemblerLine(Instr::GETD),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
@@ -1263,7 +1277,61 @@ void executeInstr(Instr instr, IntState& state) {
                                makeAssemblerLine(Instr::EXPD, Reg::SYM),
                                makeAssemblerLine(Instr::POP, Reg::STO),
                                makeAssemblerLine(Instr::SETF));
-        state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+        garnishBegin(state, num);
+        */
+    }
+        break;
+    case Instr::LOCRT: {
+#ifdef DEBUG_INSTR
+        cout << "LOCRT" << endl;
+#endif
+        function<void(stack<BacktraceFrame>&)> stackUnwind = [&state, &stackUnwind](stack<BacktraceFrame>& stck) {
+            if (!stck.empty()) {
+                long line;
+                string file;
+                auto& elem = stck.top();
+                tie(line, file) = elem;
+                stck.pop();
+
+                InstrSeq step0 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                         makeAssemblerLine(Instr::CLONE),
+                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
+                InstrSeq step1 = garnishSeq(line);
+                InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::STO),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::SYM, "line"),
+                                         makeAssemblerLine(Instr::SETF));
+                InstrSeq step3 = garnishSeq(file);
+                InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::STO),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::SYM, "file"),
+                                         makeAssemblerLine(Instr::SETF),
+                                         makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
+                state.cont.insert(state.cont.begin(), step4.begin(), step4.end());
+                state.cont.insert(state.cont.begin(), step3.begin(), step3.end());
+                state.cont.insert(state.cont.begin(), step2.begin(), step2.end());
+                state.cont.insert(state.cont.begin(), step1.begin(), step1.end());
+                state.cont.insert(state.cont.begin(), step0.begin(), step0.end());
+
+                stackUnwind(stck);
+
+                stck.push(elem);
+            }
+        };
+        state.stack.push(state.cont);
+        state.cont.clear();
+        stackUnwind(state.trace);
+        InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL),
+                                 makeAssemblerLine(Instr::SYM, "meta"),
+                                 makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                 makeAssemblerLine(Instr::RTRV),
+                                 makeAssemblerLine(Instr::SYM, "StackFrame"),
+                                 makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                 makeAssemblerLine(Instr::RTRV));
+        state.cont.insert(state.cont.begin(), intro.begin(), intro.end());
     }
         break;
     }
