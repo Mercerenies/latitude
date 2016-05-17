@@ -75,9 +75,11 @@ class Stmt {
 private:
     std::string file_name;
     int line_no;
+    bool location;
 public:
     Stmt(int line_no);
     void establishLocation(const Scope& scope);
+    void disableLocationInformation();
     void stateLine(InstrSeq&);
     void stateFile(InstrSeq&);
     // TODO Can we make execute() a const method?

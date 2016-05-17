@@ -3,7 +3,7 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 
-//#define DEBUG_INSTR
+//#define DEBUG_INSTR 1
 
 using namespace std;
 
@@ -450,7 +450,9 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::GETD: {
 #ifdef DEBUG_INSTR
         cout << "GETD" << endl;
+#if DEBUG_INSTR > 1
         cout << "* " << state.dyn.top().lock() << endl;
+#endif
 #endif
         if (state.dyn.empty())
             state.err0 = true;
@@ -523,13 +525,15 @@ void executeInstr(Instr instr, IntState& state) {
         long args = popLong(state.cont);
 #ifdef DEBUG_INSTR
         cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
+#if DEBUG_INSTR > 1
         cout << "* Method Properties " << state.ptr.lock() << endl;
+#endif
 #endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
         auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
         Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
             (closure.getType() == SlotType::PTR) << " " <<
             stmt << " " << stmtNew << endl;
@@ -568,7 +572,7 @@ void executeInstr(Instr instr, IntState& state) {
             state.stack.push(state.cont);
             // (8) Make a new %cont
             if (stmtNew) {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 3
                 cout << "* (cont) " << stmtNew->size() << endl;
                 if (stmtNew->size() == 0) {
                     // What are we looking at...?
@@ -722,12 +726,14 @@ void executeInstr(Instr instr, IntState& state) {
             curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
         }
         if (value.expired()) {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 2
             cout << "* Looking for missing" << endl;
+#if DEBUG_INSTR > 3
             cout << "* Information:" << endl;
             cout << "* * Lex: " << state.lex.top().lock() << endl;
             cout << "* * Dyn: " << state.dyn.top().lock() << endl;
             cout << "* * Slf: " << state.slf.lock() << endl;
+#endif
 #endif
             // Now try for missing
             name = Symbols::get()["missing"];
@@ -744,7 +750,7 @@ void executeInstr(Instr instr, IntState& state) {
             }
             state.ret = value;
             // TODO What if we don't find a `missing`?
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 1
             if (value.expired())
                 cout << "* Found no missing" << endl;
             else
@@ -776,7 +782,7 @@ void executeInstr(Instr instr, IntState& state) {
             state.stack.push(state.cont);
             state.cont = seq0;
         } else {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 1
             cout << "* Found " << value.lock() << endl;
 #endif
             state.ret = value;
@@ -928,7 +934,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHD: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 1
             cout << "* Method Length " << state.mthd.size() << endl;
 #endif
             state.ptr.lock()->prim(state.mthd);
@@ -943,7 +949,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHDZ: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 1
             cout << "* Method Length " << state.mthdz.size() << endl;
 #endif
             state.ptr.lock()->prim(state.mthdz);
@@ -958,10 +964,12 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::SETF: {
 #ifdef DEBUG_INSTR
         cout << "SETF (" << Symbols::get()[state.sym] << ")" << endl;
+#if DEBUG_INSTR > 2
         cout << "* Information:" << endl;
         cout << "* * Lex: " << state.lex.top().lock() << endl;
         cout << "* * Dyn: " << state.dyn.top().lock() << endl;
         cout << "* * Slf: " << state.slf.lock() << endl;
+#endif
 #endif
         if (state.slf.expired())
             state.err0 = true;
@@ -1049,12 +1057,12 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         state.stack.push(state.cont);
         if (state.flag) {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 2
             cout << "* Method ( ) Length " << state.mthd.size() << endl;
 #endif
             state.cont = state.mthd;
         } else {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 2
             cout << "* Method (Z) Length " << state.mthdz.size() << endl;
 #endif
             state.cont = state.mthdz;

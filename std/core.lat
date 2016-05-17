@@ -30,6 +30,7 @@ meta Object hierarchy := { arr := meta Array clone. ; DO NOT call this on Method
                                   { arr pushBack: curr.
                                     parent curr := curr parent. }.
                            arr. }.
+meta Object keys := { meta sys objectKeys#: hold 'self. }.
 
 ;; Move all of the meta values to the global scope
 global Object := meta Object.
@@ -127,12 +128,11 @@ Stream puts := { meta sys streamPuts#: self, $1. }.
 Stream putln := { meta sys streamPutln#: self, $1. }.
 Stream print := { self puts: $1 toString. }.
 Stream println := { self putln: $1 toString. }.
-Stream dump := { meta sys streamDump#: self, $1. }.
 Stream readln := { meta sys streamRead#: self. }.
 Stream read := { meta sys streamReadChar#: self. }.
 Stream eof? := { meta sys streamEof#: self. }.
 Stream close := { meta sys streamClose#: self. }.
-Stream open := { meta sys streamFileOpen#: self, $1, $2, $3. }.
+Stream open := { meta sys streamFileOpen#: self clone, $1, $2, $3. }.
 Stream closeAfter := { stream := self.
                        { (stream invoke: (parent dynamic hold '$1)) call. } protect { stream close. }. }.
 Stream toString := "Stream".

@@ -23,6 +23,16 @@ Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.
 Latchkey == := { (self tag) == (self tag). }.
 
+; Dumping and Printing Convenience Functions
+stdout := stdout.
+Stream dump := { localize.
+                 obj := dynamic hold '$1.
+                 this println: obj.
+                 obj keys visit { this putln: "  " ++ ($1 asText) ++ ": " ++ ((obj hold: $1) toString). }.
+                 meta Nil. }.
+Object println := { stdout println: hold 'self. }.
+Object dump := { stdout dump: hold 'self. }.
+
 ; It's very easy to lose track of a `self` in nested method calls, and calling `parent` repeatedly
 ; can be annoying, so the `localize` method will bind `this` to `self` in the calling scope. `this`
 ; will not rebind lexically until that scope exits.

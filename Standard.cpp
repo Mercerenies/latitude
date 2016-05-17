@@ -1278,7 +1278,11 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         SIMPLE_CMP = 12,
         NUM_LEVEL = 13,
         ORIGIN = 14,
-        PROCESS_TASK = 15;
+        PROCESS_TASK = 15,
+        OBJECT_KEYS = 16,
+        FILE_OPEN = 17,
+        FILE_CLOSE = 18,
+        FILE_EOF = 19;
 
     // TERMINATE
     state.cpp[TERMINATE] = [](IntState& state0) {
@@ -1749,7 +1753,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     sys.lock()->put(Symbols::get()["kill#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, 0L))));
 
-    // STREAM_READ ($1 = stream) (constructs and stores the resulting string in %ret)
+    // STREAM_READ ($1 = stream) (constructs and stores the resulting string in %ret, uses %num0 for mode)
+    // - 0 - Read a line
+    // - 1 - Read a single character
     // streamRead#: stream.
     state.cpp[STREAM_READ] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
@@ -1758,7 +1764,10 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             auto stream0 = boost::get<StreamPtr>(&stream.lock()->prim());
             if (stream0) {
                 if ((*stream0)->hasIn()) {
-                    garnishNew(state0, (*stream0)->readLine());
+                    if (state0.num0.asSmallInt() == 0)
+                        garnishNew(state0, (*stream0)->readLine());
+                    else
+                        garnishNew(state0, (*stream0)->readText(1));
                 } else {
                     throwError(state0, "IOError", "Stream not designated for output");
                 }
@@ -1768,7 +1777,11 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         }
     };
     sys.lock()->put(Symbols::get()["streamRead#"],
-                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, STREAM_READ))));
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::INT, 0L),
+                                                         makeAssemblerLine(Instr::CPP, STREAM_READ))));
+    sys.lock()->put(Symbols::get()["streamReadChar#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::INT, 1L),
+                                                         makeAssemblerLine(Instr::CPP, STREAM_READ))));
 
     // EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
     // eval#: lex, dyn, str.
@@ -2432,6 +2445,140 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET),
                                                          makeAssemblerLine(Instr::INT, 1L),
                                                          makeAssemblerLine(Instr::CPP, PROCESS_TASK))));
+
+    // OBJECT_KEYS (takes an object in %slf and outputs an array-like construct using `meta brackets`
+    //              which contains all of the slot names of %slf)
+    // objectKeys#: obj.
+    state.cpp[OBJECT_KEYS] = [](IntState& state0) {
+        set<Symbolic> allKeys = keys(state0.slf);
+        state0.stack.push(state0.cont);
+        state0.cont = asmCode(makeAssemblerLine(Instr::GETL),
+                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                              makeAssemblerLine(Instr::SYM, "meta"),
+                              makeAssemblerLine(Instr::RTRV),
+                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                              makeAssemblerLine(Instr::SYM, "brackets"),
+                              makeAssemblerLine(Instr::RTRV),
+                              makeAssemblerLine(Instr::GETL),
+                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                              makeAssemblerLine(Instr::CALL, 0L),
+                              makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
+        for (Symbolic sym : allKeys) {
+            InstrSeq seq = garnishSeq(sym);
+            (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+            (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
+            (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+            (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
+            (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+            (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
+            (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+            (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
+            state0.cont.insert(state0.cont.end(), seq.begin(), seq.end());
+        }
+        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::RTRV)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(state0.cont);
+    };
+    sys.lock()->put(Symbols::get()["objectKeys#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                                         makeAssemblerLine(Instr::CPP, OBJECT_KEYS))));
+
+    // FILE_OPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
+    // streamFileOpen#: strm, fname, access, mode.
+    state.cpp[FILE_OPEN] = [](IntState& state0) {
+        ObjectPtr dyn = state0.dyn.top();
+        ObjectPtr access = (*dyn.lock())[ Symbols::get()["$3"] ].getPtr();
+        ObjectPtr mode = (*dyn.lock())[ Symbols::get()["$4"] ].getPtr();
+        auto access0 = boost::get<Symbolic>(&access.lock()->prim());
+        auto mode0 = boost::get<Symbolic>(&mode.lock()->prim());
+        if (access0 && mode0) {
+            auto access1 = Symbols::get()[*access0];
+            auto mode1 = Symbols::get()[*mode0];
+            FileAccess access2;
+            FileMode mode2;
+            if (access1 == "read")
+                access2 = FileAccess::READ;
+            else if (access1 == "write")
+                access2 = FileAccess::WRITE;
+            else
+                throwError(state0, "SystemArgError",
+                           "Invalid access specifier when opening file");
+            if (mode1 == "text")
+                mode2 = FileMode::TEXT;
+            else if (mode1 == "binary")
+                mode2 = FileMode::BINARY;
+            else
+                throwError(state0, "SystemArgError",
+                           "Invalid mode specifier when opening file");
+            state0.ptr.lock()->prim( StreamPtr(new FileStream(state0.str0, access2, mode2)) );
+        } else {
+            throwError(state0, "TypeError",
+                       "Symbol expected");
+        }
+    };
+    sys.lock()->put(Symbols::get()["streamFileOpen#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::CPP, FILE_OPEN),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // FILE_CLOSE (takes %strm and closes it)
+    // streamClose#: strm.
+    state.cpp[FILE_CLOSE] = [](IntState& state0) {
+        state0.strm->close();
+    };
+    sys.lock()->put(Symbols::get()["streamClose#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STRM),
+                                                         makeAssemblerLine(Instr::THROA, "Stream expected"),
+                                                         makeAssemblerLine(Instr::CPP, FILE_CLOSE),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // FILE_EOF (takes %strm and outputs whether it's at eof into %flag)
+    // streamEof#: strm.
+    state.cpp[FILE_EOF] = [](IntState& state0) {
+        state0.flag = state0.strm->isEof();
+    };
+    sys.lock()->put(Symbols::get()["streamEof#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STRM),
+                                                         makeAssemblerLine(Instr::THROA, "Stream expected"),
+                                                         makeAssemblerLine(Instr::CPP, FILE_EOF),
+                                                         makeAssemblerLine(Instr::BOL))));
 
 }
 

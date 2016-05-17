@@ -295,7 +295,7 @@ void readFileNew(string fname, Scope defScope, IntState& state) {
 }
 
 Stmt::Stmt(int line_no)
-    : file_name("(eval)"), line_no(line_no) {}
+    : file_name("(eval)"), line_no(line_no), location(true) {}
 
 void Stmt::establishLocation(const Scope& scope) {
     ObjectPtr meta_ = meta(scope, scope.lex);
@@ -309,12 +309,20 @@ void Stmt::establishLocation(const Scope& scope) {
     }
 }
 
+void Stmt::disableLocationInformation() {
+    location = false;
+}
+
 void Stmt::stateLine(InstrSeq& seq) {
+    if (!location)
+        return;
     InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCLN, line_no));
     seq.insert(seq.end(), seq0.begin(), seq0.end());
 }
 
 void Stmt::stateFile(InstrSeq& seq) {
+    if (!location)
+        return;
     InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCFN, file_name));
     seq.insert(seq.end(), seq0.begin(), seq0.end());
 }
