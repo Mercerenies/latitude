@@ -22,8 +22,10 @@ global if := { meta sys ifThenElse#: meta True,
                                      $1 toBool,
                                      { parent dynamic $2. },
                                      { parent dynamic $3. }. }.
-Object ifTrue := { if: self, { parent dynamic $1. }, { meta Nil. }. }.
-Object ifFalse := { if: self, { meta Nil. }, { parent dynamic $1. }. }.
+Object ifTrue := { if: self, { parent dynamic $1. }, { meta Nil. }.
+                   hold 'self. }.
+Object ifFalse := { if: self, { meta Nil. }, { parent dynamic $1. }.
+                    hold 'self. }.
 Object and := { if: self, { parent dynamic $1. }, {meta False. }. }.
 Object or := { fst := self.
                if: fst, { fst. }, { parent dynamic $1. }. }.

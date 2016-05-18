@@ -86,13 +86,13 @@
 %type <argval> arglist1
 %type <exprval> arg
 %type <exprval> chain
+%type <exprval> nonemptychain
 %type <exprval> literalish
 %type <exprval> literal
 %type <argval> linelist
 %type <argval> literallist
 %type <argval> literallist1
 %type <exprval> listlit
-%type <exprval> rhschain
 
 %token <sval> NAME
 %token <dval> NUMBER
@@ -126,12 +126,12 @@ stmt:
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
-    rhschain { $$ = makeExpr(); $$->args = makeList(); $$->args->car = $1; $$->args->cdr = makeList(); } |
+    literalish { $$ = makeExpr(); $$->args = makeList(); $$->args->car = $1; $$->args->cdr = makeList(); } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     ':' arglist { $$ = makeExpr(); $$->args = $2; } |
     '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
-    rhschain '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = new List(); $$->args->car = $1;
-                        $$->args->cdr = new List(); $$->isEquality = true; }
+    literalish '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = new List(); $$->args->car = $1;
+                          $$->args->cdr = new List(); $$->isEquality = true; }
     ;
 arglist:
     /* empty */ { $$ = makeList(); } |
@@ -142,14 +142,17 @@ arglist1:
     ',' arg arglist1 { $$ = makeList(); $$->car = $2; $$->cdr = $3; }
     ;
 arg:
+    nonemptychain
+    ;
+nonemptychain:
     chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    chain NAME rhschain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; $$->args = makeList();
-                          $$->args->car = $3; $$->args->cdr = makeList(); } |
+    chain NAME literalish { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                            $$->args = makeList(); $$->args->car = $3;
+                            $$->args->cdr = makeList(); } |
     literalish
     ;
 chain:
-    chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    literalish |
+    nonemptychain |
     /* empty */ { $$ = NULL; }
     ;
 literalish:
@@ -188,11 +191,6 @@ listlit:
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
     NAME { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
-    ;
-rhschain:
-    literalish |
-    literalish NAME rhschain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; $$->args = makeList();
-                               $$->args->car = $3; $$->args->cdr = makeList(); }
     ;
 
 %%
