@@ -94,28 +94,6 @@ Prim Object::prim(const T& prim0) {
  */
 ObjectPtr clone(ObjectPtr obj);
 /*
- * Accesses the object's meta field. This is purely a convenience function.
- *   meta(scope, obj) === getInheritedSlot(scope, obj, Symbols::get()["meta"]);
- */
-ObjectPtr meta(Scope scope, ObjectPtr obj);
-/*
- * Accesses the object's slot, recursively checking the "parent" object if the slot
- * is not found. Returns a null pointer if the slot does not exist. Note that this
- * function is designed to handle loops in parents and will stop looking when it
- * encounters one. In fact, such a loop always exists by default, as `Object` is
- * its own parent in the standard library.
- */
-ObjectPtr getInheritedSlot(Scope scope, ObjectPtr obj, Symbolic name);
-/*
- * Checks whether a given slot exists, using the same algorithm as `getInheritedSlot`.
- */
-bool hasInheritedSlot(Scope scope, ObjectPtr obj, Symbolic name);
-/*
- * Returns the object who actually owns the slot which would be referenced in a
- * call to getInheritedSlot.
- */
-ObjectPtr getInheritedOrigin(Scope scope, ObjectPtr obj, Symbolic name);
-/*
  * Gets a set of all of the keys in the object. Recursively computes the set of keys
  * using an algorithm similar to `getInheritedSlot`. If the parent keys are not
  * desired, the instance method `directKeys` on `Object` will return only the directly

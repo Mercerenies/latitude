@@ -49,15 +49,3 @@ String replaceAll := { takes '[substr, mthd].
                               { parent curr := curr replace: substr, index, hold 'mthd.
                                 index = (index) + (substr size). }.
                        curr. }.
-
-{*
-String replaceAll := { meta sys stringReplace#: self, $1, { parent dynamic $2. }. }.
-String replace := { takes '[substr, mthd].
-                    changed := False.
-                    flipChanged := { parent changed := True. }.
-                    self replaceAll: substr, { if: changed,
-                                                   { substr. },
-                                                   { flipChanged.
-                                                     mthd. }. }. }.
-
-*}

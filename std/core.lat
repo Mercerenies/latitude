@@ -41,7 +41,6 @@ global String := meta String.
 global Symbol := meta Symbol.
 global Stream := meta Stream.
 global Process := meta Process.
-global SystemCall := meta SystemCall.
 global True := meta True.
 global False := meta False.
 global Nil := meta Nil.

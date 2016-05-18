@@ -2,6 +2,7 @@
 ; of the REPL object itself
 
 Kernel := Kernel.
+stderr := stderr.
 
 REPL := Object clone.
 
@@ -24,12 +25,13 @@ REPL read := { stdout puts: "> ".
                stdin readln. }.
 REPL eval := { Kernel eval: global, global, $1. }.
 REPL print := { stdout println: $1. }.
-REPL loop := { repl := self. ; TODO Use `localize` here once we're sure it will work again
-               loop { { expr := repl read.
-                        repl lastResult := repl eval: expr.
-                        repl print: repl lastResult. } resolve: { meta True. },
-                                                                { repl exception := $1.
-                                                                  ; TODO Dump the object (and possibly the stack)
-                                                                  repl print: repl exception. }. }. }.
+REPL loop := { localize.
+               loop { { expr := this read.
+                        this lastResult := this eval: expr.
+                        this print: this lastResult. } resolve: { meta True. },
+                                                                { this exception := $1.
+                                                                  stderr putln: "***** EXCEPTION *****".
+                                                                  stderr putln: this exception pretty.
+                                                                  this exception printStackTrace. }. }. }.
 
 global REPL := REPL.

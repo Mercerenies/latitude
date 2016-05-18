@@ -30,19 +30,6 @@ PtrToList getCurrentLine();
 std::list< std::unique_ptr<Stmt> > translateCurrentLine();
 void clearCurrentLine() noexcept;
 
-ObjectPtr doCall(Scope scope,
-                 ObjectPtr self, ObjectPtr mthd,
-                 std::list<ObjectPtr> args,
-                 std::function<void(Scope)> callback = [](Scope){});
-
-ObjectPtr determineScope(const std::unique_ptr<Stmt>& className,
-                         const std::string& functionName,
-                         const Scope& scope);
-
-int grabLineNumber(const Scope& scope, ObjectPtr dyn);
-
-std::string grabFileName(const Scope& scope, ObjectPtr dyn);
-
 /*
  * Parses the string. Will throw an std::string as an exception
  * if a parse error occurs. For this reason, it is often desirable
@@ -51,21 +38,9 @@ std::string grabFileName(const Scope& scope, ObjectPtr dyn);
  */
 std::list< std::unique_ptr<Stmt> > parse(std::string str);
 
-/*
- * Parses and evaluates the expression in the given context.
- */
-ObjectPtr eval(std::string str, Scope scope);
+void eval(IntState& state, std::string str);
 
-void evalNew(IntState& state, std::string str);
-
-/*
- * Parses and evaluates the file, which should be a source file. Note that lexDef and dynDef should almost
- * always be the global scope. The file will be treated as a method who was defined in the lexDef / dynDef
- * scope and called from the lex / dyn scope. The latter should be the "current" scope.
- */
-ObjectPtr evalFile(std::string fname, Scope defScope, Scope scope);
-
-void readFileNew(std::string fname, Scope defScope, IntState& state);
+void readFile(std::string fname, Scope defScope, IntState& state);
 
 /*
  * A statement. Defines only one method, which executes
@@ -78,13 +53,10 @@ private:
     bool location;
 public:
     Stmt(int line_no);
-    void establishLocation(const Scope& scope);
     void disableLocationInformation();
     void stateLine(InstrSeq&);
     void stateFile(InstrSeq&);
-    // TODO Can we make execute() a const method?
-    virtual ObjectPtr execute(Scope scope) = 0;
-    virtual InstrSeq translate() = 0; // TODO Make translate() work with the line_no / file_name system
+    virtual InstrSeq translate() = 0;
     virtual void propogateFileName(std::string name);
 };
 
@@ -100,7 +72,6 @@ private:
     ArgList args;
 public:
     StmtCall(int line_no, std::unique_ptr<Stmt>& cls, const std::string& func, ArgList& arg);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
@@ -119,7 +90,6 @@ public:
     StmtEqual(int line_no,
               std::unique_ptr<Stmt>& cls, const std::string& func,
               std::unique_ptr<Stmt>& asn);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
@@ -132,7 +102,6 @@ private:
     std::list< std::shared_ptr<Stmt> > contents;
 public:
     StmtMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
@@ -145,7 +114,6 @@ private:
     double value;
 public:
     StmtNumber(int line_no, double value);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
 };
 
@@ -157,7 +125,6 @@ private:
     long value;
 public:
     StmtInteger(int line_no, long value);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
 };
 
@@ -169,7 +136,6 @@ private:
     std::string value;
 public:
     StmtBigInteger(int line_no, const char* value);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
 };
 
@@ -181,7 +147,6 @@ private:
     std::string value;
 public:
     StmtString(int line_no, const char* contents);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
 };
 
@@ -193,7 +158,6 @@ private:
     std::string value;
 public:
     StmtSymbol(int line_no, const char* contents);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
 };
 
@@ -207,7 +171,6 @@ private:
     ArgList args;
 public:
     StmtList(int line_no, ArgList& arg);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };
@@ -221,7 +184,6 @@ private:
     std::unique_ptr<Stmt> rhs;
 public:
     StmtSigil(int line_no, std::string name, std::unique_ptr<Stmt> rhs);
-    virtual ObjectPtr execute(Scope scope);
     virtual InstrSeq translate();
     virtual void propogateFileName(std::string name);
 };

@@ -1038,7 +1038,7 @@ void executeInstr(Instr instr, IntState& state) {
 #ifdef DEBUG_INSTR
         cout << "BOL (" << state.flag << ")" << endl;
 #endif
-        garnishNew(state, state.flag);
+        garnishBegin(state, state.flag);
     }
         break;
     case Instr::TEST: {
