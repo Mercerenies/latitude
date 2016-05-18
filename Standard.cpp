@@ -1557,7 +1557,7 @@ ObjectPtr spawnObjects(IntState& state) {
     stderr_.lock()->prim(errStream());
 
     // The core libraries
-    readFile("std/latitude.lat", { global, global }, state);
+    //readFile("std/latitude.lat", { global, global }, state);
 
     return global;
 }

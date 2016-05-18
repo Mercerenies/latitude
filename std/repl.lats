@@ -1,0 +1,5 @@
+
+meta sys kernelLoad#: "std/latitude.lat", global.
+Kernel load: "std/repl.lat".
+
+REPL loop.

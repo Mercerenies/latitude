@@ -8,13 +8,7 @@
 using namespace std;
 
 void runREPL(ObjectPtr global, IntState& state) {
-    // Run all the "standard library" loading code first
-    while (!isIdling(state))
-        doOneStep(state);
-    readFile("std/repl.lat", { global, global }, state);
-    while (!isIdling(state))
-        doOneStep(state);
-    eval(state, "REPL loop.");
+    readFile("std/repl.lats", { global, global }, state);
     while (!isIdling(state))
         doOneStep(state);
 }
