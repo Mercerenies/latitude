@@ -4,28 +4,15 @@ Array := Array.
 ; While the basic string functionality is defined in core.lat, this file defines more sophisticated
 ; methods on strings.
 
-String replaceAll := { meta sys stringReplace#: self, $1, { parent dynamic $2. }. }.
-String replace := { takes '[substr, mthd].
-                    changed := False.
-                    flipChanged := { parent changed := True. }.
-                    self replaceAll: substr, { if: changed,
-                                                   { substr. },
-                                                   { flipChanged.
-                                                     mthd. }. }. }.
-
-String find := { takes '[substr].
-                 index := Nil.
-                 found := { parent index := if: index nil?,
-                                                { parent dynamic $1. },
-                                                { index. }. }.
-                 self replaceAll: substr, { found: $1.
-                                            substr. }.
-                 index. }.
-String findAll := { takes '[substr].
-                    indices := Array clone.
-                    self replaceAll: substr, { indices pushBack: $1.
-                                               substr. }.
-                    indices. }.
+String find := { meta sys stringFindFirst#: self, $1, $2. }.
+String findFirst := { self find: $1, 0. }.
+String findAll := { localize.
+                    takes '[substr].
+                    curr := -1.
+                    matches := Array clone.
+                    while: { parent curr := this find: substr, curr + 1. },
+                           { matches pushBack: curr. }.
+                    matches. }.
 
 String size := { meta sys stringLength#: self. }.
 
@@ -36,8 +23,41 @@ String split := { localize.
                   index := 0.
                   found := { parent index := ($1) + (delim size). }.
                   arr := Array clone.
-                  this replaceAll: delim, { arr pushBack: (this substring: index, $1).
-                                            found: $1.
-                                            delim. }.
+                  (this findAll: delim) visit { arr pushBack: (this substring: index, $1).
+                                                found: $1.
+                                                delim. }.
                   arr pushBack: (this substring: index, this size).
                   arr. }.
+
+String replace := { takes '[substr, index, mthd].
+                    result := self.
+                    begin := self find: substr, index.
+                    begin ifTrue: { end := (begin) + (substr size).
+                                    str1 := result substring: 0, begin.
+                                    str2 := result substring: begin, end.
+                                    str3 := result substring: end, result size.
+                                    parent result := (str1) ++ (mthd: str2) ++ (str3). }.
+                    result. }.
+String replaceFirst := { self replace: $1, 0, $2. }.
+String replaceAll := { takes '[substr, mthd].
+                       curr := self.
+                       negativeIndex := curr size.
+                       negativeIndex= := { parent negativeIndex := $1. }.
+                       index := { (curr size) - (negativeIndex). }.
+                       index= := { $1 ifTrue: { negativeIndex = (curr size) - (parent dynamic $1). }. }.
+                       while: { index = curr find: substr, index. },
+                              { parent curr := curr replace: substr, index, hold 'mthd.
+                                index = (index) + (substr size). }.
+                       curr. }.
+
+{*
+String replaceAll := { meta sys stringReplace#: self, $1, { parent dynamic $2. }. }.
+String replace := { takes '[substr, mthd].
+                    changed := False.
+                    flipChanged := { parent changed := True. }.
+                    self replaceAll: substr, { if: changed,
+                                                   { substr. },
+                                                   { flipChanged.
+                                                     mthd. }. }. }.
+
+*}

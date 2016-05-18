@@ -1282,7 +1282,10 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         OBJECT_KEYS = 16,
         FILE_OPEN = 17,
         FILE_CLOSE = 18,
-        FILE_EOF = 19;
+        FILE_EOF = 19,
+        STRING_LENGTH = 20,
+        STRING_SUB = 21,
+        STRING_FIND = 22;
 
     // TERMINATE
     state.cpp[TERMINATE] = [](IntState& state0) {
@@ -2580,6 +2583,110 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::CPP, FILE_EOF),
                                                          makeAssemblerLine(Instr::BOL))));
 
+    // STRING_LENGTH (outputs length of %str0 into %ret)
+    // stringLength#: str.
+    state.cpp[STRING_LENGTH] = [](IntState& state0) {
+        // TODO Possible loss of precision from size_t to signed long?
+        garnishNew(state0, (long)state0.str0.length());
+    };
+    sys.lock()->put(Symbols::get()["stringLength#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::CPP, STRING_LENGTH))));
+
+    // STRING_SUB (outputs substring of %str0 from %num0 to %num1 into %ret)
+    // stringSubstring#: str, beg, end.
+    state.cpp[STRING_SUB] = [](IntState& state0) {
+        long start1 = state0.num0.asSmallInt();
+        long end1 = state0.num1.asSmallInt();
+        long size = state0.str0.length();
+        if (start1 < 0)
+            start1 += size;
+        if (end1 < 0)
+            end1 += size;
+        if (start1 >= size)
+            start1 = size;
+        if (end1 >= size)
+            end1 = size;
+        if (start1 < 0)
+            start1 = 0;
+        if (end1 < 0)
+            end1 = 0;
+        long len = end1 - start1;
+        if (len < 0)
+            len = 0;
+        garnishNew(state0, state0.str0.substr(start1, len));
+    };
+    sys.lock()->put(Symbols::get()["stringSubstring#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$3"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::CPP, STRING_SUB))));
+
+    // STRING_FIND (find first occurence of %str1 in %str0 starting at %num0 index, storing
+    //              new index or Nil in %ret)
+    // stringFindFirst#: str, substr, pos.
+    state.cpp[STRING_FIND] = [](IntState& state0) {
+        auto pos = state0.str0.find(state0.str1, state0.num0.asSmallInt());
+        if (pos == string::npos)
+            garnishNew(state0, boost::blank());
+        else
+            garnishNew(state0, (long)pos);
+    };
+    sys.lock()->put(Symbols::get()["stringFindFirst#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                                         makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$3"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR1),
+                                                         makeAssemblerLine(Instr::POP, Reg::STO),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::CPP, STRING_FIND))));
+
 }
 
 ObjectPtr spawnObjectsNew(IntState& state) {
@@ -2705,8 +2812,12 @@ void throwError(IntState& state, std::string name, std::string msg) {
                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                          makeAssemblerLine(Instr::SYM, "message"),
                          makeAssemblerLine(Instr::SETF),
-                         makeAssemblerLine(Instr::GETD),
+                         makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                         makeAssemblerLine(Instr::LOCRT),
+                         makeAssemblerLine(Instr::POP, Reg::STO),
                          makeAssemblerLine(Instr::SYM, "stack"),
+                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                          makeAssemblerLine(Instr::SETF),
                          makeAssemblerLine(Instr::THROW));
     state.stack.push(state.cont);
