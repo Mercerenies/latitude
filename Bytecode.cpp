@@ -3,7 +3,7 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 
-#define DEBUG_INSTR 0
+//#define DEBUG_INSTR 1
 
 using namespace std;
 
@@ -1279,7 +1279,7 @@ void executeInstr(Instr instr, IntState& state) {
             if (!stck.empty()) {
                 long line;
                 string file;
-                auto& elem = stck.top();
+                auto elem = stck.top();
                 tie(line, file) = elem;
                 stck.pop();
 
