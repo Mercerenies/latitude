@@ -26,9 +26,9 @@ meta Object tap := { (self invoke: (dynamic hold '$1)) call.
                      self. }.
 meta Object hierarchy := { arr := meta Array clone. ; DO NOT call this on Method or any self-evaluating objects
                            curr := self.
-                           while: { (arr detect: { ($1) === (curr). }) not. },
-                                  { arr pushBack: curr.
-                                    parent curr := curr parent. }.
+                           while { (arr detect: { ($1) === (curr). }) not. }
+                              do { arr pushBack: curr.
+                                   parent curr := curr parent. }.
                            arr. }.
 meta Object keys := { meta sys objectKeys#: hold 'self. }.
 

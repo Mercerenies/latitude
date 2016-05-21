@@ -11,12 +11,12 @@ Mixin inject := { target := $1.
                   target parent := injector.
                   injector toString := { mixin toString. }.
                   iter := self interface iterator.
-                  while: { iter end? not. },
-                         { curr := iter element.
-                           injector put: curr,
-                                         { procd := self invoke: (mixin hold: curr).
-                                           procd call. }.
-                           iter next. }.
+                  while { iter end? not. }
+                     do { curr := iter element.
+                          injector put: curr,
+                                        { procd := self invoke: (mixin hold: curr).
+                                          procd call. }.
+                          iter next. }.
                   injector. }.
 
 Object implements := { takes '[mxn].

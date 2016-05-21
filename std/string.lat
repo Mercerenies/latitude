@@ -10,8 +10,8 @@ String findAll := { localize.
                     takes '[substr].
                     curr := -1.
                     matches := Array clone.
-                    while: { parent curr := this find: substr, curr + 1. },
-                           { matches pushBack: curr. }.
+                    while { parent curr := this find: substr, curr + 1. }
+                       do { matches pushBack: curr. }.
                     matches. }.
 
 String size := { meta sys stringLength#: self. }.
@@ -45,7 +45,7 @@ String replaceAll := { takes '[substr, mthd].
                        negativeIndex= := { parent negativeIndex := $1. }.
                        index := { (curr size) - (negativeIndex). }.
                        index= := { $1 ifTrue: { negativeIndex = (curr size) - (parent dynamic $1). }. }.
-                       while: { index = curr find: substr, index. },
-                              { parent curr := curr replace: substr, index, hold 'mthd.
-                                index = (index) + (substr size). }.
+                       while { index = curr find: substr, index. }
+                          do { parent curr := curr replace: substr, index, hold 'mthd.
+                               index = (index) + (substr size). }.
                        curr. }.

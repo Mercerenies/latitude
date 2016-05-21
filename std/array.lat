@@ -66,9 +66,9 @@ Array join := { index := 1.
                 str := if: self empty?,
                            { "". },
                            { (parent self nth: 0) toString. }.
-                while: { (index) < (size). },
-                       { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
-                         parent index := index + 1. }.
+                while { (index) < (size). }
+                   do { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
+                        parent index := index + 1. }.
                 str. }.
 Array toString := { "[" ++ (self join ", ") ++ "]". }.
 Array == := { localize.

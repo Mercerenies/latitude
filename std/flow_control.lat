@@ -1,4 +1,6 @@
 
+Object := Object.
+
 ;; Continuations
 Cont call := { meta sys exitCC#: self, $1. }.
 global callCC := { meta sys callCC#: meta Cont clone, { parent dynamic $1. }. }.
@@ -35,11 +37,11 @@ global loop := { restart := callCC { $1. }.
                  $1.
                  restart call: restart. }.
 global while := { cond := { parent dynamic $1. }.
-                  stmt := { parent dynamic $2. }.
-                  callCC { $break := { parent dynamic $1 call. }.
-                           loop { if: cond,
-                                      { stmt. },
-                                      { $break: meta Nil. }. }. }. }.
+                  Object clone tap { self do := { stmt := { parent dynamic $1. }.
+                                                  callCC { $break := { parent dynamic $1 call. }.
+                                                           loop { if: cond,
+                                                                      { stmt. },
+                                                                      { $break: meta Nil. }. }. }. }. }. }.
 
 ;; Return the script
 here.

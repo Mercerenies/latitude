@@ -16,9 +16,9 @@ Collection interface := '[map!, visit, map, foldl, foldr, size, toArray, all, an
                           detect, countIf, count, find, containsIf, contains, zip, zip!, take].
 Collection map! := { func := { (parent dynamic hold '$1) call. }.
                      iter := self iterator.
-                     while: { iter end? not. },
-                            { iter element=: (func: iter element).
-                              iter next. }.
+                     while { iter end? not. }
+                        do { iter element=: (func: iter element).
+                             iter next. }.
                      self. }.
 Collection visit := { self map!: { (parent dynamic hold '$1) call.
                                    $1. }. }.
@@ -80,10 +80,10 @@ Collection contains := { self containsIf: { (parent dynamic $1) == ($1). }. }.
 Collection zip := { iter0 := self iterator.
                     iter1 := $1 iterator.
                     arr := Array clone.
-                    while: { (iter0 end? not) and (iter1 end? not). },
-                           { arr pushBack: (cons: iter0 element, iter1 element).
-                             iter0 next.
-                             iter1 next. }.
+                    while { (iter0 end? not) and (iter1 end? not). }
+                       do { arr pushBack: (cons: iter0 element, iter1 element).
+                            iter0 next.
+                            iter1 next. }.
                     arr. }.
 Collection zip! := { iter1 := $1 iterator.
                      self map!: { curr := $1.

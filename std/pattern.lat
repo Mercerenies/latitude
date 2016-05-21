@@ -94,9 +94,9 @@ Array =~ := { localize.
                        this visit { curr := $1.
                                     if: (curr is: Ellipsis),
                                         { accum := Array clone.
-                                          while: { (currIndex) < (afterIndex). },
-                                                 { accum pushBack: currIter element.
-                                                   iterNext. }.
+                                          while { (currIndex) < (afterIndex). }
+                                             do { accum pushBack: currIter element.
+                                                  iterNext. }.
                                           currMatch := (curr) =~ (accum).
                                           currMatch ifFalse: { return currMatch. }.
                                           sequenceResult: currMatch. },

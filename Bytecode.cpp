@@ -3,7 +3,7 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 
-//#define DEBUG_INSTR 1
+#define DEBUG_INSTR 0
 
 using namespace std;
 
@@ -319,7 +319,7 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::MOV: {
         Reg src = popReg(state.cont);
         Reg dest = popReg(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "MOV " << (long)src << " " << (long)dest << endl;
 #endif
         ObjectPtr mid;
@@ -358,7 +358,7 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::PUSH: {
         Reg src = popReg(state.cont);
         Reg stack = popReg(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "PUSH " << (long)src << " " << (long)stack << endl;
 #endif
         ObjectPtr mid;
@@ -402,7 +402,7 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::POP: {
         stack<ObjectPtr>* stack;
         Reg reg = popReg(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "POP " << (long)reg << endl;
 #endif
         switch (reg) {
@@ -437,7 +437,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::GETL: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "GETL" << endl;
         cout << "* " << state.lex.top().lock() << endl;
 #endif
@@ -448,7 +448,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::GETD: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "GETD" << endl;
 #if DEBUG_INSTR > 1
         cout << "* " << state.dyn.top().lock() << endl;
@@ -461,21 +461,21 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::ESWAP: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "ESWAP" << endl;
 #endif
         swap(state.err0, state.err1);
     }
         break;
     case Instr::ECLR: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "ECLR" << endl;
 #endif
         state.err0 = false;
     }
         break;
     case Instr::ESET: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "ESET" << endl;
 #endif
         state.err0 = true;
@@ -483,7 +483,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::SYM: {
         string str = popString(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "SYM \"" << str << "\"" << endl;
 #endif
         state.sym = Symbols::get()[str];
@@ -491,7 +491,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::NUM: {
         string str = popString(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "NUM \"" << str << "\"" << endl;
 #endif
         state.num0 = Number(static_cast<Number::bigint>(str));
@@ -499,7 +499,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::INT: {
         long val = popLong(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "INT " << val << endl;
 #endif
         state.num0 = Number(val);
@@ -507,7 +507,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::FLOAT: {
         string str = popString(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "FLOAT \"" << str << "\"" << endl;
 #endif
         double dd = strtod(str.c_str(), NULL);
@@ -515,7 +515,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::NSWAP: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "NSWAP" << endl;
 #endif
         swap(state.num0, state.num1);
@@ -523,7 +523,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::CALL: {
         long args = popLong(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #if DEBUG_INSTR > 1
         cout << "* Method Properties " << state.ptr.lock() << endl;
@@ -613,7 +613,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::XCALL: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "XCALL (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
@@ -636,7 +636,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::XCALL0: {
         long args = popLong(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "XCALL0 " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         // (1) Perform a hard check for `closure`
@@ -683,7 +683,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::RET: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "RET" << endl;
 #endif
         if (state.lex.empty())
@@ -701,14 +701,14 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::CLONE: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "CLONE" << endl;
 #endif
         state.ret = clone(state.slf);
     }
         break;
     case Instr::RTRV: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "RTRV (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         list<ObjectSPtr> parents;
@@ -790,7 +790,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::RTRVD: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "RTRVD (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         Slot slot = (*state.slf.lock())[state.sym];
@@ -802,14 +802,14 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::STR: {
         string str = popString(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "STR \"" << str << "\"" << endl;
 #endif
         state.str0 = str;
     }
         break;
     case Instr::SSWAP: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "SSWAP" << endl;
 #endif
         swap(state.str0, state.str1);
@@ -817,7 +817,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::EXPD: {
         Reg expd = popReg(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "EXPD " << (long)expd << endl;
 #endif
         switch (expd) {
@@ -900,7 +900,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::MTHD: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "MTHD ..." << endl;
 #endif
         InstrSeq seq = popLine(state.cont);
@@ -909,7 +909,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::LOAD: {
         Reg ld = popReg(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "LOAD " << (long)ld << endl;
 #endif
         switch (ld) {
@@ -962,7 +962,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::SETF: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "SETF (" << Symbols::get()[state.sym] << ")" << endl;
 #if DEBUG_INSTR > 2
         cout << "* Information:" << endl;
@@ -980,7 +980,7 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::PEEK: {
         stack<ObjectPtr>* stack;
         Reg reg = popReg(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "PEEK " << (long)reg << endl;
 #endif
         switch (reg) {
@@ -1016,7 +1016,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::SYMN: {
         long val = popLong(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "SYMN " << val << endl;
 #endif
         state.sym = { val };
@@ -1024,7 +1024,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::CPP: {
         long val = popLong(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "CPP " << val << endl;
 #endif
         auto func = state.cpp[val];
@@ -1035,14 +1035,14 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::BOL: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "BOL (" << state.flag << ")" << endl;
 #endif
         garnishBegin(state, state.flag);
     }
         break;
     case Instr::TEST: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "TEST" << endl;
 #endif
         if (state.slf.expired() || state.ptr.expired())
@@ -1052,7 +1052,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::BRANCH: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "BRANCH (" << state.flag << ")" << endl;
 #endif
         state.stack.push(state.cont);
@@ -1070,7 +1070,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::CCALL: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "CCALL" << endl;
 #endif
         // TODO What if %slf is null?
@@ -1081,7 +1081,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::CGOTO: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "CGOTO" << endl;
 #endif
         auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
@@ -1091,14 +1091,14 @@ void executeInstr(Instr instr, IntState& state) {
             state = *cont;
             resolveThunks(state, oldWind, newWind);
         } else {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
 #endif
         }
     }
         break;
     case Instr::CRET: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "CRET" << endl;
 #endif
         auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
@@ -1113,14 +1113,14 @@ void executeInstr(Instr instr, IntState& state) {
             state.cont.insert(state.cont.begin(), pop.begin(), pop.end());
             resolveThunks(state, oldWind, newWind);
         } else {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
 #endif
         }
     }
         break;
     case Instr::WND: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "WND" << endl;
 #endif
         // TODO What if %slf / %ptr are null
@@ -1137,7 +1137,7 @@ void executeInstr(Instr instr, IntState& state) {
             frame->before.dyn = state.dyn.top();
             state.wind.push(frame);
         } else {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "* Not methods" << endl;
 #endif
             state.err0 = true;
@@ -1145,14 +1145,14 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::UNWND: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "UNWND" << endl;
 #endif
         state.wind.pop();
     }
         break;
     case Instr::THROW: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "THROW" << endl;
 #endif
         ObjectPtr exc = state.slf;
@@ -1183,7 +1183,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::THROQ: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "THROQ (" << state.err0 << ")" << endl;
 #endif
         if (state.err0) {
@@ -1193,7 +1193,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::ADDS: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "ADDS" << endl;
 #endif
         state.str0 += state.str1;
@@ -1201,7 +1201,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::ARITH: {
         long val = popLong(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "ARITH " << val << endl;
 #endif
         switch (val) {
@@ -1231,7 +1231,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::THROA: {
         string msg = popString(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
         if (state.err0)
@@ -1240,7 +1240,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::LOCFN: {
         string msg = popString(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "LOCFN \"" << msg << "\"" << endl;
 #endif
         state.file = msg;
@@ -1266,7 +1266,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::LOCLN: {
         long num = popLong(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "LOCLN " << num << endl;
 #endif
         state.line = num;
@@ -1291,7 +1291,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::LOCRT: {
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "LOCRT" << endl;
 #endif
         function<void(stack<BacktraceFrame>&)> stackUnwind = [&state, &stackUnwind](stack<BacktraceFrame>& stck) {
@@ -1348,7 +1348,7 @@ void executeInstr(Instr instr, IntState& state) {
 void doOneStep(IntState& state) {
     if (state.cont.empty()) {
         // Pop off the stack
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << "<><><>" << endl;
 #endif
         if (!state.stack.empty()) {
@@ -1359,7 +1359,7 @@ void doOneStep(IntState& state) {
     } else {
         // Run one command
         Instr instr = popInstr(state.cont);
-#ifdef DEBUG_INSTR
+#if DEBUG_INSTR > 0
         cout << (long)instr << endl;
 #endif
         executeInstr(instr, state);
