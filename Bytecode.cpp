@@ -693,6 +693,7 @@ void executeInstr(Instr instr, IntState& state) {
         list<ObjectSPtr> parents;
         ObjectSPtr curr = state.slf.lock();
         Symbolic name = state.sym;
+        Symbolic backup = state.sym;
         ObjectPtr value;
         // Try to find the value itself
         while (find(parents.begin(), parents.end(), curr) == parents.end()) {
@@ -750,7 +751,7 @@ void executeInstr(Instr instr, IntState& state) {
             // Clone and put a prim() onto it
             (makeAssemblerLine(Instr::CLONE)).appendOnto(seq0);
             (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::SYMN, name.index)).appendOnto(seq0);
+            (makeAssemblerLine(Instr::SYMN, backup.index)).appendOnto(seq0);
             (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
             (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
             (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);

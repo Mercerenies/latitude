@@ -1,5 +1,7 @@
 
 Object := Object.
+proc := hold 'proc.
+Nil := Nil.
 
 ;; Continuations
 Cont call := { meta sys exitCC#: self, $1. }.
@@ -42,6 +44,16 @@ global while := { cond := { parent dynamic $1. }.
                                                            loop { if: cond,
                                                                       { stmt. },
                                                                       { $break: meta Nil. }. }. }. }. }. }.
+
+;; Cond Statement
+global cond := { takes '[block].
+                 callCC { finished := $1.
+                          whenProc := proc { if: $1,
+                                                 { Object clone tap { self do := { finished call: $1. }. }. },
+                                                 { Object clone tap { self do := { }. }. }. }.
+                          procd := dynamic invokeSpecial: hold 'block, { $1 when := { whenProc call. }. }.
+                          procd call.
+                          Nil. }. }.
 
 ;; Return the script
 here.
