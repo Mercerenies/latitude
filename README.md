@@ -10,7 +10,7 @@ Latitude is a work-in-progress prototype-oriented programming language that spor
  * First-class scopes
  * Overridable literals through the `meta` object
  * Automatic garbage collection
- * Flow control via single-use continuations
+ * Full continuation support via `callCC`
  * Ruby-style exception handling via `catch` blocks
  * Lazy evaluation through method rules and the `Cached` object
  * Arbitrary precision arithmetic support
