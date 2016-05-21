@@ -85,6 +85,7 @@ Array < := { localize.
 
 ;; Collection Methods
 Array iterator := { ArrayIterator := Object clone.
+                    ArrayIterator iterator := { self. }.
                     ArrayIterator toString := "ArrayIterator".
                     ArrayIterator index := 0.
                     ArrayIterator array := self.

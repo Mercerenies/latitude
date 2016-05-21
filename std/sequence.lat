@@ -13,6 +13,7 @@ Sequence fromArray := { self clone tap { self list := parent dynamic $1 foldr: N
                                                                                  cc cdr := $2.
                                                                                  cc. }. }. }.
 Sequence iterator := { SequenceIterator := Object clone.
+                       SequenceIterator iterator := { self. }.
                        SequenceIterator toString := SequenceIterator.
                        SequenceIterator inside := self list.
                        SequenceIterator next := { self inside := self inside cdr. }.

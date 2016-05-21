@@ -41,6 +41,10 @@ global IOError := SystemError clone tap { self message := "IO error".
                                           self toString := "IOError". }.
 meta IOError := IOError.
 
+global ReadOnlyError := SystemError clone tap { self message := "Write access prohibited".
+                                                self toString := "ReadOnlyError". }.
+meta ReadOnlyError := ReadOnlyError.
+
 global NotSupportedError := SystemError clone tap { self message := "Not supported".
                                                     self toString := "NotSupportedException". }.
 meta NotSupportedError := NotSupportedError.

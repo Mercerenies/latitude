@@ -1,5 +1,8 @@
 
+ReadOnlyError := ReadOnlyError.
 ArgList := ArgList.
+Proc := Proc.
+proc := hold 'proc.
 
 ;; "Cells" a la MIT Scheme
 global Cell := Object clone.
@@ -46,6 +49,51 @@ global localize := { dynamic parent $lexical this := dynamic parent $lexical sel
 global takes := { args := ArgList clone fillWith: dynamic parent.
                   target := dynamic parent $lexical.
                   ($1 clone zip!: args) map!: { target put: ($1 car), ($1 hold 'cdr). $1 car. }. }.
+
+;; Python-style generator functions
+; Note that currently, generators are single-pass.
+; TODO Figure out how to make generators clone-able to make them multi-pass
+;      (something bizarre is happening between the continuation jumps when a clone is used)
+Generator := Proc clone.
+Generator toString := "Generator".
+Generator iterator := { self. }.
+Generator end? := True.
+Generator element := Nil.
+Generator element= := { ReadOnlyError clone tap { self message := "Generators are read-only". } throw. }.
+Generator next := { }.
+Generator call := { self next.
+                    self element. }.
+Generator map := { localize.
+                   procd := proc { parent dynamic hold '$1 call. }.
+                   { this visit { $yield: procd call ($1). }. } generator. }.
+Proc generator := { procd := proc { parent hold 'self call. }.
+                    Generator clone tap { self end? := False.
+                                          self element := Nil.
+                                          self yieldStmt := Nil.
+                                          self resumeStmt := { localize.
+                                                               proc { this procStmt call.
+                                                                      this end? := True.
+                                                                      this yieldStmt call: Nil. }. }.
+                                          self procStmt :=
+                                              { localize.
+                                                procd invokeSpecial:
+                                                    { procd call. },
+                                                    { $2 $yield :=
+                                                          { takes '[result].
+                                                            parent this := callCC
+                                                                        { this resumeStmt := $1.
+                                                                          this yieldStmt call: result. }. }. }. }.
+                                          self next :=
+                                              { localize.
+                                                callCC { outer := $1.
+                                                         this element :=
+                                                             callCC { this yieldStmt := $1.
+                                                                      this element := this resumeStmt call: this.
+                                                                      this end? := True.
+                                                                      outer call: Nil. }. }. }.
+                                          self next. }. }.
+global Generator := Generator.
+Collection inject: Generator.
 
 ;; Return the script
 here.

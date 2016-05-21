@@ -35,6 +35,7 @@ ArgList unshift := { if: (self size == 0),
                                         temp1. }.
                            self enclosingScope $1 := temp. }. }.
 ArgList iterator := { ArgIterator := Object clone.
+                      ArgIterator iterator := { self. }.
                       ArgIterator array := self.
                       ArgIterator toString := "ArgIterator".
                       ArgIterator index := 1.

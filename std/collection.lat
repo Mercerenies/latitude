@@ -21,8 +21,12 @@ Collection map! := { func := { (parent dynamic hold '$1) call. }.
                         do { iter element=: (func: iter element).
                              iter next. }.
                      self. }.
-Collection visit := { self map!: { (parent dynamic hold '$1) call.
-                                   $1. }. }.
+Collection visit := { func := { (parent dynamic hold '$1) call. }.
+                      iter := self iterator.
+                      while { iter end? not. }
+                         do { func: iter element.
+                              iter next. }.
+                      self. }.
 Collection map := { coll := self clone.
                     coll map!: { (parent dynamic hold '$1) call. }. }.
 Collection foldl := { accum := $1.
