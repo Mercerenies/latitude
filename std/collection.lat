@@ -13,7 +13,8 @@ id := id.
 global Collection := Mixin clone.
 Collection toString := "Collection".
 Collection interface := '[map!, visit, map, foldl, foldr, size, toArray, all, any, notall, notany,
-                          detect, countIf, count, find, containsIf, contains, zip, zip!, take].
+                          detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
+                          minimum].
 Collection map! := { func := { (parent dynamic hold '$1) call. }.
                      iter := self iterator.
                      while { iter end? not. }
@@ -99,7 +100,24 @@ Collection take := { remaining := $1.
                                                         decrement. },
                                                       { return: Nil. }. }. }.
                      arr. }.
-; TODO maximum and minimum (need to handle the corner cases well)
+Collection maximum := { current := Nil.
+                        isSet := False.
+                        setCurrent := { parent isSet := True.
+                                        parent current := dynamic hold '$1. }.
+                        maximize := { takes '[value].
+                                      isSet ifFalse { setCurrent: hold 'value. }.
+                                      ((hold 'value) > (hold 'current)) ifTrue { setCurrent: hold 'value. }. }.
+                        self visit { maximize: dynamic hold '$1. }.
+                        current. }.
+Collection minimum := { current := Nil.
+                        isSet := False.
+                        setCurrent := { parent isSet := True.
+                                        parent current := dynamic hold '$1. }.
+                        minimize := { takes '[value].
+                                      isSet ifFalse { setCurrent: hold 'value. }.
+                                      ((hold 'value) < (hold 'current)) ifTrue { setCurrent: hold 'value. }. }.
+                        self visit { minimize: dynamic hold '$1. }.
+                        current. }.
 
 Collection inject: Array.
 

@@ -34,16 +34,18 @@
         `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "dynamic" "parent"
                          "here" "again" "self" "invoke" "get" "has" "put" "slot" "hold" "callCC"
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
-                         "catch" "handle" "load" "inject" "iterator" "$lexical" "$dynamic" "scope"
-                         "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject" "implements" "takes"
-                         "localize" "this")
+                         "catch" "handle" "load" "eval" "rethrow" "inject" "iterator" "$lexical"
+                         "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
+                         "implements" "takes" "localize" "this" "brackets" "origin" "resolve" "protect"
+                         "thunk" "sigil" "do")
                        'symbols) . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
-                         "Proc" "Stream" "SystemCall" "Cont" "Exception" "SystemError" "Array" "Kernel"
-                         "Sequence" "ArgList" "Collection" "StreamError" "SystemArgError"
+                         "Proc" "Stream" "Cont" "Exception" "SystemError" "Array" "Kernel"
+                         "Sequence" "ArgList" "Collection" "SystemArgError"
                          "SystemCallError" "TypeError" "SlotError" "ContError" "ParseError"
                          "BoundsError" "Mixin" "Cons" "Cell" "Lockbox" "Latchkey" "Cached"
-                         "IOError" "Wildcard" "Ellipsis" "Match" "NoMatch" "LazySequence")
+                         "IOError" "Wildcard" "Ellipsis" "Match" "NoMatch" "LazySequence" "Process"
+                         "StackFrame" "NotSupportedError" "REPL")
                        'symbols) . font-lock-constant-face)))
 
 ;; (defun latitude-mode-skip-blanks ()

@@ -15,11 +15,6 @@ global SystemArgError := SystemError clone tap { self message := "Wrong number o
                                                  self toString := "SystemArgError". }.
 meta SystemArgError := SystemArgError.
 
-; TODO Remove StreamError and use IOError instead
-global StreamError := SystemError clone tap { self message := "Stream error".
-                                              self toString := "StreamError". }.
-meta StreamError := StreamError.
-
 global TypeError := SystemError clone tap { self message := "Type error".
                                             self toString := "TypeError". }.
 meta TypeError := TypeError.

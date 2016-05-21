@@ -119,7 +119,6 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str) {
 }
 
 void eval(IntState& state, string str) {
-    // TODO Better errors here
     try {
         auto result = parse(str);
         if (!result.empty()) {

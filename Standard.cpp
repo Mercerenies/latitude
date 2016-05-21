@@ -10,12 +10,7 @@
 
 using namespace std;
 
-///// It's time to make the garbage collector work with the bytecode system.
-//    You'll need to modify it to check and see if objects have StatePtr and
-//    follow those if they do in order to ensure that continuation-related
-//    objects aren't prematurely deleted.
-
-// TODO More objects should have toString so they don't all default to showing "Object"
+// TODO Intelligently decide in REPL when to call the garbage collector
 
 // TODO Make primitive objects like String and Number clone properly (prim() fields don't clone)
 
@@ -229,6 +224,20 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                     oss << "\\\"";
                 else if (ch == '\\')
                     oss << "\\\\";
+                else if (ch == '\n')
+                    oss << "\\\n";
+                else if (ch == '\r')
+                    oss << "\\\r";
+                else if (ch == '\a')
+                    oss << "\\\a";
+                else if (ch == '\b')
+                    oss << "\\\b";
+                else if (ch == '\v')
+                    oss << "\\\v";
+                else if (ch == '\t')
+                    oss << "\\\t";
+                else if (ch == '\f')
+                    oss << "\\\f";
                 else
                     oss << ch;
             }

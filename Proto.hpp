@@ -16,7 +16,6 @@
 
 // Yes, this is probably horrible from a design standpoint, but I needed some
 // way to resolve the circular dependencies.
-struct SignalValidator; // From Cont.hpp
 class Stmt; // From Reader.hpp
 struct Scope; // From Reader.hpp
 using InstrSeq = std::deque<unsigned char>; // From Bytecode.hpp
@@ -30,12 +29,10 @@ using LStmt = std::list< std::shared_ptr<Stmt> >;
 using ObjectPtr = std::weak_ptr<Object>;
 using ObjectSPtr = std::shared_ptr<Object>;
 using SystemCall = std::function<ObjectPtr(Scope, std::list<ObjectPtr>)>;
-using Method = LStmt;
-using NewMethod = InstrSeq;
+using Method = InstrSeq;
 using Prim = boost::variant<boost::blank, Number, std::string,
-                            Method, SystemCall, StreamPtr, Symbolic,
-                            std::weak_ptr<SignalValidator>, ProcessPtr,
-                            NewMethod, StatePtr>;
+                            StreamPtr, Symbolic, ProcessPtr,
+                            Method, StatePtr>;
 
 // TODO Overhaul the prim() interface and probably switch to using subclasses to represent "primitives",
 //      as the boost::variant approach to primitives is starting to explode in complexity.

@@ -95,8 +95,6 @@ struct AppendVisitor {
         instructions->push_back('\0');
     }
 
-    // TODO Make sure the lexer is prepared to handle enforcing the 4-byte longs
-    //      constraint even on a machine where sizeof(long) > 4
     // TODO I'm using a whole byte for the sign right now; minimize that as best as possible
     void operator()(const long& val) {
         long val1 = val;
@@ -334,7 +332,7 @@ void executeInstr(Instr instr, IntState& state) {
             mid = state.ret;
             break;
         default:
-            mid = ObjectPtr(); // TODO Error handling?
+            mid = ObjectPtr();
             state.err0 = true;
             break;
         }
@@ -349,7 +347,6 @@ void executeInstr(Instr instr, IntState& state) {
             state.ret = mid;
             break;
         default:
-            // TODO Error handling?
             state.err0 = true;
             break;
         }
@@ -373,7 +370,7 @@ void executeInstr(Instr instr, IntState& state) {
             mid = state.ret;
             break;
         default:
-            mid = ObjectPtr(); // TODO Error handling?
+            mid = ObjectPtr();
             state.err0 = true;
             break;
         }
@@ -394,8 +391,8 @@ void executeInstr(Instr instr, IntState& state) {
             state.hand.push(mid);
             break;
         default:
-            // TODO Error handling?
             state.err0 = true;
+            break;
         }
     }
         break;
@@ -422,7 +419,6 @@ void executeInstr(Instr instr, IntState& state) {
             stack = &state.hand;
             break;
         default:
-            // TODO Error handling?
             stack = nullptr;
             state.err0 = true;
         }
@@ -531,14 +527,13 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
-        auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
         Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
             (closure.getType() == SlotType::PTR) << " " <<
-            stmt << " " << stmtNew << endl;
+            stmt << " " << stmt << endl;
 #endif
-        if ((closure.getType() == SlotType::PTR) && (stmt || stmtNew)) {
+        if ((closure.getType() == SlotType::PTR) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
             if (!state.dyn.empty())
@@ -571,10 +566,10 @@ void executeInstr(Instr instr, IntState& state) {
             // (7) Push %cont onto %stack
             state.stack.push(state.cont);
             // (8) Make a new %cont
-            if (stmtNew) {
+            if (stmt) {
 #if DEBUG_INSTR > 3
-                cout << "* (cont) " << stmtNew->size() << endl;
-                if (stmtNew->size() == 0) {
+                cout << "* (cont) " << stmt->size() << endl;
+                if (stmt->size() == 0) {
                     // What are we looking at...?
                     cout << "* * Where ptr has" << endl;
                     for (auto& x : keys(state.ptr))
@@ -594,14 +589,7 @@ void executeInstr(Instr instr, IntState& state) {
                     cout << endl;
                 }
 #endif
-                state.cont = *stmtNew;
-            } else {
-                state.cont = InstrSeq();
-                for (auto stmt0 : *stmt) {
-                    auto ref = stmt0->translate();
-                    state.cont.insert(state.cont.end(), ref.begin(), ref.end());
-                }
-                // TODO Add a `ret` instruction here
+                state.cont = *stmt;
             }
         } else {
             // It's not a method; just return it
@@ -617,20 +605,12 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "XCALL (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
-        auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
-        if (stmt || stmtNew) {
+        if (stmt) {
             // (6) Push %cont onto %stack
             state.stack.push(state.cont);
             // (7) Make a new %cont
-            if (stmtNew) {
-                state.cont = *stmtNew;
-            } else {
-                state.cont = InstrSeq();
-                for (auto stmt0 : *stmt) {
-                    auto ref = stmt0->translate();
-                    state.cont.insert(state.cont.end(), ref.begin(), ref.end());
-                }
-            }
+            if (stmt)
+                state.cont = *stmt;
         }
     }
         break;
@@ -641,9 +621,8 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
-        auto stmtNew = boost::get<NewMethod>(&state.ptr.lock()->prim());
         Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
-        if ((closure.getType() == SlotType::PTR) && (stmt || stmtNew)) {
+        if ((closure.getType() == SlotType::PTR) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
             if (!state.dyn.empty())
@@ -862,7 +841,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHD: {
-            auto test = boost::get<NewMethod>(&state.ptr.lock()->prim());
+            auto test = boost::get<Method>(&state.ptr.lock()->prim());
             if (test)
                 state.mthd = *test;
             else
@@ -886,7 +865,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHDZ: {
-            auto test = boost::get<NewMethod>(&state.ptr.lock()->prim());
+            auto test = boost::get<Method>(&state.ptr.lock()->prim());
             if (test)
                 state.mthdz = *test;
             else
@@ -894,7 +873,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         default:
-            state.err0 = true; // TODO Error handling?
+            state.err0 = true;
             break;
         }
     }
@@ -956,7 +935,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         default:
-            state.err0 = true; // TODO Error handling?
+            state.err0 = true;
             break;
         }
     }
@@ -1000,9 +979,9 @@ void executeInstr(Instr instr, IntState& state) {
             stack = &state.hand;
             break;
         default:
-            // TODO Error handling?
             stack = nullptr;
             state.err0 = true;
+            break;
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
@@ -1073,11 +1052,14 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "CCALL" << endl;
 #endif
-        // TODO What if %slf is null?
-        state.slf.lock()->prim( statePtr(state) );
-        state.arg.push(state.slf);
-        InstrSeq seq = asmCode( makeAssemblerLine(Instr::CALL, 1L) );
-        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+        if (state.slf.expired()) {
+            state.err0 = true;
+        } else {
+            state.slf.lock()->prim( statePtr(state) );
+            state.arg.push(state.slf);
+            InstrSeq seq = asmCode( makeAssemblerLine(Instr::CALL, 1L) );
+            state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+        }
     }
         break;
     case Instr::CGOTO: {
@@ -1123,11 +1105,9 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "WND" << endl;
 #endif
-        // TODO What if %slf / %ptr are null
-        auto before = boost::get<NewMethod>(&state.slf.lock()->prim()),
-             after  = boost::get<NewMethod>(&state.ptr.lock()->prim());
+        auto before = boost::get<Method>(&state.slf.lock()->prim()),
+             after  = boost::get<Method>(&state.ptr.lock()->prim());
         if (before && after) {
-            // TODO What if empty dyn stack?
             WindPtr frame = make_shared<WindFrame>();
             frame->before.code = *before;
             frame->before.lex = (*state.slf.lock())[ Symbols::get()["closure"] ].getPtr();

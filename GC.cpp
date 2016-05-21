@@ -98,7 +98,6 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, Ob
     }
 }
 
-// TODO Can we make a noexcept guarantee here?
 long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<ENTER GC>>" << std::endl;

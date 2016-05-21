@@ -49,7 +49,7 @@ global ... := { Ellipsis clone. }.
 ; ~m 'name ... - A wildcard that matches multiple list elements and binds the array containing them to 'name
 Wildcard ... := { ellipsis := self clone.
                   ellipsis symbol := self symbol.
-                  ellipsis parent := Ellipsis. ; TODO Is there a better way than reassigning the parent?
+                  ellipsis parent := Ellipsis.
                   ellipsis. }.
 
 ; The actual matching behavior is defined here.

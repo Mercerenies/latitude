@@ -1,5 +1,7 @@
 
 %option noyywrap
+%option noinput
+%option nounput
 %option header-file="lex.yy.h"
 
 %{
@@ -37,7 +39,6 @@
          curr_buffer_size = 0;
      }
 
-     // TODO Make the scanner (and printer) able to handle escape sequences for newlines, etc. (\n, \r, \t, etc)
 %}
 
 NORMAL    [^.,:()\[\]{}\"\' \t\n\r]
@@ -66,7 +67,7 @@ ID        {SNORMAL}{NORMAL}*
 [-+]?[0-9]+ {
     errno = 0;
     yylval.ival = strtol(yytext, NULL, 10);
-    if (errno == ERANGE) {
+    if ((errno == ERANGE) || (yylval.ival > 0xFFFFFFFF) || (yylval.ival < -0xFFFFFFFF)) {
         char* arr = calloc(strlen(yytext) + 1, sizeof(char));
         strcpy(arr, yytext);
         yylval.sval = arr;
@@ -92,6 +93,13 @@ ID        {SNORMAL}{NORMAL}*
 \" { BEGIN(INNER_STRING); clear_buffer(); }
 <INNER_STRING>\n { append_buffer(yytext[1]); ++line_num; }
 <INNER_STRING>[^\\\"] { append_buffer(yytext[0]); }
+<INNER_STRING>\\n { append_buffer((char)0x0A); }
+<INNER_STRING>\\r { append_buffer((char)0x0D); }
+<INNER_STRING>\\t { append_buffer((char)0x09); }
+<INNER_STRING>\\a { append_buffer((char)0x07); }
+<INNER_STRING>\\b { append_buffer((char)0x08); }
+<INNER_STRING>\\f { append_buffer((char)0x0C); }
+<INNER_STRING>\\v { append_buffer((char)0x0B); }
 <INNER_STRING>\\. { append_buffer(yytext[1]); }
 <INNER_STRING>\" { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
 <INNER_STRING><<EOF>> { yyerror("Unterminated string"); }

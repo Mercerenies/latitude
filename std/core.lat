@@ -211,8 +211,8 @@ meta StackFrame dump := { if: { (parent self) === (meta StackFrame). },
                               { meta Nil. },
                               { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
                                 parent self parent dump. }. }.
-global currentStackTrace := { meta sys stackTrace# parent. }. ; TODO Is the parent here good?
-global printStackTrace := { self stackTrace parent dump. }. ; TODO Is the parent here good too?
+global currentStackTrace := { meta sys stackTrace# parent. }.
+global printStackTrace := { self stackTrace parent dump. }.
 
 ;; We would return the script here, but the `has` function requires flow_control.lat
 1.

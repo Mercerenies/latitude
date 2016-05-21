@@ -5,6 +5,7 @@ Kernel := Kernel.
 stderr := stderr.
 
 REPL := Object clone.
+REPL toString := "REPL".
 
 REPL quitter := { jump := Nil.
                   setJump := { parent jump := $1. }.
@@ -26,6 +27,7 @@ REPL read := { stdout puts: "> ".
 REPL eval := { Kernel eval: global, global, $1. }.
 REPL print := { stdout println: dynamic hold '$1. }.
 REPL loop := { localize.
+               $whereAmI := this.
                loop { { expr := this read.
                         this lastResult := this eval: expr.
                         this print: this hold 'lastResult. } resolve: { meta True. },

@@ -37,7 +37,6 @@ public:
     long garbageCollect(InputIterator begin, InputIterator end);
 };
 
-// TODO Can we make a noexcept guarantee here?
 template <typename InputIterator>
 long GC::garbageCollect(InputIterator begin, InputIterator end) {
     std::vector<ObjectPtr> globals;

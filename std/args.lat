@@ -1,11 +1,10 @@
 
-; TODO Make argument lists cloneable more appropriately (so they don't modify the original
-;      scope)
-
 ;; The argument list. When filled, it takes the current dynamic scope and references its argument list.
 global ArgList := Object clone.
 ArgList toString := "ArgList".
 ArgList enclosingScope := global.
+ArgList clone := { procd := self invoke: (Object hold 'clone).
+                   procd call tap { self enclosingScope := self enclosingScope clone. }. }.
 ArgList fill := { self enclosingScope := dynamic parent.
                   self. }.
 ArgList fillWith := { self enclosingScope := $1.
