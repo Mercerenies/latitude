@@ -1,6 +1,5 @@
 
 ;; Continuations
-Cont tag := Nil.
 Cont call := { meta sys exitCC#: self, $1. }.
 global callCC := { meta sys callCC#: meta Cont clone, { parent dynamic $1. }. }.
 

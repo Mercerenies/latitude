@@ -1,12 +1,11 @@
 #ifndef _GC_HPP_
 #define _GC_HPP_
 
+#include "Bytecode.hpp"
 #include "Proto.hpp"
-#include <set>
+#include <vector>
 #include <array>
 #include <algorithm>
-
-#define GC_PRINT 0
 
 /*
  * A singleton object representing the global garbage collector. All
@@ -32,66 +31,18 @@ public:
      * arguments will free every object that was created using the garbage
      * collector.
      */
-    template <typename... Ts>
-    void garbageCollect(Ts... globals);
+    long garbageCollect(std::vector<ObjectPtr>);
+    long garbageCollect(IntState&);
+    template <typename InputIterator>
+    long garbageCollect(InputIterator begin, InputIterator end);
 };
 
 // TODO Can we make a noexcept guarantee here?
-template <typename... Ts>
-void GC::garbageCollect(Ts... globals) {
-#if GC_PRINT > 0
-    std::cout << "<<ENTER GC>>" << std::endl;
-#endif
-    struct WeakLess {
-        bool operator()(const ObjectPtr& obj0, const ObjectSPtr& obj1) {
-            return obj0.lock() < obj1;
-        }
-        bool operator()(const ObjectSPtr& obj0, const ObjectPtr& obj1) {
-            return obj0 < obj1.lock();
-        }
-        bool operator()(const ObjectPtr& obj0, const ObjectPtr& obj1) {
-            return obj0.lock() < obj1.lock();
-        }
-    };
-    std::set<ObjectPtr, WeakLess> visited;
-    std::set<ObjectPtr, WeakLess> frontier;
-    std::array<ObjectPtr, sizeof...(globals)> args = {globals...};
-    for (auto elem : args)
-        frontier.insert(elem);
-    while (!frontier.empty()) {
-        auto curr = *(frontier.begin());
-        auto stream(outStream());
-        visited.insert(curr);
-        frontier.erase(curr);
-        if (auto curr1 = curr.lock()) {
-#if GC_PRINT > 1
-            std::cout << "<<Got lock on " << curr1 << ">>" << std::endl;
-#endif
-            assert(alloc.find(curr1) != alloc.end());
-            for (auto key : curr1->directKeys()) {
-                auto val = (*curr1)[key].getPtr();
-                if (visited.find(val) == visited.end()) {
-#if GC_PRINT > 1
-                    std::cout << "<<Inserting " << val.lock() << " from "
-                              << Symbols::get()[key] << ">>" << std::endl;
-#endif
-                    frontier.insert(val);
-                }
-            }
-        }
-    }
-    std::set<ObjectSPtr> result;
-    std::set_difference(alloc.begin(), alloc.end(),
-                        visited.begin(), visited.end(),
-                        inserter(result, result.begin()),
-                        WeakLess());
-    for (ObjectSPtr res : result) {
-        alloc.erase(res);
-        res.reset();
-    }
-#if GC_PRINT > 0
-    std::cout << "<<EXIT GC>>" << std::endl;
-#endif
+template <typename InputIterator>
+long GC::garbageCollect(InputIterator begin, InputIterator end) {
+    std::vector<ObjectPtr> globals;
+    globals.insert(globals.end(), begin, end);
+    return GC::garbageCollect(globals);
 }
 
 #endif // _GC_HPP_

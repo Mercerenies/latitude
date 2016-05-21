@@ -56,7 +56,7 @@ Stream.o:	Stream.cpp Stream.hpp
 Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp Macro.hpp Process.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) Garnish.cpp
 
-GC.o:	GC.cpp GC.hpp Proto.hpp Process.hpp
+GC.o:	GC.cpp GC.hpp Proto.hpp Process.hpp Bytecode.hpp
 	$(CXX) $(CXXFLAGS) GC.cpp
 
 Symbol.o:	Symbol.cpp Symbol.hpp

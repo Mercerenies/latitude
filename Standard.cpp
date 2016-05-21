@@ -10,6 +10,11 @@
 
 using namespace std;
 
+///// It's time to make the garbage collector work with the bytecode system.
+//    You'll need to modify it to check and see if objects have StatePtr and
+//    follow those if they do in order to ensure that continuation-related
+//    objects aren't prematurely deleted.
+
 // TODO More objects should have toString so they don't all default to showing "Object"
 
 // TODO Make primitive objects like String and Number clone properly (prim() fields don't clone)
@@ -61,7 +66,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         FILE_EOF = 19,
         STRING_LENGTH = 20,
         STRING_SUB = 21,
-        STRING_FIND = 22;
+        STRING_FIND = 22,
+        GC_RUN = 23;
 
     // TERMINATE
     state.cpp[TERMINATE] = [](IntState& state0) {
@@ -1463,6 +1469,15 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::THROA, "String expected"),
                                                          makeAssemblerLine(Instr::CPP, STRING_FIND))));
 
+    // GC_RUN (run the garbage collector and store the number of objects deleted at %ret)
+    // runGC#.
+    state.cpp[GC_RUN] = [](IntState& state0) {
+        long result = GC::get().garbageCollect(state0);
+        garnishEnd(state0, result);
+    };
+    sys.lock()->put(Symbols::get()["runGC#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, GC_RUN))));
+
 }
 
 ObjectPtr spawnObjects(IntState& state) {
@@ -1551,7 +1566,6 @@ ObjectPtr spawnObjects(IntState& state) {
     number.lock()->prim(0.0);
     string.lock()->prim("");
     symbol.lock()->prim(Symbols::get()[""]);
-    cont.lock()->prim(StatePtr());
     stdout_.lock()->prim(outStream());
     stdin_.lock()->prim(inStream());
     stderr_.lock()->prim(errStream());

@@ -24,14 +24,14 @@ global $it := { self REPL lastResult. }.
 REPL read := { stdout puts: "> ".
                stdin readln. }.
 REPL eval := { Kernel eval: global, global, $1. }.
-REPL print := { stdout println: $1. }.
+REPL print := { stdout println: dynamic hold '$1. }.
 REPL loop := { localize.
                loop { { expr := this read.
                         this lastResult := this eval: expr.
-                        this print: this lastResult. } resolve: { meta True. },
-                                                                { this exception := $1.
-                                                                  stderr putln: "***** EXCEPTION *****".
-                                                                  stderr putln: this exception pretty.
-                                                                  this exception printStackTrace. }. }. }.
+                        this print: this hold 'lastResult. } resolve: { meta True. },
+                                                                      { this exception := $1.
+                                                                        stderr putln: "***** EXCEPTION *****".
+                                                                        stderr putln: this exception pretty.
+                                                                        this exception printStackTrace. }. }. }.
 
 global REPL := REPL.

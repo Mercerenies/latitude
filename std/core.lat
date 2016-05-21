@@ -125,8 +125,8 @@ Stream in? := { meta sys streamIn#: self. }.
 Stream out? := { meta sys streamOut#: self. }.
 Stream puts := { meta sys streamPuts#: self, $1. }.
 Stream putln := { meta sys streamPutln#: self, $1. }.
-Stream print := { self puts: $1 toString. }.
-Stream println := { self putln: $1 toString. }.
+Stream print := { self puts: dynamic hold '$1 toString. }.
+Stream println := { self putln: dynamic hold '$1 toString. }.
 Stream readln := { meta sys streamRead#: self. }.
 Stream read := { meta sys streamReadChar#: self. }.
 Stream eof? := { meta sys streamEof#: self. }.
@@ -177,6 +177,9 @@ Object max := { if: ((self) > ($1)), self, $1. }.
 Kernel toString := "Kernel".
 Kernel kill := { meta sys kill#. }.
 Kernel eval := { meta sys eval#: $1, $2, $3. }.
+Kernel GC := Object clone.
+Kernel GC toString := "GC".
+Kernel GC run := { meta sys runGC#. }.
 ; (The load function is defined in the main latitude.lat file)
 
 ;; Symbol functions
