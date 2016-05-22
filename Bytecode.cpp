@@ -212,7 +212,7 @@ const InstrSeq& StackNode::get() {
 }
 
 NodePtr pushNode(NodePtr node, const InstrSeq& data) {
-    NodePtr ptr = make_shared<StackNode>(data);
+    NodePtr ptr = NodePtr(new StackNode(data));
     ptr->next = node;
     return ptr;
 }
@@ -242,7 +242,7 @@ IntState intState() {
 }
 
 StatePtr statePtr(const IntState& state) {
-    return make_shared<IntState, const IntState&>(state);
+    return StatePtr(new IntState(state));
 }
 
 void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWind) {
@@ -1126,7 +1126,7 @@ void executeInstr(Instr instr, IntState& state) {
         auto before = boost::get<Method>(&state.slf.lock()->prim()),
              after  = boost::get<Method>(&state.ptr.lock()->prim());
         if (before && after) {
-            WindPtr frame = make_shared<WindFrame>();
+            WindPtr frame = WindPtr(new WindFrame());
             frame->before.code = *before;
             frame->before.lex = (*state.slf.lock())[ Symbols::get()["closure"] ].getPtr();
             frame->before.dyn = state.dyn.top();

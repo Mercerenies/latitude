@@ -14,7 +14,7 @@ GC& GC::get() noexcept {
 }
 
 ObjectPtr GC::allocate() {
-    ObjectSPtr ptr = std::make_shared<Object>();
+    ObjectSPtr ptr = ObjectSPtr(new Object());
 #if GC_PRINT > 2
     std::cout << "<<Allocating " << ptr << ">>" << std::endl;
 #endif
