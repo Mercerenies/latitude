@@ -3,6 +3,7 @@ ReadOnlyError := ReadOnlyError.
 ArgList := ArgList.
 Proc := Proc.
 proc := hold 'proc.
+Exception := Exception.
 
 ;; "Cells" a la MIT Scheme
 global Cell := Object clone.
@@ -52,6 +53,9 @@ global takes := { args := ArgList clone fillWith: dynamic parent.
 
 ;; Python-style generator functions
 ; Note that currently, generators are single-pass.
+; Example usage:
+; { $yield 1. $yield 2. } generator toArray.
+;    ==> [1, 2]
 ; TODO Figure out how to make generators clone-able to make them multi-pass
 ;      (something bizarre is happening between the continuation jumps when a clone is used)
 Generator := Proc clone.
@@ -94,6 +98,33 @@ Proc generator := { procd := proc { parent hold 'self call. }.
                                           self next. }. }.
 global Generator := Generator.
 Collection inject: Generator.
+
+;; McCarthy's 'amb' operator
+; Example usage:
+; callAmb { x := amb [1, 2, 3].
+;           y := amb [2, 4, 6].
+;           ((x) * (y) == 8) ifFalse: { amb []. }.
+;           [x, y]. }.
+; TODO This one is a bit sloppy when it's cloned as well; work on that
+AmbError := Exception clone tap { self toString := "AmbError".
+                                  self message := "Amb expression failed". }.
+global AmbError := AmbError.
+Amb := Object clone.
+global Amb := Amb.
+Amb toString := "Amb".
+Amb nextHandler := { AmbError clone throw. }.
+global callAmb := { ambObject := Amb clone.
+                    ambFunc := proc { takes '[cases].
+                                      callCC { escape := { parent dynamic $1 call. }.
+                                               oldHandler := ambObject hold 'nextHandler.
+                                               cases visit
+                                                   { takes '[curr].
+                                                     callCC { ambObject nextHandler := { parent dynamic $1 call. }.
+                                                              escape: curr. }. }.
+                                               oldHandler. }. }.
+                    procd := ambObject invokeSpecial: dynamic hold '$1,
+                                                      { $1 amb := { ambFunc call. }. }.
+                    procd call. }.
 
 ;; Return the script
 here.
