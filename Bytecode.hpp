@@ -101,6 +101,26 @@ InstrSeq asmCode(Ts... args) {
     return seq;
 }
 
+class StackNode;
+
+using NodePtr = std::shared_ptr<StackNode>;
+
+// A home-baked stack implementation which allows sharing of data between continuations for
+// efficiency
+class StackNode {
+private:
+    NodePtr next;
+    InstrSeq data;
+public:
+    StackNode(const InstrSeq& data0);
+    const InstrSeq& get();
+    friend NodePtr pushNode(NodePtr node, const InstrSeq& data);
+    friend NodePtr popNode(NodePtr node);
+};
+
+NodePtr pushNode(NodePtr node, const InstrSeq& data);
+NodePtr popNode(NodePtr node);
+
 struct Thunk;
 struct WindFrame;
 struct IntState;
@@ -114,7 +134,7 @@ struct IntState {
     ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
     InstrSeq cont;
-    std::stack<InstrSeq> stack;
+    NodePtr stack;
     bool err0, err1;
     Symbolic sym;
     Number num0, num1;

@@ -204,6 +204,23 @@ void AssemblerLine::appendOnto(InstrSeq& seq) const {
         appendRegisterArg(arg, seq);
 }
 
+StackNode::StackNode(const InstrSeq& data0)
+    : next(nullptr), data(data0) {}
+
+const InstrSeq& StackNode::get() {
+    return data;
+}
+
+NodePtr pushNode(NodePtr node, const InstrSeq& data) {
+    NodePtr ptr = make_shared<StackNode>(data);
+    ptr->next = node;
+    return ptr;
+}
+
+NodePtr popNode(NodePtr node) {
+    return node->next;
+}
+
 IntState intState() {
     IntState state;
     // ptr, slf, ret default to null
@@ -245,17 +262,17 @@ void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWi
         exits.pop_back();
         enters.pop_front();
     }
-    state.stack.push(state.cont);
+    state.stack = pushNode(state.stack, state.cont);
     state.cont.clear();
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );
-        state.stack.push(ptr->after.code);
+        state.stack = pushNode(state.stack, ptr->after.code);
     }
     for (WindPtr ptr : enters) {
         state.lex.push( clone(ptr->before.lex) );
         state.dyn.push( clone(ptr->before.dyn) );
-        state.stack.push(ptr->before.code);
+        state.stack = pushNode(state.stack, ptr->before.code);
     }
 }
 
@@ -564,7 +581,7 @@ void executeInstr(Instr instr, IntState& state) {
                 }
             }
             // (7) Push %cont onto %stack
-            state.stack.push(state.cont);
+            state.stack = pushNode(state.stack, state.cont);
             // (8) Make a new %cont
             if (stmt) {
 #if DEBUG_INSTR > 3
@@ -607,7 +624,7 @@ void executeInstr(Instr instr, IntState& state) {
         auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
         if (stmt) {
             // (6) Push %cont onto %stack
-            state.stack.push(state.cont);
+            state.stack = pushNode(state.stack, state.cont);
             // (7) Make a new %cont
             if (stmt)
                 state.cont = *stmt;
@@ -759,7 +776,7 @@ void executeInstr(Instr instr, IntState& state) {
             (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
             (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
             (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
-            state.stack.push(state.cont);
+            state.stack = pushNode(state.stack, state.cont);
             state.cont = seq0;
         } else {
 #if DEBUG_INSTR > 1
@@ -1035,7 +1052,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "BRANCH (" << state.flag << ")" << endl;
 #endif
-        state.stack.push(state.cont);
+        state.stack = pushNode(state.stack, state.cont);
         if (state.flag) {
 #if DEBUG_INSTR > 2
             cout << "* Method ( ) Length " << state.mthd.size() << endl;
@@ -1091,8 +1108,8 @@ void executeInstr(Instr instr, IntState& state) {
             auto newWind = cont->wind;
             state = *cont;
             state.sto.push(ret);
-            InstrSeq pop = asmCode( makeAssemblerLine(Instr::POP, Reg::STO),
-                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
+            InstrSeq pop = asmCode(makeAssemblerLine(Instr::POP, Reg::STO),
+                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
             state.cont.insert(state.cont.begin(), pop.begin(), pop.end());
             resolveThunks(state, oldWind, newWind);
         } else {
@@ -1137,7 +1154,7 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "THROW" << endl;
 #endif
         ObjectPtr exc = state.slf;
-        state.stack.push(state.cont);
+        state.stack = pushNode(state.stack, state.cont);
         deque<ObjectPtr> handlers;
         std::function<void(stack<ObjectPtr>&)> recurse = [&recurse, &handlers](stack<ObjectPtr>& st) {
             if (!st.empty()) {
@@ -1168,7 +1185,7 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "THROQ (" << state.err0 << ")" << endl;
 #endif
         if (state.err0) {
-            state.stack.push(state.cont);
+            state.stack = pushNode(state.stack, state.cont);
             state.cont = asmCode( makeAssemblerLine(Instr::THROW) );
         }
     }
@@ -1310,7 +1327,7 @@ void executeInstr(Instr instr, IntState& state) {
                 stck.push(elem);
             }
         };
-        state.stack.push(state.cont);
+        state.stack = pushNode(state.stack, state.cont);
         state.cont.clear();
         stackUnwind(state.trace);
         InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL),
@@ -1332,9 +1349,9 @@ void doOneStep(IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "<><><>" << endl;
 #endif
-        if (!state.stack.empty()) {
-            state.cont = state.stack.top();
-            state.stack.pop();
+        if (state.stack) {
+            state.cont = state.stack->get();
+            state.stack = popNode(state.stack);
             doOneStep(state);
         }
     } else {
@@ -1348,6 +1365,6 @@ void doOneStep(IntState& state) {
 }
 
 bool isIdling(IntState& state) {
-    return (state.cont.empty() && state.stack.empty());
+    return (state.cont.empty() && !state.stack);
 }
 

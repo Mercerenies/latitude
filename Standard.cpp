@@ -1248,7 +1248,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // objectKeys#: obj.
     state.cpp[OBJECT_KEYS] = [](IntState& state0) {
         set<Symbolic> allKeys = keys(state0.slf);
-        state0.stack.push(state0.cont);
+        state0.stack = pushNode(state0.stack, state0.cont);
         state0.cont = asmCode(makeAssemblerLine(Instr::GETL),
                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                               makeAssemblerLine(Instr::SYM, "meta"),
@@ -1590,7 +1590,7 @@ ObjectPtr spawnObjects(IntState& state) {
 
 void throwError(IntState& state, std::string name, std::string msg) {
     // TODO Make the throw / throq / throa instructions terminate if exceptions are disabled
-    state.stack.push(state.cont);
+    state.stack = pushNode(state.stack, state.cont);
     state.cont = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                          makeAssemblerLine(Instr::GETL),
                          makeAssemblerLine(Instr::SYM, "meta"),
@@ -1613,14 +1613,14 @@ void throwError(IntState& state, std::string name, std::string msg) {
                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                          makeAssemblerLine(Instr::SETF),
                          makeAssemblerLine(Instr::THROW));
-    state.stack.push(state.cont);
+    state.stack = pushNode(state.stack, state.cont);
     state.cont.clear();
     garnishEnd(state, msg);
 }
 
 void throwError(IntState& state, std::string name) {
     // TODO Make the throw / throq / throa instructions terminate if exceptions are disabled
-    state.stack.push(state.cont);
+    state.stack = pushNode(state.stack, state.cont);
     state.cont = asmCode(makeAssemblerLine(Instr::GETL),
                          makeAssemblerLine(Instr::SYM, "meta"),
                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),

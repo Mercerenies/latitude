@@ -127,7 +127,7 @@ void eval(IntState& state, string str) {
                 auto tr = stmt->translate();
                 seq.insert(seq.end(), tr.begin(), tr.end());
             }
-            state.stack.push(state.cont);
+            state.stack = pushNode(state.stack, state.cont);
             state.cont = seq;
         }
     } catch (std::string str) {
@@ -162,7 +162,7 @@ void readFile(string fname, Scope defScope, IntState& state) {
             if (!state.dyn.empty())
                 state.dyn.push( clone(state.dyn.top()) );
             state.lex.push(defScope.lex);
-            state.stack.push(state.cont);
+            state.stack = pushNode(state.stack, state.cont);
             state.cont = seq;
         } catch (std::string parseException) {
             throwError(state, "ParseError", parseException);
