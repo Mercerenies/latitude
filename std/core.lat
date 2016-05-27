@@ -136,6 +136,15 @@ Stream closeAfter := { stream := self.
                        { (stream invoke: (parent dynamic hold '$1)) call. } protect { stream close. }. }.
 Stream toString := "Stream".
 
+; Dumping and Printing Convenience Functions
+Stream dump := { localize.
+                 obj := dynamic hold '$1.
+                 this println: obj.
+                 obj keys visit { this putln: "  " ++ ($1 asText) ++ ": " ++ ((obj hold: $1) toString). }.
+                 meta Nil. }.
+Object println := { stdout println: hold 'self. }.
+Object dump := { stdout dump: hold 'self. }.
+
 ;; Process basics
 Process toString := "Process".
 Process stdin := { meta sys processInStream#: meta Stream clone, self. }.

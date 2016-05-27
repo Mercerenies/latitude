@@ -8,13 +8,13 @@ proc := hold 'proc.
 Exception := Exception.
 
 ;; "Cells" a la MIT Scheme
-global Cell := Object clone.
+Cell := Object clone.
 Cell value := Nil.
 Cell toString := "Cell".
 
 ;; Lockboxes and Latchkeys
-global Latchkey := Object clone.
-global Lockbox := Object clone.
+Latchkey := Object clone.
+Lockbox := Object clone.
 Latchkey tag := Symbol.
 Latchkey make := { key := self clone.
                    key tag := key tag gensymOf: "KEY".
@@ -28,16 +28,6 @@ Lockbox toString := "Lockbox".
 Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.
 Latchkey == := { (self tag) == (self tag). }.
-
-; Dumping and Printing Convenience Functions
-stdout := stdout.
-Stream dump := { localize.
-                 obj := dynamic hold '$1.
-                 this println: obj.
-                 obj keys visit { this putln: "  " ++ ($1 asText) ++ ": " ++ ((obj hold: $1) toString). }.
-                 meta Nil. }.
-Object println := { stdout println: hold 'self. }.
-Object dump := { stdout dump: hold 'self. }.
 
 ;; Python-style generator functions
 ; Note that currently, generators are single-pass.
@@ -84,7 +74,6 @@ Proc generator := { procd := proc { parent hold 'self call. }.
                                                                       this end? := True.
                                                                       outer call: Nil. }. }. }.
                                           self next. }. }.
-global Generator := Generator.
 Collection inject: Generator.
 
 ;; McCarthy's 'amb' operator
@@ -96,23 +85,21 @@ Collection inject: Generator.
 ; TODO This one is a bit sloppy when it's cloned as well; work on that
 AmbError := Exception clone tap { self toString := "AmbError".
                                   self message := "Amb expression failed". }.
-global AmbError := AmbError.
 Amb := Object clone.
-global Amb := Amb.
 Amb toString := "Amb".
 Amb nextHandler := { AmbError clone throw. }.
-global callAmb := { ambObject := Amb clone.
-                    ambFunc := proc { takes '[cases].
-                                      callCC { escape := { parent dynamic $1 call. }.
-                                               oldHandler := ambObject hold 'nextHandler.
-                                               cases visit
-                                                   { takes '[curr].
-                                                     callCC { ambObject nextHandler := { parent dynamic $1 call. }.
-                                                              escape: curr. }. }.
-                                               oldHandler. }. }.
-                    procd := ambObject invokeSpecial: dynamic hold '$1,
-                                                      { $1 amb := { ambFunc call. }. }.
-                    procd call. }.
+callAmb := { ambObject := Amb clone.
+             ambFunc := proc { takes '[cases].
+                               callCC { escape := { parent dynamic $1 call. }.
+                                        oldHandler := ambObject hold 'nextHandler.
+                                        cases visit
+                                            { takes '[curr].
+                                              callCC { ambObject nextHandler := { parent dynamic $1 call. }.
+                                                       escape: curr. }. }.
+                                        oldHandler. }. }.
+             procd := ambObject invokeSpecial: dynamic hold '$1,
+                                               { $1 amb := { ambFunc call. }. }.
+             procd call. }.
 
 ;; Return the script
-here.
+$whereAmI.
