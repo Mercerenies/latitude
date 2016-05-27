@@ -1,3 +1,5 @@
+;;* MODULE pattern
+;;* PACKAGE base
 
 ; TODO Format (printf)
 
@@ -14,13 +16,11 @@ Wildcard named? := { self symbol is: Symbol. }.
 Wildcard toString := { if: self named?,
                            { "#<Wildcard " ++ (parent self symbol) ++ ">". },
                            { "Wildcard". }. }.
-global Wildcard := Wildcard.
 
 Ellipsis := Wildcard clone.
 Ellipsis toString := { if: self named?,
                            { "#<Ellipsis " ++ (parent self symbol) ++ ">". },
                            { "Ellipsis". }. }.
-global Ellipsis := Ellipsis.
 
 ; The "match" object is a Proc. If no match was found, the match object is falsy and its `call`
 ; is a no-op. If a match was made, the object is truthy and the `call` expects a single argument,
@@ -29,22 +29,20 @@ Match := Proc clone.
 Match toString := "Match".
 Match callback := {}.
 Match call := { (self invokeSpecial: dynamic hold '$1, self hold 'callback) call. }.
-global Match := Match.
 
 NoMatch := Match clone.
 NoMatch toString := "NoMatch".
 NoMatch call := {}.
 NoMatch toBool := False.
-global NoMatch := NoMatch.
 
 ; * - A wildcard that matches (and ignores) anything
-global * := { Wildcard clone. }.
+* := { Wildcard clone. }.
 
 ; ~m 'name - A wildcard that matches anything and binds it to 'name
 meta sigil m := { Wildcard clone tap { self symbol := parent dynamic $1. }. }.
 
 ; ... - A wildcard that matches potentially multiple list elements and ignores them
-global ... := { Ellipsis clone. }.
+... := { Ellipsis clone. }.
 
 ; ~m 'name ... - A wildcard that matches multiple list elements and binds the array containing them to 'name
 Wildcard ... := { ellipsis := self clone.
@@ -117,4 +115,4 @@ Cons =~ := { localize.
                                                                     cdrPart callback. }. }. },
                           { NoMatch clone. }. }. }.
 
-here.
+$whereAmI.
