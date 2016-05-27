@@ -175,6 +175,10 @@ Object missing := { err := meta SlotError clone.
 global toString := { if: (self) === (global),
                          "global",
                          "#<Scope>". }.
+global pairScopes := { self lexical := self.
+                       self dynamic := $1.
+                       $1 $lexical := self.
+                       $1 $dynamic := $1. }.
 
 ;; Equality and Comparability
 Object === := { meta sys ptrEquals#: self, $1. }.
