@@ -47,6 +47,7 @@
         bool isList; // Check args
         bool isSigil; // Check name and rhs
         bool isEquality; // Treated like call with a rhs
+        bool isHashParen; // Check name
     };
 
     struct List {

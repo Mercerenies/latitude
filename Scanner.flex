@@ -13,6 +13,7 @@
      #endif
      int line_num = 1;
      int comments = 0;
+     int hash_parens = 0;
      char* curr_buffer = NULL;
      int curr_buffer_size = 0;
      int curr_buffer_pos = 0;
@@ -49,6 +50,7 @@ ID        {SNORMAL}{NORMAL}*
 %x INNER_SYMBOL
 %x INNER_COMMENT
 %x INNER_RSTRING
+%x INNER_HASHPAREN
 %%
 
 #< { yyerror("Unreadable object"); }
@@ -91,7 +93,7 @@ ID        {SNORMAL}{NORMAL}*
 }
 
 \" { BEGIN(INNER_STRING); clear_buffer(); }
-<INNER_STRING>\n { append_buffer(yytext[1]); ++line_num; }
+<INNER_STRING>\n { append_buffer(yytext[0]); ++line_num; }
 <INNER_STRING>[^\\\"] { append_buffer(yytext[0]); }
 <INNER_STRING>\\n { append_buffer((char)0x0A); }
 <INNER_STRING>\\r { append_buffer((char)0x0D); }
@@ -112,7 +114,7 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_SYMBOL><<EOF>> { yyerror("Unterminated symbol"); }
 
 #\" { BEGIN(INNER_RSTRING); clear_buffer(); }
-<INNER_RSTRING>\n { append_buffer(yytext[1]); ++line_num; }
+<INNER_RSTRING>\n { append_buffer(yytext[0]); ++line_num; }
 <INNER_RSTRING>\"# { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
 <INNER_RSTRING>. { append_buffer(yytext[0]); }
 <INNER_RSTRING><<EOF>> { yyerror("Unterminated string"); }

@@ -1,6 +1,8 @@
 extern "C" {
     #include "lex.yy.h"
     extern int line_num;
+    extern int comments;
+    extern int hash_parens;
 }
 #include "Reader.hpp"
 #include "Symbol.hpp"
@@ -111,6 +113,8 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str) {
     const char* buffer = str.c_str();
     auto curr = yy_scan_string(buffer);
     line_num = 1;
+    comments = 0;
+    hash_parens = 0;
     yyparse();
     yy_delete_buffer(curr);
     auto result = translateCurrentLine();

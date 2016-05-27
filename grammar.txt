@@ -54,7 +54,8 @@
               "~" <text> |
               "[" <arglist> "]" |
               "'" "[" <literallist> "]" |
-              "#" "\"" <text> "\"" "#"
+              "#" "\"" <text> "\"" "#" |
+              "#" "(" <text> ")"
 <linelist> ::= <line> <linelist> |
                <lambda>
 <literallist> ::= <listlit> <literallist1> |

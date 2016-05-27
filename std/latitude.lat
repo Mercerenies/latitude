@@ -10,6 +10,7 @@ meta Kernel load: "std/array.lat".
 meta Kernel load: "std/mixin.lat".
 meta Kernel load: "std/collection.lat".
 meta Kernel load: "std/args.lat".
+meta Kernel load: "std/lang.lat".
 ;meta Kernel load: "std/sequence.lat".
 meta Kernel load: "std/module.lat".
 ;meta Kernel load: "std/pattern.lat".
