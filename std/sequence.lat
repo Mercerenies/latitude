@@ -1,10 +1,12 @@
+;;* MODULE sequence
+;;* PACKAGE base
 
 Nil := Nil.
 proc := hold 'proc.
 memo := hold 'memo.
 
 ;; Forward linked lists
-global Sequence := Object clone.
+Sequence := Object clone.
 Sequence toString := { "#<Sequence " ++ (self list pretty) ++ ">". }.
 Sequence list := Nil.
 Sequence fromArray := { self clone tap { self list := parent dynamic $1 foldr: Nil,
@@ -46,7 +48,7 @@ Collection inject: Sequence.
 ;; A lazy sequence implementation, designed to allow infinite data structures. To
 ;; allow these to work, it is necessary to manually override several Collection
 ;; functions.
-global LazySequence := Sequence clone.
+LazySequence := Sequence clone.
 LazySequence toString := { if: self list nil?,
                                { "#<LazySequence ()>". },
                                { "#<LazySequence (" ++ (parent self list car) ++ " ...)>". }. }.
@@ -76,9 +78,6 @@ LazySequence foldr := { func := { (parent dynamic hold '$2) call. }.
                                          { func: curr car, { cache call. }. }. }.
                         recurse: self list. }.
 
-Sequence := Sequence.
-LazySequence := LazySequence.
-
 ; TODO Make this use memoization to be more efficient
 Proc iterate := { procd := proc { (parent hold 'self) call. }.
                   recurse := { curr := $1.
@@ -91,4 +90,4 @@ Proc iterate := { procd := proc { (parent hold 'self) call. }.
                   seq. }.
 
 ;; Return the script
-here.
+$whereAmI.

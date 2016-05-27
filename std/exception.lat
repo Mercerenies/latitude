@@ -46,8 +46,12 @@ global ReadOnlyError := SystemError clone tap { self message := "Write access pr
 meta ReadOnlyError := ReadOnlyError.
 
 global NotSupportedError := SystemError clone tap { self message := "Not supported".
-                                                    self toString := "NotSupportedException". }.
+                                                    self toString := "NotSupportedError". }.
 meta NotSupportedError := NotSupportedError.
+
+global ModuleError := SystemError clone tap { self message := "Module error".
+                                              self toString := "ModuleError". }.
+meta ModuleError := ModuleError.
 
 ; This variable does NOT disable exceptions globally if changed. It is expected to be a Boolean
 ; by the system (not a method nor a truthy/falsy value). If false, this value will disable certain

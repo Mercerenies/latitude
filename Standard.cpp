@@ -2,6 +2,7 @@
 #include "Reader.hpp"
 #include "Garnish.hpp"
 #include "Macro.hpp"
+#include "Header.hpp"
 #include "GC.hpp"
 #include <list>
 #include <sstream>
@@ -65,7 +66,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         STRING_LENGTH = 20,
         STRING_SUB = 21,
         STRING_FIND = 22,
-        GC_RUN = 23;
+        GC_RUN = 23,
+        FILE_HEADER = 24;
 
     // TERMINATE
     state.cpp[TERMINATE] = [](IntState& state0) {
@@ -1490,6 +1492,61 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     sys.lock()->put(Symbols::get()["runGC#"],
                     defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, GC_RUN))));
 
+    // FILE_HEADER (check the %str0 file and put a FileHeader object in %ret)
+    // fileHeader#: filename.
+    state.cpp[FILE_HEADER] = [](IntState& state0) {
+        InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL),
+                                 makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                 makeAssemblerLine(Instr::SYM, "meta"),
+                                 makeAssemblerLine(Instr::RTRV),
+                                 makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                 makeAssemblerLine(Instr::SYM, "FileHeader"),
+                                 makeAssemblerLine(Instr::RTRV),
+                                 makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF));
+        InstrSeq mid;
+        Header header = getFileHeader(state0.str0);
+        if (header.fields & (unsigned int)HeaderField::MODULE) {
+            InstrSeq curr = garnishSeq(header.module);
+            InstrSeq pre = asmCode(makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO));
+            InstrSeq post = asmCode(makeAssemblerLine(Instr::POP, Reg::STO),
+                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                    makeAssemblerLine(Instr::SYM, "moduleName"),
+                                    makeAssemblerLine(Instr::SETF));
+            mid.insert(mid.end(), pre.begin(), pre.end());
+            mid.insert(mid.end(), curr.begin(), curr.end());
+            mid.insert(mid.end(), post.begin(), post.end());
+        }
+        if (header.fields & (unsigned int)HeaderField::PACKAGE) {
+            InstrSeq curr = garnishSeq(header.package);
+            InstrSeq pre = asmCode(makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO));
+            InstrSeq post = asmCode(makeAssemblerLine(Instr::POP, Reg::STO),
+                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                    makeAssemblerLine(Instr::SYM, "packageName"),
+                                    makeAssemblerLine(Instr::SETF));
+            mid.insert(mid.end(), pre.begin(), pre.end());
+            mid.insert(mid.end(), curr.begin(), curr.end());
+            mid.insert(mid.end(), post.begin(), post.end());
+        }
+        InstrSeq concl = asmCode(makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
+        state0.stack = pushNode(state0.stack, state0.cont);
+        state0.cont.clear();
+        state0.cont.insert(state0.cont.end(), intro.begin(), intro.end());
+        state0.cont.insert(state0.cont.end(), mid.begin(), mid.end());
+        state0.cont.insert(state0.cont.end(), concl.begin(), concl.end());
+    };
+    sys.lock()->put(Symbols::get()["fileHeader#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::CPP, FILE_HEADER))));
+
 }
 
 ObjectPtr spawnObjects(IntState& state) {
@@ -1520,6 +1577,7 @@ ObjectPtr spawnObjects(IntState& state) {
     ObjectPtr sys(clone(object));
     ObjectPtr sigil(clone(object));
     ObjectPtr stackFrame(clone(object));
+    ObjectPtr fileHeader(clone(object));
     ObjectPtr kernel(clone(object));
 
     ObjectPtr nil(clone(object));
@@ -1556,6 +1614,7 @@ ObjectPtr spawnObjects(IntState& state) {
     meta.lock()->put(Symbols::get()["sys"], sys);
     meta.lock()->put(Symbols::get()["sigil"], sigil);
     meta.lock()->put(Symbols::get()["StackFrame"], stackFrame);
+    meta.lock()->put(Symbols::get()["FileHeader"], fileHeader);
 
     // This ensures that problems in the core.lat file (before exceptions are well-defined)
     // do not cause the entire program to crash

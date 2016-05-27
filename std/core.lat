@@ -1,6 +1,6 @@
 
 ;; Cloning and metaprogramming basics
-meta Object clone := { meta sys doClone#: self. }.
+; The clone function itself is defined in 'latitude.lat'
 meta Object is := { meta sys instanceOf#: self, $1. }.
 meta Object slot := { meta sys accessSlot#: self, $1. }.
 meta Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
@@ -155,6 +155,7 @@ global dynamic := global.
 global $lexical := global.
 global $dynamic := global.
 Object me := { self. }.
+global do := { $1. }.
 global here := { if: (self has 'again),
                      { parent self hold 'again. },
                      { meta Nil. }. }.
@@ -162,6 +163,9 @@ Object missing := { err := meta SlotError clone.
                     err slotName := dynamic hold '$1.
                     err objectInstance := lexical hold 'self.
                     err throw. }.
+global toString := { if: (self) === (global),
+                         "global",
+                         "#<Scope>". }.
 
 ;; Equality and Comparability
 Object === := { meta sys ptrEquals#: self, $1. }.
@@ -177,6 +181,8 @@ Object max := { if: ((self) > ($1)), self, $1. }.
 Kernel toString := "Kernel".
 Kernel kill := { meta sys kill#. }.
 Kernel eval := { meta sys eval#: $1, $2, $3. }.
+Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
+Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
 Kernel GC run := { meta sys runGC#. }.
@@ -204,7 +210,13 @@ String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
 
+; File headers
+meta FileHeader toString := "FileHeader".
+meta FileHeader packageName := Nil.
+meta FileHeader moduleName := Nil.
+
 ; Locality information
+meta StackFrame toString := "StackFrame".
 meta StackFrame line := 0.
 meta StackFrame file := "".
 meta StackFrame dump := { if: { (parent self) === (meta StackFrame). },

@@ -8,7 +8,7 @@
 using namespace std;
 
 void runREPL(ObjectPtr global, IntState& state) {
-    readFile("std/repl.lats", { global, global }, state);
+    readFile("std/repl.lats", { clone(global), clone(global) }, state);
     while (!isIdling(state))
         doOneStep(state);
 }

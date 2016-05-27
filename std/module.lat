@@ -1,0 +1,50 @@
+
+global := global.
+
+;; Modules
+Module := global clone.
+Module toString := "Module".
+Module import := { localize.
+                   target := dynamic parent $lexical.
+                   $1 visit { target put: $1, { this hold: parent dynamic $1. }. }. }.
+Module importAll := { localize.
+                      target := dynamic parent $lexical.
+                      target parent := target parent clone.
+                      target := target parent.
+                      target missing := { takes '[sym].
+                                          if: { this is (target) not. } and { this has (sym). },
+                                              { this get (sym). },
+                                              { target invoke (target parent hold 'missing) call: sym. }. }.
+                      this. }.
+global Module := Module.
+
+LoadedModules := Object clone tap { self invoke := self hold 'invoke.
+                                    self parent := self. }.
+LoadedModules clone := { self invoke (Object hold 'clone) call. }.
+LoadedModules put := { self invoke (Object hold 'put) call. }.
+LoadedModules get := { self invoke (Object hold 'get) call. }.
+LoadedModules has := { self invoke (Object hold 'has) call. }.
+LoadedModules keys := { self invoke (Object hold 'keys) call. }.
+LoadedModules missing := { self invoke (Object hold 'missing) call. }.
+LoadedModules toString := "LoadedModules".
+
+ModuleLoader := Object clone.
+ModuleLoader toString := "ModuleLoader".
+ModuleLoader loaded := LoadedModules.
+ModuleLoader clone := { self invoke (Object hold 'clone) call tap { self loaded := self loaded clone. }. }.
+
+global $moduleLoader := ModuleLoader clone.
+
+global use := { takes '[fname].
+                header := Kernel readHeader: fname.
+                (header moduleName) ifFalse { ModuleError clone tap { message := "Module has no name". }. }.
+                (header packageName) ifFalse { ModuleError clone tap { message := "Module has no package". }. }.
+                name := (header packageName) ++ " " ++ (header moduleName) intern.
+                if: $moduleLoader has (name),
+                    { $moduleLoader get: name. },
+                    { mod := Module clone tap { self header := header. }.
+                      do { $whereAmI := mod.
+                           Kernel evalFile: fname, mod. }.
+                      $moduleLoader loaded put: name, mod.
+                      global put: header moduleName intern, mod.
+                      mod. }. }.
