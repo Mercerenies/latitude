@@ -101,6 +101,7 @@
 %token <sval> BIGINT
 %token <sval> STRING
 %token <sval> SYMBOL
+%token <sval> HASHPAREN
 %token LISTLIT
 %token CEQUALS
 
@@ -170,7 +171,8 @@ literal:
     STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1; } |
     SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; } |
     '[' arglist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
-    LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; }
+    LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
+    HASHPAREN { $$ = makeExpr(); $$->isHashParen = true; $$->name = $1; }
     ;
 linelist:
     line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |

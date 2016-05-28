@@ -188,4 +188,16 @@ public:
     virtual void propogateFileName(std::string name);
 };
 
+/*
+ * A hash-paren syntax, which evaluates to a string that is passed
+ * to a meta function but is usually used for DSLs
+ */
+class StmtHashParen : public Stmt {
+private:
+    std::string text;
+public:
+    StmtHashParen(int line_no, std::string text);
+    virtual InstrSeq translate();
+};
+
 #endif // _READER_HPP_

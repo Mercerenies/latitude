@@ -119,6 +119,20 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_RSTRING>. { append_buffer(yytext[0]); }
 <INNER_RSTRING><<EOF>> { yyerror("Unterminated string"); }
 
+#\( { BEGIN(INNER_HASHPAREN); clear_buffer(); hash_parens++; }
+<INNER_HASHPAREN>\( { append_buffer(yytext[0]); hash_parens++; }
+<INNER_HASHPAREN>\) { hash_parens--;
+                      if (hash_parens == 0) {
+                          BEGIN(0);
+                          yylval.sval = curr_buffer;
+                          unset_buffer();
+                          return HASHPAREN;
+                      } else {
+                          append_buffer(yytext[0]);
+                      } }
+<INNER_HASHPAREN>\n { append_buffer(yytext[0]); ++line_num; }
+<INNER_HASHPAREN>. { append_buffer(yytext[0]); } // Ignore
+
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
     strcpy(arr, yytext + 1);

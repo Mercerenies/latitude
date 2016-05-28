@@ -53,6 +53,10 @@ global ModuleError := SystemError clone tap { self message := "Module error".
                                               self toString := "ModuleError". }.
 meta ModuleError := ModuleError.
 
+global LangError := SystemError clone tap { self message := "Error reading from external language".
+                                            self toString := "LangError". }.
+meta LangError := LangError.
+
 ; This variable does NOT disable exceptions globally if changed. It is expected to be a Boolean
 ; by the system (not a method nor a truthy/falsy value). If false, this value will disable certain
 ; system exceptions so that they terminate the program instead. It should almost never be changed

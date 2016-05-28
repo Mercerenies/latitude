@@ -64,6 +64,8 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         assert(expr->name[0] == '~');
         std::string name = expr->name + 1;
         return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(expr->rhs)));
+    } else if (expr->isHashParen) {
+        return unique_ptr<Stmt>(new StmtHashParen(line, expr->name));
     } else if (expr->method) {
         auto contents0 = translateList(expr->args);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
@@ -638,4 +640,40 @@ InstrSeq StmtSigil::translate() {
 void StmtSigil::propogateFileName(std::string name) {
     rhs->propogateFileName(name);
     Stmt::propogateFileName(name);
+}
+
+StmtHashParen::StmtHashParen(int line_no, string text)
+    : Stmt(line_no), text(text) {}
+
+InstrSeq StmtHashParen::translate() {
+    InstrSeq seq;
+
+    //stateLine(seq);
+
+    // Find the `hashParen` object
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "hashParen")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+    // Evaluate the argument
+    InstrSeq arg0 = garnishSeq(text);
+    seq.insert(seq.end(), arg0.begin(), arg0.end());
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+
+    // Get the object back out
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
+
+    return seq;
+
 }
