@@ -49,3 +49,18 @@ String replaceAll := { takes '[substr, mthd].
                           do { parent curr := curr replace: substr, index, hold 'mthd.
                                index = (index) + (substr size). }.
                        curr. }.
+
+String iterator := { Object clone tap
+                         { self toString := "StringIterator".
+                           self index := 0.
+                           self string := parent self.
+                           self next := { self index := self index + 1. }.
+                           self end? := { (self index) >= (self string size). }.
+                           self element := { self string substring: self index, self index + 1. }.
+                           self element= := { ReadOnlyError clone tap
+                                                  { self message := "Strings are immutable". } throw. }. }. }.
+String map := { takes '[mthd].
+                str := "".
+                self visit { parent str := str ++ (mthd: $1). }.
+                str. }.
+Collection inject: String.
