@@ -613,8 +613,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::POP, Reg::STO),
                                                          makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::LEX),
                                                          makeAssemblerLine(Instr::CPP, EVAL),
-                                                         // TODO %trace gets off here
-                                                         makeAssemblerLine(Instr::RET))));
+                                                         makeAssemblerLine(Instr::NRET))));
 
     // stringConcat#: str1, str2.
     sys.lock()->put(Symbols::get()["stringConcat#"],

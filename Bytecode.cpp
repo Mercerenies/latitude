@@ -70,6 +70,7 @@ void InstructionSet::initialize() {
     props[Instr::LOCFN] = { isStringRegisterArg };
     props[Instr::LOCLN] = { isLongRegisterArg };
     props[Instr::LOCRT] = { };
+    props[Instr::NRET] = { };
 }
 
 AssemblerError::AssemblerError()
@@ -1344,6 +1345,15 @@ void executeInstr(Instr instr, IntState& state) {
                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                  makeAssemblerLine(Instr::RTRV));
         state.cont.insert(state.cont.begin(), intro.begin(), intro.end());
+    }
+        break;
+    case Instr::NRET: {
+#if DEBUG_INSTR > 0
+        cout << "NRET" << endl;
+#endif
+        state.trace.push( make_tuple(0, "") );
+        InstrSeq seq = asmCode(makeAssemblerLine(Instr::RET));
+        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
     }
         break;
     }

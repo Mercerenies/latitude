@@ -111,6 +111,8 @@ locfn STR (2B STR) - Set the filename
 locln INT (2C INT) - Set the line number
 locrt (2D) - Retrieve the stack trace, storing a StackFrame object in %ret
 
+nret (2E) - Identical to `ret` but does not touch %trace
+
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)
