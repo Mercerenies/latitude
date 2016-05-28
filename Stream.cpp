@@ -11,10 +11,10 @@ private:
 public:
     InFileStream(string name, FileMode mode);
     ~InFileStream();
-    virtual bool hasIn();
+    virtual bool hasIn() const noexcept;
     virtual char in();
     virtual std::string readLine();
-    virtual bool isEof();
+    virtual bool isEof() const noexcept;
 };
 
 class OutFileStream : public Stream {
@@ -23,10 +23,10 @@ private:
 public:
     OutFileStream(string name, FileMode mode);
     ~OutFileStream();
-    virtual bool hasOut();
+    virtual bool hasOut() const noexcept;
     virtual void out(char);
     virtual void writeLine(std::string);
-    virtual bool isEof();
+    virtual bool isEof() const noexcept;
 };
 
 char Stream::in() {
@@ -35,11 +35,11 @@ char Stream::in() {
 
 void Stream::out(char ch) {}
 
-bool Stream::hasIn() {
+bool Stream::hasIn() const noexcept {
     return false;
 }
 
-bool Stream::hasOut() {
+bool Stream::hasOut() const noexcept {
     return false;
 }
 
@@ -72,13 +72,13 @@ void Stream::writeText(string str) {
         out(ch);
 }
 
-bool Stream::isEof() {
+bool Stream::isEof() const noexcept {
     return true;
 }
 
 void Stream::close() {}
 
-bool CoutStream::hasOut() {
+bool CoutStream::hasOut() const noexcept {
     return true;
 }
 
@@ -90,11 +90,11 @@ void CoutStream::writeLine(string str) {
     cout << str << endl;
 }
 
-bool CoutStream::isEof() {
+bool CoutStream::isEof() const noexcept {
     return cout.eof();
 }
 
-bool CerrStream::hasOut() {
+bool CerrStream::hasOut() const noexcept {
     return true;
 }
 
@@ -106,11 +106,11 @@ void CerrStream::writeLine(string str) {
     cerr << str << endl;
 }
 
-bool CerrStream::isEof() {
+bool CerrStream::isEof() const noexcept {
     return cerr.eof();
 }
 
-bool CinStream::hasIn() {
+bool CinStream::hasIn() const noexcept {
     return true;
 }
 
@@ -124,7 +124,7 @@ string CinStream::readLine() {
     return result;
 }
 
-bool CinStream::isEof() {
+bool CinStream::isEof() const noexcept {
     return cin.eof();
 }
 
@@ -140,11 +140,11 @@ FileStream::FileStream(string name, FileAccess access, FileMode mode)
     }
 }
 
-bool FileStream::hasOut() {
+bool FileStream::hasOut() const noexcept {
     return stream->hasOut();
 }
 
-bool FileStream::hasIn() {
+bool FileStream::hasIn() const noexcept {
     return stream->hasIn();
 }
 
@@ -164,7 +164,7 @@ string FileStream::readLine() {
     return stream->readLine();
 }
 
-bool FileStream::isEof() {
+bool FileStream::isEof() const noexcept {
     return stream->isEof();
 }
 
@@ -181,7 +181,7 @@ InFileStream::~InFileStream() {
     stream.close();
 }
 
-bool InFileStream::hasIn() {
+bool InFileStream::hasIn() const noexcept {
     return true;
 }
 
@@ -195,7 +195,7 @@ string InFileStream::readLine() {
     return result;
 }
 
-bool InFileStream::isEof() {
+bool InFileStream::isEof() const noexcept {
     return stream.eof();
 }
 
@@ -208,7 +208,7 @@ OutFileStream::~OutFileStream() {
     stream.close();
 }
 
-bool OutFileStream::hasOut() {
+bool OutFileStream::hasOut() const noexcept {
     return true;
 }
 
@@ -220,7 +220,7 @@ void OutFileStream::writeLine(string str) {
     stream << str << endl;
 }
 
-bool OutFileStream::isEof() {
+bool OutFileStream::isEof() const noexcept {
     return stream.eof();
 }
 

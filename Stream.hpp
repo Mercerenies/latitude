@@ -7,8 +7,6 @@
 #include <string>
 #include <ios>
 
-// TODO Const and noexcept correctness in this file
-
 class Stream;
 
 using StreamPtr = std::shared_ptr<Stream>;
@@ -27,13 +25,13 @@ public:
     virtual ~Stream() = default;
     virtual char in();
     virtual void out(char);
-    virtual bool hasIn();
-    virtual bool hasOut();
+    virtual bool hasIn() const noexcept;
+    virtual bool hasOut() const noexcept;
     virtual std::string readLine();
     virtual std::string readText(int);
     virtual void writeLine(std::string);
     virtual void writeText(std::string);
-    virtual bool isEof();
+    virtual bool isEof() const noexcept;
     virtual void close();
 };
 
@@ -48,10 +46,10 @@ class NullStream : public Stream {};
  */
 class CoutStream : public Stream {
 public:
-    virtual bool hasOut();
+    virtual bool hasOut() const noexcept;
     virtual void out(char);
     virtual void writeLine(std::string);
-    virtual bool isEof();
+    virtual bool isEof() const noexcept;
 };
 
 /*
@@ -59,10 +57,10 @@ public:
  */
 class CerrStream : public Stream {
 public:
-    virtual bool hasOut();
+    virtual bool hasOut() const noexcept;
     virtual void out(char);
     virtual void writeLine(std::string);
-    virtual bool isEof();
+    virtual bool isEof() const noexcept;
 };
 
 /*
@@ -70,10 +68,10 @@ public:
  */
 class CinStream : public Stream {
 public:
-    virtual bool hasIn();
+    virtual bool hasIn() const noexcept;
     virtual char in();
     virtual std::string readLine();
-    virtual bool isEof();
+    virtual bool isEof() const noexcept;
 };
 
 /*
@@ -85,13 +83,13 @@ private:
 public:
     FileStream(std::string name, FileAccess access, FileMode mode);
     virtual ~FileStream() = default;
-    virtual bool hasOut();
-    virtual bool hasIn();
+    virtual bool hasOut() const noexcept;
+    virtual bool hasIn() const noexcept;
     virtual void out(char);
     virtual char in();
     virtual void writeLine(std::string);
     virtual std::string readLine();
-    virtual bool isEof();
+    virtual bool isEof() const noexcept;
     virtual void close();
 };
 

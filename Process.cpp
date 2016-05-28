@@ -38,10 +38,10 @@ public:
     virtual ~FilePtrStream() {
         close();
     }
-    virtual bool hasOut() {
+    virtual bool hasOut() const noexcept {
         return isOut;
     }
-    virtual bool hasIn() {
+    virtual bool hasIn() const noexcept {
         return isIn;
     }
     virtual void out(char ch) {
@@ -53,7 +53,7 @@ public:
             eof = true;
         return ch;
     }
-    virtual bool isEof() {
+    virtual bool isEof() const noexcept {
         return eof;
     }
     virtual void close() {
@@ -181,10 +181,10 @@ public:
     virtual ~HandleStream() {
         close();
     }
-    virtual bool hasOut() {
+    virtual bool hasOut() const noexcept {
         return isOut;
     }
-    virtual bool hasIn() {
+    virtual bool hasIn() const noexcept {
         return isIn;
     }
     virtual void out(char ch) {
@@ -199,7 +199,7 @@ public:
             eof = true;
         return ch;
     }
-    virtual bool isEof() {
+    virtual bool isEof() const noexcept {
         return eof;
     }
     virtual void close() {

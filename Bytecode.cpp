@@ -746,38 +746,44 @@ void executeInstr(Instr instr, IntState& state) {
                 curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
             }
             state.ret = value;
-            // TODO What if we don't find a `missing`?
 #if DEBUG_INSTR > 1
             if (value.expired())
                 cout << "* Found no missing" << endl;
             else
                 cout << "* Found missing" << endl;
 #endif
-            InstrSeq seq0;
-            // Find the literal object to use for the argument
-            (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::GETL)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq0);
-            (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::SYM, "Symbol")).appendOnto(seq0);
-            (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
-            // Clone and put a prim() onto it
-            (makeAssemblerLine(Instr::CLONE)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::SYMN, backup.index)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
-            // Call it
-            (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
-            (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
-            state.stack = pushNode(state.stack, state.cont);
-            state.cont = seq0;
+            if (value.expired()) {
+                // If there is no `missing` either, immediately terminate, as
+                // something has gone horribly wrong
+                InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0));
+                state.cont.insert(state.cont.begin(), term.begin(), term.end());
+            } else {
+                InstrSeq seq0;
+                // Find the literal object to use for the argument
+                (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::GETL)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq0);
+                (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::SYM, "Symbol")).appendOnto(seq0);
+                (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
+                // Clone and put a prim() onto it
+                (makeAssemblerLine(Instr::CLONE)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::SYMN, backup.index)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
+                // Call it
+                (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
+                state.stack = pushNode(state.stack, state.cont);
+                state.cont = seq0;
+            }
         } else {
 #if DEBUG_INSTR > 1
             cout << "* Found " << value.lock() << endl;

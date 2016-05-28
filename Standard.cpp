@@ -1617,10 +1617,6 @@ ObjectPtr spawnObjects(IntState& state) {
     meta.lock()->put(Symbols::get()["StackFrame"], stackFrame);
     meta.lock()->put(Symbols::get()["FileHeader"], fileHeader);
 
-    // This ensures that problems in the core.lat file (before exceptions are well-defined)
-    // do not cause the entire program to crash
-    meta.lock()->put(Symbols::get()["exceptions?"], false_);
-
     // Global variables not accessible in meta
     global.lock()->put(Symbols::get()["stdin"], stdin_);
     global.lock()->put(Symbols::get()["stderr"], stderr_);
@@ -1649,7 +1645,6 @@ ObjectPtr spawnObjects(IntState& state) {
 }
 
 void throwError(IntState& state, std::string name, std::string msg) {
-    // TODO Make the throw / throq / throa instructions terminate if exceptions are disabled
     state.stack = pushNode(state.stack, state.cont);
     state.cont = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                          makeAssemblerLine(Instr::GETL),
@@ -1679,7 +1674,6 @@ void throwError(IntState& state, std::string name, std::string msg) {
 }
 
 void throwError(IntState& state, std::string name) {
-    // TODO Make the throw / throq / throa instructions terminate if exceptions are disabled
     state.stack = pushNode(state.stack, state.cont);
     state.cont = asmCode(makeAssemblerLine(Instr::GETL),
                          makeAssemblerLine(Instr::SYM, "meta"),

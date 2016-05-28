@@ -168,10 +168,6 @@ global do := { $1. }.
 global here := { if: (self has 'again),
                      { parent self hold 'again. },
                      { meta Nil. }. }.
-Object missing := { err := meta SlotError clone.
-                    err slotName := dynamic hold '$1.
-                    err objectInstance := lexical hold 'self.
-                    err throw. }.
 global toString := { if: (self) === (global),
                          "global",
                          "#<Scope>". }.
