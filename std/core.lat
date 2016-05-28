@@ -54,6 +54,10 @@ global Kernel := meta Kernel.
 ;; The $whereAmI variable
 global $whereAmI := Nil.
 
+;; Stuff that needs to exist in `meta`
+meta radix := Object clone.
+meta sigil := Object clone.
+
 ;; Basics of exception handling
 (hold 'Method) handle := { meta sys handler#: dynamic hold '$1.
                            result := self.

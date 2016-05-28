@@ -29,8 +29,8 @@ public:
     Number(bigint);
     Number(ratio);
     Number(floating);
-    bool operator ==(const Number& other);
-    bool operator <(const Number& other);
+    bool operator ==(const Number& other) const;
+    bool operator <(const Number& other) const;
     Number& operator +=(const Number& other);
     Number& operator -=(const Number& other);
     Number& operator *=(const Number& other);

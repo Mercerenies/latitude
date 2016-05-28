@@ -66,6 +66,12 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(expr->rhs)));
     } else if (expr->isHashParen) {
         return unique_ptr<Stmt>(new StmtHashParen(line, expr->name));
+    } else if (expr->isZeroDispatch) {
+        const char* name = expr->name;
+        if (name[0] == '0')
+            return unique_ptr<Stmt>(new StmtZeroDispatch(line, name[1], '\0', name + 2));
+        else
+            return unique_ptr<Stmt>(new StmtZeroDispatch(line, name[2], name[0], name + 3));
     } else if (expr->method) {
         auto contents0 = translateList(expr->args);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
@@ -675,5 +681,49 @@ InstrSeq StmtHashParen::translate() {
     (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
 
     return seq;
+
+}
+
+StmtZeroDispatch::StmtZeroDispatch(int line_no, char sym, char ch, string text)
+    : Stmt(line_no), text(text), symbol(sym), prefix(ch) {}
+
+InstrSeq StmtZeroDispatch::translate() { ///// These definitely don't work
+    InstrSeq seq;
+
+    //stateLine(seq);
+
+    // Find the `radix` object
+    (makeAssemblerLine(Instr::GETL)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "radix")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+    string contents = text;
+    Symbolic prefix = Symbols::get()[ this->prefix == '\0' ? "" : string(1, this->prefix) ];
+    Symbolic symbol = Symbols::get()[ string(1, this->symbol) ];
+
+    InstrSeq seq0 = garnishSeq(contents);
+    seq.insert(seq.end(), seq0.begin(), seq0.end());
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+
+    InstrSeq seq1 = garnishSeq(prefix);
+    seq.insert(seq.end(), seq1.begin(), seq1.end());
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+
+    (makeAssemblerLine(Instr::SYMN, symbol.index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+
+    (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, 2L)).appendOnto(seq);
+
+     return seq;
 
 }

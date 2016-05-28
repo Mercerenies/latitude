@@ -200,4 +200,18 @@ public:
     virtual InstrSeq translate();
 };
 
+/*
+ * A zero-dispatch syntax, usually used to represent numerals
+ * of different radices
+ */
+class StmtZeroDispatch : public Stmt {
+private:
+    std::string text;
+    char symbol;
+    char prefix;
+public:
+    StmtZeroDispatch(int line_no, char sym, char ch, std::string text);
+    virtual InstrSeq translate();
+};
+
 #endif // _READER_HPP_

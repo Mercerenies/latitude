@@ -7,6 +7,7 @@ Exception pretty := { (self toString) ++ " - " ++ (self message). }.
 Exception stack := Nil.
 Exception printStackTrace := { self stack dump. }.
 
+; TODO Which of these actually need to be in `meta`?
 global SystemCallError := SystemError clone tap { self message := "Error in system call".
                                                   self toString := "SystemCallError". }.
 meta SystemCallError := SystemCallError.
@@ -56,6 +57,14 @@ meta ModuleError := ModuleError.
 global LangError := SystemError clone tap { self message := "Error reading from external language".
                                             self toString := "LangError". }.
 meta LangError := LangError.
+
+global InputError := SystemError clone tap { self message := "Input error".
+                                             self toString := "InputError". }.
+meta InputError := InputError.
+
+global ArgError := SystemError clone tap { self message := "Argument error".
+                                           self toString := "ArgError". }.
+meta ArgError := ArgError.
 
 ; It is only safe to define `missing` once `SlotError` exists. If `missing` is sought before this
 ; point, it is a standard library error and the interpreter will terminate immediately

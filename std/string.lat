@@ -50,6 +50,12 @@ String replaceAll := { takes '[substr, mthd].
                                index = (index) + (substr size). }.
                        curr. }.
 
+String ord := { self == "" ifTrue { ArgError clone tap { self message := "`ord` on empty string". } throw. }.
+                meta sys strOrd#: self. }.
+Number chr := { (self < 0) or (self > 255) ifTrue
+                    { ArgError clone tap { self message := "`chr` arg out of bounds". } throw. }.
+                meta sys strChr#: self. }.
+
 String iterator := { Object clone tap
                          { self toString := "StringIterator".
                            self index := 0.

@@ -67,7 +67,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         STRING_SUB = 21,
         STRING_FIND = 22,
         GC_RUN = 23,
-        FILE_HEADER = 24;
+        FILE_HEADER = 24,
+        STR_ORD = 25,
+        STR_CHR = 26;
 
     // TERMINATE
     state.cpp[TERMINATE] = [](IntState& state0) {
@@ -1548,6 +1550,40 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::THROA, "String expected"),
                                                          makeAssemblerLine(Instr::CPP, FILE_HEADER))));
 
+    // STR_ORD (check the %str0 register and put the ASCII value in %ret, empty string returns 0)
+    // STR_CHR (check the %num0 register and put the character in %ret)
+    // strOrd#: str.
+    // strChr#: num.
+    state.cpp[STR_ORD] = [](IntState& state0) {
+        if (state0.str0 == "")
+            garnishEnd(state0, 0);
+        else
+            garnishEnd(state0, (int)state0.str0[0]);
+    };
+    state.cpp[STR_CHR] = [](IntState& state0) {
+        garnishEnd(state0, string(1, (char)state0.num0.asSmallInt()));
+    };
+    sys.lock()->put(Symbols::get()["strOrd#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                                         makeAssemblerLine(Instr::CPP, STR_ORD))));
+    sys.lock()->put(Symbols::get()["strChr#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::GETD),
+                                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                                         makeAssemblerLine(Instr::RTRV),
+                                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                                         makeAssemblerLine(Instr::ECLR),
+                                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                                         makeAssemblerLine(Instr::THROA, "Number expected"),
+                                                         makeAssemblerLine(Instr::CPP, STR_CHR))));
+
 }
 
 ObjectPtr spawnObjects(IntState& state) {
@@ -1576,7 +1612,6 @@ ObjectPtr spawnObjects(IntState& state) {
     ObjectPtr array_(clone(object));
 
     ObjectPtr sys(clone(object));
-    ObjectPtr sigil(clone(object));
     ObjectPtr stackFrame(clone(object));
     ObjectPtr fileHeader(clone(object));
     ObjectPtr kernel(clone(object));
@@ -1613,7 +1648,6 @@ ObjectPtr spawnObjects(IntState& state) {
     meta.lock()->put(Symbols::get()["meta"], meta);
     object.lock()->put(Symbols::get()["meta"], meta);
     meta.lock()->put(Symbols::get()["sys"], sys);
-    meta.lock()->put(Symbols::get()["sigil"], sigil);
     meta.lock()->put(Symbols::get()["StackFrame"], stackFrame);
     meta.lock()->put(Symbols::get()["FileHeader"], fileHeader);
 

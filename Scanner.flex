@@ -78,6 +78,13 @@ ID        {SNORMAL}{NORMAL}*
     return INTEGER;
 }
 
+[-+]?0[A-Za-z][0-9A-Fa-f]+ {
+    char* arr = calloc(strlen(yytext) + 1, sizeof(char));
+    strcpy(arr, yytext);
+    yylval.sval = arr;
+    return ZERODISPATCH;
+}
+
 {ID} {
     char* arr = calloc(strlen(yytext) + 1, sizeof(char));
     strcpy(arr, yytext);

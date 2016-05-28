@@ -48,6 +48,7 @@
         bool isSigil; // Check name and rhs
         bool isEquality; // Treated like call with a rhs
         bool isHashParen; // Check name
+        bool isZeroDispatch; // Check name
     };
 
     struct List {
@@ -102,6 +103,7 @@
 %token <sval> STRING
 %token <sval> SYMBOL
 %token <sval> HASHPAREN
+%token <sval> ZERODISPATCH
 %token LISTLIT
 %token CEQUALS
 
@@ -172,7 +174,9 @@ literal:
     SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; } |
     '[' arglist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
     LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
-    HASHPAREN { $$ = makeExpr(); $$->isHashParen = true; $$->name = $1; }
+    HASHPAREN { $$ = makeExpr(); $$->isHashParen = true; $$->name = $1; } |
+    ZERODISPATCH { $$ = makeExpr(); $$->isZeroDispatch = true;
+                   $$->name = $1; }
     ;
 linelist:
     line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |

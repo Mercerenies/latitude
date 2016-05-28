@@ -205,7 +205,7 @@ namespace MagicNumber {
 
     struct EqualVisitor : boost::static_visitor<bool> {
         template <typename U, typename V>
-        bool operator()(U& first, V& second) const {
+        bool operator()(const U& first, const V& second) const {
             auto first0 = Coerce<V>::act(first);
             auto second0 = Coerce<U>::act(second);
             return first0 == second0;
@@ -214,7 +214,7 @@ namespace MagicNumber {
 
     struct LessVisitor : boost::static_visitor<bool> {
         template <typename U, typename V>
-        bool operator()(U& first, V& second) const {
+        bool operator()(const U& first, const V& second) const {
             auto first0 = Coerce<V>::act(first);
             auto second0 = Coerce<U>::act(second);
             return first0 < second0;
@@ -274,12 +274,12 @@ Number::Number(ratio arg)
 Number::Number(floating arg)
     : value(arg) {}
 
-bool Number::operator ==(const Number& other) {
+bool Number::operator ==(const Number& other) const {
     auto second = other.value;
     return boost::apply_visitor(MagicNumber::EqualVisitor(), value, second);
 }
 
-bool Number::operator <(const Number& other) {
+bool Number::operator <(const Number& other) const {
     auto second = other.value;
     return boost::apply_visitor(MagicNumber::LessVisitor(), value, second);
 }

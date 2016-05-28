@@ -11,11 +11,49 @@ Number / := { meta sys numDiv#: self, $1. }.
 Number mod := { meta sys numMod#: self, $1. }.
 Number ^ := { meta sys numPow#: self, $1. }.
 
+global - := { 0 - ($1). }.
+
 ;; Numerical Type Checking
 Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.
 Number isInteger?  := { (meta sys numLevel#: self) <= 1. }.
 Number isRational? := { (meta sys numLevel#: self) <= 2. }.
 Number isFloating? := { (meta sys numLevel#: self) == 3. }.
+
+;; Radixes
+String radix := { takes '[rad].
+                  (rad < 2) or (rad > 36) ifTrue { ArgError clone tap
+                                                       { self message := "Radix out of bounds". } throw. }.
+                  convert := { takes '[n].
+                               if: (n >= ("0" ord)) and (n <= ("9" ord)),
+                                   { n - ("0" ord). },
+                                   { if: (n >= ("a" ord)) and (n <= ("z" ord)),
+                                         { n - ("a" ord) + 10. },
+                                         { if: (n >= ("A" ord)) and (n <= ("Z" ord)),
+                                               { n - ("A" ord) + 10. },
+                                               { InputError clone tap
+                                                     { self message := "Text is not a number". } throw. }. }. }. }.
+                  validate := { ($1) >= (rad) ifTrue { InputError clone tap
+                                                           { self message := "Text is not a number". } throw. }. }.
+                  num := 0.
+                  self visit { curr := convert: $1 ord.
+                               validate: curr.
+                               parent num := (num) * (rad) + (curr). }.
+                  num. }.
+
+modifiedRadix := { takes '[str, rad, parm].
+                   result := str radix: rad.
+                   if: parm == '-,
+                       { - (result). },
+                       { if: (parm == '+) or (parm == '()),
+                             { result. },
+                             { ArgError clone tap { self message := "Sign does not make sense". } throw. }. }. }.
+
+meta radix x := { modifiedRadix: $1, 16, $2. }.
+meta radix X := { modifiedRadix: $1, 16, $2. }.
+meta radix o := { modifiedRadix: $1, 8, $2. }.
+meta radix O := { modifiedRadix: $1, 8, $2. }.
+meta radix b := { modifiedRadix: $1, 2, $2. }.
+meta radix B := { modifiedRadix: $1, 2, $2. }.
 
 ;; Return the script
 here.

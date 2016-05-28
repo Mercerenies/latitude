@@ -55,7 +55,8 @@
               "[" <arglist> "]" |
               "'" "[" <literallist> "]" |
               "#" "\"" <text> "\"" "#" |
-              "#" "(" <text> ")"
+              "#" "(" <text> ")" |
+              "0" <letter> { <alphanum> }
 <linelist> ::= <line> <linelist> |
                <lambda>
 <literallist> ::= <listlit> <literallist1> |
