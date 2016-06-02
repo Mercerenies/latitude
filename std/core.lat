@@ -199,6 +199,7 @@ Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
 Kernel GC run := { meta sys runGC#. }.
+Kernel GC total := { meta sys totalGC#. }.
 ; (The load function is defined in the main latitude.lat file)
 
 ;; Symbol functions

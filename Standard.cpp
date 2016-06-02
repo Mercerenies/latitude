@@ -11,8 +11,6 @@
 
 using namespace std;
 
-// TODO Intelligently decide in REPL when to call the garbage collector
-
 // TODO Some syntax sugar for pattern matching key-value pairs
 //    (So we can do a `capture3` which returns three values)
 //    (Or maybe a "variable bomb" method which introduces variables into the local scope)
@@ -67,7 +65,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         GC_RUN = 23,
         FILE_HEADER = 24,
         STR_ORD = 25,
-        STR_CHR = 26;
+        STR_CHR = 26,
+        GC_TOTAL = 27;
 
     // TERMINATE
     state.cpp[TERMINATE] = [](IntState& state0) {
@@ -1580,6 +1579,15 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                                          makeAssemblerLine(Instr::EXPD, Reg::NUM0),
                                                          makeAssemblerLine(Instr::THROA, "Number expected"),
                                                          makeAssemblerLine(Instr::CPP, STR_CHR))));
+
+    // GC_TOTAL (get the total number of allocated objects from the garbage collector and store it in %ret)
+    // totalGC#.
+    state.cpp[GC_TOTAL] = [](IntState& state0) {
+        // TODO Possible loss of precision
+        garnishEnd(state0, (long)GC::get().getTotal());
+    };
+    sys.lock()->put(Symbols::get()["totalGC#"],
+                    defineMethod(global, method, asmCode(makeAssemblerLine(Instr::CPP, GC_TOTAL))));
 
 }
 

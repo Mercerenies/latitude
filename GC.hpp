@@ -35,6 +35,7 @@ public:
     long garbageCollect(IntState&);
     template <typename InputIterator>
     long garbageCollect(InputIterator begin, InputIterator end);
+    size_t getTotal();
 };
 
 template <typename InputIterator>

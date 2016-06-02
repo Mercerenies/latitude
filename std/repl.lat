@@ -19,6 +19,7 @@ REPL scope := global clone.
 REPL $scope := meta Nil. ; To be assigned in-loop
 REPL exception := meta Nil.
 REPL lastResult := meta Nil.
+REPL maxObjects := 10000.
 
 global quit := { self REPL quit. }.
 global $except := { self REPL exception. }.
@@ -31,8 +32,12 @@ REPL print := { stdout println: dynamic hold '$1. }.
 REPL loop := { localize.
                $whereAmI := this.
                self $scope := dynamic.
-               self scope pairScopes (self $scope).
-               loop { { expr := this read.
+               (self scope) pairScopes (self $scope).
+               loop { { { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue
+                            { Kernel GC run.
+                              (Kernel GC total) >= (this maxObjects) ifTrue
+                                  { this maxObjects := this maxObjects * 2. }. }.
+                        expr := this read.
                         this lastResult := this eval: expr.
                         this print: this hold 'lastResult. } resolve: { meta True. },
                                                                       { this exception := $1.

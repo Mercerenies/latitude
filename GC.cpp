@@ -186,3 +186,7 @@ long GC::garbageCollect(IntState& state) {
     addContinuationToFrontier<decltype(globals)>({}, globals, state);
     return garbageCollect(globals.value);
 }
+
+size_t GC::getTotal() {
+    return alloc.size();
+}
