@@ -13,8 +13,6 @@ using namespace std;
 
 // TODO Intelligently decide in REPL when to call the garbage collector
 
-// TODO Make primitive objects like String and Number clone properly (prim() fields don't clone)
-
 // TODO Some syntax sugar for pattern matching key-value pairs
 //    (So we can do a `capture3` which returns three values)
 //    (Or maybe a "variable bomb" method which introduces variables into the local scope)

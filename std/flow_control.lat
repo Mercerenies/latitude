@@ -5,6 +5,7 @@ Nil := Nil.
 
 ;; Continuations
 Cont call := { meta sys exitCC#: self, $1. }.
+Cont toString := "Cont".
 global callCC := { meta sys callCC#: meta Cont clone, { parent dynamic $1. }. }.
 
 ;; Booleans

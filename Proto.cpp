@@ -56,6 +56,7 @@ ObjectPtr clone(ObjectPtr obj) {
     ObjectPtr ptr(GC::get().allocate());
     auto ptr1 = ptr.lock();
     ptr1->put(Symbols::get()["parent"], obj);
+    ptr1->prim(obj.lock()->prim());
     return ptr;
 }
 
