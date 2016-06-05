@@ -52,7 +52,9 @@ global cond := { takes '[block].
                           whenProc := proc { if: $1,
                                                  { Object clone tap { self do := { finished call: $1. }. }. },
                                                  { Object clone tap { self do := { }. }. }. }.
-                          procd := dynamic invokeSpecial: hold 'block, { $1 when := { whenProc call. }. }.
+                          procd := dynamic invokeSpecial: hold 'block,
+                                                          { $1 when := { whenProc call. }.
+                                                            $1 else := { self when (True) do ($1). }. }.
                           procd call.
                           Nil. }. }.
 
