@@ -14,6 +14,8 @@
      (modify-syntax-entry ?\{ "(}1n" st)
      (modify-syntax-entry ?\* ". 23n" st)
      (modify-syntax-entry ?\} "){4n" st)
+     (modify-syntax-entry ?\[ "(]" st)
+     (modify-syntax-entry ?\] ")[" st)
      (modify-syntax-entry ?\. "." st)
      (modify-syntax-entry ?\, "." st)
      (modify-syntax-entry ?\: " " st)
