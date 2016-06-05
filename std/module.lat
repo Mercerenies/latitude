@@ -6,7 +6,7 @@ Module := global clone.
 Module toString := "Module".
 Module import := { localize.
                    target := dynamic parent $lexical.
-                   $1 visit { target put: $1, { this hold: parent dynamic $1. }. }. }.
+                   $1 visit { target put: $1, { this hold (parent dynamic $1) me. }. }. }.
 Module importAll := { localize.
                       target := dynamic parent $lexical.
                       target parent := target parent clone.
