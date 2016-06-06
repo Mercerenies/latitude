@@ -36,6 +36,10 @@ Latitude requires a C++14 compiler (tested with GCC 5.3.0), as well as the Boost
 
      $ make BOOST='/path/to/boost/library'
 
+## Development Environments
+
+There is an experimental Emacs mode for Latitude in `misc/latitude-mode.el` which should work out-of-the-box and will highlight Latitude syntax. Unfortunately, indentation in this mode is still very rudimentary and improvements will be on their way in the future.
+
 ## Usage
 
 This language is still in its very early stages of development, so FUTURE CHANGES WILL BREAK YOUR CODE.
