@@ -66,7 +66,7 @@ global takes := { args := ArgList clone fillWith: dynamic parent.
                   target := dynamic parent $lexical.
                   ($1 clone zip!: args) map!: { target put: ($1 car), ($1 hold 'cdr). $1 car. }. }.
 
-global $* := { ArgList clone fillWith: self parent. }.
+global $* := { ArgList clone fillWith: self. }.
 
 ;; Return the script
 here.

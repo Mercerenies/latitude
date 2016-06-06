@@ -1,0 +1,84 @@
+;;* MODULE monad
+;;* PACKAGE base
+
+; TODO Monad transformers...?
+
+use "std/util.lat".
+
+Nil := Nil.
+
+; A monad implementation is expected to have the following methods
+; * pure - A method of one argument that wraps the value in the monad
+; * fmap - A method of two argument, a method and a monadic value, which maps the method over the structure
+; * join - A method of one argument, which operates on a nested monad to merge it
+Monad := Mixin clone.
+Monad toString := "Monad".
+Monad interface := '[bind, seq, call].
+
+; `monad bind: obj, { mthd. }.` runs the method given the internals of `obj`.
+Monad bind := { self join (self fmap: (dynamic hold '$2), $1). }.
+; `monad seq: obj1, obj2.` combines the first and second contexts.
+Monad seq := { self bind: $1, { parent dynamic $2. }. }.
+; `monad call @{ code. }.` performs the code within the monadic context provided.
+Monad call := { localize.
+                binder := Nil.
+                binder= := { parent binder := $1. }.
+                $varBomb := { }.
+                newVariable := { oldBomb := $1 hold '$varBomb.
+                                 $1 $varBomb := { oldBomb.
+                                                  $1 put: parent dynamic $2, parent dynamic $3. }. }.
+                prepare := { $varBomb.
+                             $1 context := this.
+                             $1 put: '<-, { binder = $1.
+                                            $2. }. }.
+                iter := dynamic hold '$1 statements iterator.
+                continue := { takes '[value].
+                              if: iter end?,
+                                  { Nil. },
+                                  { elem := iter element.
+                                    binder ifTrue { newVariable: parent dynamic, binder, value.
+                                                    binder = Nil. }.
+                                    result := (elem invokeSpecial: (elem hold 'call), hold 'prepare) call.
+                                    iter next.
+                                    if: iter end?,
+                                        { result. },
+                                        { this bind: result, { continue. }. }. }. }.
+                continue: Nil. }.
+
+IdMonad := Object clone.
+IdMonad toString := "IdMonad".
+IdMonad pure := { dynamic hold '$1. }.
+IdMonad fmap := { $1: dynamic hold '$2. }.
+IdMonad join := { dynamic hold '$1. }.
+Monad inject: IdMonad.
+
+Maybe := Object clone.
+Maybe value := Nil.
+Maybe toString := { if: (self) === (Maybe),
+                        "Maybe",
+                        "#<Maybe (Just " ++ (self value toString) ++ ")>". }.
+Nothing := Maybe clone.
+Nothing toString := "Nothing".
+Nothing toBool := False.
+just := { Maybe clone tap { self value := parent dynamic hold '$1. }. }.
+MaybeMonad := Object clone.
+MaybeMonad toString := "MaybeMonad".
+MaybeMonad pure := { just. }.
+MaybeMonad fmap := { takes '[mthd, obj].
+                     if: obj is (Nothing),
+                         { obj. },
+                         { just: mthd (obj value). }. }.
+MaybeMonad join := { takes '[obj].
+                     if: { obj is (Nothing). },
+                         { obj. },
+                         { obj value. }. }.
+Monad inject: MaybeMonad.
+
+{* ///// IterMonads don't work
+IterMonad := Object clone.
+IterMonad toString := "IterMonad".
+IterMonad pure := { util Cell clone tap { self value := parent dynamic hold '$1. }. }.
+IterMonad fmap := { $2 map. }.
+IterMonad join := { $1 foldl: Nil, '<> toProc. }.
+Monad inject: IterMonad.
+*}

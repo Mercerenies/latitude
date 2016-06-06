@@ -36,7 +36,7 @@
         struct List* args;
         bool equals;
         struct Expr* rhs;
-        bool method;
+        bool isMethod; // Check args
         bool isNumber; // Check number
         double number;
         bool isInt; // Check integer
@@ -49,6 +49,8 @@
         bool isEquality; // Treated like call with a rhs
         bool isHashParen; // Check name
         bool isZeroDispatch; // Check name
+        bool isSpecialMethod; // Just like isMethod
+        bool isBind; // Treated like call with a rhs
     };
 
     struct List {
@@ -106,6 +108,8 @@
 %token <sval> ZERODISPATCH
 %token LISTLIT
 %token CEQUALS
+%token ATBRACE
+%token BIND
 
 %%
 
@@ -135,7 +139,8 @@ rhs:
     ':' arglist { $$ = makeExpr(); $$->args = $2; } |
     '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
     literalish '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = new List(); $$->args->car = $1;
-                          $$->args->cdr = new List(); $$->isEquality = true; }
+                          $$->args->cdr = new List(); $$->isEquality = true; } |
+    BIND stmt { $$ = makeExpr(); $$->rhs = $2; $$->isBind = true; }
     ;
 arglist:
     /* empty */ { $$ = makeList(); } |
@@ -166,7 +171,8 @@ literalish:
     literal
     ;
 literal:
-    '{' linelist '}' { $$ = makeExpr(); $$->method = true; $$->args = $2; } |
+    '{' linelist '}' { $$ = makeExpr(); $$->isMethod = true; $$->args = $2; } |
+    ATBRACE linelist '}' { $$ = makeExpr(); $$->isSpecialMethod = true; $$->args = $2; } |
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |

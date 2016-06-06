@@ -143,5 +143,11 @@ Collection <> := { Chain := Object clone.
 
 Collection inject: Array.
 
+;; Nil is an iterator over an empty collection
+Nil iterator := { NilIterator := Object clone.
+                  NilIterator toString := "NilIterator".
+                  NilIterator end? := True. }.
+Collection inject: Nil.
+
 ;; Return the script
 here.

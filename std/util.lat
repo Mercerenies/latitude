@@ -12,6 +12,17 @@ Cell := Object clone.
 Cell value := Nil.
 Cell toString := "Cell".
 
+;; Cells are also iterable
+Cell iterator := { CellIterator := Object clone.
+                   CellIterator toString := "CellIterator".
+                   CellIterator cell := self.
+                   CellIterator end? := False.
+                   CellIterator next := { self end? := True. }.
+                   CellIterator element := { self cell value. }.
+                   CellIterator element= := { self cell value := dynamic hold '$1. }.
+                   CellIterator. }.
+Collection inject: Cell.
+
 ;; Lockboxes and Latchkeys
 Latchkey := Object clone.
 Lockbox := Object clone.
