@@ -14,7 +14,7 @@ global Collection := Mixin clone.
 Collection toString := "Collection".
 Collection interface := '[map!, visit, map, foldl, foldr, size, toArray, all, any, notall, notany,
                           detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
-                          minimum].
+                          minimum, <>].
 Collection map! := { func := { (parent dynamic hold '$1) call. }.
                      iter := self iterator.
                      while { iter end? not. }
@@ -122,6 +122,24 @@ Collection minimum := { current := Nil.
                                       ((hold 'value) < (hold 'current)) ifTrue { setCurrent: hold 'value. }. }.
                         self visit { minimize: dynamic hold '$1. }.
                         current. }.
+Collection <> := { Chain := Object clone.
+                   Chain toString := "Chain".
+                   Chain iterator := { ChainIterator := Object clone.
+                                       ChainIterator toString := "ChainIterator".
+                                       ChainIterator iter := parent self iterator.
+                                       ChainIterator secondHalf := parent dynamic $1.
+                                       ChainIterator element := { self iter element. }.
+                                       ChainIterator element= := { self iter element=. }.
+                                       ChainIterator next := { localize.
+                                                               hasSecondHalf := this secondHalf nil? not.
+                                                               this iter next.
+                                                               (this iter end?) and (hasSecondHalf) ifTrue
+                                                                   { this iter := this secondHalf iterator.
+                                                                     this secondHalf := Nil. }. }.
+                                       ChainIterator end? := { self iter end?. }.
+                                       ChainIterator. }.
+                   Collection inject: Chain.
+                   Chain. }.
 
 Collection inject: Array.
 
