@@ -70,6 +70,11 @@ Array join := { index := 1.
                    do { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
                         parent index := index + 1. }.
                 str. }.
+Array concat := { arr := Array clone.
+                  self visit { if: $1 is (Array),
+                                   { parent dynamic $1 visit { arr pushBack: $1. }. },
+                                   { arr pushBack: parent dynamic $1. }. }.
+                  arr. }.
 Array toString := { "[" ++ (self join ", ") ++ "]". }.
 Array == := { localize.
               takes '[arr].
