@@ -9,7 +9,17 @@ id := id.
 
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
-;; for example the `size` method.
+;; for example the `size` method. The iterator returned by `iterator` must support the following:
+;; *  `end?` - A 0-ary method which returns whether the iterator is at the end
+;; *  `next` - Moves the iterator to the next value; if at the last value, the iterator is moved to a special
+;;             "end" position for which `end?` returns true and `element` is invalid
+;; *  `element` - Returns the current value to which the iterator points; this value need only be
+;;                well-defined when `end?` is false
+;; *  `element=` - Sets the current element; if the iterator is read-only, `element=` should be defined
+;;                 to throw a `ReadOnlyError` with an appropriate message; as with `element`, this need
+;;                 only be well-defined when `end?` is false
+;; *  `clone` - Iterators must be cloneable at any intermediate point in their iteration
+;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
 global Collection := Mixin clone.
 Collection toString := "Collection".
 Collection interface := '[map!, visit, map, foldl, foldr, size, toArray, all, any, notall, notany,
@@ -124,19 +134,25 @@ Collection minimum := { current := Nil.
                         current. }.
 Collection <> := { Chain := Object clone.
                    Chain toString := "Chain".
-                   Chain iterator := { ChainIterator := Object clone.
+                   Chain iterator := { ; We must construct a "NilThing" to act like
+                                       ; Nil since Nil is a valid element in a chain
+                                       NilThing := Nil clone.
+                                       NilThing toString := "NilThing".
+                                       ChainIterator := Object clone.
                                        ChainIterator toString := "ChainIterator".
                                        ChainIterator iter := parent self iterator.
                                        ChainIterator secondHalf := parent dynamic $1.
                                        ChainIterator element := { self iter element. }.
                                        ChainIterator element= := { self iter element=. }.
                                        ChainIterator next := { localize.
-                                                               hasSecondHalf := this secondHalf nil? not.
+                                                               hasSecondHalf := this secondHalf is (NilThing) not.
                                                                this iter next.
                                                                (this iter end?) and (hasSecondHalf) ifTrue
                                                                    { this iter := this secondHalf iterator.
-                                                                     this secondHalf := Nil. }. }.
+                                                                     this secondHalf := NilThing. }. }.
                                        ChainIterator end? := { self iter end?. }.
+                                       (ChainIterator end?) ifTrue
+                                           { ChainIterator iter := ChainIterator secondHalf iterator. }.
                                        ChainIterator. }.
                    Collection inject: Chain.
                    Chain. }.
@@ -146,7 +162,8 @@ Collection inject: Array.
 ;; Nil is an iterator over an empty collection
 Nil iterator := { NilIterator := Object clone.
                   NilIterator toString := "NilIterator".
-                  NilIterator end? := True. }.
+                  NilIterator end? := True.
+                  NilIterator. }.
 Collection inject: Nil.
 
 ;; Return the script
