@@ -76,7 +76,6 @@ MaybeMonad join := { takes '[obj].
                          { obj value. }. }.
 Monad inject: MaybeMonad.
 
-; ///// IterMonads don't work (they duplicate the first result)
 IterMonad := Object clone.
 IterMonad toString := "IterMonad".
 IterMonad pure := { util Cell clone tap { self value := parent dynamic hold '$1. }. }.
