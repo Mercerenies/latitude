@@ -21,29 +21,31 @@ Monad bind := { self join (self fmap: (dynamic hold '$2), $1). }.
 Monad seq := { self bind: $1, { parent dynamic $2. }. }.
 ; `monad call @{ code. }.` performs the code within the monadic context provided.
 Monad call := { localize.
-                binder := Nil.
-                binder= := { parent binder := $1. }.
+                $binder := Nil.
+                $binder= := { dynamic origin '$binder $binder := $1. }.
                 $varBomb := { }.
                 newVariable := { oldBomb := $1 hold '$varBomb.
                                  $1 $varBomb := { oldBomb.
                                                   $1 put: parent dynamic $2, parent dynamic $3. }. }.
                 prepare := { $varBomb.
                              $1 context := this.
-                             $1 put: '<-, { binder = $1.
+                             $1 put: '<-, { $binder = $1.
                                             $2. }. }.
-                iter := dynamic hold '$1 statements iterator.
-                continue := { takes '[value].
+                iter0 := dynamic hold '$1 statements iterator.
+                continue := { takes '[iter, value].
                               if: iter end?,
                                   { Nil. },
                                   { elem := iter element.
-                                    binder ifTrue { newVariable: parent dynamic, binder, value.
-                                                    binder = Nil. }.
+                                    $binder ifTrue { newVariable: parent dynamic, $binder, value. }.
+                                    $binder := Nil.
                                     result := (elem invokeSpecial: (elem hold 'call), hold 'prepare) call.
-                                    iter next.
-                                    if: iter end?,
+                                    ; It is necessary not to destroy the iterator in case the monad
+                                    ; wishes to branch or perform multiple executions
+                                    iter1 := iter clone tap { self next. }.
+                                    if: iter1 end?,
                                         { result. },
-                                        { this bind: result, { continue. }. }. }. }.
-                continue: Nil. }.
+                                        { this bind: result, { continue: iter1, $1. }. }. }. }.
+                continue: iter0, Nil. }.
 
 IdMonad := Object clone.
 IdMonad toString := "IdMonad".
@@ -74,11 +76,10 @@ MaybeMonad join := { takes '[obj].
                          { obj value. }. }.
 Monad inject: MaybeMonad.
 
-{* ///// IterMonads don't work
+; ///// IterMonads don't work (they duplicate the first result)
 IterMonad := Object clone.
 IterMonad toString := "IterMonad".
 IterMonad pure := { util Cell clone tap { self value := parent dynamic hold '$1. }. }.
 IterMonad fmap := { $2 map. }.
 IterMonad join := { $1 foldl: Nil, '<> toProc. }.
 Monad inject: IterMonad.
-*}

@@ -152,7 +152,8 @@ Collection <> := { Chain := Object clone.
                                                                      this secondHalf := NilThing. }. }.
                                        ChainIterator end? := { self iter end?. }.
                                        (ChainIterator end?) ifTrue
-                                           { ChainIterator iter := ChainIterator secondHalf iterator. }.
+                                           { ChainIterator iter := ChainIterator secondHalf iterator.
+                                             ChainIterator secondHalf := NilThing. }.
                                        ChainIterator. }.
                    Collection inject: Chain.
                    Chain. }.
