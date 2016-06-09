@@ -40,6 +40,8 @@
          curr_buffer_size = 0;
      }
 
+     // TODO Should backslashes be allowed in identifiers or should they be "special" characters?
+
 %}
 
 NORMAL    [^.,:()\[\]{}\"\' \t\n\r]
