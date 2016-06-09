@@ -45,7 +45,7 @@
 %}
 
 NORMAL    [^.,:()\[\]{}\"\' \t\n\r]
-SNORMAL   [^.,:()\[\]{}\"\' \t\n\r~0-9#]
+SNORMAL   [^.,:()\[\]{}\"\' \t\n\r~0-9#@]
 ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING
@@ -57,6 +57,7 @@ ID        {SNORMAL}{NORMAL}*
 
 #< { yyerror("Unreadable object"); }
 = { return '='; }
+\<- { return BIND; }
 
 [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
     yylval.dval = strtod(yytext, NULL);
@@ -168,6 +169,7 @@ ID        {SNORMAL}{NORMAL}*
 , { return ','; }
 \[ { return '['; }
 \] { return ']'; }
+@\{ { return ATBRACE; }
 
 \;[^\n]* ; // Line comments
 \{\* { BEGIN(INNER_COMMENT); comments++; }

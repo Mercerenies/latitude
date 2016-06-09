@@ -214,4 +214,16 @@ public:
     virtual InstrSeq translate();
 };
 
+/*
+ * A special method literal.
+ */
+class StmtSpecialMethod : public Stmt {
+private:
+    std::list< std::shared_ptr<Stmt> > contents;
+public:
+    StmtSpecialMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents);
+    virtual InstrSeq translate();
+    virtual void propogateFileName(std::string name);
+};
+
 #endif // _READER_HPP_

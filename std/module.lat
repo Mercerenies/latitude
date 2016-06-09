@@ -35,6 +35,7 @@ ModuleLoader clone := { self invoke (Object hold 'clone) call tap { self loaded 
 
 global $moduleLoader := ModuleLoader clone.
 
+; TODO Define the module name not globally but in the caller's scope to avoid polluting the global namespace
 global use := { takes '[fname].
                 header := Kernel readHeader: fname.
                 (header moduleName) ifFalse

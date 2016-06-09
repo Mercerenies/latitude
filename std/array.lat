@@ -108,10 +108,30 @@ Array clone := { procd := self invoke: (Object hold 'clone).
 ;; Array Syntax
 meta brackets := { ArrayBuilder := self Object clone.
                    ArrayBuilder toString := "ArrayBuilder".
-                   ArrayBuilder array := self Array clone.
+                   ArrayBuilder array := Array clone.
                    ArrayBuilder next := { self array pushBack: $1. }.
                    ArrayBuilder finish := { self array. }.
                    ArrayBuilder. }.
+
+;; Statement List Syntax
+SpecialMethod := Method clone.
+SpecialMethod toString := "SpecialMethod".
+SpecialMethod statements := [].
+meta statements := { MethodBuilder := self Object clone.
+                     MethodBuilder toString := "MethodBuilder".
+                     MethodBuilder array := Array clone.
+                     MethodBuilder next := { self array pushBack: proc (dynamic hold '$1). }.
+                     MethodBuilder finish := { spec := { args := $*.
+                                                         result := meta Nil.
+                                                         here statements visit
+                                                             { procd := parent self invoke: $1 hold 'call.
+                                                               args dropIn.
+                                                               parent result := procd call. }.
+                                                         result. }.
+                                               hold 'spec parent := SpecialMethod.
+                                               hold 'spec statements := self array.
+                                               hold 'spec. }.
+                     MethodBuilder. }.
 
 ;; Return the script
 here.

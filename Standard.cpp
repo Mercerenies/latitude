@@ -1501,6 +1501,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                  makeAssemblerLine(Instr::SYM, "FileHeader"),
                                  makeAssemblerLine(Instr::RTRV),
+                                 makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                 makeAssemblerLine(Instr::CLONE),
                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF));
         InstrSeq mid;
         Header header = getFileHeader(state0.str0);

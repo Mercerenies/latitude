@@ -22,6 +22,7 @@ Boolean toString := "Boolean".
 True toString := "True".
 False toString := "False".
 Nil toString := "Nil".
+; TODO Make `self` for the conditionals well-defined
 global if := { meta sys ifThenElse#: meta True,
                                      $1 toBool,
                                      { parent dynamic $2. },

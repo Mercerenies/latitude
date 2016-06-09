@@ -93,3 +93,21 @@ InstrSeq garnishSeq(Symbolic value) {
                            makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
     return seq;
 }
+/*
+InstrSeq garnishSeq(const InstrSeq& value) {
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                           makeAssemblerLine(Instr::SYM, "meta"),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::SYM, "Method"),
+                           makeAssemblerLine(Instr::RTRV),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                           makeAssemblerLine(Instr::CLONE),
+                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                           makeAssemblerLine(Instr::MTHD, value),
+                           makeAssemblerLine(Instr::LOAD, Reg::MTHD),
+                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
+    return seq;
+}
+*/

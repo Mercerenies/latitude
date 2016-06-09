@@ -1,0 +1,58 @@
+;;* MODULE regexp
+;;* PACKAGE base
+
+Nil := Nil.
+Array := Array.
+
+use "std/pattern.lat" import '[Match, NoMatch].
+
+RegexpError := Exception clone tap { self message := "Regexp Error".
+                                     self toString := "RegexpError". }.
+
+Regexp := Object clone.
+Regexp toString := "Regexp".
+Regexp specialChars := ["\\", "/"].
+Regexp escapeText := { $1 map { if: parent self specialChars find ($1),
+                                    { "\\" ++ (parent dynamic $1). },
+                                    { parent dynamic $1. }. }. }.
+Regexp pattern := { node := Object clone tap { self elem := ReLiteral make "". }.
+                    node= := { parent node := $1. }.
+                    concatenate := { takes '[arg].
+                                     if: (node elem is (ReLiteral)) and (arg is (ReLiteral)),
+                                         { node elem text := (node elem text) ++ (arg text). },
+                                         { node elem = ReConcat make: node elem, arg. }. }.
+                    iter := $1 iterator.
+                    while { iter end? not. }
+                       do { curr := iter element.
+                            cond { when (curr == "\\")
+                                     do { iter next.
+                                          iter end? ifTrue { RegexpError clone tap
+                                                                { self message := "Invalid escape". } throw. }.
+                                          concatenate: ReLiteral make (iter element). }.
+                                   else { concatenate: ReLiteral make (curr). }. }.
+                            iter next. }.
+                    ((node) === (Object)) or ((node parent) === (Object) not) ifTrue
+                        { RegexpError clone tap { self message := "Unclosed element". } throw. }.
+                    node elem. }.
+
+ReMatch := pattern Match clone.
+ReMatch toString := "ReMatch".
+ReMatch groups := Array.
+ReMatch clone := { self invoke (Object hold 'clone) tap { self groups := self groups clone. }. }.
+
+ReObject := Object clone.
+ReObject toString := { "#(/" ++ (self asRegexp) ++ "/)". }.
+ReObject pretty := { self asRegexp. }.
+ReObject asRegexp := "".
+ReObject match := { Array clone. }.
+
+ReConcat := ReObject clone.
+ReConcat make := { self clone tap { self lhs := parent dynamic $1.
+                                    self rhs := parent dynamic $2. }. }.
+ReConcat asRegexp := { (self lhs asRegexp) ++ (self rhs asRegexp). }.
+; ///// Match for this and ReLiteral
+
+ReLiteral := ReObject clone.
+ReLiteral make := { self clone tap { self text := parent dynamic $1. }. }.
+ReLiteral text := "".
+ReLiteral asRegexp := { Regexp escapeText: self text. }.
