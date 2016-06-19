@@ -15,15 +15,15 @@ public:
     void operator()(List* x) const;
 };
 
-struct Scope {
-    ObjectPtr lex;
-    ObjectPtr dyn;
-};
-
 using PtrToExpr = std::unique_ptr< Expr, ExprDeleter >;
 using PtrToList = std::unique_ptr< List, ExprDeleter >;
 
 class Stmt;
+
+struct Scope {
+    ObjectPtr lex;
+    ObjectPtr dyn;
+};
 
 extern "C" void setCurrentLine(List* stmt);
 PtrToList getCurrentLine();

@@ -5,6 +5,7 @@
 #include "Stream.hpp"
 #include "Symbol.hpp"
 #include "Number.hpp"
+#include "Instructions.hpp"
 #include <list>
 #include <functional>
 #include <memory>
@@ -14,11 +15,11 @@
 #include <boost/blank.hpp>
 #include <set>
 
+///// Make instruction sequences more "constant" for efficiency
+
 // Yes, this is probably horrible from a design standpoint, but I needed some
 // way to resolve the circular dependencies.
 class Stmt; // From Reader.hpp
-struct Scope; // From Reader.hpp
-using InstrSeq = std::deque<unsigned char>; // From Bytecode.hpp
 struct IntState; // From Bytecode.hpp
 using StatePtr = std::shared_ptr<IntState>; // From Bytecode.hpp
 
@@ -28,7 +29,6 @@ class Object;
 using LStmt = std::list< std::shared_ptr<Stmt> >;
 using ObjectPtr = std::weak_ptr<Object>;
 using ObjectSPtr = std::shared_ptr<Object>;
-using SystemCall = std::function<ObjectPtr(Scope, std::list<ObjectPtr>)>;
 using Method = InstrSeq;
 using Prim = boost::variant<boost::blank, Number, std::string,
                             StreamPtr, Symbolic, ProcessPtr,
