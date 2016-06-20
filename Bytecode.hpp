@@ -11,50 +11,6 @@
 #include "Proto.hpp"
 #include "Instructions.hpp"
 
-class AssemblerError {
-private:
-    std::string message;
-public:
-    AssemblerError();
-    AssemblerError(std::string message);
-    std::string getMessage();
-};
-
-void appendRegisterArg(const RegisterArg& arg, InstrSeq& seq);
-void appendInstruction(const Instr& instr, InstrSeq& seq);
-
-class AssemblerLine {
-private:
-    Instr command;
-    std::vector<RegisterArg> args;
-public:
-    AssemblerLine() = default;
-    void setCommand(Instr);
-    void addRegisterArg(const RegisterArg&);
-    void validate(); // Throws if invalid
-    void appendOnto(InstrSeq&) const;
-};
-
-template <typename... Ts>
-AssemblerLine makeAssemblerLine(Instr instr, Ts... args) {
-    AssemblerLine line;
-    line.setCommand(instr);
-    std::array<RegisterArg, sizeof...(args)> args0 = { args... };
-    for (auto& arg : args0)
-        line.addRegisterArg(arg);
-    line.validate();
-    return line;
-}
-
-template <typename... Ts>
-InstrSeq asmCode(Ts... args) {
-    InstrSeq seq;
-    std::array<AssemblerLine, sizeof...(args)> args0 = { args... };
-    for (auto& arg : args0)
-        arg.appendOnto(seq);
-    return seq;
-}
-
 class StackNode;
 
 using NodePtr = std::shared_ptr<StackNode>;
@@ -93,21 +49,22 @@ struct IntState {
     Symbolic sym;
     Number num0, num1;
     std::string str0, str1;
-    InstrSeq mthd;
+    Method mthd;
     std::map<long, CppFunction> cpp;
     StreamPtr strm;
     ProcessPtr prcs;
-    InstrSeq mthdz;
+    Method mthdz;
     bool flag;
     std::stack<WindPtr> wind;
     std::stack<ObjectPtr> hand;
     long line;
     std::string file;
     std::stack<BacktraceFrame> trace;
+    std::stack<TranslationUnitPtr> trns;
 };
 
 struct Thunk {
-    InstrSeq code;
+    Method code;
     ObjectPtr lex;
     ObjectPtr dyn;
 };
@@ -127,7 +84,7 @@ long popLong(InstrSeq& state);
 std::string popString(InstrSeq& state);
 Reg popReg(InstrSeq& state);
 Instr popInstr(InstrSeq& state);
-InstrSeq popLine(InstrSeq& state);
+FunctionIndex popFunction(InstrSeq& state);
 
 void executeInstr(Instr instr, IntState& state);
 

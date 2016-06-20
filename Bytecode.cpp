@@ -3,105 +3,9 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 
-//#define DEBUG_INSTR 1
+#define DEBUG_INSTR 3
 
 using namespace std;
-
-AssemblerError::AssemblerError()
-    : AssemblerError("Assembler error") {}
-
-AssemblerError::AssemblerError(string message)
-    : message(message) {}
-
-string AssemblerError::getMessage() {
-    return message;
-}
-
-struct AppendVisitor {
-    InstrSeq* instructions;
-
-    void operator()(const Reg& reg) {
-        instructions->push_back((unsigned char)reg);
-    }
-
-    void operator()(const std::string& str) {
-        for (char ch : str)
-            instructions->push_back(ch);
-        instructions->push_back('\0');
-    }
-
-    // TODO I'm using a whole byte for the sign right now; minimize that as best as possible
-    void operator()(const long& val) {
-        long val1 = val;
-        if (val1 < 0)
-            instructions->push_back(0xFF);
-        else
-            instructions->push_back(0x00);
-        val1 = abs(val1);
-        for (int i = 0; i < 4; i++) {
-            instructions->push_back((unsigned char)(val1 % 256));
-            val1 /= 256;
-        }
-    }
-
-    void operator()(const InstrSeq& seq) {
-        unsigned long length = seq.size();
-        unsigned long length2 = 0;
-        unsigned long temp = length;
-        while (temp > 0) {
-            temp /= 256;
-            length2++;
-        }
-        instructions->push_back((unsigned char)length2);
-        for (unsigned long i = 0; i < length2; i++) {
-            instructions->push_back((unsigned char)(length % 256));
-            length /= 256;
-        }
-        for (auto& ch : seq)
-            instructions->push_back((unsigned char)ch);
-    }
-
-};
-
-void appendRegisterArg(const RegisterArg& arg, InstrSeq& seq) {
-    AppendVisitor visitor { &seq };
-    boost::apply_visitor(visitor, arg);
-}
-
-void appendInstruction(const Instr& instr, InstrSeq& seq) {
-    seq.push_back((unsigned char)instr);
-}
-
-void AssemblerLine::setCommand(Instr str) {
-    command = str;
-}
-
-void AssemblerLine::addRegisterArg(const RegisterArg& arg) {
-    args.push_back(arg);
-}
-
-void AssemblerLine::validate() {
-    InstructionSet iset = InstructionSet::getInstance();
-    if (!iset.hasInstruction(command))
-        throw AssemblerError("Unknown instruction " + to_string((int)command));
-    InstructionSet::ValidList parms = iset.getParams(command);
-    if (parms.size() != args.size())
-        throw AssemblerError("Wrong number of arguments to " + to_string((int)command));
-    auto parmIter = parms.begin();
-    auto argIter = args.begin();
-    while ((parmIter != parms.end()) && (argIter != args.end())) {
-        if (!(*parmIter)(*argIter))
-            throw AssemblerError("Unexpected argument type at " + to_string((int)command));
-        ++parmIter;
-        ++argIter;
-    }
-}
-
-void AssemblerLine::appendOnto(InstrSeq& seq) const {
-    appendInstruction(command, seq);
-    for (auto& arg : args)
-        appendRegisterArg(arg, seq);
-}
 
 StackNode::StackNode(const InstrSeq& data0)
     : next(nullptr), data(data0) {}
@@ -130,13 +34,17 @@ IntState intState() {
     state.sym = Symbols::get()[""];
     // num0, num1 default to smallint(0)
     // str0, str1 default to empty string
-    state.mthd = asmCode(makeAssemblerLine(Instr::RET));
+    // mthd default to empty method
     // cpp default to empty map
     // strm default to null
     // prcs default to null
-    state.mthdz = asmCode(makeAssemblerLine(Instr::RET));
+    // mthdz default to empty method
     // flag default to false
     // wind default to empty
+    // line default to zero
+    // file default to empty string
+    // trace default to empty stack
+    // trns default to empty stack
     return state;
 }
 
@@ -166,12 +74,12 @@ void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWi
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );
-        state.stack = pushNode(state.stack, ptr->after.code);
+        state.stack = pushNode(state.stack, ptr->after.code.instructions());
     }
     for (WindPtr ptr : enters) {
         state.lex.push( clone(ptr->before.lex) );
         state.dyn.push( clone(ptr->before.dyn) );
-        state.stack = pushNode(state.stack, ptr->before.code);
+        state.stack = pushNode(state.stack, ptr->before.code.instructions());
     }
 }
 
@@ -214,18 +122,15 @@ Instr popInstr(InstrSeq& state) {
     return (Instr)ch;
 }
 
-InstrSeq popLine(InstrSeq& state) {
-    InstrSeq result;
-    unsigned long length2 = (unsigned long)popChar(state);
-    unsigned long length = 0;
-    unsigned long pow = 1;
-    for (unsigned long i = 0; i < length2; i++) {
-        length += pow * (unsigned long)popChar(state);
+FunctionIndex popFunction(InstrSeq& state) {
+    int value = 0;
+    int pow = 1;
+    for (int i = 0; i < 4; i++) {
+        value += pow * (long)popChar(state);
         pow <<= 8;
     }
-    for (unsigned long i = 0; i < length; i++)
-        result.push_back(popChar(state));
-    return result;
+    cout << "!!!" << value << endl;
+    return { value };
 }
 
 void executeInstr(Instr instr, IntState& state) {
@@ -447,7 +352,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
             (closure.getType() == SlotType::PTR) << " " <<
-            stmt << " " << stmt << endl;
+            (stmt ? stmt->index().index : -1) << endl;
 #endif
         if ((closure.getType() == SlotType::PTR) && stmt) {
             // It's a method; get ready to call it
@@ -481,6 +386,7 @@ void executeInstr(Instr instr, IntState& state) {
             }
             // (7) Push %cont onto %stack
             state.stack = pushNode(state.stack, state.cont);
+            state.trns.push(stmt->translationUnit());
             // (8) Make a new %cont
             if (stmt) {
 #if DEBUG_INSTR > 3
@@ -505,7 +411,7 @@ void executeInstr(Instr instr, IntState& state) {
                     cout << endl;
                 }
 #endif
-                state.cont = *stmt;
+                state.cont = stmt->instructions();
             }
         } else {
             // It's not a method; just return it
@@ -524,9 +430,10 @@ void executeInstr(Instr instr, IntState& state) {
         if (stmt) {
             // (6) Push %cont onto %stack
             state.stack = pushNode(state.stack, state.cont);
+            state.trns.push(stmt->translationUnit());
             // (7) Make a new %cont
             if (stmt)
-                state.cont = *stmt;
+                state.cont = stmt->instructions();
         }
     }
         break;
@@ -593,6 +500,10 @@ void executeInstr(Instr instr, IntState& state) {
             state.err0 = true;
         else
             state.trace.pop();
+        if (state.trns.empty())
+            state.err0 = true;
+        else
+            state.trns.pop();
     }
         break;
     case Instr::CLONE: {
@@ -805,8 +716,8 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "MTHD ..." << endl;
 #endif
-        InstrSeq seq = popLine(state.cont);
-        state.mthd = std::move(seq);
+        FunctionIndex index = popFunction(state.cont);
+        state.mthd = Method(state.trns.top(), index);
     }
         break;
     case Instr::LOAD: {
@@ -837,7 +748,7 @@ void executeInstr(Instr instr, IntState& state) {
             break;
         case Reg::MTHD: {
 #if DEBUG_INSTR > 1
-            cout << "* Method Length " << state.mthd.size() << endl;
+            cout << "* Method Length " << state.mthd.instructions().size() << endl;
 #endif
             state.ptr.lock()->prim(state.mthd);
         }
@@ -852,7 +763,7 @@ void executeInstr(Instr instr, IntState& state) {
             break;
         case Reg::MTHDZ: {
 #if DEBUG_INSTR > 1
-            cout << "* Method Length " << state.mthdz.size() << endl;
+            cout << "* Method Length " << state.mthdz.instructions().size() << endl;
 #endif
             state.ptr.lock()->prim(state.mthdz);
         }
@@ -960,14 +871,14 @@ void executeInstr(Instr instr, IntState& state) {
         state.stack = pushNode(state.stack, state.cont);
         if (state.flag) {
 #if DEBUG_INSTR > 2
-            cout << "* Method ( ) Length " << state.mthd.size() << endl;
+            cout << "* Method ( ) Length " << state.mthd.instructions().size() << endl;
 #endif
-            state.cont = state.mthd;
+            state.cont = state.mthd.instructions();
         } else {
 #if DEBUG_INSTR > 2
-            cout << "* Method (Z) Length " << state.mthdz.size() << endl;
+            cout << "* Method (Z) Length " << state.mthdz.instructions().size() << endl;
 #endif
-            state.cont = state.mthdz;
+            state.cont = state.mthdz.instructions();
         }
     }
         break;
@@ -1252,6 +1163,16 @@ void executeInstr(Instr instr, IntState& state) {
         state.trace.push( make_tuple(0, "") );
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::RET));
         state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+    }
+        break;
+    case Instr::UNTR: {
+#if DEBUG_INSTR > 0
+        cout << "UNTR" << endl;
+#endif
+        if (state.trns.empty())
+            state.err0 = true;
+        else
+            state.trns.pop();
     }
         break;
     }

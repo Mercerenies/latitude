@@ -147,13 +147,13 @@ void eval(IntState& state, string str) {
     try {
         auto result = parse(str);
         if (!result.empty()) {
-            InstrSeq seq;
+            TranslationUnitPtr unit = make_shared<TranslationUnit>();
             for (auto& stmt : result) {
-                auto tr = stmt->translate();
-                seq.insert(seq.end(), tr.begin(), tr.end());
+                stmt->translate(*unit, unit->instructions());
             }
+            (makeAssemblerLine(Instr::UNTR)).appendOnto(unit->instructions());
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = seq;
+            state.cont = unit->instructions(); // TODO Store the unit
         }
     } catch (std::string str) {
         throwError(state, "ParseError", str);
@@ -177,18 +177,17 @@ void readFile(string fname, Scope defScope, IntState& state) {
             list< shared_ptr<Stmt> > stmts1;
             for (unique_ptr<Stmt>& stmt : stmts)
                 stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
-            InstrSeq seq;
-            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(seq);
+            TranslationUnitPtr unit = make_shared<TranslationUnit>();
+            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(unit->instructions());
             for (auto& stmt : stmts1) {
-                auto tr = stmt->translate();
-                seq.insert(seq.end(), tr.begin(), tr.end());
+                stmt->translate(*unit, unit->instructions());
             }
-            (makeAssemblerLine(Instr::RET)).appendOnto(seq);
+            (makeAssemblerLine(Instr::RET)).appendOnto(unit->instructions());
             if (!state.dyn.empty())
                 state.dyn.push( clone(state.dyn.top()) );
             state.lex.push(defScope.lex);
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = seq;
+            state.cont = unit->instructions(); // TODO Store the unit
         } catch (std::string parseException) {
             throwError(state, "ParseError", parseException);
         }
@@ -226,16 +225,14 @@ void Stmt::propogateFileName(std::string name) {
 StmtCall::StmtCall(int line_no, unique_ptr<Stmt>& cls, const string& func, ArgList& arg)
     : Stmt(line_no), className(move(cls)), functionName(func), args(move(arg)) {}
 
-InstrSeq StmtCall::translate() {
-    InstrSeq seq;
+void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     if (!className)
         stateLine(seq);
 
     // Evaluate the class name
     if (className) {
-        InstrSeq cls = className->translate();
-        seq.insert(seq.end(), cls.begin(), cls.end());
+        className->translate(unit, seq);
     } else if ((functionName != "") && (functionName[0] == '$')) {
         (makeAssemblerLine(Instr::GETD)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -257,8 +254,7 @@ InstrSeq StmtCall::translate() {
 
     // Evaluate each of the arguments, in order
     for (auto& arg : args) {
-        InstrSeq arg0 = arg->translate();
-        seq.insert(seq.end(), arg0.begin(), arg0.end());
+        arg->translate(unit, seq);
         (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
     }
 
@@ -269,8 +265,6 @@ InstrSeq StmtCall::translate() {
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CALL, (unsigned long)args.size())).appendOnto(seq);
-
-    return seq;
 
 }
 
@@ -285,16 +279,14 @@ void StmtCall::propogateFileName(std::string name) {
 StmtEqual::StmtEqual(int line_no, unique_ptr<Stmt>& cls, const string& func, unique_ptr<Stmt>& asn)
     : Stmt(line_no), className(move(cls)), functionName(func), rhs(move(asn)) {}
 
-InstrSeq StmtEqual::translate() {
-    InstrSeq seq;
+void StmtEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     if (!className)
         stateLine(seq);
 
     // Evaluate the class name
     if (className) {
-        InstrSeq cls = className->translate();
-        seq.insert(seq.end(), cls.begin(), cls.end());
+        className->translate(unit, seq);
     } else if ((functionName != "") && (functionName[0] == '$')) {
         (makeAssemblerLine(Instr::GETD)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -307,8 +299,7 @@ InstrSeq StmtEqual::translate() {
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
 
     // Evaluate the right-hand-side
-    InstrSeq rhs0 = rhs->translate();
-    seq.insert(seq.end(), rhs0.begin(), rhs0.end());
+    rhs->translate(unit, seq);
 
     // Load the appropriate values into the registers they need to be in
     (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
@@ -321,8 +312,6 @@ InstrSeq StmtEqual::translate() {
     // Put the value
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
-
-    return seq;
 
 }
 
@@ -337,8 +326,7 @@ void StmtEqual::propogateFileName(std::string name) {
 StmtMethod::StmtMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents)
     : Stmt(line_no), contents(move(contents)) {}
 
-InstrSeq StmtMethod::translate() {
-    InstrSeq seq;
+void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -367,16 +355,17 @@ InstrSeq StmtMethod::translate() {
                        makeAssemblerLine(Instr::RTRV));
     } else {
         for (auto& val : contents) {
-            InstrSeq curr = val->translate();
-            mthd.insert(mthd.end(), curr.begin(), curr.end());
+            val->translate(unit, mthd);
         }
     }
     (makeAssemblerLine(Instr::RET)).appendOnto(mthd);
 
+    FunctionIndex index = unit.pushMethod(mthd);
+
     // Clone and put a prim() onto it
     (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MTHD, mthd)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MTHD, index)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::MTHD)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
 
@@ -385,8 +374,6 @@ InstrSeq StmtMethod::translate() {
     (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(seq);
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(seq);
-
-    return seq;
 
 }
 
@@ -399,8 +386,7 @@ void StmtMethod::propogateFileName(std::string name) {
 StmtNumber::StmtNumber(int line_no, double value)
     : Stmt(line_no), value(value) {}
 
-InstrSeq StmtNumber::translate() {
-    InstrSeq seq;
+void StmtNumber::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -421,15 +407,12 @@ InstrSeq StmtNumber::translate() {
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
-    return seq;
-
 }
 
 StmtInteger::StmtInteger(int line_no, long value)
     : Stmt(line_no), value(value) {}
 
-InstrSeq StmtInteger::translate() {
-    InstrSeq seq;
+void StmtInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -450,15 +433,12 @@ InstrSeq StmtInteger::translate() {
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
-    return seq;
-
 }
 
 StmtBigInteger::StmtBigInteger(int line_no, const char* value)
     : Stmt(line_no), value(value) {}
 
-InstrSeq StmtBigInteger::translate() {
-    InstrSeq seq;
+void StmtBigInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -479,15 +459,12 @@ InstrSeq StmtBigInteger::translate() {
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
-    return seq;
-
 }
 
 StmtString::StmtString(int line_no, const char* contents)
     : Stmt(line_no), value(contents) {}
 
-InstrSeq StmtString::translate() {
-    InstrSeq seq;
+void StmtString::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -508,15 +485,12 @@ InstrSeq StmtString::translate() {
     (makeAssemblerLine(Instr::LOAD, Reg::STR0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
-    return seq;
-
 }
 
 StmtSymbol::StmtSymbol(int line_no, const char* contents)
     : Stmt(line_no), value(contents) {}
 
-InstrSeq StmtSymbol::translate() {
-    InstrSeq seq;
+void StmtSymbol::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -537,8 +511,6 @@ InstrSeq StmtSymbol::translate() {
     (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
-    return seq;
-
 }
 
 // TODO Make the builtins (like Symbol, Method, etc.) call the clone method rather than forcing
@@ -547,8 +519,7 @@ InstrSeq StmtSymbol::translate() {
 StmtList::StmtList(int line_no, ArgList& arg)
     : Stmt(line_no), args(move(arg)) {}
 
-InstrSeq StmtList::translate() {
-    InstrSeq seq;
+void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -572,8 +543,7 @@ InstrSeq StmtList::translate() {
     for (auto& arg : args) {
 
         // Evaluate the argument
-        InstrSeq arg0 = arg->translate();
-        seq.insert(seq.end(), arg0.begin(), arg0.end());
+        arg->translate(unit, seq);
         (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
 
         // Grab `next` and call it
@@ -601,8 +571,6 @@ InstrSeq StmtList::translate() {
     // Leave %sto the way we found it
     (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
 
-    return seq;
-
 }
 
 void StmtList::propogateFileName(std::string name) {
@@ -614,8 +582,7 @@ void StmtList::propogateFileName(std::string name) {
 StmtSigil::StmtSigil(int line_no, string name, unique_ptr<Stmt> rhs)
     : Stmt(line_no), name(name), rhs(move(rhs)) {}
 
-InstrSeq StmtSigil::translate() {
-    InstrSeq seq;
+void StmtSigil::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -633,8 +600,7 @@ InstrSeq StmtSigil::translate() {
     (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq);
 
     // Evaluate the argument
-    InstrSeq arg0 = rhs->translate();
-    seq.insert(seq.end(), arg0.begin(), arg0.end());
+    rhs->translate(unit, seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
 
     // Get the correct sigil out
@@ -652,8 +618,6 @@ InstrSeq StmtSigil::translate() {
     // Leave %sto the way we found it
     (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
 
-    return seq;
-
 }
 
 void StmtSigil::propogateFileName(std::string name) {
@@ -664,8 +628,7 @@ void StmtSigil::propogateFileName(std::string name) {
 StmtHashParen::StmtHashParen(int line_no, string text)
     : Stmt(line_no), text(text) {}
 
-InstrSeq StmtHashParen::translate() {
-    InstrSeq seq;
+void StmtHashParen::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -693,15 +656,12 @@ InstrSeq StmtHashParen::translate() {
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
 
-    return seq;
-
 }
 
 StmtZeroDispatch::StmtZeroDispatch(int line_no, char sym, char ch, string text)
     : Stmt(line_no), text(text), symbol(sym), prefix(ch) {}
 
-InstrSeq StmtZeroDispatch::translate() {
-    InstrSeq seq;
+void StmtZeroDispatch::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
@@ -737,22 +697,19 @@ InstrSeq StmtZeroDispatch::translate() {
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CALL, 2L)).appendOnto(seq);
 
-     return seq;
-
 }
 
 
 StmtSpecialMethod::StmtSpecialMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents)
     : Stmt(line_no), contents(move(contents)) {}
 
-InstrSeq StmtSpecialMethod::translate() {
-    InstrSeq seq;
+void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     //stateLine(seq);
 
     // PIZZA
 
-    auto prefix = [this](const InstrSeq& arg) {
+    auto prefix = [this, &unit](const InstrSeq& arg) {
         InstrSeq result;
         // Find the literal object to use
         (makeAssemblerLine(Instr::GETL)).appendOnto(result);
@@ -780,10 +737,12 @@ InstrSeq StmtSpecialMethod::translate() {
             mthd.insert(mthd.end(), arg.begin(), arg.end());
         }
         (makeAssemblerLine(Instr::RET)).appendOnto(mthd);
+        // Register with the translation unit
+        FunctionIndex index = unit.pushMethod(mthd);
         // Clone and put a prim() onto it
         (makeAssemblerLine(Instr::CLONE)).appendOnto(result);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(result);
-        (makeAssemblerLine(Instr::MTHD, mthd)).appendOnto(result);
+        (makeAssemblerLine(Instr::MTHD, index)).appendOnto(result);
         (makeAssemblerLine(Instr::LOAD, Reg::MTHD)).appendOnto(result);
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(result);
         // Give the object an appropriate closure
@@ -814,7 +773,8 @@ InstrSeq StmtSpecialMethod::translate() {
     for (auto& arg : contents) {
 
         // Evaluate the argument
-        InstrSeq arg0 = arg->translate();
+        InstrSeq arg0;
+        arg->translate(unit, arg0);
 
         InstrSeq temp = prefix(arg0);
         seq.insert(seq.end(), temp.begin(), temp.end());
@@ -844,8 +804,6 @@ InstrSeq StmtSpecialMethod::translate() {
 
     // Leave %sto the way we found it
     (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
-
-    return seq;
 
 }
 
