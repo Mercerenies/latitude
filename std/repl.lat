@@ -39,10 +39,12 @@ REPL loop := { localize.
                                   { this maxObjects := this maxObjects * 2. }. }.
                         expr := this read.
                         this lastResult := this eval: expr.
-                        this print: this hold 'lastResult. } resolve: { meta True. },
-                                                                      { this exception := $1.
-                                                                        stderr putln: "***** EXCEPTION *****".
-                                                                        stderr putln: this exception pretty.
-                                                                        this exception printStackTrace. }. }. }.
+                        this print: this hold 'lastResult. } resolve:
+                            { meta True. },
+                            { this exception := $1.
+                              stderr putln: "***** EXCEPTION *****".
+                              stderr putln: this exception pretty.
+                              { this exception has 'printStackTrace. } ifTrue
+                                  { this exception printStackTrace. }. }. }. }.
 
 global REPL := REPL.
