@@ -153,7 +153,8 @@ void eval(IntState& state, string str) {
             }
             (makeAssemblerLine(Instr::UNTR)).appendOnto(unit->instructions());
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = unit->instructions(); // TODO Store the unit
+            state.cont = unit->instructions();
+            state.trns.push(unit);
         }
     } catch (std::string str) {
         throwError(state, "ParseError", str);
@@ -187,7 +188,8 @@ void readFile(string fname, Scope defScope, IntState& state) {
                 state.dyn.push( clone(state.dyn.top()) );
             state.lex.push(defScope.lex);
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = unit->instructions(); // TODO Store the unit
+            state.cont = unit->instructions();
+            state.trns.push(unit);
         } catch (std::string parseException) {
             throwError(state, "ParseError", parseException);
         }

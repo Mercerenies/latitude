@@ -3,7 +3,7 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 
-#define DEBUG_INSTR 3
+//#define DEBUG_INSTR 3
 
 using namespace std;
 
@@ -129,7 +129,6 @@ FunctionIndex popFunction(InstrSeq& state) {
         value += pow * (long)popChar(state);
         pow <<= 8;
     }
-    cout << "!!!" << value << endl;
     return { value };
 }
 
@@ -352,7 +351,8 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
             (closure.getType() == SlotType::PTR) << " " <<
-            (stmt ? stmt->index().index : -1) << endl;
+            (stmt ? stmt->index().index : -1) << " " <<
+            (stmt ? stmt->translationUnit() : nullptr) << endl;
 #endif
         if ((closure.getType() == SlotType::PTR) && stmt) {
             // It's a method; get ready to call it
@@ -597,6 +597,12 @@ void executeInstr(Instr instr, IntState& state) {
         } else {
 #if DEBUG_INSTR > 1
             cout << "* Found " << value.lock() << endl;
+#if DEBUG_INSTR > 2
+            auto stmt = boost::get<Method>(&value.lock()->prim());
+            cout << "* Method Properties " <<
+                (stmt ? stmt->index().index : -1) << " " <<
+                (stmt ? stmt->translationUnit() : nullptr) << endl;
+#endif
 #endif
             state.ret = value;
         }
