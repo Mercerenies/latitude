@@ -56,7 +56,7 @@ public:
     void disableLocationInformation();
     void stateLine(InstrSeq&);
     void stateFile(InstrSeq&);
-    virtual InstrSeq translate() = 0;
+    virtual void translate(TranslationUnit&, InstrSeq&) = 0;
     virtual void propogateFileName(std::string name);
 };
 
@@ -72,7 +72,7 @@ private:
     ArgList args;
 public:
     StmtCall(int line_no, std::unique_ptr<Stmt>& cls, const std::string& func, ArgList& arg);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };
 
@@ -90,7 +90,7 @@ public:
     StmtEqual(int line_no,
               std::unique_ptr<Stmt>& cls, const std::string& func,
               std::unique_ptr<Stmt>& asn);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };
 
@@ -102,7 +102,7 @@ private:
     std::list< std::shared_ptr<Stmt> > contents;
 public:
     StmtMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };
 
@@ -114,7 +114,7 @@ private:
     double value;
 public:
     StmtNumber(int line_no, double value);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
 /*
@@ -125,7 +125,7 @@ private:
     long value;
 public:
     StmtInteger(int line_no, long value);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
 /*
@@ -136,7 +136,7 @@ private:
     std::string value;
 public:
     StmtBigInteger(int line_no, const char* value);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
 /*
@@ -147,7 +147,7 @@ private:
     std::string value;
 public:
     StmtString(int line_no, const char* contents);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
 /*
@@ -158,7 +158,7 @@ private:
     std::string value;
 public:
     StmtSymbol(int line_no, const char* contents);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
 /*
@@ -171,7 +171,7 @@ private:
     ArgList args;
 public:
     StmtList(int line_no, ArgList& arg);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };
 
@@ -184,7 +184,7 @@ private:
     std::unique_ptr<Stmt> rhs;
 public:
     StmtSigil(int line_no, std::string name, std::unique_ptr<Stmt> rhs);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };
 
@@ -197,7 +197,7 @@ private:
     std::string text;
 public:
     StmtHashParen(int line_no, std::string text);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
 /*
@@ -211,7 +211,7 @@ private:
     char prefix;
 public:
     StmtZeroDispatch(int line_no, char sym, char ch, std::string text);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
 /*
@@ -222,7 +222,7 @@ private:
     std::list< std::shared_ptr<Stmt> > contents;
 public:
     StmtSpecialMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents);
-    virtual InstrSeq translate();
+    virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };
 

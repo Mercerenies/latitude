@@ -46,6 +46,9 @@ One-byte opcodes, followed by whatever arguments the system expects
 %file (1A) - The current file name, as a string
 %trace (1B) - A stack of number-name pairs
 
+ == Etc ==
+%trns (1C) - A stack of translation units
+
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
 pop STACK (03 REG) - Pop from stack into %ptr, sets %err0 if empty
@@ -112,6 +115,7 @@ locln INT (2C INT) - Set the line number
 locrt (2D) - Retrieve the stack trace, storing a StackFrame object in %ret
 
 nret (2E) - Identical to `ret` but does not touch %trace
+untr (2F) - Pop %trns once, discarding the result
 
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
