@@ -20,15 +20,15 @@ using NodePtr = std::shared_ptr<StackNode>;
 class StackNode {
 private:
     NodePtr next;
-    InstrSeq data;
+    SeekHolder data;
 public:
-    StackNode(const InstrSeq& data0);
-    const InstrSeq& get();
-    friend NodePtr pushNode(NodePtr node, const InstrSeq& data);
+    StackNode(const SeekHolder& data0);
+    const SeekHolder& get();
+    friend NodePtr pushNode(NodePtr node, const SeekHolder& data);
     friend NodePtr popNode(NodePtr node);
 };
 
-NodePtr pushNode(NodePtr node, const InstrSeq& data);
+NodePtr pushNode(NodePtr node, const SeekHolder& data);
 NodePtr popNode(NodePtr node);
 
 struct Thunk;
@@ -43,7 +43,7 @@ using BacktraceFrame = std::tuple<long, std::string>;
 struct IntState {
     ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
-    InstrSeq cont;
+    SeekHolder cont;
     NodePtr stack;
     bool err0, err1;
     Symbolic sym;

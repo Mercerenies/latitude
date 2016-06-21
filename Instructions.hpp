@@ -176,9 +176,13 @@ class SeekHolder : public InstrSeek {
 private:
     std::unique_ptr<InstrSeek> internal;
 public:
+    SeekHolder();
     template <typename T>
     SeekHolder(const T&);
     SeekHolder(const SeekHolder&);
+    template <typename T>
+    SeekHolder& operator=(const T&);
+    SeekHolder& operator=(const SeekHolder&);
     virtual std::unique_ptr<InstrSeek> copy();
     virtual InstrSeq& instructions();
     virtual unsigned long position();
@@ -188,5 +192,11 @@ public:
 template <typename T>
 SeekHolder::SeekHolder(const T& prev)
     : internal(std::unique_ptr<InstrSeek>(new T(prev))) {}
+
+template <typename T>
+SeekHolder& SeekHolder::operator=(const T& other) {
+    internal = std::unique_ptr<InstrSeek>(new T(other));
+    return *this;
+}
 
 #endif

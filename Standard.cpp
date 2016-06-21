@@ -160,10 +160,10 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             if (stream0) {
                 switch (state0.num0.asSmallInt()) {
                 case 0:
-                    garnishEnd(state0, (*stream0)->hasIn());
+                    garnishBegin(state0, (*stream0)->hasIn());
                     break;
                 case 1:
-                    garnishEnd(state0, (*stream0)->hasOut());
+                    garnishBegin(state0, (*stream0)->hasOut());
                     break;
                 }
             } else {
@@ -202,7 +202,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                         (*stream0)->writeLine(*str0);
                         break;
                     }
-                    garnishEnd(state0, boost::blank());
+                    garnishBegin(state0, boost::blank());
                 } else {
                     throwError(state0, "IOError", "Stream not designated for output");
                 }
@@ -282,7 +282,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         }
             break;
         }
-        garnishEnd(state0, oss.str());
+        garnishBegin(state0, oss.str());
     };
     sys.lock()->put(Symbols::get()["numToString#"],
                     defineMethod(unit, global, method,
@@ -594,9 +594,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             if (stream0) {
                 if ((*stream0)->hasIn()) {
                     if (state0.num0.asSmallInt() == 0)
-                        garnishEnd(state0, (*stream0)->readLine());
+                        garnishBegin(state0, (*stream0)->readLine());
                     else
-                        garnishEnd(state0, (*stream0)->readText(1));
+                        garnishBegin(state0, (*stream0)->readText(1));
                 } else {
                     throwError(state0, "IOError", "Stream not designated for output");
                 }
@@ -883,7 +883,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // symName#: sym.
     state.cpp[SYM_NAME] = [](IntState& state0) {
         std::string name = Symbols::get()[ state0.sym ];
-        garnishEnd(state0, name);
+        garnishBegin(state0, name);
     };
     sys.lock()->put(Symbols::get()["symName#"],
                     defineMethod(unit, global, method,
@@ -904,7 +904,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             throwError(state0, "TypeError", "Cannot produce symbols from non-positive numbers");
         } else {
             Symbolic sym = Symbols::natural((int)state0.num0.asSmallInt());
-            garnishEnd(state0, sym);
+            garnishBegin(state0, sym);
         }
     };
     sys.lock()->put(Symbols::get()["natSym#"],
@@ -968,7 +968,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // intern#: str.
     state.cpp[SYM_INTERN] = [](IntState& state0) {
         Symbolic name = Symbols::get()[ state0.str0 ];
-        garnishEnd(state0, name);
+        garnishBegin(state0, name);
     };
     sys.lock()->put(Symbols::get()["intern#"],
                     defineMethod(unit, global, method,
@@ -1052,7 +1052,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // NUM_LEVEL (determine the "level" of %num0 and put the result in %ret)
     // numLevel#: num.
     state.cpp[NUM_LEVEL] = [](IntState& state0) {
-        garnishEnd(state0, state0.num0.hierarchyLevel());
+        garnishBegin(state0, state0.num0.hierarchyLevel());
     };
     sys.lock()->put(Symbols::get()["numLevel#"],
                     defineMethod(unit, global, method,
@@ -1163,15 +1163,15 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             break;
         }
         case 5: {
-            garnishEnd(state0, state0.prcs->isRunning());
+            garnishBegin(state0, state0.prcs->isRunning());
             break;
         }
         case 6: {
-            garnishEnd(state0, state0.prcs->getExitCode());
+            garnishBegin(state0, state0.prcs->getExitCode());
             break;
         }
         case 7: {
-            garnishEnd(state0, state0.prcs->isDone());
+            garnishBegin(state0, state0.prcs->isDone());
             break;
         }
         }
@@ -1307,19 +1307,18 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // objectKeys#: obj.
     state.cpp[OBJECT_KEYS] = [](IntState& state0) {
         set<Symbolic> allKeys = keys(state0.slf);
-        state0.stack = pushNode(state0.stack, state0.cont);
-        state0.cont = asmCode(makeAssemblerLine(Instr::GETL),
-                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                              makeAssemblerLine(Instr::SYM, "meta"),
-                              makeAssemblerLine(Instr::RTRV),
-                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                              makeAssemblerLine(Instr::SYM, "brackets"),
-                              makeAssemblerLine(Instr::RTRV),
-                              makeAssemblerLine(Instr::GETL),
-                              makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                              makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                              makeAssemblerLine(Instr::CALL, 0L),
-                              makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
+        InstrSeq total = asmCode(makeAssemblerLine(Instr::GETL),
+                                 makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                 makeAssemblerLine(Instr::SYM, "meta"),
+                                 makeAssemblerLine(Instr::RTRV),
+                                 makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                 makeAssemblerLine(Instr::SYM, "brackets"),
+                                 makeAssemblerLine(Instr::RTRV),
+                                 makeAssemblerLine(Instr::GETL),
+                                 makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                 makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                 makeAssemblerLine(Instr::CALL, 0L),
+                                 makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
         for (Symbolic sym : allKeys) {
             InstrSeq seq = garnishSeq(sym);
             (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
@@ -1331,17 +1330,19 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
             (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
             (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
-            state0.cont.insert(state0.cont.end(), seq.begin(), seq.end());
+            total.insert(total.end(), seq.begin(), seq.end());
         }
-        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::RTRV)).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(state0.cont);
-        (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(state0.cont);
+        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(total);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(total);
+        (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(total);
+        (makeAssemblerLine(Instr::RTRV)).appendOnto(total);
+        (makeAssemblerLine(Instr::PEEK, Reg::STO)).appendOnto(total);
+        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(total);
+        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(total);
+        (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(total);
+        (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(total);
+        state0.stack = pushNode(state0.stack, state0.cont);
+        state0.cont = CodeSeek(total);
     };
     sys.lock()->put(Symbols::get()["objectKeys#"],
                     defineMethod(unit, global, method,
@@ -1444,7 +1445,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // stringLength#: str.
     state.cpp[STRING_LENGTH] = [](IntState& state0) {
         // TODO Possible loss of precision from size_t to signed long?
-        garnishEnd(state0, (long)state0.str0.length());
+        garnishBegin(state0, (long)state0.str0.length());
     };
     sys.lock()->put(Symbols::get()["stringLength#"],
                     defineMethod(unit, global, method,
@@ -1479,7 +1480,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         long len = end1 - start1;
         if (len < 0)
             len = 0;
-        garnishEnd(state0, state0.str0.substr(start1, len));
+        garnishBegin(state0, state0.str0.substr(start1, len));
     };
     sys.lock()->put(Symbols::get()["stringSubstring#"],
                     defineMethod(unit, global, method,
@@ -1515,9 +1516,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     state.cpp[STRING_FIND] = [](IntState& state0) {
         auto pos = state0.str0.find(state0.str1, state0.num0.asSmallInt());
         if (pos == string::npos)
-            garnishEnd(state0, boost::blank());
+            garnishBegin(state0, boost::blank());
         else
-            garnishEnd(state0, (long)pos);
+            garnishBegin(state0, (long)pos);
     };
     sys.lock()->put(Symbols::get()["stringFindFirst#"],
                     defineMethod(unit, global, method,
@@ -1551,7 +1552,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // runGC#.
     state.cpp[GC_RUN] = [](IntState& state0) {
         long result = GC::get().garbageCollect(state0);
-        garnishEnd(state0, result);
+        garnishBegin(state0, result);
     };
     sys.lock()->put(Symbols::get()["runGC#"],
                     defineMethod(unit, global, method,
@@ -1597,11 +1598,12 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             mid.insert(mid.end(), post.begin(), post.end());
         }
         InstrSeq concl = asmCode(makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
+        InstrSeq total;
+        total.insert(total.end(), intro.begin(), intro.end());
+        total.insert(total.end(), mid.begin(), mid.end());
+        total.insert(total.end(), concl.begin(), concl.end());
         state0.stack = pushNode(state0.stack, state0.cont);
-        state0.cont.clear();
-        state0.cont.insert(state0.cont.end(), intro.begin(), intro.end());
-        state0.cont.insert(state0.cont.end(), mid.begin(), mid.end());
-        state0.cont.insert(state0.cont.end(), concl.begin(), concl.end());
+        state0.cont = CodeSeek(total);
     };
     sys.lock()->put(Symbols::get()["fileHeader#"],
                     defineMethod(unit, global, method,
@@ -1621,12 +1623,12 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // strChr#: num.
     state.cpp[STR_ORD] = [](IntState& state0) {
         if (state0.str0 == "")
-            garnishEnd(state0, 0);
+            garnishBegin(state0, 0);
         else
-            garnishEnd(state0, (int)state0.str0[0]);
+            garnishBegin(state0, (int)state0.str0[0]);
     };
     state.cpp[STR_CHR] = [](IntState& state0) {
-        garnishEnd(state0, string(1, (char)state0.num0.asSmallInt()));
+        garnishBegin(state0, string(1, (char)state0.num0.asSmallInt()));
     };
     sys.lock()->put(Symbols::get()["strOrd#"],
                     defineMethod(unit, global, method,
@@ -1655,7 +1657,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // totalGC#.
     state.cpp[GC_TOTAL] = [](IntState& state0) {
         // TODO Possible loss of precision
-        garnishEnd(state0, (long)GC::get().getTotal());
+        garnishBegin(state0, (long)GC::get().getTotal());
     };
     sys.lock()->put(Symbols::get()["totalGC#"],
                     defineMethod(unit, global, method,
@@ -1758,47 +1760,45 @@ ObjectPtr spawnObjects(IntState& state) {
 
 void throwError(IntState& state, std::string name, std::string msg) {
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                         makeAssemblerLine(Instr::GETL),
-                         makeAssemblerLine(Instr::SYM, "meta"),
-                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                         makeAssemblerLine(Instr::RTRV),
-                         makeAssemblerLine(Instr::SYM, name),
-                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                         makeAssemblerLine(Instr::RTRV),
-                         makeAssemblerLine(Instr::POP, Reg::STO),
-                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                         makeAssemblerLine(Instr::CLONE),
-                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                         makeAssemblerLine(Instr::SYM, "message"),
-                         makeAssemblerLine(Instr::SETF),
-                         makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
-                         makeAssemblerLine(Instr::LOCRT),
-                         makeAssemblerLine(Instr::POP, Reg::STO),
-                         makeAssemblerLine(Instr::SYM, "stack"),
-                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                         makeAssemblerLine(Instr::SETF),
-                         makeAssemblerLine(Instr::THROW));
-    state.stack = pushNode(state.stack, state.cont);
-    state.cont.clear();
-    garnishEnd(state, msg);
+    state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                  makeAssemblerLine(Instr::GETL),
+                                  makeAssemblerLine(Instr::SYM, "meta"),
+                                  makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                  makeAssemblerLine(Instr::RTRV),
+                                  makeAssemblerLine(Instr::SYM, name),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                  makeAssemblerLine(Instr::RTRV),
+                                  makeAssemblerLine(Instr::POP, Reg::STO),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                  makeAssemblerLine(Instr::CLONE),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                  makeAssemblerLine(Instr::SYM, "message"),
+                                  makeAssemblerLine(Instr::SETF),
+                                  makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                  makeAssemblerLine(Instr::LOCRT),
+                                  makeAssemblerLine(Instr::POP, Reg::STO),
+                                  makeAssemblerLine(Instr::SYM, "stack"),
+                                  makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                  makeAssemblerLine(Instr::SETF),
+                                  makeAssemblerLine(Instr::THROW)));
+    garnishBegin(state, msg);
 }
 
 void throwError(IntState& state, std::string name) {
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = asmCode(makeAssemblerLine(Instr::GETL),
-                         makeAssemblerLine(Instr::SYM, "meta"),
-                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                         makeAssemblerLine(Instr::RTRV),
-                         makeAssemblerLine(Instr::SYM, name),
-                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                         makeAssemblerLine(Instr::RTRV),
-                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                         makeAssemblerLine(Instr::CLONE),
-                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                         makeAssemblerLine(Instr::GETD),
-                         makeAssemblerLine(Instr::SYM, "stack"),
-                         makeAssemblerLine(Instr::SETF),
-                         makeAssemblerLine(Instr::THROW));
+    state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::GETL),
+                                  makeAssemblerLine(Instr::SYM, "meta"),
+                                  makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                  makeAssemblerLine(Instr::RTRV),
+                                  makeAssemblerLine(Instr::SYM, name),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                  makeAssemblerLine(Instr::RTRV),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                  makeAssemblerLine(Instr::CLONE),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                  makeAssemblerLine(Instr::GETD),
+                                  makeAssemblerLine(Instr::SYM, "stack"),
+                                  makeAssemblerLine(Instr::SETF),
+                                  makeAssemblerLine(Instr::THROW)));
 }

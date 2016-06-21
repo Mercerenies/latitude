@@ -307,7 +307,7 @@ FunctionIndex InstrSeek::popFunction() {
 }
 
 CodeSeek::CodeSeek()
-    : seq(), pos(0L) {}
+    : seq(make_shared<InstrSeq>()), pos(0L) {}
 
 CodeSeek::CodeSeek(const InstrSeq& seq)
     : seq(make_shared<InstrSeq>(seq)), pos(0L) {}
@@ -358,9 +358,17 @@ void MethodSeek::advancePosition(unsigned long val) {
         pos = size();
 }
 
+SeekHolder::SeekHolder()
+    : internal(unique_ptr<InstrSeek>(new CodeSeek())) {}
+
 // Copy the unique_ptr and its contents when a SeekHolder is copied
 SeekHolder::SeekHolder(const SeekHolder& other)
     : internal(unique_ptr<InstrSeek>(other.internal->copy())) {}
+
+SeekHolder& SeekHolder::operator=(const SeekHolder& other) {
+    internal = unique_ptr<InstrSeek>(other.internal->copy());
+    return *this;
+}
 
 unique_ptr<InstrSeek> SeekHolder::copy() {
     return unique_ptr<InstrSeek>(new SeekHolder(*this));

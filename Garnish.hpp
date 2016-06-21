@@ -15,16 +15,20 @@ InstrSeq garnishSeq(Symbolic value);
 // TODO Is this a good idea? It doesn't put a RET instruction or have a closure.
 //InstrSeq garnishSeq(const InstrSeq& value);
 
+/*
 template <typename T>
 void garnishEnd(IntState& state, T value) {
     InstrSeq seq = garnishSeq(value);
-    state.cont.insert(state.cont.end(), seq.begin(), seq.end());
+    state.stack = pushNode(state.stack, state.cont);
+    state.cont = CodeSeek(seq);
 }
+*/
 
 template <typename T>
 void garnishBegin(IntState& state, T value) {
     InstrSeq seq = garnishSeq(value);
-    state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+    state.stack = pushNode(state.stack, state.cont);
+    state.cont = CodeSeek(seq);
 }
 
 #endif // _GARNISH_HPP_

@@ -3,18 +3,18 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 
-//#define DEBUG_INSTR 3
+//#define DEBUG_INSTR 2
 
 using namespace std;
 
-StackNode::StackNode(const InstrSeq& data0)
+StackNode::StackNode(const SeekHolder& data0)
     : next(nullptr), data(data0) {}
 
-const InstrSeq& StackNode::get() {
+const SeekHolder& StackNode::get() {
     return data;
 }
 
-NodePtr pushNode(NodePtr node, const InstrSeq& data) {
+NodePtr pushNode(NodePtr node, const SeekHolder& data) {
     NodePtr ptr = NodePtr(new StackNode(data));
     ptr->next = node;
     return ptr;
@@ -70,16 +70,16 @@ void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWi
         enters.pop_front();
     }
     state.stack = pushNode(state.stack, state.cont);
-    state.cont.clear();
+    state.cont = CodeSeek();
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );
-        state.stack = pushNode(state.stack, ptr->after.code.instructions());
+        state.stack = pushNode(state.stack, MethodSeek(ptr->after.code));
     }
     for (WindPtr ptr : enters) {
         state.lex.push( clone(ptr->before.lex) );
         state.dyn.push( clone(ptr->before.dyn) );
-        state.stack = pushNode(state.stack, ptr->before.code.instructions());
+        state.stack = pushNode(state.stack, MethodSeek(ptr->before.code));
     }
 }
 
@@ -135,8 +135,8 @@ FunctionIndex popFunction(InstrSeq& state) {
 void executeInstr(Instr instr, IntState& state) {
     switch (instr) {
     case Instr::MOV: {
-        Reg src = popReg(state.cont);
-        Reg dest = popReg(state.cont);
+        Reg src = state.cont.popReg();
+        Reg dest = state.cont.popReg();
 #if DEBUG_INSTR > 0
         cout << "MOV " << (long)src << " " << (long)dest << endl;
 #endif
@@ -173,8 +173,8 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::PUSH: {
-        Reg src = popReg(state.cont);
-        Reg stack = popReg(state.cont);
+        Reg src = state.cont.popReg();
+        Reg stack = state.cont.popReg();
 #if DEBUG_INSTR > 0
         cout << "PUSH " << (long)src << " " << (long)stack << endl;
 #endif
@@ -218,7 +218,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::POP: {
         stack<ObjectPtr>* stack;
-        Reg reg = popReg(state.cont);
+        Reg reg = state.cont.popReg();
 #if DEBUG_INSTR > 0
         cout << "POP " << (long)reg << endl;
 #endif
@@ -298,7 +298,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::SYM: {
-        string str = popString(state.cont);
+        string str = state.cont.popString();
 #if DEBUG_INSTR > 0
         cout << "SYM \"" << str << "\"" << endl;
 #endif
@@ -306,7 +306,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::NUM: {
-        string str = popString(state.cont);
+        string str = state.cont.popString();
 #if DEBUG_INSTR > 0
         cout << "NUM \"" << str << "\"" << endl;
 #endif
@@ -314,7 +314,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::INT: {
-        long val = popLong(state.cont);
+        long val = state.cont.popLong();
 #if DEBUG_INSTR > 0
         cout << "INT " << val << endl;
 #endif
@@ -322,7 +322,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::FLOAT: {
-        string str = popString(state.cont);
+        string str = state.cont.popString();
 #if DEBUG_INSTR > 0
         cout << "FLOAT \"" << str << "\"" << endl;
 #endif
@@ -338,7 +338,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::CALL: {
-        long args = popLong(state.cont);
+        long args = state.cont.popLong();
 #if DEBUG_INSTR > 0
         cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #if DEBUG_INSTR > 1
@@ -411,7 +411,7 @@ void executeInstr(Instr instr, IntState& state) {
                     cout << endl;
                 }
 #endif
-                state.cont = stmt->instructions();
+                state.cont = MethodSeek(*stmt);
             }
         } else {
             // It's not a method; just return it
@@ -433,12 +433,12 @@ void executeInstr(Instr instr, IntState& state) {
             state.trns.push(stmt->translationUnit());
             // (7) Make a new %cont
             if (stmt)
-                state.cont = stmt->instructions();
+                state.cont = MethodSeek(*stmt);
         }
     }
         break;
     case Instr::XCALL0: {
-        long args = popLong(state.cont);
+        long args = state.cont.popLong();
 #if DEBUG_INSTR > 0
         cout << "XCALL0 " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
@@ -566,7 +566,8 @@ void executeInstr(Instr instr, IntState& state) {
                 // If there is no `missing` either, immediately terminate, as
                 // something has gone horribly wrong
                 InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0));
-                state.cont.insert(state.cont.begin(), term.begin(), term.end());
+                state.stack = pushNode(state.stack, state.cont);
+                state.cont = CodeSeek(term);
             } else {
                 InstrSeq seq0;
                 // Find the literal object to use for the argument
@@ -592,7 +593,7 @@ void executeInstr(Instr instr, IntState& state) {
                 (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
                 state.stack = pushNode(state.stack, state.cont);
-                state.cont = seq0;
+                state.cont = CodeSeek(move(seq0));
             }
         } else {
 #if DEBUG_INSTR > 1
@@ -620,7 +621,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::STR: {
-        string str = popString(state.cont);
+        string str = state.cont.popString();
 #if DEBUG_INSTR > 0
         cout << "STR \"" << str << "\"" << endl;
 #endif
@@ -635,7 +636,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::EXPD: {
-        Reg expd = popReg(state.cont);
+        Reg expd = state.cont.popReg();
 #if DEBUG_INSTR > 0
         cout << "EXPD " << (long)expd << endl;
 #endif
@@ -722,12 +723,12 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "MTHD ..." << endl;
 #endif
-        FunctionIndex index = popFunction(state.cont);
+        FunctionIndex index = state.cont.popFunction();
         state.mthd = Method(state.trns.top(), index);
     }
         break;
     case Instr::LOAD: {
-        Reg ld = popReg(state.cont);
+        Reg ld = state.cont.popReg();
 #if DEBUG_INSTR > 0
         cout << "LOAD " << (long)ld << endl;
 #endif
@@ -798,7 +799,7 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::PEEK: {
         stack<ObjectPtr>* stack;
-        Reg reg = popReg(state.cont);
+        Reg reg = state.cont.popReg();
 #if DEBUG_INSTR > 0
         cout << "PEEK " << (long)reg << endl;
 #endif
@@ -834,7 +835,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::SYMN: {
-        long val = popLong(state.cont);
+        long val = state.cont.popLong();
 #if DEBUG_INSTR > 0
         cout << "SYMN " << val << endl;
 #endif
@@ -842,7 +843,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::CPP: {
-        long val = popLong(state.cont);
+        long val = state.cont.popLong();
 #if DEBUG_INSTR > 0
         cout << "CPP " << val << endl;
 #endif
@@ -879,12 +880,12 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 2
             cout << "* Method ( ) Length " << state.mthd.instructions().size() << endl;
 #endif
-            state.cont = state.mthd.instructions();
+            state.cont = MethodSeek(state.mthd);
         } else {
 #if DEBUG_INSTR > 2
             cout << "* Method (Z) Length " << state.mthdz.instructions().size() << endl;
 #endif
-            state.cont = state.mthdz.instructions();
+            state.cont = MethodSeek(state.mthdz);
         }
     }
         break;
@@ -898,7 +899,8 @@ void executeInstr(Instr instr, IntState& state) {
             state.slf.lock()->prim( statePtr(state) );
             state.arg.push(state.slf);
             InstrSeq seq = asmCode( makeAssemblerLine(Instr::CALL, 1L) );
-            state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+            state.stack = pushNode(state.stack, state.cont);
+            state.cont = CodeSeek(seq);
         }
     }
         break;
@@ -932,7 +934,8 @@ void executeInstr(Instr instr, IntState& state) {
             state.sto.push(ret);
             InstrSeq pop = asmCode(makeAssemblerLine(Instr::POP, Reg::STO),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
-            state.cont.insert(state.cont.begin(), pop.begin(), pop.end());
+            state.stack = pushNode(state.stack, state.cont);
+            state.cont = CodeSeek(pop);
             resolveThunks(state, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
@@ -954,7 +957,7 @@ void executeInstr(Instr instr, IntState& state) {
             frame->before.dyn = state.dyn.top();
             frame->after.code = *after;
             frame->after.lex = (*state.ptr.lock())[ Symbols::get()["closure"] ].getPtr();
-            frame->before.dyn = state.dyn.top();
+            frame->after.dyn = state.dyn.top();
             state.wind.push(frame);
         } else {
 #if DEBUG_INSTR > 0
@@ -976,7 +979,6 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "THROW" << endl;
 #endif
         ObjectPtr exc = state.slf;
-        state.stack = pushNode(state.stack, state.cont);
         deque<ObjectPtr> handlers;
         std::function<void(stack<ObjectPtr>&)> recurse = [&recurse, &handlers](stack<ObjectPtr>& st) {
             if (!st.empty()) {
@@ -988,7 +990,12 @@ void executeInstr(Instr instr, IntState& state) {
             }
         };
         recurse(state.hand);
-        state.cont.clear();
+#if DEBUG_INSTR > 0
+        cout << "* Got handlers: " << handlers.size() << endl;
+#endif
+        InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0L)); // CPP 0 should always be a terminate function
+        state.stack = pushNode(state.stack, state.cont);
+        state.cont = CodeSeek(term);
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PEEK, Reg::ARG),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                makeAssemblerLine(Instr::POP, Reg::STO),
@@ -996,10 +1003,9 @@ void executeInstr(Instr instr, IntState& state) {
         for (ObjectPtr handler : handlers) {
             state.arg.push(exc);
             state.sto.push(handler);
-            state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+            state.stack = pushNode(state.stack, state.cont);
+            state.cont = CodeSeek(seq);
         }
-        InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0L)); // CPP 0 should always be a terminate function
-        state.cont.insert(state.cont.end(), term.begin(), term.end());
     }
         break;
     case Instr::THROQ: {
@@ -1008,7 +1014,7 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         if (state.err0) {
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = asmCode( makeAssemblerLine(Instr::THROW) );
+            state.cont = CodeSeek( asmCode( makeAssemblerLine(Instr::THROW) ) );
         }
     }
         break;
@@ -1020,7 +1026,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::ARITH: {
-        long val = popLong(state.cont);
+        long val = state.cont.popLong();
 #if DEBUG_INSTR > 0
         cout << "ARITH " << val << endl;
 #endif
@@ -1050,7 +1056,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::THROA: {
-        string msg = popString(state.cont);
+        string msg = state.cont.popString();
 #if DEBUG_INSTR > 0
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
@@ -1059,7 +1065,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::LOCFN: {
-        string msg = popString(state.cont);
+        string msg = state.cont.popString();
 #if DEBUG_INSTR > 0
         cout << "LOCFN \"" << msg << "\"" << endl;
 #endif
@@ -1085,7 +1091,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
         break;
     case Instr::LOCLN: {
-        long num = popLong(state.cont);
+        long num = state.cont.popLong();
 #if DEBUG_INSTR > 0
         cout << "LOCLN " << num << endl;
 #endif
@@ -1114,7 +1120,8 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "LOCRT" << endl;
 #endif
-        function<void(stack<BacktraceFrame>&)> stackUnwind = [&state, &stackUnwind](stack<BacktraceFrame>& stck) {
+        InstrSeq total;
+        function<void(stack<BacktraceFrame>&)> stackUnwind = [&total, &stackUnwind](stack<BacktraceFrame>& stck) {
             if (!stck.empty()) {
                 long line;
                 string file;
@@ -1138,19 +1145,17 @@ void executeInstr(Instr instr, IntState& state) {
                                          makeAssemblerLine(Instr::SYM, "file"),
                                          makeAssemblerLine(Instr::SETF),
                                          makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
-                state.cont.insert(state.cont.begin(), step4.begin(), step4.end());
-                state.cont.insert(state.cont.begin(), step3.begin(), step3.end());
-                state.cont.insert(state.cont.begin(), step2.begin(), step2.end());
-                state.cont.insert(state.cont.begin(), step1.begin(), step1.end());
-                state.cont.insert(state.cont.begin(), step0.begin(), step0.end());
+                total.insert(total.begin(), step4.begin(), step4.end());
+                total.insert(total.begin(), step3.begin(), step3.end());
+                total.insert(total.begin(), step2.begin(), step2.end());
+                total.insert(total.begin(), step1.begin(), step1.end());
+                total.insert(total.begin(), step0.begin(), step0.end());
 
                 stackUnwind(stck);
 
                 stck.push(elem);
             }
         };
-        state.stack = pushNode(state.stack, state.cont);
-        state.cont.clear();
         stackUnwind(state.trace);
         InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL),
                                  makeAssemblerLine(Instr::SYM, "meta"),
@@ -1159,7 +1164,9 @@ void executeInstr(Instr instr, IntState& state) {
                                  makeAssemblerLine(Instr::SYM, "StackFrame"),
                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                  makeAssemblerLine(Instr::RTRV));
-        state.cont.insert(state.cont.begin(), intro.begin(), intro.end());
+        total.insert(total.begin(), intro.begin(), intro.end());
+        state.stack = pushNode(state.stack, state.cont);
+        state.cont = CodeSeek(move(total));
     }
         break;
     case Instr::NRET: {
@@ -1168,7 +1175,8 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         state.trace.push( make_tuple(0, "") );
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::RET));
-        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
+        state.stack = pushNode(state.stack, state.cont);
+        state.cont = CodeSeek(seq);
     }
         break;
     case Instr::UNTR: {
@@ -1185,7 +1193,7 @@ void executeInstr(Instr instr, IntState& state) {
 }
 
 void doOneStep(IntState& state) {
-    if (state.cont.empty()) {
+    if (state.cont.atEnd()) {
         // Pop off the stack
 #if DEBUG_INSTR > 0
         cout << "<><><>" << endl;
@@ -1197,7 +1205,7 @@ void doOneStep(IntState& state) {
         }
     } else {
         // Run one command
-        Instr instr = popInstr(state.cont);
+        Instr instr = state.cont.popInstr();
 #if DEBUG_INSTR > 0
         cout << (long)instr << endl;
 #endif
@@ -1206,6 +1214,6 @@ void doOneStep(IntState& state) {
 }
 
 bool isIdling(IntState& state) {
-    return (state.cont.empty() && !state.stack);
+    return (state.cont.atEnd() && !state.stack);
 }
 
