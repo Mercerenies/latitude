@@ -3,6 +3,8 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 
+// TODO Make some standard test cases that can be run as a module
+
 //#define DEBUG_INSTR 2
 
 using namespace std;
