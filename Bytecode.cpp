@@ -49,7 +49,7 @@ IntState intState() {
 }
 
 StatePtr statePtr(const IntState& state) {
-    return StatePtr(new IntState(state));
+    return make_shared<IntState>(state);
 }
 
 void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWind) {

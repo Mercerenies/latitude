@@ -123,8 +123,70 @@ public:
     Method();
     Method(const TranslationUnitPtr&, FunctionIndex);
     InstrSeq& instructions();
+    size_t size();
     TranslationUnitPtr translationUnit();
     FunctionIndex index();
 };
+
+class InstrSeek {
+public:
+    virtual ~InstrSeek() = default;
+    virtual std::unique_ptr<InstrSeek> copy() = 0;
+    virtual InstrSeq& instructions() = 0;
+    // InstrSeek children are expected to ensure that 0 <= position() <= instructions().size() at all times
+    virtual unsigned long position() = 0;
+    virtual void advancePosition(unsigned long) = 0;
+    virtual unsigned long size();
+    virtual bool atEnd();
+    virtual unsigned char popChar();
+    virtual long popLong();
+    virtual std::string popString();
+    virtual Reg popReg();
+    virtual Instr popInstr();
+    virtual FunctionIndex popFunction();
+};
+
+class CodeSeek : public InstrSeek {
+private:
+    std::shared_ptr<InstrSeq> seq;
+    unsigned long pos;
+public:
+    CodeSeek();
+    CodeSeek(const InstrSeq&);
+    CodeSeek(InstrSeq&&);
+    virtual std::unique_ptr<InstrSeek> copy();
+    virtual InstrSeq& instructions();
+    virtual unsigned long position();
+    virtual void advancePosition(unsigned long);
+};
+
+class MethodSeek : public InstrSeek {
+private:
+    Method method;
+    unsigned long pos;
+public:
+    MethodSeek(Method);
+    virtual std::unique_ptr<InstrSeek> copy();
+    virtual InstrSeq& instructions();
+    virtual unsigned long position();
+    virtual void advancePosition(unsigned long);
+};
+
+class SeekHolder : public InstrSeek {
+private:
+    std::unique_ptr<InstrSeek> internal;
+public:
+    template <typename T>
+    SeekHolder(const T&);
+    SeekHolder(const SeekHolder&);
+    virtual std::unique_ptr<InstrSeek> copy();
+    virtual InstrSeq& instructions();
+    virtual unsigned long position();
+    virtual void advancePosition(unsigned long);
+};
+
+template <typename T>
+SeekHolder::SeekHolder(const T& prev)
+    : internal(std::unique_ptr<InstrSeek>(new T(prev))) {}
 
 #endif

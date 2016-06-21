@@ -1,6 +1,7 @@
 
 #include "Instructions.hpp"
 #include <utility>
+#include <memory>
 
 using namespace std;
 
@@ -236,10 +237,143 @@ InstrSeq& Method::instructions() {
     return unit->method(ind.index);
 }
 
+size_t Method::size() {
+    return instructions().size();
+}
+
 TranslationUnitPtr Method::translationUnit() {
     return unit;
 }
 
 FunctionIndex Method::index() {
     return ind;
+}
+
+unsigned long InstrSeek::size() {
+    return instructions().size();
+}
+
+bool InstrSeek::atEnd() {
+    return size() == position();
+}
+
+unsigned char InstrSeek::popChar() {
+    if (atEnd())
+        return 0;
+    unsigned char val = instructions()[position()];
+    advancePosition(1);
+    return val;
+}
+
+long InstrSeek::popLong() {
+    int sign = 1;
+    if (popChar() > 0)
+        sign *= -1;
+    long value = 0;
+    long pow = 1;
+    for (int i = 0; i < 4; i++) {
+        value += pow * (long)popChar();
+        pow <<= 8;
+    }
+    return sign * value;
+}
+
+string InstrSeek::popString() {
+    string str;
+    unsigned char ch;
+    while ((ch = popChar()) != 0)
+        str += ch;
+    return str;
+}
+
+Reg InstrSeek::popReg() {
+    unsigned char ch = popChar();
+    return (Reg)ch;
+}
+
+Instr InstrSeek::popInstr() {
+    unsigned char ch = popChar();
+    return (Instr)ch;
+}
+
+FunctionIndex InstrSeek::popFunction() {
+    int value = 0;
+    int pow = 1;
+    for (int i = 0; i < 4; i++) {
+        value += pow * (long)popChar();
+        pow <<= 8;
+    }
+    return { value };
+}
+
+CodeSeek::CodeSeek()
+    : seq(), pos(0L) {}
+
+CodeSeek::CodeSeek(const InstrSeq& seq)
+    : seq(make_shared<InstrSeq>(seq)), pos(0L) {}
+
+CodeSeek::CodeSeek(InstrSeq&& seq)
+    : seq(make_shared<InstrSeq>(forward<InstrSeq>(seq))), pos(0L) {}
+
+unique_ptr<InstrSeek> CodeSeek::copy() {
+    return unique_ptr<InstrSeek>(new CodeSeek(*this));
+}
+
+InstrSeq& CodeSeek::instructions() {
+    return *seq;
+}
+
+unsigned long CodeSeek::position() {
+    return pos;
+}
+
+void CodeSeek::advancePosition(unsigned long val) {
+    pos += val;
+    if (pos < 0)
+        pos = 0;
+    if (pos > size())
+        pos = size();
+}
+
+MethodSeek::MethodSeek(Method m)
+    : method(m), pos(0L) {}
+
+unique_ptr<InstrSeek> MethodSeek::copy() {
+    return unique_ptr<InstrSeek>(new MethodSeek(*this));
+}
+
+InstrSeq& MethodSeek::instructions() {
+    return method.instructions();
+}
+
+unsigned long MethodSeek::position() {
+    return pos;
+}
+
+void MethodSeek::advancePosition(unsigned long val) {
+    pos += val;
+    if (pos < 0)
+        pos = 0;
+    if (pos > size())
+        pos = size();
+}
+
+// Copy the unique_ptr and its contents when a SeekHolder is copied
+SeekHolder::SeekHolder(const SeekHolder& other)
+    : internal(unique_ptr<InstrSeek>(other.internal->copy())) {}
+
+unique_ptr<InstrSeek> SeekHolder::copy() {
+    return unique_ptr<InstrSeek>(new SeekHolder(*this));
+}
+
+InstrSeq& SeekHolder::instructions() {
+    return internal->instructions();
+}
+
+unsigned long SeekHolder::position() {
+    return internal->position();
+}
+
+void SeekHolder::advancePosition(unsigned long arg) {
+    internal->advancePosition(arg);
 }
