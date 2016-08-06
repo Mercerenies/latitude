@@ -22,6 +22,11 @@ profile:	CCFLAGS += -pg
 profile:	LINKFLAGS += -pg
 profile:	Project
 
+release:	CXXFLAGS += -O3
+release:	CCFLAGS += -O3
+release:	LINKFLAGS += -O3
+release:	Project
+
 Project:	$(FILES)
 	$(LINK) $(FILES)
 
