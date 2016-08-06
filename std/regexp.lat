@@ -1,6 +1,8 @@
 ;;* MODULE regexp
 ;;* PACKAGE base
 
+; TODO Redesign the basis here so it can work (probably with `callAmb`, not monads), then finish
+
 Nil := Nil.
 Array := Array.
 
@@ -39,6 +41,9 @@ ReMatch := pattern Match clone.
 ReMatch toString := "ReMatch".
 ReMatch groups := Array.
 ReMatch clone := { self invoke (Object hold 'clone) tap { self groups := self groups clone. }. }.
+
+meta lang / := { Regexp pattern: ($1 substring: 0,
+                                                $1 size - 1). }.
 
 ReObject := Object clone.
 ReObject toString := { "#(/" ++ (self asRegexp) ++ "/)". }.

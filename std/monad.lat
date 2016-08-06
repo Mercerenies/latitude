@@ -1,6 +1,9 @@
 ;;* MODULE monad
 ;;* PACKAGE base
 
+; TODO Either remove this package or make it waaaaaaaaay more efficient; the current
+;      `meta statements` is obviously not built for this kind of stress.
+
 ; TODO Monad transformers...?
 
 use "std/util.lat".
