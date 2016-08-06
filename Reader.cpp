@@ -17,6 +17,8 @@ extern "C" {
 #include <fstream>
 #include <boost/scope_exit.hpp>
 
+// TODO Figure out why an empty line of code produces the empty string, not an error, as output.
+
 //#define PRINT_BEFORE_EXEC
 
 using namespace std;

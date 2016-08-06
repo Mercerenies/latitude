@@ -28,7 +28,7 @@ template <typename T>
 void garnishBegin(IntState& state, T value) {
     InstrSeq seq = garnishSeq(value);
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = CodeSeek(seq);
+    state.cont = CodeSeek(std::move(seq));
 }
 
 #endif // _GARNISH_HPP_
