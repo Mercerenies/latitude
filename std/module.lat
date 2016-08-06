@@ -13,7 +13,7 @@ Module importAll := { localize.
                       target := target parent.
                       target missing := { takes '[sym].
                                           if: { this is (target) not. } and { this has (sym). },
-                                              { this get (sym). },
+                                              { this hold (sym). },
                                               { target invoke (target parent hold 'missing) call: sym. }. }.
                       this. }.
 global Module := Module.
