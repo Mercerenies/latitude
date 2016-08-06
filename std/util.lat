@@ -2,6 +2,7 @@
 ;;* PACKAGE base
 
 ReadOnlyError := ReadOnlyError.
+Array := Array.
 ArgList := ArgList.
 Proc := Proc.
 proc := hold 'proc.
@@ -111,6 +112,19 @@ callAmb := { ambObject := Amb clone.
              procd := ambObject invokeSpecial: dynamic hold '$1,
                                                { $1 amb := { ambFunc call. }. }.
              procd call. }.
+
+;; Accumulator, similar to Haskell's Writer monad
+;; Example usage:
+; accumulate { tell 1.
+;              tell 2.
+;              tell 3. }.
+; Results in [1, 2, 3]
+accumulate := { result := Array clone.
+                procd := result invokeSpecial: dynamic hold '$1,
+                                               { $1 tell := { result pushBack. }.
+                                                 $1 tellAll := { $1 visit { result pushBack. }. }. }.
+                procd call.
+                result. }.
 
 ;; Return the script
 $whereAmI.
