@@ -363,10 +363,12 @@ SeekHolder::SeekHolder()
 
 // Copy the unique_ptr and its contents when a SeekHolder is copied
 SeekHolder::SeekHolder(const SeekHolder& other)
-    : internal(unique_ptr<InstrSeek>(other.internal->copy())) {}
+    : internal(unique_ptr<InstrSeek>(other.internal->copy()))
+    , instr(&internal->instructions()) {}
 
 SeekHolder& SeekHolder::operator=(const SeekHolder& other) {
     internal = unique_ptr<InstrSeek>(other.internal->copy());
+    instr = &internal->instructions();
     return *this;
 }
 
@@ -375,7 +377,7 @@ unique_ptr<InstrSeek> SeekHolder::copy() {
 }
 
 InstrSeq& SeekHolder::instructions() {
-    return internal->instructions();
+    return *instr;
 }
 
 unsigned long SeekHolder::position() {

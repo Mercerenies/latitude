@@ -136,14 +136,14 @@ public:
     // InstrSeek children are expected to ensure that 0 <= position() <= instructions().size() at all times
     virtual unsigned long position() = 0;
     virtual void advancePosition(unsigned long) = 0;
-    virtual unsigned long size();
-    virtual bool atEnd();
-    virtual unsigned char popChar();
-    virtual long popLong();
-    virtual std::string popString();
-    virtual Reg popReg();
-    virtual Instr popInstr();
-    virtual FunctionIndex popFunction();
+    unsigned long size();
+    bool atEnd();
+    unsigned char popChar();
+    long popLong();
+    std::string popString();
+    Reg popReg();
+    Instr popInstr();
+    FunctionIndex popFunction();
 };
 
 class CodeSeek : public InstrSeek {
@@ -175,6 +175,9 @@ public:
 class SeekHolder : public InstrSeek {
 private:
     std::unique_ptr<InstrSeek> internal;
+    // Treat this as a reference; it should not be freed
+    // and belongs to the internal variable above.
+    InstrSeq* instr;
 public:
     SeekHolder();
     template <typename T>
@@ -191,11 +194,13 @@ public:
 
 template <typename T>
 SeekHolder::SeekHolder(const T& prev)
-    : internal(std::unique_ptr<InstrSeek>(new T(prev))) {}
+    : internal(std::unique_ptr<InstrSeek>(new T(prev)))
+    , instr(&internal->instructions()) {}
 
 template <typename T>
 SeekHolder& SeekHolder::operator=(const T& other) {
     internal = std::unique_ptr<InstrSeek>(new T(other));
+    instr = &internal->instructions();
     return *this;
 }
 

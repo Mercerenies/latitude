@@ -85,5 +85,5 @@ Header.o:	Header.cpp Header.hpp
 Instructions.o:	Instructions.cpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) Instructions.cpp
 
-main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp
+main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
