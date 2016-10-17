@@ -79,26 +79,6 @@ public:
     void appendOnto(InstrSeq&) const;
 };
 
-template <typename... Ts>
-AssemblerLine makeAssemblerLine(Instr instr, Ts... args) {
-    AssemblerLine line;
-    line.setCommand(instr);
-    std::array<RegisterArg, sizeof...(args)> args0 = { args... };
-    for (auto& arg : args0)
-        line.addRegisterArg(arg);
-    line.validate();
-    return line;
-}
-
-template <typename... Ts>
-InstrSeq asmCode(Ts... args) {
-    InstrSeq seq;
-    std::array<AssemblerLine, sizeof...(args)> args0 = { args... };
-    for (auto& arg : args0)
-        arg.appendOnto(seq);
-    return seq;
-}
-
 class TranslationUnit {
 private:
     InstrSeq seq;

@@ -2,6 +2,7 @@
 #include "Reader.hpp"
 #include "Garnish.hpp"
 #include "Standard.hpp"
+#include "Assembler.hpp"
 
 // TODO Make some standard test cases that can be run as a module
 

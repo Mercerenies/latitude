@@ -1,4 +1,5 @@
 #include "Standard.hpp"
+#include "Assembler.hpp"
 #include "Reader.hpp"
 #include "Garnish.hpp"
 #include "Macro.hpp"

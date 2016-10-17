@@ -1,6 +1,7 @@
 #include "Garnish.hpp"
 #include "Reader.hpp"
 #include "Macro.hpp"
+#include "Assembler.hpp"
 #include <sstream>
 #include <type_traits>
 

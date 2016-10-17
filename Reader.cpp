@@ -9,6 +9,7 @@ extern "C" {
 #include "Standard.hpp"
 #include "Garnish.hpp"
 #include "Macro.hpp"
+#include "Assembler.hpp"
 #include <cstdio>
 #include <list>
 #include <memory>
