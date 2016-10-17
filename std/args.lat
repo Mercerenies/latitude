@@ -47,7 +47,7 @@ ArgList iterator := { ArgIterator := Object clone.
                       ArgIterator. }.
 ArgList dropIn := { target := dynamic parent.
                     index := 1.
-                    self visit { target put: (("$" ++ (index)) intern), $1.
+                    self visit { target put: (("$" ++ (index)) intern), dynamic hold '$1.
                                  parent index := index + 1. }. }.
 
 Collection inject: ArgList.

@@ -19,7 +19,7 @@ Monad toString := "Monad".
 Monad interface := '[bind, seq, call].
 
 ; `monad bind: obj, { mthd. }.` runs the method given the internals of `obj`.
-Monad bind := { self join (self fmap: (dynamic hold '$2), $1). }.
+Monad bind := { self join: self fmap (dynamic hold '$2, $1). }.
 ; `monad seq: obj1, obj2.` combines the first and second contexts.
 Monad seq := { self bind: $1, { parent dynamic $2. }. }.
 ; `monad call @{ code. }.` performs the code within the monadic context provided.
