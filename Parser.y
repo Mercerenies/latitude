@@ -86,6 +86,7 @@
 %type <exprval> line
 %type <exprval> stmt
 %type <exprval> rhs
+%type <argval> shortarglist
 %type <argval> arglist
 %type <argval> arglist1
 %type <exprval> arg
@@ -134,12 +135,11 @@ stmt:
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
-    literalish { $$ = makeExpr(); $$->args = makeList(); $$->args->car = $1; $$->args->cdr = makeList(); } |
+    shortarglist { $$ = makeExpr(); $$->args = $1; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     ':' arglist { $$ = makeExpr(); $$->args = $2; } |
     '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
-    literalish '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = new List(); $$->args->car = $1;
-                          $$->args->cdr = new List(); $$->isEquality = true; } |
+    shortarglist '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = $1; $$->isEquality = true; } |
     BIND stmt { $$ = makeExpr(); $$->rhs = $2; $$->isBind = true; }
     ;
 arglist:
@@ -155,15 +155,21 @@ arg:
     ;
 nonemptychain:
     chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    chain NAME literalish { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                            $$->args = makeList(); $$->args->car = $3;
-                            $$->args->cdr = makeList(); } |
+    chain NAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                              $$->args = $3; } |
     literalish
     ;
 chain:
     nonemptychain |
     /* empty */ { $$ = NULL; }
     ;
+shortarglist:
+    '(' arglist ')' { $$ = $2; } |
+    '(' chain NAME ':' arg ')' { $$ = makeList(); $$->car = makeExpr(); $$->car->args = makeList();
+                                 $$->car->args->car = $5; $$->car->args->cdr = makeList();
+                                 $$->car->name = $3; $$->car->lhs = $2; $$->cdr = makeList(); } |
+     literal { $$ = makeList(); $$->car = $1; $$->cdr = makeList(); }
+     ;
 literalish:
     SYMBOL literalish { if (*$1 != '~') { yyerror("Sigil name must be an interned symbol"); }
                         $$ = makeExpr(); $$->isSigil = true; $$->name = $1; $$->rhs = $2; } |

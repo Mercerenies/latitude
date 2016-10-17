@@ -10,7 +10,7 @@ meta hashParen := { takes '[str].
                                 do { str0 := str substring: 0, index.
                                      lang has (str0 intern) ifTrue
                                          { return: lang hold (str0 intern) call
-                                               (str substring: index, str size). }.
+                                               (str substring (index, str size)). }.
                                      increment. }.
                              LangError clone tap { self message := "Language " ++ (str) ++ " does not exist". }
                                  throw. }. }.

@@ -137,7 +137,7 @@ Stream eof? := { meta sys streamEof#: self. }.
 Stream close := { meta sys streamClose#: self. }.
 Stream open := { meta sys streamFileOpen#: self clone, $1, $2, $3. }.
 Stream closeAfter := { stream := self.
-                       { (stream invoke: (parent dynamic hold '$1)) call. } protect { stream close. }. }.
+                       { (stream invoke: parent dynamic hold '$1) call. } protect { stream close. }. }.
 Stream toString := "Stream".
 
 ; Dumping and Printing Convenience Functions

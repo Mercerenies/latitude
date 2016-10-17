@@ -28,11 +28,11 @@
 <stmt> ::= <chain> <name> <rhs> |
            <literalish>
 <rhs> ::= <lambda> |
-          <literalish> |
+          <shortarglist> |
           ":=" <stmt> |
           ":" <arglist> |
           "=" <stmt> |
-          <literalish> "=" <stmt> |
+          <shortarglist> "=" <stmt> |
           "<-" <stmt>
 <arglist> ::= <lambda> |
               <arg> <arglist1>
@@ -40,10 +40,13 @@
                "," <arg> <arglist1>
 <arg> ::= <nonemptychain>
 <nonemptychain> ::= <chain> <name> |
-                    <chain> <name> <literalish> |
+                    <chain> <name> <shortarglist> |
                     <literalish>
 <chain> ::= <nonemptychain> |
             <lambda>
+<shortarglist> ::= "(" <arglist> ")" |
+                   "(" <chain> <name> ":" <arg> ")" |
+                   <literal>
 <literalish> ::= "~" <text> <literalish> |
                  "(" <stmt> ")" |
                  <literal>
