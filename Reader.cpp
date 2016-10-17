@@ -269,7 +269,7 @@ void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, (unsigned long)args.size())).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, (long)args.size())).appendOnto(seq);
 
 }
 
