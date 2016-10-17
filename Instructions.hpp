@@ -109,13 +109,15 @@ public:
 };
 
 class InstrSeek {
+private:
+    unsigned long pos;
 public:
+    InstrSeek();
     virtual ~InstrSeek() = default;
     virtual std::unique_ptr<InstrSeek> copy() = 0;
     virtual InstrSeq& instructions() = 0;
-    // InstrSeek children are expected to ensure that 0 <= position() <= instructions().size() at all times
-    virtual unsigned long position() = 0;
-    virtual void advancePosition(unsigned long) = 0;
+    unsigned long position();
+    void advancePosition(unsigned long);
     unsigned long size();
     bool atEnd();
     unsigned char popChar();
@@ -129,30 +131,24 @@ public:
 class CodeSeek : public InstrSeek {
 private:
     std::shared_ptr<InstrSeq> seq;
-    unsigned long pos;
 public:
     CodeSeek();
     CodeSeek(const InstrSeq&);
     CodeSeek(InstrSeq&&);
     virtual std::unique_ptr<InstrSeek> copy();
     virtual InstrSeq& instructions();
-    virtual unsigned long position();
-    virtual void advancePosition(unsigned long);
 };
 
 class MethodSeek : public InstrSeek {
 private:
     Method method;
-    unsigned long pos;
 public:
     MethodSeek(Method);
     virtual std::unique_ptr<InstrSeek> copy();
     virtual InstrSeq& instructions();
-    virtual unsigned long position();
-    virtual void advancePosition(unsigned long);
 };
 
-class SeekHolder : public InstrSeek {
+class SeekHolder {
 private:
     std::unique_ptr<InstrSeek> internal;
     // Treat this as a reference; it should not be freed
@@ -166,10 +162,16 @@ public:
     template <typename T>
     SeekHolder& operator=(const T&);
     SeekHolder& operator=(const SeekHolder&);
-    virtual std::unique_ptr<InstrSeek> copy();
-    virtual InstrSeq& instructions();
-    virtual unsigned long position();
-    virtual void advancePosition(unsigned long);
+    InstrSeq& instructions();
+    unsigned long position();
+    void advancePosition(unsigned long);
+    unsigned char popChar();
+    long popLong();
+    std::string popString();
+    Reg popReg();
+    Instr popInstr();
+    FunctionIndex popFunction();
+    bool atEnd();
 };
 
 template <typename T>
