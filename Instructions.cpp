@@ -207,7 +207,7 @@ InstrSeq& TranslationUnit::instructions() {
 }
 
 InstrSeq& TranslationUnit::method(int index) {
-    return methods.at(index);
+    return methods[index];
 }
 
 int TranslationUnit::methodCount() {
