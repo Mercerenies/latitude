@@ -25,9 +25,9 @@ void InstructionSet::initialize() {
     initialized = true;
     props[Instr::MOV] = { isObjectRegister, isObjectRegister };
     props[Instr::PUSH] = { isObjectRegister, isStackRegister };
-    props[Instr::POP] = { isStackRegister };
-    props[Instr::GETL] = { };
-    props[Instr::GETD] = { };
+    props[Instr::POP] = { isObjectRegister, isStackRegister };
+    props[Instr::GETL] = { isObjectRegister };
+    props[Instr::GETD] = { isObjectRegister };
     props[Instr::ESWAP] = { };
     props[Instr::ECLR] = { };
     props[Instr::ESET] = { };
@@ -49,7 +49,7 @@ void InstructionSet::initialize() {
     props[Instr::MTHD] = { isAsmRegisterArg };
     props[Instr::LOAD] = { isRegister };
     props[Instr::SETF] = { };
-    props[Instr::PEEK] = { isStackRegister };
+    props[Instr::PEEK] = { isObjectRegister, isStackRegister };
     props[Instr::SYMN] = { isLongRegisterArg };
     props[Instr::CPP] = { isLongRegisterArg };
     props[Instr::BOL] = { };

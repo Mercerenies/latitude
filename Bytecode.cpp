@@ -221,7 +221,9 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::POP: {
         stack<ObjectPtr>* stack;
+        Reg dest = state.cont.popReg();
         Reg reg = state.cont.popReg();
+        ObjectPtr mid;
 #if DEBUG_INSTR > 0
         cout << "POP " << (long)reg << endl;
 #endif
@@ -247,10 +249,24 @@ void executeInstr(Instr instr, IntState& state) {
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
-                state.ptr = stack->top();
+                mid = stack->top();
                 stack->pop();
             } else {
                 state.err0 = true;
+            }
+            switch (dest) {
+            case Reg::PTR:
+                state.ptr = mid;
+                break;
+            case Reg::SLF:
+                state.slf = mid;
+                break;
+            case Reg::RET:
+                state.ret = mid;
+                break;
+            default:
+                state.err0 = true;
+                break;
             }
         }
     }
@@ -260,10 +276,25 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "GETL" << endl;
         cout << "* " << state.lex.top().lock() << endl;
 #endif
-        if (state.lex.empty())
+        Reg dest = state.cont.popReg();
+        if (state.lex.empty()) {
             state.err0 = true;
-        else
-            state.ptr = state.lex.top();
+        } else {
+            switch (dest) {
+            case Reg::PTR:
+                state.ptr = state.lex.top();
+                break;
+            case Reg::SLF:
+                state.slf = state.lex.top();
+                break;
+            case Reg::RET:
+                state.ret = state.lex.top();
+                break;
+            default:
+                state.err0 = true;
+                break;
+            }
+        }
     }
         break;
     case Instr::GETD: {
@@ -273,10 +304,25 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "* " << state.dyn.top().lock() << endl;
 #endif
 #endif
-        if (state.dyn.empty())
+        Reg dest = state.cont.popReg();
+        if (state.dyn.empty()) {
             state.err0 = true;
-        else
-            state.ptr = state.dyn.top();
+        } else {
+            switch (dest) {
+            case Reg::PTR:
+                state.ptr = state.dyn.top();
+                break;
+            case Reg::SLF:
+                state.slf = state.dyn.top();
+                break;
+            case Reg::RET:
+                state.ret = state.dyn.top();
+                break;
+            default:
+                state.err0 = true;
+                break;
+            }
+        }
     }
         break;
     case Instr::ESWAP: {
@@ -576,8 +622,7 @@ void executeInstr(Instr instr, IntState& state) {
                 // Find the literal object to use for the argument
                 (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::GETL)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq0);
                 (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
@@ -590,10 +635,9 @@ void executeInstr(Instr instr, IntState& state) {
                 (makeAssemblerLine(Instr::SYMN, backup.index)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq0);
                 // Call it
-                (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::POP, Reg::STO)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
                 state.stack = pushNode(state.stack, state.cont);
                 state.cont = CodeSeek(move(seq0));
@@ -802,7 +846,9 @@ void executeInstr(Instr instr, IntState& state) {
         break;
     case Instr::PEEK: {
         stack<ObjectPtr>* stack;
+        Reg dest = state.cont.popReg();
         Reg reg = state.cont.popReg();
+        ObjectPtr mid;
 #if DEBUG_INSTR > 0
         cout << "PEEK " << (long)reg << endl;
 #endif
@@ -825,16 +871,28 @@ void executeInstr(Instr instr, IntState& state) {
         default:
             stack = nullptr;
             state.err0 = true;
-            break;
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
-                state.ptr = stack->top();
+                mid = stack->top();
             } else {
                 state.err0 = true;
             }
+            switch (dest) {
+            case Reg::PTR:
+                state.ptr = mid;
+                break;
+            case Reg::SLF:
+                state.slf = mid;
+                break;
+            case Reg::RET:
+                state.ret = mid;
+                break;
+            default:
+                state.err0 = true;
+                break;
+            }
         }
-
     }
         break;
     case Instr::SYMN: {
@@ -935,8 +993,7 @@ void executeInstr(Instr instr, IntState& state) {
             auto newWind = cont->wind;
             state = *cont;
             state.sto.push(ret);
-            InstrSeq pop = asmCode(makeAssemblerLine(Instr::POP, Reg::STO),
-                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
+            InstrSeq pop = asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO));
             state.stack = pushNode(state.stack, state.cont);
             state.cont = CodeSeek(pop);
             resolveThunks(state, oldWind, newWind);
@@ -999,9 +1056,8 @@ void executeInstr(Instr instr, IntState& state) {
         InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0L)); // CPP 0 should always be a terminate function
         state.stack = pushNode(state.stack, state.cont);
         state.cont = CodeSeek(term);
-        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PEEK, Reg::ARG),
-                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                               makeAssemblerLine(Instr::POP, Reg::STO),
+        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::ARG),
+                               makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                makeAssemblerLine(Instr::CALL, 1L));
         for (ObjectPtr handler : handlers) {
             state.arg.push(exc);
@@ -1075,18 +1131,18 @@ void executeInstr(Instr instr, IntState& state) {
         state.file = msg;
         /*
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                               makeAssemblerLine(Instr::GETL),
+                               makeAssemblerLine(Instr::GETL, Reg::PTR),
                                makeAssemblerLine(Instr::SYM, "meta"),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
                                makeAssemblerLine(Instr::SYM, "fileStorage"),
                                makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::GETD),
+                               makeAssemblerLine(Instr::GETD, Reg::PTR),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                makeAssemblerLine(Instr::EXPD, Reg::SYM),
-                               makeAssemblerLine(Instr::POP, Reg::STO),
+                               makeAssemblerLine(Instr::POP, Pop::PTR, Reg::STO),
                                makeAssemblerLine(Instr::SETF));
         state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
         garnishBegin(state, msg);
@@ -1101,18 +1157,18 @@ void executeInstr(Instr instr, IntState& state) {
         state.line = num;
         /*
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                               makeAssemblerLine(Instr::GETL),
+                               makeAssemblerLine(Instr::GETL, Reg::PTR),
                                makeAssemblerLine(Instr::SYM, "meta"),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
                                makeAssemblerLine(Instr::SYM, "lineStorage"),
                                makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::GETD),
+                               makeAssemblerLine(Instr::GETD, Reg::PTR),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                makeAssemblerLine(Instr::EXPD, Reg::SYM),
-                               makeAssemblerLine(Instr::POP, Reg::STO),
+                               makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                makeAssemblerLine(Instr::SETF));
         state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
         garnishBegin(state, num);
@@ -1136,14 +1192,12 @@ void executeInstr(Instr instr, IntState& state) {
                                          makeAssemblerLine(Instr::CLONE),
                                          makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
                 InstrSeq step1 = garnishSeq(line);
-                InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::STO),
-                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                          makeAssemblerLine(Instr::SYM, "line"),
                                          makeAssemblerLine(Instr::SETF));
                 InstrSeq step3 = garnishSeq(file);
-                InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::STO),
-                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                          makeAssemblerLine(Instr::SYM, "file"),
                                          makeAssemblerLine(Instr::SETF),
@@ -1160,9 +1214,8 @@ void executeInstr(Instr instr, IntState& state) {
             }
         };
         stackUnwind(state.trace);
-        InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL),
+        InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                                  makeAssemblerLine(Instr::SYM, "meta"),
-                                 makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                  makeAssemblerLine(Instr::RTRV),
                                  makeAssemblerLine(Instr::SYM, "StackFrame"),
                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),

@@ -33,16 +33,21 @@ namespace _V {
     template <typename T, typename S>
     struct Unify;
     template <typename T>
-    struct Unify<T, T> {};
+    struct Unify<T, T> {
+        typedef char type;
+    };
 
     template <typename Tuple0, typename Tuple1>
     struct UnifyEach;
     template <>
-    struct UnifyEach<std::tuple<>, std::tuple<>> {};
+    struct UnifyEach<std::tuple<>, std::tuple<>> {
+        typedef char type;
+    };
     template <typename T, typename S, typename... Ts, typename... Ss>
     struct UnifyEach<std::tuple<T, Ts...>, std::tuple<S, Ss...>> {
-        Unify<T, S>* u0;
-        UnifyEach<std::tuple<Ts...>, std::tuple<Ss...>>* u1;
+        typedef typename Unify<T, S>::type _unify;
+        typedef typename UnifyEach<std::tuple<Ts...>, std::tuple<Ss...>>::type _each;
+        typedef std::tuple<_unify, _each> type;
     };
 
     template <Instr value>
@@ -52,11 +57,11 @@ namespace _V {
     template <>
     struct Necessary<Instr::PUSH> { typedef std::tuple<VReg, VReg> type; };
     template <>
-    struct Necessary<Instr::POP> { typedef std::tuple<VReg> type; };
+    struct Necessary<Instr::POP> { typedef std::tuple<VReg, VReg> type; };
     template <>
-    struct Necessary<Instr::GETL> { typedef std::tuple<> type; };
+    struct Necessary<Instr::GETL> { typedef std::tuple<VReg> type; };
     template <>
-    struct Necessary<Instr::GETD> { typedef std::tuple<> type; };
+    struct Necessary<Instr::GETD> { typedef std::tuple<VReg> type; };
     template <>
     struct Necessary<Instr::ESWAP> { typedef std::tuple<> type; };
     template <>
@@ -100,7 +105,7 @@ namespace _V {
     template <>
     struct Necessary<Instr::SETF> { typedef std::tuple<> type; };
     template <>
-    struct Necessary<Instr::PEEK> { typedef std::tuple<VReg> type; };
+    struct Necessary<Instr::PEEK> { typedef std::tuple<VReg, VReg> type; };
     template <>
     struct Necessary<Instr::SYMN> { typedef std::tuple<VLong> type; };
     template <>
@@ -178,8 +183,8 @@ struct CompileTimeAsmChecker {
     static AssemblerLine invoke(Ts... args) {
         typedef typename _V::Necessary<instr>::type parms_t;
         typedef std::tuple<typename _V::Classify<Ts>::type...> args_t;
-        _V::UnifyEach<args_t, parms_t> unify;
-        unify = unify;
+        _V::V<typename _V::UnifyEach<args_t, parms_t>::type>* value = NULL;
+        value = value;
         auto line = makeAssemblerLineUnchecked(instr, args...);
         return line;
     };

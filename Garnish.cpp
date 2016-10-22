@@ -10,17 +10,15 @@ using namespace std;
 InstrSeq garnishSeq(bool value) {
     InstrSeq seq;
     if (value) {
-        seq = asmCode(makeAssemblerLine(Instr::GETL),
+        seq = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                       makeAssemblerLine(Instr::SYM, "meta"),
-                      makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                       makeAssemblerLine(Instr::RTRV),
                       makeAssemblerLine(Instr::SYM, "True"),
                       makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                       makeAssemblerLine(Instr::RTRV));
     } else {
-        seq = asmCode(makeAssemblerLine(Instr::GETL),
+        seq = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                       makeAssemblerLine(Instr::SYM, "meta"),
-                      makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                       makeAssemblerLine(Instr::RTRV),
                       makeAssemblerLine(Instr::SYM, "False"),
                       makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -30,9 +28,8 @@ InstrSeq garnishSeq(bool value) {
 }
 
 InstrSeq garnishSeq(boost::blank value) {
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                            makeAssemblerLine(Instr::SYM, "meta"),
-                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                            makeAssemblerLine(Instr::RTRV),
                            makeAssemblerLine(Instr::SYM, "Nil"),
                            makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -41,9 +38,8 @@ InstrSeq garnishSeq(boost::blank value) {
 }
 
 InstrSeq garnishSeq(std::string value) {
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                            makeAssemblerLine(Instr::SYM, "meta"),
-                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                            makeAssemblerLine(Instr::RTRV),
                            makeAssemblerLine(Instr::SYM, "String"),
                            makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -62,9 +58,8 @@ InstrSeq garnishSeq(int value) {
 }
 
 InstrSeq garnishSeq(long value) {
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                            makeAssemblerLine(Instr::SYM, "meta"),
-                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                            makeAssemblerLine(Instr::RTRV),
                            makeAssemblerLine(Instr::SYM, "Number"),
                            makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -79,9 +74,8 @@ InstrSeq garnishSeq(long value) {
 }
 
 InstrSeq garnishSeq(Symbolic value) {
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                            makeAssemblerLine(Instr::SYM, "meta"),
-                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                            makeAssemblerLine(Instr::RTRV),
                            makeAssemblerLine(Instr::SYM, "Symbol"),
                            makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -96,8 +90,7 @@ InstrSeq garnishSeq(Symbolic value) {
 }
 /*
 InstrSeq garnishSeq(const InstrSeq& value) {
-    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL),
-                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+    InstrSeq seq = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                            makeAssemblerLine(Instr::SYM, "meta"),
                            makeAssemblerLine(Instr::RTRV),
                            makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
