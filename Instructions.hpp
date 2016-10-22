@@ -111,6 +111,8 @@ public:
 class InstrSeek {
 private:
     unsigned long pos;
+    bool _size_set;
+    unsigned long _size;
 public:
     InstrSeek();
     virtual ~InstrSeek() = default;

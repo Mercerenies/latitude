@@ -629,10 +629,9 @@ void StmtHashParen::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
 
     // Get the object back out
-    (makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
 
 }

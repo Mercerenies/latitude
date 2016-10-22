@@ -249,7 +249,7 @@ FunctionIndex Method::index() {
     return ind;
 }
 
-InstrSeek::InstrSeek() : pos(0L) {}
+InstrSeek::InstrSeek() : pos(0L), _size_set(false), _size(0L) {}
 
 unsigned long InstrSeek::position() {
     return pos;
@@ -264,7 +264,11 @@ void InstrSeek::advancePosition(unsigned long val) {
 }
 
 unsigned long InstrSeek::size() {
-    return instructions().size();
+    if (!_size_set) {
+        _size_set = true;
+        _size = instructions().size();
+    }
+    return _size;
 }
 
 bool InstrSeek::atEnd() {
@@ -377,27 +381,52 @@ void SeekHolder::advancePosition(unsigned long arg) {
 }
 
 unsigned char SeekHolder::popChar() {
-    return internal->popChar();
+    if (atEnd())
+        return 0;
+    unsigned char val = instructions()[position()];
+    advancePosition(1);
+    return val;
 }
 
 long SeekHolder::popLong() {
-    return internal->popLong();
+    int sign = 1;
+    if (popChar() > 0)
+        sign *= -1;
+    long value = 0;
+    long pow = 1;
+    for (int i = 0; i < 4; i++) {
+        value += pow * (long)popChar();
+        pow <<= 8;
+    }
+    return sign * value;
 }
 
 std::string SeekHolder::popString() {
-    return internal->popString();
+    string str;
+    unsigned char ch;
+    while ((ch = popChar()) != 0)
+        str += ch;
+    return str;
 }
 
 Reg SeekHolder::popReg() {
-    return internal->popReg();
+    unsigned char ch = popChar();
+    return (Reg)ch;
 }
 
 Instr SeekHolder::popInstr() {
-    return internal->popInstr();
+    unsigned char ch = popChar();
+    return (Instr)ch;
 }
 
 FunctionIndex SeekHolder::popFunction() {
-    return internal->popFunction();
+    int value = 0;
+    int pow = 1;
+    for (int i = 0; i < 4; i++) {
+        value += pow * (long)popChar();
+        pow <<= 8;
+    }
+    return { value };
 }
 
 bool SeekHolder::atEnd() {
