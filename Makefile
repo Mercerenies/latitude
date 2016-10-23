@@ -73,7 +73,7 @@ Number.o:	Number.cpp Number.hpp
 REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Process.hpp Stream.hpp Bytecode.hpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) REPL.cpp
 
-Process.o:	Process.cpp Process.hpp Stream.hpp
+Process.o:	Process.cpp Process.hpp Stream.hpp Platform.hpp
 	$(CXX) $(CXXFLAGS) Process.cpp
 
 Bytecode.o:	Bytecode.cpp Bytecode.hpp Symbol.hpp Number.hpp Proto.hpp Reader.hpp Garnish.hpp Header.hpp Instructions.hpp Instructions.hpp Assembler.hpp
