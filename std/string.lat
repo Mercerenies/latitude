@@ -50,6 +50,19 @@ String replaceAll := { takes '[substr, mthd].
                                index = (index) + (substr size). }.
                        curr. }.
 
+String padLeft := { takes '[ch, n].
+                    newStr := self.
+                    newStr= := { parent newStr := $1. }.
+                    while { (newStr size) < (n). }
+                       do { newStr = (ch) ++ (newStr). }.
+                    newStr. }.
+String padRight := { takes '[ch, n].
+                     newStr := self.
+                     newStr= := { parent newStr := $1. }.
+                     while { (newStr size) < (n). }
+                        do { newStr = (newStr) ++ (ch). }.
+                     newStr. }.
+
 String ord := { self == "" ifTrue { ArgError clone tap { self message := "`ord` on empty string". } throw. }.
                 meta sys strOrd#: self. }.
 Number chr := { (self < 0) or (self > 255) ifTrue

@@ -1,0 +1,35 @@
+;;* MODULE time
+;;* PACKAGE base
+
+use "std/enum.lat".
+
+Month := enum Enumeration of '[January, February, March, April, May, June, July,
+                               August, September, October, November, December].
+Month toString := "Month".
+
+Weekday := enum Enumeration of '[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
+Weekday toString := "Weekday".
+
+DateTime := Object clone.
+DateTime toString := { localize.
+                       if: (this) === (DateTime),
+                           { "DateTime". },
+                           { "#<DateTime " ++ (this month) ++ " " ++ (this day) ++
+                                 ", " ++ (this year) ++ " " ++ (this hour) ++ ":" ++
+                                 (this minute toString padLeft ("0", 2)) ++ ":" ++
+                                 (this second toString padLeft ("0", 2)) ++ ">". }. }.
+DateTime second := 0.
+DateTime minute := 0.
+DateTime hour := 0.
+DateTime day := 0.
+DateTime monthNumber := 0.
+DateTime year := 0.
+DateTime weekdayNumber := 0.
+DateTime yearDay := 0.
+DateTime dstNumber := 0.
+DateTime month := { Month value (self monthNumber). }.
+DateTime weekday := { Weekday value (self weekdayNumber). }.
+DateTime dst? := { self dstNumber >= 0. }.
+
+now := { DateTime clone tap { meta sys timeSpawnLocal#: self. }. }.
+utc := { DateTime clone tap { meta sys timeSpawnGlobal#: self. }. }.
