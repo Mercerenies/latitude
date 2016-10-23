@@ -51,10 +51,10 @@ One-byte opcodes, followed by whatever arguments the system expects
 
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
-pop STACK (03 REG) - Pop from stack into %ptr, sets %err0 if empty
+pop DEST STACK (03 REG REG) - Pop from stack into register, sets %err0 if empty
 
-getl (04) - Get the top of %lex and put it in %ptr without popping, sets %err0 if empty
-getd (05) - Get the top of %dyn and put it in %ptr without popping, sets %err0 if empty
+getl DEST (04 REG) - Get the top of %lex without popping, sets %err0 if empty
+getd DEST (05 REG) - Get the top of %dyn without popping, sets %err0 if empty
 
 eswap (06) - Swap %err0 and %err1
 eclr (07) - Clear %err0
@@ -85,7 +85,7 @@ mthd (18 SPC) - Put the argument into %mthd
 load (19 REG) - Inverse of expd, try to put register into %ptr's prim(), %err0 if invalid register
 
 setf (1A) - Put %ptr into %slf at the %sym slot, sets %err0 if %slf is null
-peek (1B REG) - Like pop but don't remove the element; sets %err0 if empty
+peek DEST STACK (1B REG REG) - Like pop but don't remove the element; sets %err0 if empty
 
 symn INT (1C INT) - Like sym except grab the symbol with the given index
 cpp INT (1D INT) - Call the system function at the specified index in %cpp, set %err0 if invalid

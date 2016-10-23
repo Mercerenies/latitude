@@ -69,7 +69,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         FILE_HEADER = 24,
         STR_ORD = 25,
         STR_CHR = 26,
-        GC_TOTAL = 27;
+        GC_TOTAL = 27,
+        TIME_SPAWN = 28;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1547,6 +1548,108 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     sys.lock()->put(Symbols::get()["totalGC#"],
                     defineMethod(unit, global, method,
                                  asmCode(makeAssemblerLine(Instr::CPP, GC_TOTAL))));
+
+    // TIME_SPAWN (put all the information about the current system time in the %ptr object, using %num0 to
+    //             determine whether local time (1) or global time (2))
+    // timeSpawnLocal#: obj.
+    // timeSpawnGlobal#: obj.
+    state.cpp[TIME_SPAWN] = [](IntState& state0) {
+        time_t raw;
+        tm info;
+        time(&raw);
+        if (state0.num0.asSmallInt() == 1)
+            info = *localtime(&raw);
+        else if (state0.num0.asSmallInt() == 2)
+            info = *gmtime(&raw);
+        InstrSeq prologue = asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO));
+        InstrSeq second = garnishSeq(info.tm_sec);
+        InstrSeq second1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::SYM, "second"),
+                                   makeAssemblerLine(Instr::SETF));
+        InstrSeq minute = garnishSeq(info.tm_min);
+        InstrSeq minute1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::SYM, "minute"),
+                                   makeAssemblerLine(Instr::SETF));
+        InstrSeq hour = garnishSeq(info.tm_hour);
+        InstrSeq hour1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                 makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                 makeAssemblerLine(Instr::SYM, "hour"),
+                                 makeAssemblerLine(Instr::SETF));
+        InstrSeq day = garnishSeq(info.tm_mday);
+        InstrSeq day1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                makeAssemblerLine(Instr::SYM, "day"),
+                                makeAssemblerLine(Instr::SETF));
+        InstrSeq month = garnishSeq(info.tm_mon);
+        InstrSeq month1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                  makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                  makeAssemblerLine(Instr::SYM, "monthNumber"),
+                                  makeAssemblerLine(Instr::SETF));
+        InstrSeq year = garnishSeq(info.tm_year + 1900);
+        InstrSeq year1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                  makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                  makeAssemblerLine(Instr::SYM, "year"),
+                                  makeAssemblerLine(Instr::SETF));
+        InstrSeq weekday = garnishSeq(info.tm_wday);
+        InstrSeq weekday1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                    makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                    makeAssemblerLine(Instr::SYM, "weekdayNumber"),
+                                    makeAssemblerLine(Instr::SETF));
+        InstrSeq yearday = garnishSeq(info.tm_yday + 1);
+        InstrSeq yearday1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                    makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                    makeAssemblerLine(Instr::SYM, "yearDay"),
+                                    makeAssemblerLine(Instr::SETF));
+        InstrSeq dst = garnishSeq(info.tm_isdst);
+        InstrSeq dst1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                makeAssemblerLine(Instr::SYM, "dstNumber"),
+                                makeAssemblerLine(Instr::SETF));
+        InstrSeq epilogue = asmCode(makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO));
+        InstrSeq total;
+        total.insert(total.end(), prologue.begin(), prologue.end());
+        total.insert(total.end(), second.begin(), second.end());
+        total.insert(total.end(), second1.begin(), second1.end());
+        total.insert(total.end(), minute.begin(), minute.end());
+        total.insert(total.end(), minute1.begin(), minute1.end());
+        total.insert(total.end(), hour.begin(), hour.end());
+        total.insert(total.end(), hour1.begin(), hour1.end());
+        total.insert(total.end(), day.begin(), day.end());
+        total.insert(total.end(), day1.begin(), day1.end());
+        total.insert(total.end(), month.begin(), month.end());
+        total.insert(total.end(), month1.begin(), month1.end());
+        total.insert(total.end(), year.begin(), year.end());
+        total.insert(total.end(), year1.begin(), year1.end());
+        total.insert(total.end(), weekday.begin(), weekday.end());
+        total.insert(total.end(), weekday1.begin(), weekday1.end());
+        total.insert(total.end(), yearday.begin(), yearday.end());
+        total.insert(total.end(), yearday1.begin(), yearday1.end());
+        total.insert(total.end(), dst.begin(), dst.end());
+        total.insert(total.end(), dst1.begin(), dst1.end());
+        total.insert(total.end(), epilogue.begin(), epilogue.end());
+        state0.stack = pushNode(state0.stack, state0.cont);
+        state0.cont = CodeSeek(std::move(total));
+    };
+    sys.lock()->put(Symbols::get()["timeSpawnLocal#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::INT, 1),
+                                         makeAssemblerLine(Instr::CPP, TIME_SPAWN),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["timeSpawnGlobal#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::INT, 2),
+                                         makeAssemblerLine(Instr::CPP, TIME_SPAWN),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
 }
 
