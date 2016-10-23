@@ -202,6 +202,13 @@ Kernel GC run := { meta sys runGC#. }.
 Kernel GC total := { meta sys totalGC#. }.
 ; (The load function is defined in the main latitude.lat file)
 
+;; Environment variables
+Kernel env := { meta sys envGet#: $1. }.
+Kernel env= := { if: { parent dynamic $2 nil?. },
+                     { meta sys envUnset#: parent dynamic $1. },
+                     { meta sys envSet#: parent dynamic $1, parent dynamic $2. }. }.
+; ///// Use environment variables in the load path to make it so the user needn't specify pathnames
+
 ;; Symbol functions
 Symbol gensym := { meta sys gensym#: self clone. }.
 Symbol gensymOf := { meta sys gensymOf#: self clone, $1. }.

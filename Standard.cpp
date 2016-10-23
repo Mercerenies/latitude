@@ -5,10 +5,12 @@
 #include "Macro.hpp"
 #include "Header.hpp"
 #include "GC.hpp"
+#include "Environment.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
 #include <boost/scope_exit.hpp>
+#include <boost/optional.hpp>
 
 using namespace std;
 
@@ -70,7 +72,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         STR_ORD = 25,
         STR_CHR = 26,
         GC_TOTAL = 27,
-        TIME_SPAWN = 28;
+        TIME_SPAWN = 28,
+        ENV_GET = 29,
+        ENV_SET = 30;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1650,6 +1654,72 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::INT, 2),
                                          makeAssemblerLine(Instr::CPP, TIME_SPAWN),
                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // ENV_GET (retrieve the environment variable matching the name in %str0 and store the result in %ret)
+    // envGet#: str.
+    state.cpp[ENV_GET] = [](IntState& state0) {
+        boost::optional<std::string> value = getEnv(state0.str0);
+        if (value)
+            garnishBegin(state0, *value);
+        else
+            garnishBegin(state0, boost::blank());
+    };
+    sys.lock()->put(Symbols::get()["envGet#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                         makeAssemblerLine(Instr::CPP, ENV_GET))));
+
+    // ENV_SET (assign the environment variable with name %str0 to value %str1 (or unset it, if %num0 is nonzero)
+    // envSet#: name, value.
+    // envUnset#: name.
+    state.cpp[ENV_SET] = [](IntState& state0) {
+        bool success = false;
+        if (state0.num0.asSmallInt() != 0) {
+            success = unsetEnv(state0.str0);
+        } else {
+            success = setEnv(state0.str0, state0.str1);
+        }
+        if (success)
+            garnishBegin(state0, boost::blank());
+        else
+            throwError(state0, "NotSupportedError",
+                       "Mutable environment variables not supported on this system");
+    };
+    sys.lock()->put(Symbols::get()["envSet#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::STR1),
+                                         makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                         makeAssemblerLine(Instr::INT, 0),
+                                         makeAssemblerLine(Instr::CPP, ENV_SET))));
+    sys.lock()->put(Symbols::get()["envUnset#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::STR, ""),
+                                         makeAssemblerLine(Instr::SSWAP),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                         makeAssemblerLine(Instr::INT, 1),
+                                         makeAssemblerLine(Instr::CPP, ENV_SET))));
 
 }
 
