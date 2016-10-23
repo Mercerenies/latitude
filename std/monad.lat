@@ -85,3 +85,5 @@ IterMonad pure := { util Cell clone tap { self value := parent dynamic hold '$1.
 IterMonad fmap := { $2 map. }.
 IterMonad join := { $1 foldl: Nil, '<> toProc. }.
 Monad inject: IterMonad.
+
+$whereAmI.
