@@ -70,7 +70,7 @@ Symbol.o:	Symbol.cpp Symbol.hpp
 Number.o:	Number.cpp Number.hpp
 	$(CXX) $(CXXFLAGS) Number.cpp
 
-REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Process.hpp Stream.hpp Bytecode.hpp Instructions.hpp
+REPL.o:	REPL.cpp REPL.hpp Proto.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Process.hpp Stream.hpp Bytecode.hpp Instructions.hpp Pathname.hpp
 	$(CXX) $(CXXFLAGS) REPL.cpp
 
 Process.o:	Process.cpp Process.hpp Stream.hpp Platform.hpp

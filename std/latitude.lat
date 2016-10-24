@@ -1,20 +1,18 @@
 
 meta Object clone := { meta sys doClone#: self. }.
 meta Kernel load := { meta sys kernelLoad#: $1, global clone. }.
+meta Kernel loadRaw := { meta sys kernelLoad0#: $1, global clone. }.
 
-meta Kernel load: "std/core.lat".
-meta Kernel load: "std/exception.lat".
-meta Kernel load: "std/flow_control.lat".
-meta Kernel load: "std/arithmetic.lat".
-meta Kernel load: "std/array.lat".
-meta Kernel load: "std/mixin.lat".
-meta Kernel load: "std/collection.lat".
-meta Kernel load: "std/args.lat".
-meta Kernel load: "std/lang.lat".
-;meta Kernel load: "std/sequence.lat".
-meta Kernel load: "std/module.lat".
-;meta Kernel load: "std/pattern.lat".
-meta Kernel load: "std/string.lat".
-;meta Kernel load: "std/util.lat".
+meta Kernel loadRaw: "std/core.lat".
+meta Kernel loadRaw: "std/exception.lat".
+meta Kernel loadRaw: "std/flow_control.lat".
+meta Kernel loadRaw: "std/arithmetic.lat".
+meta Kernel loadRaw: "std/array.lat".
+meta Kernel loadRaw: "std/mixin.lat".
+meta Kernel loadRaw: "std/collection.lat".
+meta Kernel loadRaw: "std/args.lat".
+meta Kernel loadRaw: "std/lang.lat".
+meta Kernel loadRaw: "std/module.lat".
+meta Kernel loadRaw: "std/string.lat".
 
 here.

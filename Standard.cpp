@@ -77,7 +77,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         ENV_GET = 29,
         ENV_SET = 30,
         EXE_PATH = 31,
-        PATH_OP = 32;
+        PATH_OP = 32,
+        FILE_EXISTS = 33;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -90,24 +91,35 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     };
 
     // KERNEL_LOAD ($1 = filename, $2 = global)
+    //  * Checks %num0 (if 0, then standard load; if 1, then raw load)
     // kernelLoad#: filename, global.
+    // kernelLoadRaw#: filename, global.
     state.cpp[KERNEL_LOAD] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr str = (*dyn.lock())[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr global = (*dyn.lock())[ Symbols::get()["$2"] ].getPtr();
         if ((!str.expired()) && (!global.expired())) {
             auto str0 = boost::get<string>(&str.lock()->prim());
-            if (str0)
-                readFile(*str0, { global, global }, state0);
-            else
+            if (str0) {
+                string str1 = *str0;
+                if (state0.num0.asSmallInt() == 1)
+                    str1 = stripFilename(getExecutablePathname()) + "/" + str1;
+                readFile(str1, { global, global }, state0);
+            } else {
                 throwError(state0, "TypeError", "String expected");
+            }
         } else {
             throwError(state0, "SystemArgError", "Wrong number of arguments");
         }
     };
     sys.lock()->put(Symbols::get()["kernelLoad#"],
                     defineMethod(unit, global, method,
-                                 asmCode(makeAssemblerLine(Instr::CPP, KERNEL_LOAD))));
+                                 asmCode(makeAssemblerLine(Instr::INT, 0),
+                                         makeAssemblerLine(Instr::CPP, KERNEL_LOAD))));
+    sys.lock()->put(Symbols::get()["kernelLoad0#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::INT, 1),
+                                         makeAssemblerLine(Instr::CPP, KERNEL_LOAD))));
 
     // accessSlot#: obj, sym.
     sys.lock()->put(Symbols::get()["accessSlot#"],
@@ -1768,6 +1780,25 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::THROA, "String expected"),
                                          makeAssemblerLine(Instr::INT, 1),
                                          makeAssemblerLine(Instr::CPP, PATH_OP))));
+
+    // FILE_EXISTS (check the pathname in %str0 for existence, storing result in %flag)
+    // fileExists#: fname.
+    state.cpp[FILE_EXISTS] = [](IntState& state0) {
+        std::ifstream f(state0.str0.c_str());
+        state0.flag = f.good();
+        f.close();
+    };
+    sys.lock()->put(Symbols::get()["fileExists#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                         makeAssemblerLine(Instr::CPP, FILE_EXISTS),
+                                         makeAssemblerLine(Instr::BOL))));
 
 }
 

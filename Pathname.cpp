@@ -55,5 +55,5 @@ std::string stripFilename(std::string path) {
 #endif
 
 #ifdef USE_NULL
-#error Unsupported operating system; Please fix implement getExecutablePathname for your system
+#error Unsupported operating system; Please implement Pathname.cpp for your system
 #endif
