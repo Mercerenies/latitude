@@ -28,6 +28,7 @@ bool unsetEnv(string name) {
 #endif
 
 #ifdef USE_WINDOWS
+#include <windows.h>
 bool setEnv(string name, string value) {
     SetEnvironmentVariable(name.c_str(), value.c_str());
     return true;

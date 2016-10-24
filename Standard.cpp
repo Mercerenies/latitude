@@ -61,8 +61,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         ORIGIN = 14,
         PROCESS_TASK = 15,
         OBJECT_KEYS = 16,
-        FILE_OPEN = 17,
-        FILE_CLOSE = 18,
+        FILE_DOOPEN = 17,
+        FILE_DOCLOSE = 18,
         FILE_EOF = 19,
         STRING_LENGTH = 20,
         STRING_SUB = 21,
@@ -1260,9 +1260,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                          makeAssemblerLine(Instr::CPP, OBJECT_KEYS))));
 
-    // FILE_OPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
+    // FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
     // streamFileOpen#: strm, fname, access, mode.
-    state.cpp[FILE_OPEN] = [](IntState& state0) {
+    state.cpp[FILE_DOOPEN] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr access = (*dyn.lock())[ Symbols::get()["$3"] ].getPtr();
         ObjectPtr mode = (*dyn.lock())[ Symbols::get()["$4"] ].getPtr();
@@ -1307,12 +1307,12 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::EXPD, Reg::STR0),
                                          makeAssemblerLine(Instr::THROA, "String expected"),
                                          makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
-                                         makeAssemblerLine(Instr::CPP, FILE_OPEN),
+                                         makeAssemblerLine(Instr::CPP, FILE_DOOPEN),
                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-    // FILE_CLOSE (takes %strm and closes it)
+    // FILE_DOCLOSE (takes %strm and closes it)
     // streamClose#: strm.
-    state.cpp[FILE_CLOSE] = [](IntState& state0) {
+    state.cpp[FILE_DOCLOSE] = [](IntState& state0) {
         state0.strm->close();
     };
     sys.lock()->put(Symbols::get()["streamClose#"],
@@ -1324,7 +1324,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::ECLR),
                                          makeAssemblerLine(Instr::EXPD, Reg::STRM),
                                          makeAssemblerLine(Instr::THROA, "Stream expected"),
-                                         makeAssemblerLine(Instr::CPP, FILE_CLOSE),
+                                         makeAssemblerLine(Instr::CPP, FILE_DOCLOSE),
                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
     // FILE_EOF (takes %strm and outputs whether it's at eof into %flag)
