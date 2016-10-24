@@ -6,7 +6,7 @@
 Nil := Nil.
 Array := Array.
 
-use "std/pattern.lat" import '[Match, NoMatch].
+use 'pattern import '[Match, NoMatch].
 
 RegexpError := Exception clone tap { self message := "Regexp Error".
                                      self toString := "RegexpError". }.

@@ -1,7 +1,7 @@
 ;;* MODULE time
 ;;* PACKAGE base
 
-use "std/enum.lat" import '[Enumeration].
+use 'enum import '[Enumeration].
 
 Month := Enumeration of '[January, February, March, April, May, June, July,
                           August, September, October, November, December].

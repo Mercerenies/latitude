@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=-I $(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=-I $(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o
 
 all: Project
 
@@ -37,7 +37,7 @@ clean:
 Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Process.hpp Bytecode.hpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) Proto.cpp
 
-Standard.o:	Standard.cpp Standard.hpp Proto.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Environment.hpp
+Standard.o:	Standard.cpp Standard.hpp Proto.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Environment.hpp Pathname.hpp
 	$(CXX) $(CXXFLAGS) Standard.cpp
 
 Scanner.o:	lex.yy.c lex.yy.h
@@ -86,6 +86,10 @@ Instructions.o:	Instructions.cpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) Instructions.cpp
 
 Environment.o:	Environment.cpp Environment.hpp Platform.hpp
+	$(CXX) $(CXXFLAGS) Environment.cpp
+
+Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
+	$(CXX) $(CXXFLAGS) Pathname.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) main.cpp

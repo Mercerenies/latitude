@@ -6,7 +6,7 @@
 
 ; TODO Monad transformers...?
 
-use "std/util.lat".
+use 'util.
 
 Nil := Nil.
 

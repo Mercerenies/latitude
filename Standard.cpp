@@ -6,6 +6,7 @@
 #include "Header.hpp"
 #include "GC.hpp"
 #include "Environment.hpp"
+#include "Pathname.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -74,7 +75,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         GC_TOTAL = 27,
         TIME_SPAWN = 28,
         ENV_GET = 29,
-        ENV_SET = 30;
+        ENV_SET = 30,
+        EXE_PATH = 31,
+        PATH_OP = 32;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1720,6 +1723,51 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::THROA, "String expected"),
                                          makeAssemblerLine(Instr::INT, 1),
                                          makeAssemblerLine(Instr::CPP, ENV_SET))));
+
+    // EXE_PATH (put an appropriate pathname into %ret%, given by the %num0 argument)
+    //  * %num0 == 1: Executable pathname
+    // exePath#.
+    state.cpp[EXE_PATH] = [](IntState& state0) {
+        switch (state0.num0.asSmallInt()) {
+        case 1:
+            garnishBegin(state0, getExecutablePathname());
+            break;
+        default:
+            throwError(state0, "SystemArgError",
+                       "Invalid numerical argument to EXE_PATH");
+            break;
+        }
+    };
+    sys.lock()->put(Symbols::get()["exePath#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::INT, 1),
+                                         makeAssemblerLine(Instr::CPP, EXE_PATH))));
+
+    // PATH_OP (put an appropriate pathname into %ret%, given by the %num0 argument and %str0 input)
+    //  * %num0 == 1: Get directory of pathname
+    // dirName#: str.
+    state.cpp[PATH_OP] = [](IntState& state0) {
+        switch (state0.num0.asSmallInt()) {
+        case 1:
+            garnishBegin(state0, stripFilename(state0.str0));
+            break;
+        default:
+            throwError(state0, "SystemArgError",
+                       "Invalid numerical argument to PATH_OP");
+            break;
+        }
+    };
+    sys.lock()->put(Symbols::get()["dirName#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                         makeAssemblerLine(Instr::INT, 1),
+                                         makeAssemblerLine(Instr::CPP, PATH_OP))));
 
 }
 

@@ -196,6 +196,7 @@ Kernel kill := { meta sys kill#. }.
 Kernel eval := { meta sys eval#: $1, $2, $3. }.
 Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
 Kernel readHeader := { meta sys fileHeader#: $1. }.
+Kernel executablePath := { meta sys exePath#. }.
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
 Kernel GC run := { meta sys runGC#. }.
@@ -208,6 +209,11 @@ Kernel env= := { if: { parent dynamic $2 nil?. },
                      { meta sys envUnset#: parent dynamic $1. },
                      { meta sys envSet#: parent dynamic $1, parent dynamic $2. }. }.
 ; ///// Use environment variables in the load path to make it so the user needn't specify pathnames
+
+;; FilePath functions
+global FilePath := Object clone.
+FilePath toString := "FilePath".
+FilePath directory := { meta sys dirName#: $1. }.
 
 ;; Symbol functions
 Symbol gensym := { meta sys gensym#: self clone. }.
