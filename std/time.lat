@@ -1,13 +1,13 @@
 ;;* MODULE time
 ;;* PACKAGE base
 
-use "std/enum.lat".
+use "std/enum.lat" import '[Enumeration].
 
-Month := enum Enumeration of '[January, February, March, April, May, June, July,
-                               August, September, October, November, December].
+Month := Enumeration of '[January, February, March, April, May, June, July,
+                          August, September, October, November, December].
 Month toString := "Month".
 
-Weekday := enum Enumeration of '[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
+Weekday := Enumeration of '[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
 Weekday toString := "Weekday".
 
 DateTime := Object clone.
