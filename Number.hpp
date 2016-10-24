@@ -39,9 +39,25 @@ public:
     Number pow(const Number& other) const;
     Number operator -() const;
     Number recip() const;
+    Number sin() const;
+    Number cos() const;
+    Number tan() const;
+    Number sinh() const;
+    Number cosh() const;
+    Number tanh() const;
+    Number exp() const;
+    Number asin() const;
+    Number acos() const;
+    Number atan() const;
+    Number asinh() const;
+    Number acosh() const;
+    Number atanh() const;
+    Number log() const;
     std::string asString() const;
     smallint asSmallInt() const;
     int hierarchyLevel() const;
 };
+
+Number nan();
 
 #endif // _NUMBER_HPP_

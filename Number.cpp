@@ -1,8 +1,8 @@
 #include "Number.hpp"
 #include <limits>
+#include <cmath>
 
 using namespace std;
-
 
 namespace MagicNumber {
     using namespace boost;
@@ -260,6 +260,20 @@ namespace MagicNumber {
         }
     };
 
+    struct FloatingOpVisitor : boost::static_visitor<Number::floating> {
+        typedef std::function<Number::floating(Number::floating)> function_type;
+        function_type func;
+
+        FloatingOpVisitor(function_type f)
+            : func(f) {}
+
+        template <typename U>
+        Number::floating operator()(const U& first) const {
+            return func(Coerce<Number::floating>::act(first));
+        }
+
+    };
+
 };
 
 Number::Number(smallint arg)
@@ -352,6 +366,113 @@ Number Number::recip() const {
     return curr;
 }
 
+Number Number::sin() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::sin;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::cos() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::cos;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::tan() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::tan;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::sinh() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::sinh;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::cosh() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::cosh;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::tanh() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::tanh;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::exp() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::exp;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::asin() const {
+    if ((*this < (smallint)-1) || (*this > (smallint)1))
+        return nan();
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::asin;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::acos() const {
+    if ((*this < (smallint)-1) || (*this > (smallint)1))
+        return nan();
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::acos;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::atan() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::atan;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::asinh() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::asinh;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::acosh() const {
+    if (*this < (smallint)1)
+        return nan();
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::acosh;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::atanh() const {
+    // TODO Can we use inf or -inf instead of nan here?
+    if ((*this == (smallint)1) || (*this == (smallint)-1))
+        return nan();
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::atanh;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
+Number Number::log() const {
+    Number curr = *this;
+    function<double(double)> func = (double(*)(double))std::log;
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    return curr;
+}
+
 string Number::asString() const {
     MagicNumber::StringifyVisitor visitor;
     boost::apply_visitor(visitor, value);
@@ -365,4 +486,8 @@ auto Number::asSmallInt() const
 
 int Number::hierarchyLevel() const {
     return boost::apply_visitor(MagicNumber::LevelVisitor(), value);
+}
+
+Number nan() {
+    return Number((Number::smallint)0) / Number((Number::smallint)0);
 }

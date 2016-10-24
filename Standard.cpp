@@ -78,7 +78,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         ENV_SET = 30,
         EXE_PATH = 31,
         PATH_OP = 32,
-        FILE_EXISTS = 33;
+        FILE_EXISTS = 33,
+        TRIG_OP = 34;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1799,6 +1800,91 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::THROA, "String expected"),
                                          makeAssemblerLine(Instr::CPP, FILE_EXISTS),
                                          makeAssemblerLine(Instr::BOL))));
+
+    // TRIG_OP (perform the operation indicated in %num0 on the value in %num1, storing result in %num1)
+    // numTrig#: num, op.
+    state.cpp[TRIG_OP] = [](IntState& state0) {
+        switch (state0.num0.asSmallInt()) {
+        case 0: // Sin
+            state0.num1 = state0.num1.sin();
+            break;
+        case 1: // Cos
+            state0.num1 = state0.num1.cos();
+            break;
+        case 2: // Tan
+            state0.num1 = state0.num1.tan();
+            break;
+        case 3: // Sinh
+            state0.num1 = state0.num1.sinh();
+            break;
+        case 4: // Cosh
+            state0.num1 = state0.num1.cosh();
+            break;
+        case 5: // Tanh
+            state0.num1 = state0.num1.tanh();
+            break;
+        case 6: // Exp
+            // So yes, exp() isn't technically a trig function, but it fits in nicely with this part of the code
+            state0.num1 = state0.num1.exp();
+            break;
+        case 7: // Asin
+            state0.num1 = state0.num1.asin();
+            break;
+        case 8: // Acos
+            state0.num1 = state0.num1.acos();
+            break;
+        case 9: // Atan
+            state0.num1 = state0.num1.atan();
+            break;
+        case 10: // Asinh
+            state0.num1 = state0.num1.asinh();
+            break;
+        case 11: // Acosh
+            state0.num1 = state0.num1.acosh();
+            break;
+        case 12: // Atanh
+            state0.num1 = state0.num1.atanh();
+            break;
+        case 13: // Ln
+            // See the comment on Exp()
+            state0.num1 = state0.num1.log();
+            break;
+        default:
+            throwError(state0, "SystemArgError",
+                       "Invalid numerical argument to TRIG_OP");
+            break;
+        }
+    };
+    sys.lock()->put(Symbols::get()["numTrig#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                         makeAssemblerLine(Instr::CLONE),
+                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                         makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                         makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$2"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                         makeAssemblerLine(Instr::THROA, "Number expected"),
+                                         makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                         makeAssemblerLine(Instr::THROA, "Number expected"),
+                                         makeAssemblerLine(Instr::CPP, TRIG_OP),
+                                         makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                         makeAssemblerLine(Instr::LOAD, Reg::NUM1),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
 }
 
