@@ -87,6 +87,8 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         transform(contents0.begin(), contents0.end(), contents1.begin(),
                   [](auto& cc) { return move(cc); });
         return unique_ptr<Stmt>(new StmtSpecialMethod(line, contents1));
+    } else if (expr->isComplex) {
+        return unique_ptr<Stmt>(new StmtComplex(line, expr->number, expr->number1));
     } else if (expr->equals) {
         auto rhs = translateStmt(expr->rhs);
         auto func = expr->name;
@@ -681,7 +683,6 @@ void StmtZeroDispatch::translate(TranslationUnit& unit, InstrSeq& seq) {
 
 }
 
-
 StmtSpecialMethod::StmtSpecialMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents)
     : Stmt(line_no), contents(move(contents)) {}
 
@@ -785,4 +786,29 @@ void StmtSpecialMethod::propogateFileName(std::string name) {
     for (auto& ptr : contents)
         ptr->propogateFileName(name);
     Stmt::propogateFileName(name);
+}
+
+StmtComplex::StmtComplex(int line_no, double lhs, double rhs)
+    : Stmt(line_no), rl(lhs), im(rhs) {}
+
+void StmtComplex::translate(TranslationUnit& unit, InstrSeq& seq) {
+
+    //stateLine(seq);
+
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CMPLX, to_string(rl), to_string(im))).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
+
 }

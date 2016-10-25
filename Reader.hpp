@@ -226,4 +226,15 @@ public:
     virtual void propogateFileName(std::string name);
 };
 
+/*
+ * A complex number literal
+ */
+class StmtComplex : public Stmt {
+private:
+    double rl, im;
+public:
+    StmtComplex(int line_no, double lhs, double rhs);
+    virtual void translate(TranslationUnit&, InstrSeq&);
+};
+
 #endif // _READER_HPP_

@@ -1,6 +1,7 @@
 #include "Number.hpp"
 #include <limits>
 #include <cmath>
+#include <complex>
 
 using namespace std;
 
@@ -12,7 +13,8 @@ namespace MagicNumber {
     typedef mpl::vector<Number::smallint,
                         Number::bigint,
                         Number::ratio,
-                        Number::floating> number_hierarchy_t;
+                        Number::floating,
+                        Number::complex> number_hierarchy_t;
 
     template <typename T>
     struct NumeralT {
@@ -60,6 +62,49 @@ namespace MagicNumber {
         }
     };
 
+    template <>
+    struct Coerce<Number::complex> {
+        template <typename V>
+        using result_type = typename std::enable_if<
+            std::is_same<typename Wider<Number::complex, V>::type,
+                         Number::complex>::value,
+            Number::complex>::type;
+        template <typename V>
+        using nresult_type = typename std::enable_if<
+            !std::is_same<typename Wider<Number::complex, V>::type,
+                          Number::complex>::value,
+            typename Wider<Number::complex, V>::type>::type;
+        template <typename V>
+        static result_type<V> act(V value) {
+            return Number::complex((double)value, 0);
+        }
+        template <typename V>
+        static nresult_type<V> act(V value) {
+            return static_cast< typename Wider<Number::complex, V>::type >(value);
+        }
+        static Number::complex act(Number::complex value) {
+            return value;
+        }
+    };
+
+    struct LevelVisitor : boost::static_visitor<int> {
+        template <typename U>
+        int operator()(const U& first) const {
+            return (int)NumeralT<U>::type::value;
+        }
+    };
+
+    template <typename T>
+    struct StrictCastVisitor : boost::static_visitor<T> {
+        template <typename U>
+        T operator()(const U& first) const {
+            return (T)first;
+        }
+        T operator()(const Number::complex& first) const {
+            return (T)real(first);
+        }
+    };
+
     struct PlusVisitor : boost::static_visitor<Number::magic_t> {
         template <typename U, typename V>
         Number::magic_t operator()(U& first, V& second) const {
@@ -97,6 +142,9 @@ namespace MagicNumber {
             typename Wider<U, Number::ratio>::type result = 1 / first0;
             return Number::magic_t(result);
         }
+        Number::magic_t operator()(Number::complex& first) const {
+            return Number::magic_t(1.0 / first);
+        }
     };
 
     struct ModVisitor : boost::static_visitor<Number::magic_t> {
@@ -110,6 +158,17 @@ namespace MagicNumber {
             typename Wider<U, V>::type result =
                 first0 - (int)(first0 / second0) * second0;
             return Number::magic_t(result);
+        }
+        Number::magic_t operator()(Number::complex& first, Number::complex& second) const {
+            return Number::magic_t(Number::complex(0, 0));
+        }
+        template <typename U>
+        Number::magic_t operator()(U& first, Number::complex& second) const {
+            return Number::magic_t(Number::complex(0, 0));
+        }
+        template <typename V>
+        Number::magic_t operator()(Number::complex& first, V& second) const {
+            return Number::magic_t(Number::complex(0, 0));
         }
     };
 
@@ -137,6 +196,20 @@ namespace MagicNumber {
         }
 
         template <typename U>
+        Number::complex pow(U base, Number::complex exp) const {
+            return std::pow(Coerce<Number::complex>::act(base), exp);
+        }
+
+        template <typename V>
+        Number::complex pow(Number::complex base, V exp) const {
+            return std::pow(base, Coerce<Number::complex>::act(exp));
+        }
+
+        Number::complex pow(Number::complex base, Number::complex exp) const {
+            return std::pow(base, exp);
+        }
+
+        template <typename U>
         Number::magic_t operator()(U& first, Number::smallint& second) const {
             // With exponents, assume that a smallint base is going to be a problem since numbers
             // grow so quickly
@@ -147,7 +220,7 @@ namespace MagicNumber {
                 return Number::magic_t(pow(first0, second));
             } else if (second == 0) {
                 // If zero, check the first value and either use the floating point NaN or return 1 in type U
-                if (first0 == 0)
+                if (first0 == Coerce<U>::act((Number::smallint)0))
                     return pow(0.0, 0.0);
                 else
                     return Number::magic_t(U(1));
@@ -172,7 +245,7 @@ namespace MagicNumber {
                 return Number::magic_t(pow(first0, second));
             } else if (second == 0) {
                 // If zero, check the first value and either use the floating point NaN or return 1 in type U
-                if (first0 == 0)
+                if (first0 == Coerce<U>::act((Number::smallint)0))
                     return pow(0.0, 0.0);
                 else
                     return Number::magic_t(U(1));
@@ -188,16 +261,32 @@ namespace MagicNumber {
 
         template <typename U>
         Number::magic_t operator()(U& first, Number::ratio& second) const {
-            // If the exponent is a rational, just delegate to the floating point computation
+            // If the exponent is a ratio, treat it as though the exponent were a floating point number
             auto first0 = Coerce<Number::floating>::act(first);
             auto second0 = Coerce<Number::floating>::act(second);
-            return Number::magic_t(pow(first0, second0));
+            return (*this)(first0, second0);
         }
 
         template <typename U>
         Number::magic_t operator()(U& first, Number::floating& second) const {
-            // If the exponent is floating, obviously delegate to the floating point computation
+            // If the exponent is a floating point, check the sign of the base
             auto first0 = Coerce<Number::floating>::act(first);
+            auto second0 = Coerce<Number::floating>::act(second);
+            if (abs(first0) == StrictCastVisitor<Number::floating>()(first0)) {
+                // In the nonnegative case, delegate to floating point
+                return Number::magic_t(pow(first0, second0));
+            } else {
+                // In the negative case, delegate to complex
+                auto first1 = Coerce<Number::complex>::act(first0);
+                auto second1 = Coerce<Number::complex>::act(second0);
+                return (*this)(first1, second1);
+            }
+        }
+
+        template <typename U>
+        Number::magic_t operator()(U& first, Number::complex& second) const {
+            // If the exponent is complex, delegate to the complex exponential function
+            auto first0 = Coerce<Number::complex>::act(first);
             return Number::magic_t(pow(first0, second));
         }
 
@@ -219,6 +308,17 @@ namespace MagicNumber {
             auto second0 = Coerce<U>::act(second);
             return first0 < second0;
         }
+        bool operator()(const Number::complex& first, const Number::complex& second) const {
+            return false;
+        }
+        template <typename V>
+        bool operator()(const Number::complex& first, const V& second) const {
+            return false;
+        }
+        template <typename U>
+        bool operator()(const U& first, const Number::complex& second) const {
+            return false;
+        }
     };
 
     struct StringifyVisitor : boost::static_visitor<> {
@@ -232,7 +332,11 @@ namespace MagicNumber {
         }
 
         void operator()(const Number::ratio& first) {
-            stream << numerator(first) << "/" << denominator(first);
+            stream << "(" << numerator(first) << " / " << denominator(first) << ")";
+        }
+
+        void operator()(const Number::complex& first) {
+            stream << fixed << setprecision(2) << "@(" << real(first) << ", " << imag(first) << ")";
         }
 
         template <typename U>
@@ -245,31 +349,48 @@ namespace MagicNumber {
         }
     };
 
-    struct LevelVisitor : boost::static_visitor<int> {
-        template <typename U>
-        int operator()(const U& first) const {
-            return (int)NumeralT<U>::type::value;
-        }
-    };
-
-    template <typename T>
-    struct StrictCastVisitor : boost::static_visitor<T> {
-        template <typename U>
-        T operator()(const U& first) const {
-            return (T)first;
-        }
-    };
-
-    struct FloatingOpVisitor : boost::static_visitor<Number::floating> {
+    struct FloatingOpVisitor : boost::static_visitor<Number::magic_t> {
         typedef std::function<Number::floating(Number::floating)> function_type;
+        typedef std::function<Number::complex(Number::complex)> complex_function_type;
         function_type func;
+        complex_function_type cfunc;
 
-        FloatingOpVisitor(function_type f)
-            : func(f) {}
+        FloatingOpVisitor(function_type f, complex_function_type cf)
+            : func(f), cfunc(cf) {}
 
         template <typename U>
-        Number::floating operator()(const U& first) const {
-            return func(Coerce<Number::floating>::act(first));
+        Number::magic_t operator()(const U& first) const {
+            return Number::magic_t(func(Coerce<Number::floating>::act(first)));
+        }
+
+        Number::magic_t operator()(const Number::complex& first) const {
+            return Number::magic_t(cfunc(first));
+        }
+
+    };
+
+    struct FloatingComplexOpVisitor : boost::static_visitor<Number::magic_t> {
+        typedef FloatingOpVisitor::function_type function_type;
+        typedef FloatingOpVisitor::complex_function_type complex_function_type;
+        typedef std::function<bool(Number::floating)> predicate_type;
+        // Simulate inheritance without letting overload resolution complicate things.
+        FloatingOpVisitor visitor;
+        predicate_type pred;
+
+        FloatingComplexOpVisitor(function_type f, complex_function_type cf, predicate_type p)
+            : visitor(f, cf), pred(p) {}
+
+        template <typename U>
+        Number::magic_t operator()(const U& first) const {
+            Number::floating value = Coerce<Number::floating>::act(first);
+            if (pred(value))
+                return visitor(Coerce<Number::complex>::act(value));
+            else
+                return visitor(value);
+        }
+
+        Number::magic_t operator()(const Number::complex& first) const {
+            return visitor(first);
         }
 
     };
@@ -286,6 +407,9 @@ Number::Number(ratio arg)
     : value(arg) {}
 
 Number::Number(floating arg)
+    : value(arg) {}
+
+Number::Number(complex arg)
     : value(arg) {}
 
 bool Number::operator ==(const Number& other) const {
@@ -369,107 +493,116 @@ Number Number::recip() const {
 Number Number::sin() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::sin;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::sin(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::cos() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::cos;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::cos(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::tan() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::tan;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::tan(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::sinh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::sinh;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::sinh(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::cosh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::cosh;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::cosh(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::tanh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::tanh;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::tanh(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::exp() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::exp;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::exp(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::asin() const {
-    if ((*this < (smallint)-1) || (*this > (smallint)1))
-        return nan();
     Number curr = *this;
+    function<bool(double)> pred = [](double d) { return (d < -1) || (d > 1); };
     function<double(double)> func = (double(*)(double))std::asin;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::asin(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), curr.value);
     return curr;
 }
 
 Number Number::acos() const {
-    if ((*this < (smallint)-1) || (*this > (smallint)1))
-        return nan();
     Number curr = *this;
+    function<bool(double)> pred = [](double d) { return (d < -1) || (d > 1); };
     function<double(double)> func = (double(*)(double))std::acos;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::acos(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), curr.value);
     return curr;
 }
 
 Number Number::atan() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::atan;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::atan(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::asinh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::asinh;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::asinh(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 
 Number Number::acosh() const {
-    if (*this < (smallint)1)
-        return nan();
     Number curr = *this;
+    function<bool(double)> pred = [](double d) { return (d < 1); };
     function<double(double)> func = (double(*)(double))std::acosh;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::acosh(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), curr.value);
     return curr;
 }
 
 Number Number::atanh() const {
-    // TODO Can we use inf or -inf instead of nan here?
-    if ((*this == (smallint)1) || (*this == (smallint)-1))
-        return nan();
     Number curr = *this;
+    function<bool(double)> pred = [](double d) { return (d == -1) || (d == 1); };
     function<double(double)> func = (double(*)(double))std::atanh;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::atanh(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), curr.value);
     return curr;
 }
 
 Number Number::log() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::log;
-    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func), curr.value);
+    function<complex(complex)> cfunc = [](const complex& c) { return std::log(c); };
+    curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
     return curr;
 }
 

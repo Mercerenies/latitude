@@ -4,6 +4,7 @@
 #include <ios>
 #include <string>
 #include <type_traits>
+#include <complex>
 #include <boost/variant.hpp>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/distance.hpp>
@@ -19,7 +20,8 @@ public:
     typedef boost::multiprecision::cpp_int bigint;
     typedef boost::multiprecision::cpp_rational ratio;
     typedef double floating;
-    typedef boost::variant<smallint, bigint, ratio, floating> magic_t;
+    typedef std::complex<double> complex;
+    typedef boost::variant<smallint, bigint, ratio, floating, complex> magic_t;
 private:
     magic_t value;
 public:
@@ -29,6 +31,7 @@ public:
     Number(bigint);
     Number(ratio);
     Number(floating);
+    Number(complex);
     bool operator ==(const Number& other) const;
     bool operator <(const Number& other) const;
     Number& operator +=(const Number& other);

@@ -39,6 +39,7 @@
         bool isMethod; // Check args
         bool isNumber; // Check number
         double number;
+        double number1;
         bool isInt; // Check integer
         long integer;
         bool isBigInt; // Check name
@@ -51,6 +52,7 @@
         bool isZeroDispatch; // Check name
         bool isSpecialMethod; // Just like isMethod
         bool isBind; // Treated like call with a rhs
+        bool isComplex; // Check number and number1
     };
 
     struct List {
@@ -98,6 +100,7 @@
 %type <argval> literallist
 %type <argval> literallist1
 %type <exprval> listlit
+%type <dval> doublish
 
 %token <sval> NAME
 %token <dval> NUMBER
@@ -110,6 +113,7 @@
 %token LISTLIT
 %token CEQUALS
 %token ATBRACE
+%token ATPAREN
 %token BIND
 
 %%
@@ -179,6 +183,8 @@ literalish:
 literal:
     '{' linelist '}' { $$ = makeExpr(); $$->isMethod = true; $$->args = $2; } |
     ATBRACE linelist '}' { $$ = makeExpr(); $$->isSpecialMethod = true; $$->args = $2; } |
+    ATPAREN doublish ',' doublish ')' { $$ = makeExpr(); $$->number = $2;
+                                        $$->number1 = $4; $$->isComplex = true;  } |
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
@@ -210,6 +216,11 @@ listlit:
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
     NAME { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
+    ;
+doublish:
+    NUMBER |
+    INTEGER { $$ = (double)$1; } |
+    BIGINT { $$ = strtod($1, NULL); }
     ;
 
 %%

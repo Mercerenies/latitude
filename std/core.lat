@@ -209,7 +209,6 @@ Kernel env := { meta sys envGet#: $1. }.
 Kernel env= := { if: { parent dynamic $2 nil?. },
                      { meta sys envUnset#: parent dynamic $1. },
                      { meta sys envSet#: parent dynamic $1, parent dynamic $2. }. }.
-; ///// Use environment variables in the load path to make it so the user needn't specify pathnames
 
 ;; FilePath functions
 global FilePath := Object clone.

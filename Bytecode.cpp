@@ -1245,6 +1245,17 @@ void executeInstr(Instr instr, IntState& state) {
             state.trns.pop();
     }
         break;
+    case Instr::CMPLX: {
+        string str0 = state.cont.popString();
+        string str1 = state.cont.popString();
+#if DEBUG_INSTR > 0
+        cout << "CMPLX" << endl;
+#endif
+        double rl = strtod(str0.c_str(), NULL);
+        double im = strtod(str1.c_str(), NULL);
+        state.num0 = Number(Number::complex(rl, im));
+    }
+        break;
     }
 }
 

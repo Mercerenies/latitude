@@ -61,7 +61,8 @@
               "#" "\"" <text> "\"" "#" |
               "#" "(" <text> ")" |
               "0" <letter> { <alphanum> } |
-              "@" "{" <linelist> "}"
+              "@" "{" <linelist> "}" |
+              "@" "(" <number> "," <number> ")"
 <linelist> ::= <line> <linelist> |
                <lambda>
 <literallist> ::= <listlit> <literallist1> |

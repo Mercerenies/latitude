@@ -170,6 +170,7 @@ ID        {SNORMAL}{NORMAL}*
 \[ { return '['; }
 \] { return ']'; }
 @\{ { return ATBRACE; }
+@\( { return ATPAREN; }
 
 \;[^\n]* ; // Line comments
 \{\* { BEGIN(INNER_COMMENT); comments++; }

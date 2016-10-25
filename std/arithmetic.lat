@@ -2,13 +2,17 @@
 ;; Arithmetic and Number Types
 Number toString := { meta sys numToString#: self. }.
 Number == := { meta sys primEquals#: self, $1. }.
-Number < := { meta sys primLT#: self, $1. }.
+Number < := { if: { parent self isComplex?. } or { parent dynamic $1 isComplex?. },
+                  { TypeError clone tap { self message := "Cannot compare complex numbers". } throw. },
+                  { meta sys primLT#: parent self, parent dynamic $1. }. }.
 
 Number + := { meta sys numAdd#: self, $1. }.
 Number - := { meta sys numSub#: self, $1. }.
 Number * := { meta sys numMul#: self, $1. }.
 Number / := { meta sys numDiv#: self, $1. }.
-Number mod := { meta sys numMod#: self, $1. }.
+Number mod := { if: { parent self isComplex?. } or { parent dynamic $1 isComplex?. },
+                    { TypeError clone tap { self message := "Cannot modulo complex numbers". } throw. },
+                    { meta sys numMod#: parent self, parent dynamic $1. }. }.
 Number ^ := { meta sys numPow#: self, $1. }.
 
 global - := { 0 - ($1). }.
@@ -46,15 +50,22 @@ Number acoth := { (/ (self)) atanh. }.
 Number exp := { meta sys numTrig#: self, 6. }.
 Number log := { meta sys numTrig#: self, 13. }.
 
+;; Constructing complex numbers
+Number rect := { Number ii * ($2) + ($1). }.
+Number polar := { Number ii * ($2) exp * ($1). }.
+
 ;; Important constants
 Number ee := 1 exp.
 Number pi := -1 acos.
+Number ii := @(0, 1).
 
 ;; Numerical Type Checking
 Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.
 Number isInteger?  := { (meta sys numLevel#: self) <= 1. }.
 Number isRational? := { (meta sys numLevel#: self) <= 2. }.
 Number isFloating? := { (meta sys numLevel#: self) == 3. }.
+Number isReal? := { (meta sys numLevel#: self) <= 3. }.
+Number isComplex? := { (meta sys numLevel#: self) == 4. }.
 
 ;; Radixes
 String radix := { takes '[rad].
