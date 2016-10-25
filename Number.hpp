@@ -56,6 +56,7 @@ public:
     Number acosh() const;
     Number atanh() const;
     Number log() const;
+    Number floor() const;
     std::string asString() const;
     smallint asSmallInt() const;
     int hierarchyLevel() const;

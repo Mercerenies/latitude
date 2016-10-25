@@ -18,6 +18,12 @@ Number ^ := { meta sys numPow#: self, $1. }.
 global - := { 0 - ($1). }.
 global / := { 1 / ($1). }.
 
+Number floor := { if: { parent self isComplex?. },
+                      { TypeError clone tap { self message := "Cannot round complex numbers". } throw. },
+                      { meta sys numFloor#: parent self. }. }.
+Number round := { (self + 0.5) floor. }.
+Number ceil := { - (- (self) floor). }.
+
 ;; Trigonometry
 Number sin := { meta sys numTrig#: self, 0. }.
 Number cos := { meta sys numTrig#: self, 1. }.
@@ -58,6 +64,8 @@ Number polar := { Number ii * ($2) exp * ($1). }.
 Number ee := 1 exp.
 Number pi := -1 acos.
 Number ii := @(0, 1).
+
+; TODO Add in infinity, neg-infinity, and nan as constants and change the printer to print them in that form
 
 ;; Numerical Type Checking
 Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.

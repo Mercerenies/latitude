@@ -395,7 +395,31 @@ namespace MagicNumber {
 
     };
 
-};
+    struct FloorVisitor : boost::static_visitor<Number::magic_t> {
+
+        Number::magic_t operator()(const Number::smallint& value) const {
+            return value;
+        }
+
+        Number::magic_t operator()(const Number::bigint& value) const {
+            return value;
+        }
+
+        Number::magic_t operator()(const Number::ratio& value) const {
+            return static_cast<Number::bigint>(numerator(value) / denominator(value));
+        }
+
+        Number::magic_t operator()(const Number::floating& value) const {
+            return static_cast<Number::bigint>(floor(value));
+        }
+
+        Number::magic_t operator()(const Number::complex& value) const {
+            return Number::complex(0, 0);
+        }
+
+    };
+
+}
 
 Number::Number(smallint arg)
     : value(arg) {}
@@ -603,6 +627,12 @@ Number Number::log() const {
     function<double(double)> func = (double(*)(double))std::log;
     function<complex(complex)> cfunc = [](const complex& c) { return std::log(c); };
     curr.value = boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), curr.value);
+    return curr;
+}
+
+Number Number::floor() const {
+    Number curr = *this;
+    curr.value = boost::apply_visitor(MagicNumber::FloorVisitor(), curr.value);
     return curr;
 }
 

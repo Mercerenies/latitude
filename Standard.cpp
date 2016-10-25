@@ -79,7 +79,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         EXE_PATH = 31,
         PATH_OP = 32,
         FILE_EXISTS = 33,
-        TRIG_OP = 34;
+        TRIG_OP = 34,
+        MATH_FLOOR = 35;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1884,6 +1885,34 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::CPP, TRIG_OP),
                                          makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                          makeAssemblerLine(Instr::LOAD, Reg::NUM1),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // MATH_FLOOR (floor the value in %num0, storing result in %num0)
+    // numFloor#: num, op.
+    state.cpp[MATH_FLOOR] = [](IntState& state0) {
+        state0.num0 = state0.num0.floor();
+    };
+    sys.lock()->put(Symbols::get()["numFloor#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "meta"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::SYM, "Number"),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                         makeAssemblerLine(Instr::CLONE),
+                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                         makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYM, "$1"),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                         makeAssemblerLine(Instr::THROA, "Number expected"),
+                                         makeAssemblerLine(Instr::CPP, MATH_FLOOR),
+                                         makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                         makeAssemblerLine(Instr::LOAD, Reg::NUM0),
                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
 }
