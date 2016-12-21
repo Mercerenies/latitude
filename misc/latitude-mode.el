@@ -30,9 +30,12 @@
      st))
 
 (defvar latitude-mode-font-lock-keywords
-  (list `("\\_<\\(\\sw+\\)\\s-*:=\\s-*{" (1 font-lock-function-name-face))
-        `("\\_<\\([A-Z]\\sw+\\)\\s-*:=" (1 font-lock-type-face))
-        `("\\_<\\(\\sw+\\)\\s-*:=" (1 font-lock-variable-name-face))
+  (list `("\\_<\\(\\sw+\\)\\s-*:=\\s-*{"
+          (1 font-lock-function-name-face))
+        `("\\_<\\([A-Z]\\sw+\\)\\s-*:="
+          (1 font-lock-type-face))
+        `("\\_<\\(\\sw+\\)\\s-*:="
+          (1 font-lock-variable-name-face))
         `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "dynamic" "parent"
                          "here" "again" "self" "invoke" "get" "has" "put" "slot" "hold" "callCC"
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
@@ -40,7 +43,8 @@
                          "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
                          "implements" "takes" "localize" "this" "brackets" "origin" "resolve" "protect"
                          "thunk" "sigil" "do")
-                       'symbols) . font-lock-builtin-face)
+                       'symbols)
+          . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
                          "Proc" "Stream" "Cont" "Exception" "SystemError" "Array" "Kernel"
                          "Sequence" "ArgList" "Collection" "SystemArgError"
@@ -48,7 +52,8 @@
                          "BoundsError" "Mixin" "Cons" "Cell" "Lockbox" "Latchkey" "Cached"
                          "IOError" "Wildcard" "Ellipsis" "Match" "NoMatch" "LazySequence" "Process"
                          "StackFrame" "NotSupportedError" "REPL")
-                       'symbols) . font-lock-constant-face)))
+                       'symbols)
+          . font-lock-constant-face)))
 
 ;; (defun latitude-mode-skip-blanks ()
 ;;   (forward-line -1)
