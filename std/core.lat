@@ -76,6 +76,7 @@ meta sigil := Object clone.
                                      (hold 'mthd) handle { exc := $1.
                                                            (cond: exc) ifTrue: { jump call: exc. }. }. }. }.
 (hold 'Method) catch := { (hold 'self) resolve: { $1 is: parent dynamic $1. }, dynamic hold '$2. }.
+(hold 'Method) default := { (hold 'self) resolve: True, dynamic hold '$1. }.
 ; Observe that `rethrow` is not overriden in `Exception`, so it will never set the `stack` field.
 Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
