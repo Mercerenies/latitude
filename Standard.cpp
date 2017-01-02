@@ -80,7 +80,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         PATH_OP = 32,
         FILE_EXISTS = 33,
         TRIG_OP = 34,
-        MATH_FLOOR = 35;
+        MATH_FLOOR = 35,
+        NUM_CONST = 36;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -222,6 +223,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                 } else {
                     throwError(state0, "IOError", "Stream not designated for output");
                 }
+            } else {
+                throwError(state0, "SystemArgError", "Invalid argument to output function");
             }
         } else {
             throwError(state0, "SystemArgError", "Wrong number of arguments");
@@ -1903,7 +1906,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
     // MATH_FLOOR (floor the value in %num0, storing result in %num0)
-    // numFloor#: num, op.
+    // numFloor#: num.
     state.cpp[MATH_FLOOR] = [](IntState& state0) {
         state0.num0 = state0.num0.floor();
     };
@@ -1928,6 +1931,94 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::CPP, MATH_FLOOR),
                                          makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                          makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+
+    // NUM_CONST (store something in %num1, based on the value of %num0, sets %err0 if non-applicable)
+    // numNan#: number.
+    // numInfinity#: number.
+    // numNegInfinity#: number.
+    // numEpsilon#: number.
+    state.cpp[NUM_CONST] = [](IntState& state0) {
+        switch (state0.num0.asSmallInt()) {
+        case 0: { // NaN
+            auto num = constantNan();
+            if (num) {
+                state0.num1 = *num;
+            } else {
+                state0.err0 = true;
+            }
+            break;
+        }
+        case 1: { // infinity
+            auto num = constantInf();
+            if (num) {
+                state0.num1 = *num;
+            } else {
+                state0.err0 = true;
+            }
+            break;
+        }
+        case 2: { // negative infinity
+            auto num = constantNegInf();
+            if (num) {
+                state0.num1 = *num;
+            } else {
+                state0.err0 = true;
+            }
+            break;
+        }
+        case 3:
+            state0.num1 = constantEps();
+            break;
+        }
+    };
+    sys.lock()->put(Symbols::get()["numNan#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::INT, 0),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::CPP, NUM_CONST),
+                                         makeAssemblerLine(Instr::THROA, "Invalid constant"),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::LOAD, Reg::NUM1),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numInfinity#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::INT, 1),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::CPP, NUM_CONST),
+                                         makeAssemblerLine(Instr::THROA, "Invalid constant"),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::LOAD, Reg::NUM1),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numNegInfinity#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::INT, 2),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::CPP, NUM_CONST),
+                                         makeAssemblerLine(Instr::THROA, "Invalid constant"),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::LOAD, Reg::NUM1),
+                                         makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
+    sys.lock()->put(Symbols::get()["numEpsilon#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::INT, 3),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::CPP, NUM_CONST),
+                                         makeAssemblerLine(Instr::THROA, "Invalid constant"),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                          makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
 }

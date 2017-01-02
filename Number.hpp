@@ -13,6 +13,7 @@
 #include <boost/mpl/size.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/operators.hpp>
+#include <boost/optional.hpp>
 
 class Number : private boost::operators<Number> {
 public:
@@ -62,6 +63,9 @@ public:
     int hierarchyLevel() const;
 };
 
-Number nan();
+boost::optional<Number> constantNan();
+boost::optional<Number> constantInf();
+boost::optional<Number> constantNegInf();
+Number constantEps();
 
 #endif // _NUMBER_HPP_

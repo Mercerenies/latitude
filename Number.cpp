@@ -328,7 +328,16 @@ namespace MagicNumber {
             : stream() {}
 
         void operator()(const Number::floating& first) {
-            stream << fixed << setprecision(2) << first;
+            if (isfinite(first)) {
+                stream << fixed << setprecision(2) << first;
+            } else {
+                if (first > 0)
+                    stream << "inf";
+                else if (first < 0)
+                    stream << "ninf";
+                else
+                    stream << "nan";
+            }
         }
 
         void operator()(const Number::ratio& first) {
@@ -651,6 +660,27 @@ int Number::hierarchyLevel() const {
     return boost::apply_visitor(MagicNumber::LevelVisitor(), value);
 }
 
-Number nan() {
-    return Number((Number::smallint)0) / Number((Number::smallint)0);
+boost::optional<Number> constantNan() {
+    if (numeric_limits<Number::floating>::has_quiet_NaN)
+        return Number(numeric_limits<Number::floating>::quiet_NaN());
+    else
+        return boost::none;
+}
+
+boost::optional<Number> constantInf() {
+    if (numeric_limits<Number::floating>::has_infinity)
+        return Number(numeric_limits<Number::floating>::infinity());
+    else
+        return boost::none;
+}
+
+boost::optional<Number> constantNegInf() {
+    if (numeric_limits<Number::floating>::has_infinity)
+        return - Number(numeric_limits<Number::floating>::infinity());
+    else
+        return boost::none;
+}
+
+Number constantEps() {
+    return Number(numeric_limits<Number::floating>::epsilon());
 }
