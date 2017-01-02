@@ -69,8 +69,6 @@ Number inf := { meta sys numInfinity#: meta Number clone. } resolve: True, Nil.
 Number ninf := { meta sys numNegInfinity#: meta Number clone. } resolve: True, Nil.
 Number epsilon := { meta sys numEpsilon#: meta Number clone. } resolve: True, Nil.
 
-; TODO Add in infinity, neg-infinity, and nan as constants and change the printer to print them in that form
-
 ;; Numerical Type Checking
 Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.
 Number isInteger?  := { (meta sys numLevel#: self) <= 1. }.
