@@ -36,7 +36,7 @@ ModuleLoader resolveImport := { takes '[imp]. ; TODO Use an environment variable
                                 if: imp is (String),
                                     { imp. },
                                     { builtin := FilePath directory: Kernel executablePath.
-                                      (builtin) ++ "/std/" ++ (imp asText) ++ ".lat". }. }.
+                                      (builtin) ++ "std/" ++ (imp asText) ++ ".lat". }. }.
 
 global $moduleLoader := ModuleLoader clone.
 

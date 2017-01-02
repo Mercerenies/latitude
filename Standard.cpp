@@ -106,7 +106,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
             if (str0) {
                 string str1 = *str0;
                 if (state0.num0.asSmallInt() == 1)
-                    str1 = stripFilename(getExecutablePathname()) + "/" + str1;
+                    str1 = stripFilename(getExecutablePathname()) + str1;
                 readFile(str1, { global, global }, state0);
             } else {
                 throwError(state0, "TypeError", "String expected");

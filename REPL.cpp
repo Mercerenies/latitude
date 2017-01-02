@@ -11,7 +11,7 @@ using namespace std;
 
 void runREPL(ObjectPtr global, IntState& state) {
     string pathname = stripFilename(getExecutablePathname());
-    readFile(pathname + "/std/repl.lats", { clone(global), clone(global) }, state);
+    readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, state);
     while (!isIdling(state))
         doOneStep(state);
 }
