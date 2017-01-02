@@ -566,6 +566,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "RTRV (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
+        auto sym = Symbols::get()["parent"];
         list<ObjectSPtr> parents;
         ObjectSPtr curr = state.slf.lock();
         Symbolic name = state.sym;
@@ -579,7 +580,7 @@ void executeInstr(Instr instr, IntState& state) {
                 value = slot.getPtr();
                 break;
             }
-            curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
+            curr = (*curr)[ sym ].getPtr().lock();
         }
         if (value.expired()) {
 #if DEBUG_INSTR > 2
@@ -623,10 +624,10 @@ void executeInstr(Instr instr, IntState& state) {
                 (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq0);
+                (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::SYM, "Symbol")).appendOnto(seq0);
+                (makeAssemblerLine(Instr::SYMN, Symbols::get()["Symbol"].index)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
                 // Clone and put a prim() onto it
@@ -1132,10 +1133,10 @@ void executeInstr(Instr instr, IntState& state) {
         /*
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                makeAssemblerLine(Instr::GETL, Reg::PTR),
-                               makeAssemblerLine(Instr::SYM, "meta"),
+                               makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::SYM, "fileStorage"),
+                               makeAssemblerLine(Instr::SYMN, Symbols::get()["fileStorage"].index),
                                makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
                                makeAssemblerLine(Instr::GETD, Reg::PTR),
@@ -1158,10 +1159,10 @@ void executeInstr(Instr instr, IntState& state) {
         /*
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                makeAssemblerLine(Instr::GETL, Reg::PTR),
-                               makeAssemblerLine(Instr::SYM, "meta"),
+                               makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
                                makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::SYM, "lineStorage"),
+                               makeAssemblerLine(Instr::SYMN, Symbols::get()["lineStorage"].index),
                                makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                makeAssemblerLine(Instr::RTRV),
                                makeAssemblerLine(Instr::GETD, Reg::PTR),
@@ -1194,12 +1195,12 @@ void executeInstr(Instr instr, IntState& state) {
                 InstrSeq step1 = garnishSeq(line);
                 InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                         makeAssemblerLine(Instr::SYM, "line"),
+                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["line"].index),
                                          makeAssemblerLine(Instr::SETF));
                 InstrSeq step3 = garnishSeq(file);
                 InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                          makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                         makeAssemblerLine(Instr::SYM, "file"),
+                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["file"].index),
                                          makeAssemblerLine(Instr::SETF),
                                          makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
                 total.insert(total.begin(), step4.begin(), step4.end());
@@ -1215,9 +1216,9 @@ void executeInstr(Instr instr, IntState& state) {
         };
         stackUnwind(state.trace);
         InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                 makeAssemblerLine(Instr::SYM, "meta"),
+                                 makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
                                  makeAssemblerLine(Instr::RTRV),
-                                 makeAssemblerLine(Instr::SYM, "StackFrame"),
+                                 makeAssemblerLine(Instr::SYMN, Symbols::get()["StackFrame"].index),
                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                  makeAssemblerLine(Instr::RTRV));
         total.insert(total.begin(), intro.begin(), intro.end());

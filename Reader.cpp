@@ -338,10 +338,10 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "Method")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Method"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -352,9 +352,9 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     if (contents.empty()) {
         // If the method is empty, it defaults to `meta Nil.`
         mthd = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                       makeAssemblerLine(Instr::SYM, "meta"),
+                       makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
                        makeAssemblerLine(Instr::RTRV),
-                       makeAssemblerLine(Instr::SYM, "Nil"),
+                       makeAssemblerLine(Instr::SYMN, Symbols::get()["Nil"].index),
                        makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                        makeAssemblerLine(Instr::RTRV));
     } else {
@@ -375,7 +375,7 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Give the object an appropriate closure
     (makeAssemblerLine(Instr::GETL, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["closure"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(seq);
 
@@ -396,10 +396,10 @@ void StmtNumber::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -421,10 +421,10 @@ void StmtInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -446,10 +446,10 @@ void StmtBigInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -471,10 +471,10 @@ void StmtString::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "String")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["String"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -496,10 +496,10 @@ void StmtSymbol::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "Symbol")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Symbol"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -524,10 +524,10 @@ void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "brackets")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["brackets"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
     // Call the `brackets` function properly
@@ -545,7 +545,7 @@ void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
         // Grab `next` and call it
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
+        (makeAssemblerLine(Instr::SYMN, Symbols::get()["next"].index)).appendOnto(seq);
         (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -555,7 +555,7 @@ void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Now call finish
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["finish"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -581,10 +581,10 @@ void StmtSigil::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the `sigil` object
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "sigil")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["sigil"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -624,11 +624,11 @@ void StmtHashParen::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the `hashParen` object
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "hashParen")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["hashParen"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
 
@@ -654,10 +654,10 @@ void StmtZeroDispatch::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the `radix` object
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "radix")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["radix"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
 
@@ -696,10 +696,10 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
         InstrSeq result;
         // Find the literal object to use
         (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(result);
-        (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(result);
+        (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(result);
         (makeAssemblerLine(Instr::RTRV)).appendOnto(result);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(result);
-        (makeAssemblerLine(Instr::SYM, "Method")).appendOnto(result);
+        (makeAssemblerLine(Instr::SYMN, Symbols::get()["Method"].index)).appendOnto(result);
         (makeAssemblerLine(Instr::RTRV)).appendOnto(result);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(result);
         // Translate the method sequence
@@ -709,9 +709,9 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
         if (arg.empty()) {
             // If the method is empty, it defaults to `meta Nil.`
             mthd = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                           makeAssemblerLine(Instr::SYM, "meta"),
+                           makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
                            makeAssemblerLine(Instr::RTRV),
-                           makeAssemblerLine(Instr::SYM, "Nil"),
+                           makeAssemblerLine(Instr::SYMN, Symbols::get()["Nil"].index),
                            makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                            makeAssemblerLine(Instr::RTRV));
         } else {
@@ -728,7 +728,7 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(result);
         // Give the object an appropriate closure
         (makeAssemblerLine(Instr::GETL, Reg::PTR)).appendOnto(result);
-        (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(result);
+        (makeAssemblerLine(Instr::SYMN, Symbols::get()["closure"].index)).appendOnto(result);
         (makeAssemblerLine(Instr::SETF)).appendOnto(result);
         (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(result);
         return result;
@@ -736,10 +736,10 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "statements")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["statements"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
     // Call the `statements` function properly
@@ -761,7 +761,7 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
         // Grab `next` and call it
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
+        (makeAssemblerLine(Instr::SYMN, Symbols::get()["next"].index)).appendOnto(seq);
         (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -771,7 +771,7 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Now call finish
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["finish"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -797,10 +797,10 @@ void StmtComplex::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "Number")).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
