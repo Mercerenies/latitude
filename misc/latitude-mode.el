@@ -51,7 +51,7 @@
                          "SystemCallError" "TypeError" "SlotError" "ContError" "ParseError"
                          "BoundsError" "Mixin" "Cons" "Cell" "Lockbox" "Latchkey" "Cached"
                          "IOError" "Wildcard" "Ellipsis" "Match" "NoMatch" "LazySequence" "Process"
-                         "StackFrame" "NotSupportedError" "REPL")
+                         "StackFrame" "NotSupportedError" "REPL" "FilePath")
                        'symbols)
           . font-lock-constant-face)))
 

@@ -1759,11 +1759,15 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // PATH_OP (put an appropriate pathname into %ret%, given by the %num0 argument and %str0 input)
     //  * %num0 == 1: Get directory of pathname
+    //  * %num0 == 2: Get filename of pathname
     // dirName#: str.
     state.cpp[PATH_OP] = [](IntState& state0) {
         switch (state0.num0.asSmallInt()) {
         case 1:
             garnishBegin(state0, stripFilename(state0.str0));
+            break;
+        case 2:
+            garnishBegin(state0, stripDirname(state0.str0));
             break;
         default:
             throwError(state0, "SystemArgError",
@@ -1781,6 +1785,17 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                          makeAssemblerLine(Instr::EXPD, Reg::STR0),
                                          makeAssemblerLine(Instr::THROA, "String expected"),
                                          makeAssemblerLine(Instr::INT, 1),
+                                         makeAssemblerLine(Instr::CPP, PATH_OP))));
+    sys.lock()->put(Symbols::get()["fileName#"],
+                    defineMethod(unit, global, method,
+                                 asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                         makeAssemblerLine(Instr::RTRV),
+                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                         makeAssemblerLine(Instr::ECLR),
+                                         makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                         makeAssemblerLine(Instr::THROA, "String expected"),
+                                         makeAssemblerLine(Instr::INT, 2),
                                          makeAssemblerLine(Instr::CPP, PATH_OP))));
 
     // FILE_EXISTS (check the pathname in %str0 for existence, storing result in %flag)

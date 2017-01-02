@@ -24,8 +24,18 @@ std::string stripFilename(std::string path) {
     if (path.size() >= SIZE - 1)
         return "";
     strcpy(buffer, path.c_str());
-    dirname(buffer);
-    return string(buffer);
+    string result = dirname(buffer);
+    return result + "/";
+}
+
+std::string stripDirname(std::string path) {
+    constexpr int SIZE = 512;
+    char buffer[SIZE];
+    if (path.size() >= SIZE - 1)
+        return "";
+    strcpy(buffer, path.c_str());
+    string result = basename(buffer);
+    return result;
 }
 #endif
 
@@ -50,6 +60,15 @@ std::string stripFilename(std::string path) {
     _splitpath(path.c_str(), drive, dir, NULL, NULL);
     string result;
     result += string(drive) + string(dir);
+    return result;
+}
+
+std::string stripDirname(std::string path) {
+    char file[_MAX_FNAME];
+    char ext[_MAX_EXT];
+    _splitpath(path.c_str(), NULL, NULL, file, ext);
+    string result;
+    result += string(file) + string(ext);
     return result;
 }
 #endif

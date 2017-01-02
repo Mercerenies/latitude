@@ -7,4 +7,6 @@ std::string getExecutablePathname();
 
 std::string stripFilename(std::string path);
 
+std::string stripDirname(std::string path);
+
 #endif

@@ -214,6 +214,11 @@ Kernel env= := { if: { parent dynamic $2 nil?. },
 global FilePath := Object clone.
 FilePath toString := "FilePath".
 FilePath directory := { meta sys dirName#: $1. }.
+FilePath filename := { meta sys fileName#: $1. }.
+FilePath rawname := { temp := self filename: $1.
+                      temp substring: 0, temp findAll "." nth -1. }.
+FilePath extension := { temp := self filename: $1.
+                        temp substring: temp findAll "." nth -1 + 1, temp size. }.
 
 ;; Symbol functions
 Symbol gensym := { meta sys gensym#: self clone. }.
