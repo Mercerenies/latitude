@@ -10,8 +10,13 @@
 using namespace std;
 
 void runREPL(ObjectPtr global, IntState& state) {
+
+    cout << "Latitude ALPHA" << endl;
+
     string pathname = stripFilename(getExecutablePathname());
     readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, state);
+
     while (!isIdling(state))
         doOneStep(state);
+
 }
