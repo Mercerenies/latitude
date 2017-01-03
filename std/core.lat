@@ -202,8 +202,12 @@ Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
-Kernel GC run := { meta sys runGC#. }.
+Kernel GC traced := False.
+Kernel GC run := { self traced ifTrue { stderr putln: "Running garbage collector... " ++ (parent self total). }.
+                   meta sys runGC#. }.
 Kernel GC total := { meta sys totalGC#. }.
+Kernel GC trace := { self traced := True. }.
+Kernel GC untrace := { self traced := False. }.
 ; (The load function is defined in the main latitude.lat file)
 
 ;; Environment variables
