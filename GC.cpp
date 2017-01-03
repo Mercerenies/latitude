@@ -14,7 +14,7 @@ GC& GC::get() noexcept {
 }
 
 ObjectPtr GC::allocate() {
-    ObjectSPtr ptr = new Object();
+    ObjectPtr ptr = new Object();
 #if GC_PRINT > 2
     std::cout << "<<Allocating " << ptr << ">>" << std::endl;
 #endif
@@ -36,7 +36,7 @@ void addToFrontier(const Container& visited, Container& frontier, ObjectPtr val)
 }
 
 template <typename Container>
-void addSlotsToFrontier(const Container& visited, Container& frontier, ObjectSPtr curr) {
+void addSlotsToFrontier(const Container& visited, Container& frontier, ObjectPtr curr) {
     for (auto key : curr->directKeys()) {
 #if GC_PRINT > 1
         std::cout << "<<Key " << Symbols::get()[key] << ">>" << std::endl;
@@ -87,7 +87,7 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, In
 }
 
 template <typename Container>
-void addContinuationToFrontier(const Container& visited, Container& frontier, ObjectSPtr curr) {
+void addContinuationToFrontier(const Container& visited, Container& frontier, ObjectPtr curr) {
     auto state0 = boost::get<StatePtr>(&curr->prim());
     if (state0) {
         auto state = *state0;
@@ -137,7 +137,7 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<Done gathering>>" << std::endl;
 #endif
-    std::set<ObjectSPtr> result;
+    std::set<ObjectPtr> result;
     std::set_difference(alloc.begin(), alloc.end(),
                         visited.begin(), visited.end(),
                         inserter(result, result.begin()));
@@ -145,7 +145,7 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<Set to delete " << result.size() << " objects>>" << std::endl;
 #endif
-    for (ObjectSPtr res : result) {
+    for (ObjectPtr res : result) {
         alloc.erase(res);
         delete res;
     }

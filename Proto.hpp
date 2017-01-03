@@ -28,7 +28,6 @@ class Object;
 
 using LStmt = std::list< std::shared_ptr<Stmt> >;
 using ObjectPtr = Object*;
-using ObjectSPtr = Object*;
 using Prim = boost::variant<boost::blank, Number, std::string,
                             StreamPtr, Symbolic, ProcessPtr,
                             Method, StatePtr>;

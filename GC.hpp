@@ -15,7 +15,7 @@
 class GC {
 private:
     static GC instance;
-    std::set<ObjectSPtr> alloc;
+    std::set<ObjectPtr> alloc;
     GC() = default;
 public:
     static GC& get() noexcept;

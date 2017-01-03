@@ -1026,8 +1026,8 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // ORIGIN (find the origin of %sym in %slf, store resulting object in %ret, throw SlotError otherwise
     // origin#: self, sym.
     state.cpp[ORIGIN] = [](IntState& state0) {
-        list<ObjectSPtr> parents;
-        ObjectSPtr curr = state0.slf;
+        list<ObjectPtr> parents;
+        ObjectPtr curr = state0.slf;
         Symbolic name = state0.sym;
         ObjectPtr value = nullptr;
         while (find(parents.begin(), parents.end(), curr) == parents.end()) {

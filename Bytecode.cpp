@@ -567,8 +567,8 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "RTRV (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         auto sym = Symbols::get()["parent"];
-        list<ObjectSPtr> parents;
-        ObjectSPtr curr = state.slf;
+        list<ObjectPtr> parents;
+        ObjectPtr curr = state.slf;
         Symbolic name = state.sym;
         Symbolic backup = state.sym;
         ObjectPtr value = nullptr;
