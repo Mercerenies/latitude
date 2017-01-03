@@ -8,12 +8,12 @@
 
 using namespace std;
 
-Slot::Slot() noexcept {}
+Slot::Slot() noexcept : obj(nullptr) {}
 
 Slot::Slot(ObjectPtr ptr) noexcept : obj(ptr) {}
 
 SlotType Slot::getType() const noexcept{
-    if (!obj.expired())
+    if (obj != nullptr)
         return SlotType::PTR;
     else
         return SlotType::INH;
@@ -23,7 +23,7 @@ ObjectPtr Slot::getPtr() const {
     if (getType() == SlotType::PTR)
         return obj;
     else
-        return ObjectPtr();
+        return nullptr;
 }
 
 Slot Object::operator [](Symbolic key) const {
@@ -54,23 +54,21 @@ Prim& Object::prim() noexcept {
 
 ObjectPtr clone(ObjectPtr obj) {
     ObjectPtr ptr(GC::get().allocate());
-    auto ptr1 = ptr.lock();
-    ptr1->put(Symbols::get()["parent"], obj);
-    ptr1->prim(obj.lock()->prim());
+    ptr->put(Symbols::get()["parent"], obj);
+    ptr->prim(obj->prim());
     return ptr;
 }
 
 void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
-    auto obj1 = obj.lock();
-    if (find_if(parents.begin(), parents.end(), [&obj1](auto xx){
-                return xx.lock() == obj1;
+    if (find_if(parents.begin(), parents.end(), [&obj](auto xx){
+                return xx == obj;
             }) != parents.end())
         return;
     parents.push_back(obj);
-    auto curr = obj.lock()->directKeys();
+    auto curr = obj->directKeys();
     for (auto elem : curr)
         result.insert(elem);
-    _keys(parents, result, (*obj1)[ Symbols::get()["parent"] ].getPtr());
+    _keys(parents, result, (*obj)[ Symbols::get()["parent"] ].getPtr());
 }
 
 set<Symbolic> keys(ObjectPtr obj) {
@@ -83,14 +81,14 @@ set<Symbolic> keys(ObjectPtr obj) {
 list<ObjectPtr> hierarchy(ObjectPtr obj) {
     list<ObjectPtr> parents;
     while (find_if(parents.begin(), parents.end(), [&obj](auto obj1) {
-                return obj.lock() == obj1.lock();
+                return obj == obj1;
             }) == parents.end()) {
         parents.push_back(obj);
-        obj = (*obj.lock())[ Symbols::get()["parent"] ].getPtr();
+        obj = (*obj)[ Symbols::get()["parent"] ].getPtr();
     }
     return parents;
 }
 
 void hereIAm(ObjectPtr dyn, ObjectPtr here) {
-    dyn.lock()->put(Symbols::get()["$whereAmI"], here);
+    dyn->put(Symbols::get()["$whereAmI"], here);
 }

@@ -192,13 +192,13 @@ void readFile(string fname, Scope defScope, IntState& state) {
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
-                state.lex.top().lock()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top().lock()->put(Symbols::get()["$lexical"], state.lex.top());
-                state.dyn.top().lock()->put(Symbols::get()["$dynamic"], state.dyn.top());
+                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
+                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
+                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
-            state.lex.top().lock()->put(Symbols::get()["self"], state.lex.top());
-            state.lex.top().lock()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
-            state.lex.top().lock()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["self"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
+            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.stack = pushNode(state.stack, state.cont);
             state.cont = CodeSeek(unit->instructions());
             state.trns.push(unit);

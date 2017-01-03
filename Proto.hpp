@@ -27,8 +27,8 @@ class Slot;
 class Object;
 
 using LStmt = std::list< std::shared_ptr<Stmt> >;
-using ObjectPtr = std::weak_ptr<Object>;
-using ObjectSPtr = std::shared_ptr<Object>;
+using ObjectPtr = Object*;
+using ObjectSPtr = Object*;
 using Prim = boost::variant<boost::blank, Number, std::string,
                             StreamPtr, Symbolic, ProcessPtr,
                             Method, StatePtr>;

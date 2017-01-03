@@ -14,7 +14,7 @@ GC& GC::get() noexcept {
 }
 
 ObjectPtr GC::allocate() {
-    ObjectSPtr ptr = ObjectSPtr(new Object());
+    ObjectSPtr ptr = new Object();
 #if GC_PRINT > 2
     std::cout << "<<Allocating " << ptr << ">>" << std::endl;
 #endif
@@ -26,11 +26,11 @@ template <typename Container>
 void addToFrontier(const Container& visited, Container& frontier, ObjectPtr val) {
     if (visited.find(val) == visited.end()) {
 #if GC_PRINT > 1
-        std::cout << "<<Inserting " << val.lock() << ">>" << std::endl;
+        std::cout << "<<Inserting " << val << ">>" << std::endl;
 #endif
         frontier.insert(val);
 #if GC_PRINT > 2
-        std::cout << "<<Inserted " << val.lock() << ">>" << std::endl;
+        std::cout << "<<Inserted " << val << ">>" << std::endl;
 #endif
     }
 }
@@ -102,19 +102,15 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<ENTER GC>>" << std::endl;
 #endif
+    /* // This shouldn't be necessary anymore since we're using the standard lt operator
     struct WeakLess {
-        bool operator()(const ObjectPtr& obj0, const ObjectSPtr& obj1) const noexcept {
-            return obj0.lock() < obj1;
-        }
-        bool operator()(const ObjectSPtr& obj0, const ObjectPtr& obj1) const noexcept {
-            return obj0 < obj1.lock();
-        }
         bool operator()(const ObjectPtr& obj0, const ObjectPtr& obj1) const noexcept {
-            return obj0.lock() < obj1.lock();
+            return obj0 < obj1;
         }
     };
-    std::set<ObjectPtr, WeakLess> visited;
-    std::set<ObjectPtr, WeakLess> frontier;
+    */
+    std::set<ObjectPtr> visited;
+    std::set<ObjectPtr> frontier;
     for (auto elem : globals)
         frontier.insert(elem);
     while (!frontier.empty()) {
@@ -122,23 +118,21 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
         auto stream(outStream());
         visited.insert(curr);
         frontier.erase(curr);
-        if (auto curr1 = curr.lock()) {
 #if GC_PRINT > 1
-            std::cout << "<<Got lock on " << curr1 << ">>" << std::endl;
+        std::cout << "<<Got lock on " << curr << ">>" << std::endl;
 #endif
-            assert(alloc.find(curr1) != alloc.end());
+        assert(alloc.find(curr) != alloc.end());
 #if GC_PRINT > 2
-            std::cout << "<<Add slots on locked>>" << std::endl;
+        std::cout << "<<Add slots on locked>>" << std::endl;
 #endif
-            addSlotsToFrontier(visited, frontier, curr1);
+        addSlotsToFrontier(visited, frontier, curr);
 #if GC_PRINT > 2
-            std::cout << "<<Add continuation on locked>>" << std::endl;
+        std::cout << "<<Add continuation on locked>>" << std::endl;
 #endif
-            addContinuationToFrontier(visited, frontier, curr1);
+        addContinuationToFrontier(visited, frontier, curr);
 #if GC_PRINT > 2
-            std::cout << "<<Finished with locked>>" << std::endl;
+        std::cout << "<<Finished with locked>>" << std::endl;
 #endif
-        }
     }
 #if GC_PRINT > 0
     std::cout << "<<Done gathering>>" << std::endl;
@@ -146,15 +140,14 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
     std::set<ObjectSPtr> result;
     std::set_difference(alloc.begin(), alloc.end(),
                         visited.begin(), visited.end(),
-                        inserter(result, result.begin()),
-                        WeakLess());
+                        inserter(result, result.begin()));
     long total = result.size();
 #if GC_PRINT > 0
     std::cout << "<<Set to delete " << result.size() << " objects>>" << std::endl;
 #endif
     for (ObjectSPtr res : result) {
         alloc.erase(res);
-        res.reset();
+        delete res;
     }
 #if GC_PRINT > 0
     std::cout << "<<EXIT GC>>" << std::endl;
@@ -172,7 +165,7 @@ long GC::garbageCollect(IntState& state) {
         }
         auto find(ObjectPtr val) const -> decltype(value.begin()) {
             return ::find_if(value.begin(), value.end(), [&val](ObjectPtr val1){
-                    return val.lock() == val1.lock();
+                    return val == val1;
                 });
         }
         auto begin() const -> decltype(value.begin()) {

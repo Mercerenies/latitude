@@ -6,7 +6,7 @@
 
 // TODO Make some standard test cases that can be run as a module
 
-//#define DEBUG_INSTR 2
+#define DEBUG_INSTR 0
 
 using namespace std;
 
@@ -143,7 +143,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "MOV " << (long)src << " " << (long)dest << endl;
 #endif
-        ObjectPtr mid;
+        ObjectPtr mid = nullptr;
         switch (src) {
         case Reg::PTR:
             mid = state.ptr;
@@ -155,7 +155,7 @@ void executeInstr(Instr instr, IntState& state) {
             mid = state.ret;
             break;
         default:
-            mid = ObjectPtr();
+            mid = nullptr;
             state.err0 = true;
             break;
         }
@@ -181,7 +181,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "PUSH " << (long)src << " " << (long)stack << endl;
 #endif
-        ObjectPtr mid;
+        ObjectPtr mid = nullptr;
         switch (src) {
         case Reg::PTR:
             mid = state.ptr;
@@ -193,7 +193,7 @@ void executeInstr(Instr instr, IntState& state) {
             mid = state.ret;
             break;
         default:
-            mid = ObjectPtr();
+            mid = nullptr;
             state.err0 = true;
             break;
         }
@@ -223,7 +223,7 @@ void executeInstr(Instr instr, IntState& state) {
         stack<ObjectPtr>* stack;
         Reg dest = state.cont.popReg();
         Reg reg = state.cont.popReg();
-        ObjectPtr mid;
+        ObjectPtr mid = nullptr;
 #if DEBUG_INSTR > 0
         cout << "POP " << (long)reg << endl;
 #endif
@@ -274,7 +274,7 @@ void executeInstr(Instr instr, IntState& state) {
     case Instr::GETL: {
 #if DEBUG_INSTR > 0
         cout << "GETL" << endl;
-        cout << "* " << state.lex.top().lock() << endl;
+        cout << "* " << state.lex.top() << endl;
 #endif
         Reg dest = state.cont.popReg();
         if (state.lex.empty()) {
@@ -301,7 +301,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "GETD" << endl;
 #if DEBUG_INSTR > 1
-        cout << "* " << state.dyn.top().lock() << endl;
+        cout << "* " << state.dyn.top() << endl;
 #endif
 #endif
         Reg dest = state.cont.popReg();
@@ -391,12 +391,12 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #if DEBUG_INSTR > 1
-        cout << "* Method Properties " << state.ptr.lock() << endl;
+        cout << "* Method Properties " << state.ptr << endl;
 #endif
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
-        Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
+        auto stmt = boost::get<Method>(&state.ptr->prim());
+        Slot closure = (*state.ptr)[ Symbols::get()["closure"] ];
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
             (closure.getType() == SlotType::PTR) << " " <<
@@ -413,13 +413,13 @@ void executeInstr(Instr instr, IntState& state) {
             // (3) Push a clone of the closure onto %lex
             state.lex.push( clone(closure.getPtr()) );
             // (4) Bind all the local variables
-            state.lex.top().lock()->put(Symbols::get()["self"], state.slf);
-            state.lex.top().lock()->put(Symbols::get()["again"], state.ptr);
-            state.lex.top().lock()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["self"], state.slf);
+            state.lex.top()->put(Symbols::get()["again"], state.ptr);
+            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             if (!state.dyn.empty()) {
-                state.lex.top().lock()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top().lock()->put(Symbols::get()["$lexical"], state.lex.top());
-                state.dyn.top().lock()->put(Symbols::get()["$dynamic"], state.dyn.top());
+                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
+                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
+                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
             // (5) Push the trace information
             state.trace.push( make_tuple(state.line, state.file) );
@@ -429,7 +429,7 @@ void executeInstr(Instr instr, IntState& state) {
                 for (long n = 0; n < args; n++) {
                     ObjectPtr arg = state.arg.top();
                     state.arg.pop();
-                    state.dyn.top().lock()->put(Symbols::get()[ "$" + to_string(index) ], arg);
+                    state.dyn.top()->put(Symbols::get()[ "$" + to_string(index) ], arg);
                     index--;
                 }
             }
@@ -447,16 +447,16 @@ void executeInstr(Instr instr, IntState& state) {
                         cout << "  " << Symbols::get()[x];
                     cout << endl;
                     cout << "* * Directly" << endl;
-                    for (auto& x : (state.ptr.lock())->directKeys())
+                    for (auto& x : (state.ptr)->directKeys())
                         cout << "  " << Symbols::get()[x];
                     cout << endl;
                     cout << "* * Parents of ptr" << endl;
                     for (auto& x : hierarchy(state.ptr))
-                        cout << "  " << x.lock();
+                        cout << "  " << x;
                     cout << endl;
                     cout << "* * Following the prims of ptr" << endl;
                     for (auto& x : hierarchy(state.ptr))
-                        cout << "  " << x.lock()->prim().which();
+                        cout << "  " << x->prim().which();
                     cout << endl;
                 }
 #endif
@@ -475,7 +475,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "XCALL (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
-        auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
+        auto stmt = boost::get<Method>(&state.ptr->prim());
         if (stmt) {
             // (6) Push %cont onto %stack
             state.stack = pushNode(state.stack, state.cont);
@@ -492,8 +492,8 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "XCALL0 " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&state.ptr.lock()->prim());
-        Slot closure = (*state.ptr.lock())[ Symbols::get()["closure"] ];
+        auto stmt = boost::get<Method>(&state.ptr->prim());
+        Slot closure = (*state.ptr)[ Symbols::get()["closure"] ];
         if ((closure.getType() == SlotType::PTR) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
@@ -504,13 +504,13 @@ void executeInstr(Instr instr, IntState& state) {
             // (3) Push a clone of the closure onto %lex
             state.lex.push( clone(closure.getPtr()) );
             // (4) Bind all the local variables
-            state.lex.top().lock()->put(Symbols::get()["self"], state.slf);
-            state.lex.top().lock()->put(Symbols::get()["again"], state.ptr);
-            state.lex.top().lock()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["self"], state.slf);
+            state.lex.top()->put(Symbols::get()["again"], state.ptr);
+            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             if (!state.dyn.empty()) {
-                state.lex.top().lock()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top().lock()->put(Symbols::get()["$lexical"], state.lex.top());
-                state.dyn.top().lock()->put(Symbols::get()["$dynamic"], state.dyn.top());
+                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
+                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
+                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
             // (5) Push the trace information
             state.trace.push( make_tuple(state.line, state.file) );
@@ -520,7 +520,7 @@ void executeInstr(Instr instr, IntState& state) {
                 for (long n = 0; n < args; n++) {
                     ObjectPtr arg = state.arg.top();
                     state.arg.pop();
-                    state.dyn.top().lock()->put(Symbols::get()[ "$" + to_string(index) ], arg);
+                    state.dyn.top()->put(Symbols::get()[ "$" + to_string(index) ], arg);
                     index--;
                 }
             }
@@ -568,10 +568,10 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         auto sym = Symbols::get()["parent"];
         list<ObjectSPtr> parents;
-        ObjectSPtr curr = state.slf.lock();
+        ObjectSPtr curr = state.slf;
         Symbolic name = state.sym;
         Symbolic backup = state.sym;
-        ObjectPtr value;
+        ObjectPtr value = nullptr;
         // Try to find the value itself
         while (find(parents.begin(), parents.end(), curr) == parents.end()) {
             parents.push_back(curr);
@@ -580,22 +580,22 @@ void executeInstr(Instr instr, IntState& state) {
                 value = slot.getPtr();
                 break;
             }
-            curr = (*curr)[ sym ].getPtr().lock();
+            curr = (*curr)[ sym ].getPtr();
         }
-        if (value.expired()) {
+        if (value == nullptr) {
 #if DEBUG_INSTR > 2
             cout << "* Looking for missing" << endl;
 #if DEBUG_INSTR > 3
             cout << "* Information:" << endl;
-            cout << "* * Lex: " << state.lex.top().lock() << endl;
-            cout << "* * Dyn: " << state.dyn.top().lock() << endl;
-            cout << "* * Slf: " << state.slf.lock() << endl;
+            cout << "* * Lex: " << state.lex.top() << endl;
+            cout << "* * Dyn: " << state.dyn.top() << endl;
+            cout << "* * Slf: " << state.slf << endl;
 #endif
 #endif
             // Now try for missing
             name = Symbols::get()["missing"];
             parents.clear();
-            curr = state.slf.lock();
+            curr = state.slf;
             while (find(parents.begin(), parents.end(), curr) == parents.end()) {
                 parents.push_back(curr);
                 Slot slot = (*curr)[name];
@@ -603,16 +603,16 @@ void executeInstr(Instr instr, IntState& state) {
                     value = slot.getPtr();
                     break;
                 }
-                curr = (*curr)[ Symbols::get()["parent"] ].getPtr().lock();
+                curr = (*curr)[ Symbols::get()["parent"] ].getPtr();
             }
             state.ret = value;
 #if DEBUG_INSTR > 1
-            if (value.expired())
+            if (value == nullptr)
                 cout << "* Found no missing" << endl;
             else
                 cout << "* Found missing" << endl;
 #endif
-            if (value.expired()) {
+            if (value == nullptr) {
                 // If there is no `missing` either, immediately terminate, as
                 // something has gone horribly wrong
                 InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0));
@@ -645,9 +645,9 @@ void executeInstr(Instr instr, IntState& state) {
             }
         } else {
 #if DEBUG_INSTR > 1
-            cout << "* Found " << value.lock() << endl;
+            cout << "* Found " << value << endl;
 #if DEBUG_INSTR > 2
-            auto stmt = boost::get<Method>(&value.lock()->prim());
+            auto stmt = boost::get<Method>(&value->prim());
             cout << "* Method Properties " <<
                 (stmt ? stmt->index().index : -1) << " " <<
                 (stmt ? stmt->translationUnit() : nullptr) << endl;
@@ -661,7 +661,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "RTRVD (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
-        Slot slot = (*state.slf.lock())[state.sym];
+        Slot slot = (*state.slf)[state.sym];
         if (slot.getType() == SlotType::PTR)
             state.ret = slot.getPtr();
         else
@@ -690,7 +690,7 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         switch (expd) {
         case Reg::SYM: {
-            auto test = boost::get<Symbolic>(&state.ptr.lock()->prim());
+            auto test = boost::get<Symbolic>(&state.ptr->prim());
             if (test)
                 state.sym = *test;
             else
@@ -698,7 +698,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::NUM0: {
-            auto test = boost::get<Number>(&state.ptr.lock()->prim());
+            auto test = boost::get<Number>(&state.ptr->prim());
             if (test)
                 state.num0 = *test;
             else
@@ -706,7 +706,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::NUM1: {
-            auto test = boost::get<Number>(&state.ptr.lock()->prim());
+            auto test = boost::get<Number>(&state.ptr->prim());
             if (test)
                 state.num1 = *test;
             else
@@ -714,7 +714,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::STR0: {
-            auto test = boost::get<string>(&state.ptr.lock()->prim());
+            auto test = boost::get<string>(&state.ptr->prim());
             if (test)
                 state.str0 = *test;
             else
@@ -722,7 +722,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::STR1: {
-            auto test = boost::get<string>(&state.ptr.lock()->prim());
+            auto test = boost::get<string>(&state.ptr->prim());
             if (test)
                 state.str1 = *test;
             else
@@ -730,7 +730,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHD: {
-            auto test = boost::get<Method>(&state.ptr.lock()->prim());
+            auto test = boost::get<Method>(&state.ptr->prim());
             if (test)
                 state.mthd = *test;
             else
@@ -738,7 +738,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::STRM: {
-            auto test = boost::get<StreamPtr>(&state.ptr.lock()->prim());
+            auto test = boost::get<StreamPtr>(&state.ptr->prim());
             if (test)
                 state.strm = *test;
             else
@@ -746,7 +746,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::PRCS: {
-            auto test = boost::get<ProcessPtr>(&state.ptr.lock()->prim());
+            auto test = boost::get<ProcessPtr>(&state.ptr->prim());
             if (test)
                 state.prcs = *test;
             else
@@ -754,7 +754,7 @@ void executeInstr(Instr instr, IntState& state) {
         }
             break;
         case Reg::MTHDZ: {
-            auto test = boost::get<Method>(&state.ptr.lock()->prim());
+            auto test = boost::get<Method>(&state.ptr->prim());
             if (test)
                 state.mthdz = *test;
             else
@@ -782,45 +782,45 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         switch (ld) {
         case Reg::SYM: {
-            state.ptr.lock()->prim(state.sym);
+            state.ptr->prim(state.sym);
         }
             break;
         case Reg::NUM0: {
-            state.ptr.lock()->prim(state.num0);
+            state.ptr->prim(state.num0);
         }
             break;
         case Reg::NUM1: {
-            state.ptr.lock()->prim(state.num1);
+            state.ptr->prim(state.num1);
         }
             break;
         case Reg::STR0: {
-            state.ptr.lock()->prim(state.str0);
+            state.ptr->prim(state.str0);
         }
             break;
         case Reg::STR1: {
-            state.ptr.lock()->prim(state.str1);
+            state.ptr->prim(state.str1);
         }
             break;
         case Reg::MTHD: {
 #if DEBUG_INSTR > 1
             cout << "* Method Length " << state.mthd.instructions().size() << endl;
 #endif
-            state.ptr.lock()->prim(state.mthd);
+            state.ptr->prim(state.mthd);
         }
             break;
         case Reg::STRM: {
-            state.ptr.lock()->prim(state.strm);
+            state.ptr->prim(state.strm);
         }
             break;
         case Reg::PRCS: {
-            state.ptr.lock()->prim(state.prcs);
+            state.ptr->prim(state.prcs);
         }
             break;
         case Reg::MTHDZ: {
 #if DEBUG_INSTR > 1
             cout << "* Method Length " << state.mthdz.instructions().size() << endl;
 #endif
-            state.ptr.lock()->prim(state.mthdz);
+            state.ptr->prim(state.mthdz);
         }
             break;
         default:
@@ -834,22 +834,22 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "SETF (" << Symbols::get()[state.sym] << ")" << endl;
 #if DEBUG_INSTR > 2
         cout << "* Information:" << endl;
-        cout << "* * Lex: " << state.lex.top().lock() << endl;
-        cout << "* * Dyn: " << state.dyn.top().lock() << endl;
-        cout << "* * Slf: " << state.slf.lock() << endl;
+        cout << "* * Lex: " << state.lex.top() << endl;
+        cout << "* * Dyn: " << state.dyn.top() << endl;
+        cout << "* * Slf: " << state.slf << endl;
 #endif
 #endif
-        if (state.slf.expired())
+        if (state.slf == nullptr)
             state.err0 = true;
         else
-            state.slf.lock()->put(state.sym, state.ptr);
+            state.slf->put(state.sym, state.ptr);
     }
         break;
     case Instr::PEEK: {
         stack<ObjectPtr>* stack;
         Reg dest = state.cont.popReg();
         Reg reg = state.cont.popReg();
-        ObjectPtr mid;
+        ObjectPtr mid = nullptr;
 #if DEBUG_INSTR > 0
         cout << "PEEK " << (long)reg << endl;
 #endif
@@ -927,10 +927,10 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "TEST" << endl;
 #endif
-        if (state.slf.expired() || state.ptr.expired())
+        if (state.slf == nullptr || state.ptr == nullptr)
             state.flag = false;
         else
-            state.flag = (state.slf.lock() == state.ptr.lock());
+            state.flag = (state.slf == state.ptr);
     }
         break;
     case Instr::BRANCH: {
@@ -955,10 +955,10 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "CCALL" << endl;
 #endif
-        if (state.slf.expired()) {
+        if (state.slf == nullptr) {
             state.err0 = true;
         } else {
-            state.slf.lock()->prim( statePtr(state) );
+            state.slf->prim( statePtr(state) );
             state.arg.push(state.slf);
             InstrSeq seq = asmCode( makeAssemblerLine(Instr::CALL, 1L) );
             state.stack = pushNode(state.stack, state.cont);
@@ -970,7 +970,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "CGOTO" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
+        auto cont = boost::get<StatePtr>( state.ptr->prim() );
         if (cont) {
             auto oldWind = state.wind;
             auto newWind = cont->wind;
@@ -987,7 +987,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "CRET" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( state.ptr.lock()->prim() );
+        auto cont = boost::get<StatePtr>( state.ptr->prim() );
         auto ret = state.ret;
         if (cont) {
             auto oldWind = state.wind;
@@ -1009,15 +1009,15 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "WND" << endl;
 #endif
-        auto before = boost::get<Method>(&state.slf.lock()->prim()),
-             after  = boost::get<Method>(&state.ptr.lock()->prim());
+        auto before = boost::get<Method>(&state.slf->prim()),
+             after  = boost::get<Method>(&state.ptr->prim());
         if (before && after) {
             WindPtr frame = WindPtr(new WindFrame());
             frame->before.code = *before;
-            frame->before.lex = (*state.slf.lock())[ Symbols::get()["closure"] ].getPtr();
+            frame->before.lex = (*state.slf)[ Symbols::get()["closure"] ].getPtr();
             frame->before.dyn = state.dyn.top();
             frame->after.code = *after;
-            frame->after.lex = (*state.ptr.lock())[ Symbols::get()["closure"] ].getPtr();
+            frame->after.lex = (*state.ptr)[ Symbols::get()["closure"] ].getPtr();
             frame->after.dyn = state.dyn.top();
             state.wind.push(frame);
         } else {
