@@ -91,5 +91,5 @@ Environment.o:	Environment.cpp Environment.hpp Platform.hpp
 Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
 	$(CXX) $(CXXFLAGS) Pathname.cpp
 
-main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp
+main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
