@@ -17,8 +17,7 @@ extern "C" {
 #include <sstream>
 #include <fstream>
 #include <boost/scope_exit.hpp>
-
-// TODO Figure out why an empty line of code produces the empty string, not an error, as output.
+#include <boost/blank.hpp>
 
 //#define PRINT_BEFORE_EXEC
 
@@ -160,6 +159,8 @@ void eval(IntState& state, string str) {
             state.stack = pushNode(state.stack, state.cont);
             state.cont = CodeSeek(unit->instructions());
             state.trns.push(unit);
+        } else {
+            garnishBegin(state, boost::blank());
         }
     } catch (std::string str) {
         throwError(state, "ParseError", str);
