@@ -265,5 +265,7 @@ meta StackFrame dump := { if: { (parent self) === (meta StackFrame). },
 global currentStackTrace := { meta sys stackTrace# parent. }.
 global printStackTrace := { self stackTrace parent dump. }.
 
+; TODO Should we use a different indentation scheme? This one gets out of hand quickly with nested structures.
+
 ;; We would return the script here, but the `has` function requires flow_control.lat
 1.
