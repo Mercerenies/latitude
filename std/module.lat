@@ -31,8 +31,8 @@ global Module := Module.
 &LoadedModules toString := "&LoadedModules".
 
 ModuleLoader ::= Object clone.
-ModuleLoader loaded := &LoadedModules.
-ModuleLoader clone := { self invoke (Object hold 'clone) call tap { self loaded := self loaded clone. }. }.
+ModuleLoader &loaded := &LoadedModules.
+ModuleLoader clone := { self invoke (Object hold 'clone) call tap { self &loaded := self &loaded clone. }. }.
 ModuleLoader resolveImport := { takes '[imp]. ; TODO Use an environment variable for extended load path
                                 if: imp is (String),
                                     { imp. },
@@ -55,6 +55,6 @@ global use := { takes '[pname].
                     { mod := Module clone tap { self header := header. }.
                       do { $whereAmI := mod.
                            Kernel evalFile: fname, mod. }.
-                      $moduleLoader loaded put: name, mod.
+                      $moduleLoader &loaded put: name, mod.
                       global put: header moduleName intern, mod.
                       mod. }. }.
