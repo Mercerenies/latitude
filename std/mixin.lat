@@ -1,7 +1,6 @@
 
 ;; Mixins
-global Mixin := Object clone.
-Mixin toString := "Mixin".
+global Mixin ::= Object clone.
 Mixin interface := '[].
 Mixin inject := { target := $1.
                   mixin := self.

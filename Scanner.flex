@@ -58,6 +58,7 @@ ID        {SNORMAL}{NORMAL}*
 #< { yyerror("Unreadable object"); }
 = { return '='; }
 \<- { return BIND; }
+::= { return DCEQUALS; }
 
 [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
     yylval.dval = strtod(yytext, NULL);
@@ -100,6 +101,13 @@ ID        {SNORMAL}{NORMAL}*
     strcpy(arr, "...");
     yylval.sval = arr;
     return NAME;
+}
+
+:: { // Double-colon, like ellipsis, is a valid identifier name
+   char* arr = calloc(3, sizeof(char));
+   strcpy(arr, "::");
+   yylval.sval = arr;
+   return NAME;
 }
 
 \" { BEGIN(INNER_STRING); clear_buffer(); }

@@ -53,6 +53,7 @@
         bool isSpecialMethod; // Just like isMethod
         bool isBind; // Treated like call with a rhs
         bool isComplex; // Check number and number1
+        bool equals2; // ::= (`a b ::= c.` desugars to `a b := c. a b :: 'b.`)
     };
 
     struct List {
@@ -112,6 +113,7 @@
 %token <sval> ZERODISPATCH
 %token LISTLIT
 %token CEQUALS
+%token DCEQUALS
 %token ATBRACE
 %token ATPAREN
 %token BIND
@@ -141,6 +143,7 @@ rhs:
     /* empty */ { $$ = NULL; } |
     shortarglist { $$ = makeExpr(); $$->args = $1; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
+    DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
     ':' arglist { $$ = makeExpr(); $$->args = $2; } |
     '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
     shortarglist '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = $1; $$->isEquality = true; } |

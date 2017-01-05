@@ -93,6 +93,11 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         auto func = expr->name;
         auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtEqual(line, lhs, func, rhs));
+    } else if (expr->equals2) {
+        auto rhs = translateStmt(expr->rhs);
+        auto func = expr->name;
+        auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
+        return unique_ptr<Stmt>(new StmtDoubleEqual(line, lhs, func, rhs));
     } else {
         auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
         string func;
@@ -214,6 +219,9 @@ void readFile(string fname, Scope defScope, IntState& state) {
 Stmt::Stmt(int line_no)
     : file_name("(eval)"), line_no(line_no), location(true) {}
 
+int Stmt::line() {
+    return line_no;
+}
 
 void Stmt::disableLocationInformation() {
     location = false;
@@ -812,4 +820,72 @@ void StmtComplex::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
+}
+
+StmtDoubleEqual::StmtDoubleEqual(int line_no, unique_ptr<Stmt>& cls, const string& func, unique_ptr<Stmt>& asn)
+    : Stmt(line_no), className(move(cls)), functionName(func), rhs(move(asn)) {}
+
+void StmtDoubleEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
+
+    if (!className)
+        stateLine(seq);
+
+    // Evaluate the class name
+    if (className) {
+        className->translate(unit, seq);
+    } else if ((functionName != "") && (functionName[0] == '$')) {
+        (makeAssemblerLine(Instr::GETD, Reg::RET)).appendOnto(seq);
+    } else {
+        (makeAssemblerLine(Instr::GETL, Reg::RET)).appendOnto(seq);
+    }
+
+    // Store the class name
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+    // Evaluate the right-hand-side
+    rhs->translate(unit, seq);
+
+    // Load the appropriate values into the registers they need to be in
+    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+
+    // Put the name in the symbol field
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
+
+    // Put the value
+    (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
+
+    // Get the function name as an object
+    (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Symbol"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq);
+
+    // Call the `::` method
+    (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()["::"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
+
+}
+
+void StmtDoubleEqual::propogateFileName(std::string name) {
+    if (className)
+        className->propogateFileName(name);
+    if (rhs)
+        rhs->propogateFileName(name);
+    Stmt::propogateFileName(name);
 }

@@ -14,8 +14,7 @@ Nil := Nil.
 ; * pure - A method of one argument that wraps the value in the monad
 ; * fmap - A method of two argument, a method and a monadic value, which maps the method over the structure
 ; * join - A method of one argument, which operates on a nested monad to merge it
-Monad := Mixin clone.
-Monad toString := "Monad".
+Monad ::= Mixin clone.
 Monad interface := '[bind, seq, call].
 
 ; `monad bind: obj, { mthd. }.` runs the method given the internals of `obj`.
@@ -50,8 +49,7 @@ Monad call := { localize.
                                         { this bind: result, { continue: iter1, $1. }. }. }. }.
                 continue: iter0, Nil. }.
 
-IdMonad := Object clone.
-IdMonad toString := "IdMonad".
+IdMonad ::= Object clone.
 IdMonad pure := { dynamic hold '$1. }.
 IdMonad fmap := { $1: dynamic hold '$2. }.
 IdMonad join := { dynamic hold '$1. }.
@@ -62,12 +60,9 @@ Maybe value := Nil.
 Maybe toString := { if: (self) === (Maybe),
                         "Maybe",
                         "#<Maybe (Just " ++ (self value toString) ++ ")>". }.
-Nothing := Maybe clone.
-Nothing toString := "Nothing".
-Nothing toBool := False.
+Nothing ::= Maybe clone falsify.
 just := { Maybe clone tap { self value := parent dynamic hold '$1. }. }.
-MaybeMonad := Object clone.
-MaybeMonad toString := "MaybeMonad".
+MaybeMonad ::= Object clone.
 MaybeMonad pure := { just. }.
 MaybeMonad fmap := { takes '[mthd, obj].
                      if: obj is (Nothing),
@@ -79,8 +74,7 @@ MaybeMonad join := { takes '[obj].
                          { obj value. }. }.
 Monad inject: MaybeMonad.
 
-IterMonad := Object clone.
-IterMonad toString := "IterMonad".
+IterMonad ::= Object clone.
 IterMonad pure := { util Cell clone tap { self value := parent dynamic hold '$1. }. }.
 IterMonad fmap := { $2 map. }.
 IterMonad join := { $1 foldl: Nil, '<> toProc. }.

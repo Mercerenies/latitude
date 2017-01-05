@@ -4,8 +4,7 @@
 Kernel := Kernel.
 stderr := stderr.
 
-REPL := Object clone.
-REPL toString := "REPL".
+REPL ::= Object clone.
 
 REPL quitter := { jump := Nil.
                   setJump := { parent jump := $1. }.

@@ -242,6 +242,8 @@ Number ordinal := { meta sys natSym#: self. }.
 Object stringify := { self toString. }.
 String stringify := { self. }.
 Object ++ := { meta sys stringConcat#: self stringify, $1 stringify. }.
+Object :: := { hold 'self toString := $1 pretty.
+               hold 'self. }.
 Object toString := "Object".
 Object pretty := { (hold 'self) toString. }.
 String toString := { meta sys strToString#: self. }.

@@ -6,8 +6,7 @@
 ; Day := enum '[Mon, Tue, Wed, Thu, Fri, Sat, Sun].
 ; currentDay := Day Fri.
 ; currentDay is (Day) ; True
-Enumeration := Object clone.
-Enumeration toString := "Enumeration".
+Enumeration ::= Object clone.
 Enumeration values := [].
 Enumeration value := { self values nth ($1). }.
 Enumeration of := { takes '[list].

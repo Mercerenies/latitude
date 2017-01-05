@@ -53,6 +53,7 @@ private:
     bool location;
 public:
     Stmt(int line_no);
+    int line();
     void disableLocationInformation();
     void stateLine(InstrSeq&);
     void stateFile(InstrSeq&);
@@ -235,6 +236,22 @@ private:
 public:
     StmtComplex(int line_no, double lhs, double rhs);
     virtual void translate(TranslationUnit&, InstrSeq&);
+};
+
+/*
+ * An assignment statement with the double-colon syntax sugar.
+ */
+class StmtDoubleEqual : public Stmt {
+private:
+    std::unique_ptr<Stmt> className;
+    std::string functionName;
+    std::unique_ptr<Stmt> rhs;
+public:
+    StmtDoubleEqual(int line_no,
+                    std::unique_ptr<Stmt>& cls, const std::string& func,
+                    std::unique_ptr<Stmt>& asn);
+    virtual void translate(TranslationUnit&, InstrSeq&);
+    virtual void propogateFileName(std::string name);
 };
 
 #endif // _READER_HPP_

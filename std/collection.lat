@@ -20,8 +20,7 @@ id := id.
 ;;                 only be well-defined when `end?` is false
 ;; *  `clone` - Iterators must be cloneable at any intermediate point in their iteration
 ;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
-global Collection := Mixin clone.
-Collection toString := "Collection".
+global Collection ::= Mixin clone.
 Collection interface := '[map!, visit, map, foldl, foldr, size, toArray, all, any, notall, notany,
                           detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
                           minimum, <>].
@@ -132,14 +131,11 @@ Collection minimum := { current := Nil.
                                       ((hold 'value) < (hold 'current)) ifTrue { setCurrent: hold 'value. }. }.
                         self visit { minimize: dynamic hold '$1. }.
                         current. }.
-Collection <> := { Chain := Object clone.
-                   Chain toString := "Chain".
+Collection <> := { Chain ::= Object clone.
                    Chain iterator := { ; We must construct a "NilThing" to act like
                                        ; Nil since Nil is a valid element in a chain
-                                       NilThing := Nil clone.
-                                       NilThing toString := "NilThing".
-                                       ChainIterator := Object clone.
-                                       ChainIterator toString := "ChainIterator".
+                                       NilThing ::= Nil clone.
+                                       ChainIterator ::= Object clone.
                                        ChainIterator iter := parent self iterator.
                                        ChainIterator secondHalf := parent dynamic $1.
                                        ChainIterator element := { self iter element. }.
@@ -161,8 +157,7 @@ Collection <> := { Chain := Object clone.
 Collection inject: Array.
 
 ;; Nil is an iterator over an empty collection
-Nil iterator := { NilIterator := Object clone.
-                  NilIterator toString := "NilIterator".
+Nil iterator := { NilIterator ::= Object clone.
                   NilIterator end? := True.
                   NilIterator. }.
 Collection inject: Nil.

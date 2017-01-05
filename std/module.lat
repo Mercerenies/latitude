@@ -2,8 +2,7 @@
 global := global.
 
 ;; Modules
-Module := global clone.
-Module toString := "Module".
+Module ::= global clone.
 Module import := { localize. ; TODO Import seems to be not working sometimes (in other modules)
                    target := dynamic parent $lexical.
                    $1 visit { target put: $1, { this hold (parent dynamic $1) me. }. }. }.
@@ -28,8 +27,7 @@ LoadedModules keys := { self invoke (Object hold 'keys) call. }.
 LoadedModules missing := { self invoke (Object hold 'missing) call. }.
 LoadedModules toString := "LoadedModules".
 
-ModuleLoader := Object clone.
-ModuleLoader toString := "ModuleLoader".
+ModuleLoader ::= Object clone.
 ModuleLoader loaded := LoadedModules.
 ModuleLoader clone := { self invoke (Object hold 'clone) call tap { self loaded := self loaded clone. }. }.
 ModuleLoader resolveImport := { takes '[imp]. ; TODO Use an environment variable for extended load path

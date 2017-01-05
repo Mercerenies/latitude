@@ -18,7 +18,7 @@
      (modify-syntax-entry ?\] ")[" st)
      (modify-syntax-entry ?\. "." st)
      (modify-syntax-entry ?\, "." st)
-     (modify-syntax-entry ?\: " " st)
+     (modify-syntax-entry ?\: "_" st)
      (modify-syntax-entry ?\= "_" st)
      (modify-syntax-entry ?\~ "_" st)
      (modify-syntax-entry ?\? "_" st)
@@ -30,9 +30,9 @@
      st))
 
 (defvar latitude-mode-font-lock-keywords
-  (list `("\\_<\\(\\sw+\\)\\s-*:=\\s-*{"
+  (list `("\\_<\\(\\sw+\\)\\s-*::?=\\s-*{"
           (1 font-lock-function-name-face))
-        `("\\_<\\([A-Z]\\sw+\\)\\s-*:="
+        `("\\_<\\([A-Z]\\sw+\\)\\s-*::?="
           (1 font-lock-type-face))
         `("\\_<\\(\\sw+\\)\\s-*:="
           (1 font-lock-variable-name-face))
@@ -77,7 +77,7 @@
    (smie-bnf->prec2
     '((id)
       (exprs (exprs "." exprs) (expr))
-      (expr (id ":=" expr) (id ":" args) ("[" args "]"))
+      (expr (id ":=" expr) (id "::=" expr) (id ":" args) ("[" args "]"))
       (args (args "," args) ("(" expr ")")))
     '((assoc ".") (assoc ",")))))
 

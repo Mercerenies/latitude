@@ -8,62 +8,48 @@ Exception stack := Nil.
 Exception printStackTrace := { self stack dump. }.
 
 ; TODO Which of these actually need to be in `meta`?
-global SystemCallError := SystemError clone tap { self message := "Error in system call".
-                                                  self toString := "SystemCallError". }.
+global SystemCallError ::= SystemError clone tap { self message := "Error in system call". }.
 meta SystemCallError := SystemCallError.
 
-global SystemArgError := SystemError clone tap { self message := "Wrong number of arguments to system call".
-                                                 self toString := "SystemArgError". }.
+global SystemArgError ::= SystemError clone tap { self message := "Wrong number of arguments to system call". }.
 meta SystemArgError := SystemArgError.
 
-global TypeError := SystemError clone tap { self message := "Type error".
-                                            self toString := "TypeError". }.
+global TypeError ::= SystemError clone tap { self message := "Type error". }.
 meta TypeError := TypeError.
 
-global SlotError := SystemError clone tap { self message := "Could not find slot".
-                                            self slotName := meta Nil.
-                                            self objectInstance := meta Nil.
-                                            self toString := "SlotError". }.
+global SlotError ::= SystemError clone tap { self message := "Could not find slot".
+                                             self slotName := meta Nil.
+                                             self objectInstance := meta Nil. }.
 meta SlotError := SlotError.
 
-global ContError := SystemError clone tap { self message := "Continuation error".
-                                            self toString := "ContError". }.
+global ContError ::= SystemError clone tap { self message := "Continuation error". }.
 meta ContError := ContError.
 
-global ParseError := SystemError clone tap { self message := "Parse error".
-                                             self toString := "ParseError". }.
+global ParseError ::= SystemError clone tap { self message := "Parse error". }.
 meta ParseError := ParseError.
 
-global BoundsError := SystemError clone tap { self message := "Bounds error".
-                                              self toString := "BoundsError". }.
+global BoundsError ::= SystemError clone tap { self message := "Bounds error". }.
 meta BoundsError := BoundsError.
 
-global IOError := SystemError clone tap { self message := "IO error".
-                                          self toString := "IOError". }.
+global IOError ::= SystemError clone tap { self message := "IO error". }.
 meta IOError := IOError.
 
-global ReadOnlyError := SystemError clone tap { self message := "Write access prohibited".
-                                                self toString := "ReadOnlyError". }.
+global ReadOnlyError ::= SystemError clone tap { self message := "Write access prohibited". }.
 meta ReadOnlyError := ReadOnlyError.
 
-global NotSupportedError := SystemError clone tap { self message := "Not supported".
-                                                    self toString := "NotSupportedError". }.
+global NotSupportedError ::= SystemError clone tap { self message := "Not supported". }.
 meta NotSupportedError := NotSupportedError.
 
-global ModuleError := SystemError clone tap { self message := "Module error".
-                                              self toString := "ModuleError". }.
+global ModuleError ::= SystemError clone tap { self message := "Module error". }.
 meta ModuleError := ModuleError.
 
-global LangError := SystemError clone tap { self message := "Error reading from external language".
-                                            self toString := "LangError". }.
+global LangError ::= SystemError clone tap { self message := "Error reading from external language". }.
 meta LangError := LangError.
 
-global InputError := SystemError clone tap { self message := "Input error".
-                                             self toString := "InputError". }.
+global InputError ::= SystemError clone tap { self message := "Input error". }.
 meta InputError := InputError.
 
-global ArgError := SystemError clone tap { self message := "Argument error".
-                                           self toString := "ArgError". }.
+global ArgError ::= SystemError clone tap { self message := "Argument error". }.
 meta ArgError := ArgError.
 
 ; It is only safe to define `missing` once `SlotError` exists. If `missing` is sought before this

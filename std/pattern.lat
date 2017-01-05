@@ -25,15 +25,12 @@ Ellipsis toString := { if: self named?,
 ; The "match" object is a Proc. If no match was found, the match object is falsy and its `call`
 ; is a no-op. If a match was made, the object is truthy and the `call` expects a single argument,
 ; a method which it will evaluate after dropping in all of the matched names.
-Match := Proc clone.
-Match toString := "Match".
+Match ::= Proc clone.
 Match callback := {}.
 Match call := { (self invokeSpecial: dynamic hold '$1, self hold 'callback) call. }.
 
-NoMatch := Match clone.
-NoMatch toString := "NoMatch".
+NoMatch ::= Match clone falsify.
 NoMatch call := {}.
-NoMatch toBool := False.
 
 ; * - A wildcard that matches (and ignores) anything
 * := { Wildcard clone. }.

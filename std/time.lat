@@ -3,12 +3,10 @@
 
 use 'enum import '[Enumeration].
 
-Month := Enumeration of '[January, February, March, April, May, June, July,
-                          August, September, October, November, December].
-Month toString := "Month".
+Month ::= Enumeration of '[January, February, March, April, May, June, July,
+                           August, September, October, November, December].
 
-Weekday := Enumeration of '[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
-Weekday toString := "Weekday".
+Weekday ::= Enumeration of '[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
 
 DateTime := Object clone.
 DateTime toString := { localize.

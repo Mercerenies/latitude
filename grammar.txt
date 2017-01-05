@@ -30,6 +30,7 @@
 <rhs> ::= <lambda> |
           <shortarglist> |
           ":=" <stmt> |
+          "::=" <stmt> |
           ":" <arglist> |
           "=" <stmt> |
           <shortarglist> "=" <stmt> |

@@ -1,7 +1,6 @@
 
 ;; "Cons" objects, as in Lisp
-global Cons := Object clone.
-Cons toString := "Cons".
+global Cons ::= Object clone.
 Cons pretty := { chain := { curr := $1.
                             if: curr cdr nil?,
                                 { curr car toString. },
@@ -89,9 +88,8 @@ Array < := { localize.
                       (this size) < (arr size). }. }.
 
 ;; Collection Methods
-Array iterator := { ArrayIterator := Object clone.
+Array iterator := { ArrayIterator ::= Object clone.
                     ArrayIterator iterator := { self. }.
-                    ArrayIterator toString := "ArrayIterator".
                     ArrayIterator index := 0.
                     ArrayIterator array := self.
                     ArrayIterator next := { self index := self index + 1. }.
@@ -106,19 +104,16 @@ Array clone := { procd := self invoke: (Object hold 'clone).
                                   self upperBound := self upperBound. }. }.
 
 ;; Array Syntax
-meta brackets := { ArrayBuilder := self Object clone.
-                   ArrayBuilder toString := "ArrayBuilder".
+meta brackets := { ArrayBuilder ::= self Object clone.
                    ArrayBuilder array := Array clone.
                    ArrayBuilder next := { self array pushBack: $1. }.
                    ArrayBuilder finish := { self array. }.
                    ArrayBuilder. }.
 
 ;; Statement List Syntax
-SpecialMethod := Method clone.
-SpecialMethod toString := "SpecialMethod".
+SpecialMethod ::= Method clone.
 SpecialMethod statements := [].
-meta statements := { MethodBuilder := self Object clone.
-                     MethodBuilder toString := "MethodBuilder".
+meta statements := { MethodBuilder ::= self Object clone.
                      MethodBuilder array := Array clone.
                      MethodBuilder next := { self array pushBack: proc (dynamic hold '$1). }.
                      MethodBuilder finish := { spec := { args := $*.

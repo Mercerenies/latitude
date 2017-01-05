@@ -22,6 +22,10 @@ Boolean toString := "Boolean".
 True toString := "True".
 False toString := "False".
 Nil toString := "Nil".
+Object falsify := { hold 'self toBool := False.
+                    hold 'self. }.
+
+;; Control Statements
 ; TODO Make `self` for the conditionals well-defined
 ; TODO What if `if` had syntax like "if X then Y else Z" so each part only took one argument?
 global if := { meta sys ifThenElse#: meta True,

@@ -8,11 +8,9 @@ Array := Array.
 
 use 'pattern import '[Match, NoMatch].
 
-RegexpError := Exception clone tap { self message := "Regexp Error".
-                                     self toString := "RegexpError". }.
+RegexpError ::= Exception clone tap { self message := "Regexp Error". }.
 
-Regexp := Object clone.
-Regexp toString := "Regexp".
+Regexp ::= Object clone.
 Regexp specialChars := ["\\", "/"].
 Regexp escapeText := { $1 map { if: parent self specialChars find ($1),
                                     { "\\" ++ (parent dynamic $1). },
@@ -37,8 +35,7 @@ Regexp pattern := { node := Object clone tap { self elem := ReLiteral make "". }
                         { RegexpError clone tap { self message := "Unclosed element". } throw. }.
                     node elem. }.
 
-ReMatch := pattern Match clone.
-ReMatch toString := "ReMatch".
+ReMatch ::= pattern Match clone.
 ReMatch groups := Array.
 ReMatch clone := { self invoke (Object hold 'clone) tap { self groups := self groups clone. }. }.
 
