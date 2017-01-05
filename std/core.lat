@@ -94,7 +94,7 @@ global thunk := { meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
 
 ;; Procs and Methods handling
 (hold 'Method) closure := global.
-Proc call := (hold 'Method) clone.
+Proc call := {}.
 (hold 'Method) call := { self. }.
 (hold 'Method) toString := "Method".
 Proc toString := "Proc".
@@ -107,7 +107,7 @@ Symbol toProc := { sym := self.
                           (obj invoke (obj hold: sym)) call. }. }.
 
 ;; Cached Procedures
-global Cached := Object clone.
+global Cached := Proc clone.
 Cached toString := "Cached".
 Cached value := Nil.
 Cached done? := False.
