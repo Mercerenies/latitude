@@ -25,6 +25,8 @@ global Module := Module.
 &LoadedModules clone := { self invoke (Object hold 'clone) call. }.
 &LoadedModules put := { self invoke (Object hold 'put) call. }.
 &LoadedModules get := { self invoke (Object hold 'get) call. }.
+&LoadedModules slot := { self invoke (Object hold 'slot) call. }.
+&LoadedModules hold := { self invoke (Object hold 'hold) call. }.
 &LoadedModules has := { self invoke (Object hold 'has) call. }.
 &LoadedModules keys := { self invoke (Object hold 'keys) call. }.
 &LoadedModules missing := { self invoke (Object hold 'missing) call. }.
@@ -50,8 +52,8 @@ global use := { takes '[pname].
                 (header packageName) ifFalse
                     { ModuleError clone tap { self message := "Module has no package". } throw. }.
                 name := (header packageName) ++ " " ++ (header moduleName) intern.
-                if: $moduleLoader has (name),
-                    { $moduleLoader get: name. },
+                if: $moduleLoader &loaded has (name),
+                    { $moduleLoader &loaded get: name. },
                     { mod := Module clone tap { self header := header. }.
                       do { $whereAmI := mod.
                            Kernel evalFile: fname, mod. }.
