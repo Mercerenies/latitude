@@ -7,6 +7,8 @@ Exception pretty := { (self toString) ++ " - " ++ (self message). }.
 Exception stack := Nil.
 Exception printStackTrace := { self stack dump. }.
 
+; TODO It's not possible to delete slots right now; should we change that? /////
+
 ; TODO Which of these actually need to be in `meta`?
 global SystemCallError ::= SystemError clone tap { self message := "Error in system call". }.
 meta SystemCallError := SystemCallError.
