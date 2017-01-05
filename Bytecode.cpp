@@ -613,11 +613,59 @@ void executeInstr(Instr instr, IntState& state) {
                 cout << "* Found missing" << endl;
 #endif
             if (value == nullptr) {
-                // If there is no `missing` either, immediately terminate, as
-                // something has gone horribly wrong
-                InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0));
-                state.stack = pushNode(state.stack, state.cont);
-                state.cont = CodeSeek(term);
+                ObjectPtr meta = nullptr;
+                // If there is no `missing` either, fall back to the last resort
+                name = Symbols::get()["meta"];
+                parents.clear();
+                if (!state.lex.empty()) {
+                    curr = state.lex.top();
+                    while (find(parents.begin(), parents.end(), curr) == parents.end()) {
+                        parents.push_back(curr);
+                        Slot slot = (*curr)[name];
+                        if (slot.getType() == SlotType::PTR) {
+                            value = slot.getPtr();
+                            break;
+                        }
+                        curr = (*curr)[ sym ].getPtr();
+                    }
+                    state.ret = value;
+                }
+                if (value != nullptr) {
+                    curr = value;
+                    meta = value;
+                    value = nullptr;
+                    parents.clear();
+                    name = Symbols::get()["missed"];
+                    while (find(parents.begin(), parents.end(), curr) == parents.end()) {
+                        parents.push_back(curr);
+                        Slot slot = (*curr)[name];
+                        if (slot.getType() == SlotType::PTR) {
+                            value = slot.getPtr();
+                            break;
+                        }
+                        curr = (*curr)[ sym ].getPtr();
+                    }
+                    state.ret = value;
+                }
+#if DEBUG_INSTR > 1
+                if (value == nullptr)
+                    cout << "* Found no missed" << endl;
+                else
+                    cout << "* Found missed" << endl;
+#endif
+                if (value == nullptr) {
+                    // Abandon ship!
+                    InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0));
+                    state.stack = pushNode(state.stack, state.cont);
+                    state.cont = CodeSeek(term);
+                } else {
+                    InstrSeq seq0;
+                    state.slf = meta;
+                    state.ptr = value;
+                    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq0);
+                    state.stack = pushNode(state.stack, state.cont);
+                    state.cont = CodeSeek(move(seq0));
+                }
             } else {
                 InstrSeq seq0;
                 // Find the literal object to use for the argument

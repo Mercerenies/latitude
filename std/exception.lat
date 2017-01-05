@@ -52,8 +52,13 @@ meta InputError := InputError.
 global ArgError ::= SystemError clone tap { self message := "Argument error". }.
 meta ArgError := ArgError.
 
-; It is only safe to define `missing` once `SlotError` exists. If `missing` is sought before this
+; It is only safe to define `missing` and `missed` once `SlotError` exists. If `missing` is sought before this
 ; point, it is a standard library error and the interpreter will terminate immediately
+; IMPORTANT NOTE: `meta missed` is an absolute last resort that will be called by the virtual machine if
+;                 `Object missing` cannot be found. Override at your own risk!
+meta missed := { err := meta SystemError clone.
+                 err message := "Missing method left undefined".
+                 err throw. }.
 Object missing := { err := meta SlotError clone.
                     err slotName := dynamic hold '$1.
                     err objectInstance := lexical hold 'self.

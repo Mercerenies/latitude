@@ -17,6 +17,9 @@ Module importAll := { localize.
                       this. }.
 global Module := Module.
 
+; ///// Do some more work on non-traditional objects for convenience (and definedness)
+;       Ideally, we want to define absolutely no methods (save for `parent` and maybe `clone`)
+;       on this NTO (non-traditional object).
 &LoadedModules := Object clone tap { self invoke := self hold 'invoke.
                                      self parent := self. }.
 &LoadedModules clone := { self invoke (Object hold 'clone) call. }.
