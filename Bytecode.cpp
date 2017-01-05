@@ -603,7 +603,7 @@ void executeInstr(Instr instr, IntState& state) {
                     value = slot.getPtr();
                     break;
                 }
-                curr = (*curr)[ Symbols::get()["parent"] ].getPtr();
+                curr = (*curr)[ sym ].getPtr();
             }
             state.ret = value;
 #if DEBUG_INSTR > 1
@@ -1130,24 +1130,6 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "LOCFN \"" << msg << "\"" << endl;
 #endif
         state.file = msg;
-        /*
-        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                               makeAssemblerLine(Instr::GETL, Reg::PTR),
-                               makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                               makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::SYMN, Symbols::get()["fileStorage"].index),
-                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                               makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::GETD, Reg::PTR),
-                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                               makeAssemblerLine(Instr::EXPD, Reg::SYM),
-                               makeAssemblerLine(Instr::POP, Pop::PTR, Reg::STO),
-                               makeAssemblerLine(Instr::SETF));
-        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
-        garnishBegin(state, msg);
-        */
     }
         break;
     case Instr::LOCLN: {
@@ -1156,24 +1138,6 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "LOCLN " << num << endl;
 #endif
         state.line = num;
-        /*
-        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                               makeAssemblerLine(Instr::GETL, Reg::PTR),
-                               makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                               makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::SYMN, Symbols::get()["lineStorage"].index),
-                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                               makeAssemblerLine(Instr::RTRV),
-                               makeAssemblerLine(Instr::GETD, Reg::PTR),
-                               makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                               makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                               makeAssemblerLine(Instr::EXPD, Reg::SYM),
-                               makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
-                               makeAssemblerLine(Instr::SETF));
-        state.cont.insert(state.cont.begin(), seq.begin(), seq.end());
-        garnishBegin(state, num);
-        */
     }
         break;
     case Instr::LOCRT: {
