@@ -128,8 +128,9 @@ Stream toString := "Stream".
 ; Dumping and Printing Convenience Functions
 Stream dump := { localize.
                  obj := dynamic hold '$1.
-                 this println: obj.
-                 obj keys visit { this putln: "  " ++ ($1 asText) ++ ": " ++ ((obj hold: $1) toString). }.
+                 this println: hold 'obj.
+                 hold 'obj keys visit { p := if: (Kernel protected: hold 'obj, $1), "! ", "  ".
+                                        this putln: p ++ ($1 asText) ++ ": " ++ ((hold 'obj hold: $1) toString). }.
                  Nil. }.
 Object println := { stdout println: hold 'self. }.
 Object dump := { stdout dump: hold 'self. }.
@@ -160,6 +161,9 @@ global here := { if: (self has 'again),
 global toString := { if: (self) === (global),
                          "global",
                          "#<Scope>". }.
+; NOTE: pairScopes can only be called on custom-made scopes.
+;       Attempting to re-pair implicitly created scopes will
+;       trigger a protection error.
 global pairScopes := { self lexical := self.
                        self dynamic := $1.
                        $1 $lexical := self.
@@ -182,6 +186,8 @@ Kernel eval := { meta sys eval#: $1, $2, $3. }.
 Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
 Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
+Kernel protect := { meta sys protectVar#: dynamic hold '$1, $2. }.
+Kernel protected := { meta sys protectIs#: dynamic hold '$1, $2. }.
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
 Kernel GC traced := False.
@@ -246,7 +252,7 @@ StackFrame dump := { if: { (parent self) === (StackFrame). },
                          { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
                            parent self parent dump. }. }.
 global currentStackTrace := { meta sys stackTrace# parent. }.
-global printStackTrace := { self stackTrace parent dump. }.
+global printStackTrace := { self stack parent dump. }.
 
 ; TODO Should we use a different indentation scheme? This one gets out of hand quickly with nested structures.
 

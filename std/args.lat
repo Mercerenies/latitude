@@ -10,29 +10,28 @@ ArgList fillWith := { self enclosingScope := $1.
                       self. }.
 ArgList shift := { if: (self size == 0),
                        { Nil. },
-                       { self := parent self.
-                         first := self enclosingScope hold '$1.
-                         arglist := self.
-                         size := self size.
+                       { first := parent self enclosingScope hold '$1.
+                         arglist := parent self.
+                         size := parent self size.
                          temp := hold 'first.
                          index := 2.
-                         self map!: { if: ((index) > (size)),
-                                          { hold 'first. },
-                                          { result := arglist enclosingScope hold: ((("$") ++ (index)) intern).
-                                            parent parent index := index + 1.
-                                            hold 'result. }. }.
+                         parent self map!: { if: ((index) > (size)),
+                                                 { hold 'first. },
+                                                 { result := arglist enclosingScope hold:
+                                                                 ((("$") ++ (index)) intern).
+                                                   parent parent index := index + 1.
+                                                   hold 'result. }. }.
                          hold 'first. }. }.
 ArgList unshift := { if: (self size == 0),
                          { Nil. },
-                         { self := parent self.
-                           first := self enclosingScope $1.
-                           arglist := self.
-                           size := self size.
+                         { first := parent self enclosingScope $1.
+                           arglist := parent self.
+                           size := parent self size.
                            temp := Nil.
-                           self map!: { temp1 := temp.
-                                        parent temp := $1.
-                                        temp1. }.
-                           self enclosingScope $1 := temp. }. }.
+                           parent self map!: { temp1 := temp.
+                                               parent temp := $1.
+                                               temp1. }.
+                           parent self enclosingScope $1 := temp. }. }.
 ArgList iterator := { ArgIterator ::= Object clone.
                       ArgIterator iterator := { self. }.
                       ArgIterator array := self.

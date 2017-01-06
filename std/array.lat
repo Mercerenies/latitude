@@ -36,28 +36,24 @@ Array pushBack := { value := $1.
                     value. }.
 Array popFront := { if: self empty?,
                         { err BoundsError clone throw. },
-                        { self := parent self.
-                          self lowerBound := self lowerBound + 1.
-                          self get: (self mapping: (self lowerBound - 1)) ordinal. }. }.
+                        { parent self lowerBound := parent self lowerBound + 1.
+                          parent self get: (parent self mapping: (parent self lowerBound - 1)) ordinal. }. }.
 Array popBack := { if: self empty?,
                        { err BoundsError clone throw. },
-                       { self := parent self.
-                         self upperBound := self upperBound - 1.
-                         self get: (self mapping: self upperBound) ordinal. }. }.
+                       { parent self upperBound := parent self upperBound - 1.
+                         parent self get: (parent self mapping: parent self upperBound) ordinal. }. }.
 Array nth := { pos := if: ($1 < 0),
                           { (parent self upperBound) + (parent dynamic $1). },
                           { (parent self lowerBound) + (parent dynamic $1). }.
                if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
                    { err BoundsError clone throw. },
-                   { self := parent self.
-                     self get: (self mapping: pos) ordinal. }. }.
+                   { parent self get: (parent self mapping: pos) ordinal. }. }.
 Array nth= := { pos := if: ($1 < 0),
                            { (parent self upperBound) + (parent dynamic $1). },
                            { (parent self lowerBound) + (parent dynamic $1). }.
                 if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
                     { err BoundsError clone throw. },
-                    { self := parent self.
-                      self put: (self mapping: pos) ordinal, parent dynamic $2. }. }.
+                    { parent self put: (parent self mapping: pos) ordinal, parent dynamic $2. }. }.
 Array size := { (self upperBound) - (self lowerBound). }.
 Array join := { index := 1.
                 size := self size.

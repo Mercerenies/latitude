@@ -19,7 +19,8 @@ extern "C" {
 #include <boost/scope_exit.hpp>
 #include <boost/blank.hpp>
 
-//#define PRINT_BEFORE_EXEC
+//#define DEBUG_LOADS
+
 
 using namespace std;
 
@@ -173,6 +174,9 @@ void eval(IntState& state, string str) {
 }
 
 void readFile(string fname, Scope defScope, IntState& state) {
+#ifdef DEBUG_LOADS
+    cout << "Loading " << fname << "..." << endl;
+#endif
     ifstream file;
     file.exceptions(ifstream::failbit | ifstream::badbit);
     try {

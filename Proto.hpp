@@ -66,16 +66,27 @@ public:
 class Object {
 private:
     std::unordered_map<Symbolic, Slot> slots;
+    std::unordered_set<Symbolic> protected_slots;
     Prim primitive;
 public:
-    ~Object() = default;
     Slot operator [](Symbolic key) const;
     void put(Symbolic key, ObjectPtr ptr);
     std::set<Symbolic> directKeys() const;
+    bool isProtected(Symbolic key) const;
+    void protect(Symbolic key);
+    void protectAll();
+    template <typename T, typename... Ts>
+    void protectAll(T key, Ts... keys);
     Prim& prim() noexcept;
     template <typename T>
     Prim prim(const T& prim0);
 };
+
+template <typename T, typename... Ts>
+void Object::protectAll(T key, Ts... keys) {
+    protect(key);
+    protectAll(keys...);
+}
 
 template <typename T>
 Prim Object::prim(const T& prim0) {

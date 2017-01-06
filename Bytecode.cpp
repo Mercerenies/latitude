@@ -420,7 +420,10 @@ void executeInstr(Instr instr, IntState& state) {
                 state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
                 state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
+                state.dyn.top()->protectAll(Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
             }
+            state.lex.top()->protectAll(Symbols::get()["self"], Symbols::get()["again"],
+                                        Symbols::get()["lexical"], Symbols::get()["dynamic"]);
             // (5) Push the trace information
             state.trace.push( make_tuple(state.line, state.file) );
             // (6) Bind all of the arguments
@@ -511,7 +514,10 @@ void executeInstr(Instr instr, IntState& state) {
                 state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
                 state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
+                state.dyn.top()->protectAll(Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
             }
+            state.lex.top()->protectAll(Symbols::get()["self"], Symbols::get()["again"],
+                                        Symbols::get()["lexical"], Symbols::get()["dynamic"]);
             // (5) Push the trace information
             state.trace.push( make_tuple(state.line, state.file) );
             // (6) Bind all of the arguments
@@ -881,8 +887,10 @@ void executeInstr(Instr instr, IntState& state) {
 #endif
         if (state.slf == nullptr)
             state.err0 = true;
-        else
+        else if (!state.slf->isProtected(state.sym))
             state.slf->put(state.sym, state.ptr);
+        else
+            throwError(state, "ProtectedError");
     }
         break;
     case Instr::PEEK: {

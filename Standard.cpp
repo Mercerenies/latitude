@@ -81,7 +81,9 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         FILE_EXISTS = 33,
         TRIG_OP = 34,
         MATH_FLOOR = 35,
-        NUM_CONST = 36;
+        NUM_CONST = 36,
+        PROT_VAR = 37,
+        PROT_IS = 38;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1950,6 +1952,49 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
+     // PROT_VAR (protect the variable named %sym in the object %slf)
+     // protectVar#: obj, var.
+     state.cpp[PROT_VAR] = [](IntState& state0) {
+         state0.slf->protect(state0.sym);
+     };
+     sys->put(Symbols::get()["protectVar#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                   makeAssemblerLine(Instr::THROA, "Symbol expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::CPP, PROT_VAR),
+                                   makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET))));
+
+     // PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
+     // protectIs#: obj, var.
+     state.cpp[PROT_IS] = [](IntState& state0) {
+         garnishBegin(state0, state0.slf->isProtected(state0.sym));
+     };
+     sys->put(Symbols::get()["protectIs#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                   makeAssemblerLine(Instr::THROA, "Symbol expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::CPP, PROT_IS))));
+
 }
 
 ObjectPtr spawnObjects(IntState& state) {
@@ -2054,6 +2099,8 @@ ObjectPtr spawnObjects(IntState& state) {
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);
 
+    // TODO Use the new protection system to protect the global names that are defined here
+
     return global;
 }
 
@@ -2093,8 +2140,11 @@ void throwError(IntState& state, std::string name) {
                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                   makeAssemblerLine(Instr::CLONE),
                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::GETD, Reg::PTR),
+                                  makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                  makeAssemblerLine(Instr::LOCRT),
+                                  makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["stack"].index),
+                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                   makeAssemblerLine(Instr::SETF),
                                   makeAssemblerLine(Instr::THROW)));
 }

@@ -48,6 +48,16 @@ set<Symbolic> Object::directKeys() const {
     return result;
 }
 
+bool Object::isProtected(Symbolic key) const {
+    return protected_slots.find(key) != protected_slots.end();
+}
+
+void Object::protect(Symbolic key) {
+    protected_slots.insert(key);
+}
+
+void Object::protectAll() {}
+
 Prim& Object::prim() noexcept {
     return primitive;
 }

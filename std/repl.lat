@@ -30,7 +30,7 @@ REPL eval := { Kernel eval: self scope, self $scope, $1. }.
 REPL print := { stdout println: dynamic hold '$1. }.
 REPL loop := { localize.
                $whereAmI := this.
-               self $scope := dynamic.
+               self $scope := dynamic clone.
                (self scope) pairScopes (self $scope).
                loop { { { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue
                             { Kernel GC run.
