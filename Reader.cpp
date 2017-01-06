@@ -473,9 +473,6 @@ void StmtSymbol::translate(TranslationUnit& unit, InstrSeq& seq) {
 
 }
 
-// TODO Make the builtins (like Symbol, Method, etc.) call the clone method rather than forcing
-//      a system clone operation
-
 StmtList::StmtList(int line_no, ArgList& arg)
     : Stmt(line_no), args(move(arg)) {}
 
