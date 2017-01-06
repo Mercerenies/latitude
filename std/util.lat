@@ -35,7 +35,7 @@ Lockbox store := { self put: $1 tag, $2. }.
 Lockbox fits := { self has: $1 tag. }.
 Lockbox retrieve := { if: { parent self fits: parent dynamic $1. },
                           { parent self get: parent dynamic $1 tag. },
-                          { meta Nil. }. }.
+                          { Nil. }. }.
 Lockbox toString := "Lockbox".
 Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.

@@ -9,7 +9,7 @@ ArgList fill := { self enclosingScope := dynamic parent.
 ArgList fillWith := { self enclosingScope := $1.
                       self. }.
 ArgList shift := { if: (self size == 0),
-                       { meta Nil. },
+                       { Nil. },
                        { self := parent self.
                          first := self enclosingScope hold '$1.
                          arglist := self.
@@ -23,12 +23,12 @@ ArgList shift := { if: (self size == 0),
                                             hold 'result. }. }.
                          hold 'first. }. }.
 ArgList unshift := { if: (self size == 0),
-                         { meta Nil. },
+                         { Nil. },
                          { self := parent self.
                            first := self enclosingScope $1.
                            arglist := self.
                            size := self size.
-                           temp := meta Nil.
+                           temp := Nil.
                            self map!: { temp1 := temp.
                                         parent temp := $1.
                                         temp1. }.

@@ -2030,7 +2030,7 @@ ObjectPtr spawnObjects(IntState& state) {
     spawnSystemCallsNew(global, method, sys, state);
 
     // Prim Fields
-    // TODO Should `method` have a prim field?
+    // For pragmatic reasons, Method does NOT have a prim() field
     //method->prim(asmCode(makeAssemblerLine(Instr::RET)));
     number->prim(0.0);
     string->prim("");

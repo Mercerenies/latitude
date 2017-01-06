@@ -64,10 +64,10 @@ Number polar := { Number ii * ($2) exp * ($1). }.
 Number ee := 1 exp.
 Number pi := -1 acos.
 Number ii := @(0, 1).
-Number nan := { meta sys numNan#: meta Number clone. } resolve: True, Nil.
-Number inf := { meta sys numInfinity#: meta Number clone. } resolve: True, Nil.
-Number ninf := { meta sys numNegInfinity#: meta Number clone. } resolve: True, Nil.
-Number epsilon := { meta sys numEpsilon#: meta Number clone. } resolve: True, Nil.
+Number nan := { meta sys numNan#: Number clone. } resolve: True, Nil.
+Number inf := { meta sys numInfinity#: Number clone. } resolve: True, Nil.
+Number ninf := { meta sys numNegInfinity#: Number clone. } resolve: True, Nil.
+Number epsilon := { meta sys numEpsilon#: Number clone. } resolve: True, Nil.
 
 ;; Numerical Type Checking
 Number isBasicInt? := { (meta sys numLevel#: self) <= 0. }.

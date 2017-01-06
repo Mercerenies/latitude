@@ -6,7 +6,7 @@ Nil := Nil.
 ;; Continuations
 Cont call := { meta sys exitCC#: self, $1. }.
 Cont toString := "Cont".
-global callCC := { meta sys callCC#: meta Cont clone, { parent dynamic $1. }. }.
+global callCC := { meta sys callCC#: Cont clone, { parent dynamic $1. }. }.
 
 ;; Booleans
 Object toBool := True.
@@ -28,18 +28,18 @@ Object falsify := { hold 'self toBool := False.
 ;; Control Statements
 ; TODO Make `self` for the conditionals well-defined
 ; TODO What if `if` had syntax like "if X then Y else Z" so each part only took one argument?
-global if := { meta sys ifThenElse#: meta True,
+global if := { meta sys ifThenElse#: True,
                                      $1 toBool,
                                      { parent dynamic $2. },
                                      { parent dynamic $3. }. }.
-Object ifTrue := { if: self, { parent dynamic $1. }, { meta Nil. }.
+Object ifTrue := { if: self, { parent dynamic $1. }, { Nil. }.
                    hold 'self. }.
-Object ifFalse := { if: self, { meta Nil. }, { parent dynamic $1. }.
+Object ifFalse := { if: self, { Nil. }, { parent dynamic $1. }.
                     hold 'self. }.
-Object and := { if: self, { parent dynamic $1. }, {meta False. }. }.
+Object and := { if: self, { parent dynamic $1. }, { False. }. }.
 Object or := { fst := self.
                if: fst, { fst. }, { parent dynamic $1. }. }.
-Object not := { if: self, { meta False. }, { meta True. }. }.
+Object not := { if: self, { False. }, { True. }. }.
 
 ;; Loops
 global loop := { restart := callCC { $1. }.
@@ -50,7 +50,7 @@ global while := { cond := { parent dynamic $1. }.
                                                   callCC { $break := { parent dynamic $1 call. }.
                                                            loop { if: cond,
                                                                       { stmt. },
-                                                                      { $break: meta Nil. }. }. }. }. }. }.
+                                                                      { $break: Nil. }. }. }. }. }. }.
 Number times := { localize.
                   block := { parent dynamic $1. }.
                   i := 0.

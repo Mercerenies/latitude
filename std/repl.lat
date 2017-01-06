@@ -10,14 +10,14 @@ REPL quitter := { jump := Nil.
                   setJump := { parent jump := $1. }.
                   callCC { inner := $1.
                            callCC { setJump: $1.
-                                    inner call: meta Nil. }.
+                                    inner call: Nil. }.
                            Kernel kill. }.
                   jump. }.
-REPL quit := { self quitter call: meta Nil. }.
+REPL quit := { self quitter call: Nil. }.
 REPL scope := global clone.
-REPL $scope := meta Nil. ; To be assigned in-loop
-REPL exception := meta Nil.
-REPL lastResult := meta Nil.
+REPL $scope := Nil. ; To be assigned in-loop
+REPL exception := Nil.
+REPL lastResult := Nil.
 REPL maxObjects := 10000.
 
 global quit := { self REPL quit. }.
@@ -39,7 +39,7 @@ REPL loop := { localize.
                         expr := this read.
                         this lastResult := this eval: expr.
                         this print: this hold 'lastResult. } resolve:
-                            { meta True. },
+                            { True. },
                             { this exception := $1.
                               stderr putln: "***** EXCEPTION *****".
                               stderr putln: this exception pretty.

@@ -1,41 +1,8 @@
 
-;; Cloning and metaprogramming basics
-; The clone function itself is defined in 'latitude.lat'
-meta Object is := { meta sys instanceOf#: self, $1. }.
-meta Object slot := { meta sys accessSlot#: self, $1. }.
-meta Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
-meta Object hold := { meta sys accessSlot#: self, $1. }.
-meta Object get := { self invoke (self hold) call. }.
-meta Object has := { { (parent hold 'self) slot: parent dynamic $1.
-                       meta True. } catch: SlotError,
-                                           { meta False. }. }.
-meta Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
-meta Object origin := { meta sys origin#: self, $1. }.
-meta Object invoke := { procd := meta Proc clone.
-                        procd call := { meta sys invoke#: parent self,
-                                                          (parent dynamic hold '$1). }.
-                        procd. }.
-meta Object invokeSpecial := { procd := meta Proc clone.
-                               procd call := { meta sys doWithCallback#: parent self,
-                                                                         (parent dynamic hold '$1),
-                                                                         (parent dynamic hold '$2). }.
-                               procd. }.
-meta Object above := { orgn := self origin: $1.
-                       (hold 'orgn) parent hold: $1. }.
-meta Object tap := { (self invoke: (dynamic hold '$1)) call.
-                     self. }.
-meta Object hierarchy := { arr := meta Array clone. ; DO NOT call this on Method or any self-evaluating objects
-                           curr := self.
-                           while { (arr detect: { ($1) === (curr). }) not. }
-                              do { arr pushBack: curr.
-                                   parent curr := curr parent. }.
-                           arr. }.
-meta Object keys := { meta sys objectKeys#: hold 'self. }.
-
 ;; Move all of the meta values to the global scope
 global Object := meta Object.
 global Proc := meta Proc.
-global Method := meta hold 'Method.
+global Method := meta Method.
 global Number := meta Number.
 global String := meta String.
 global Symbol := meta Symbol.
@@ -50,6 +17,41 @@ global Exception := meta Exception.
 global SystemError := meta SystemError.
 global Array := meta Array.
 global Kernel := meta Kernel.
+global StackFrame := meta StackFrame.
+global FileHeader := meta FileHeader.
+
+;; Cloning and metaprogramming basics
+; The clone function itself is defined in 'latitude.lat'
+Object is := { meta sys instanceOf#: self, $1. }.
+Object slot := { meta sys accessSlot#: self, $1. }.
+Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
+Object hold := { meta sys accessSlot#: self, $1. }.
+Object get := { self invoke (self hold) call. }.
+Object has := { { (parent hold 'self) slot: parent dynamic $1.
+                  True. } catch: SlotError,
+                                 { False. }. }.
+Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
+Object origin := { meta sys origin#: self, $1. }.
+Object invoke := { procd := Proc clone.
+                   procd call := { meta sys invoke#: parent self,
+                                                     (parent dynamic hold '$1). }.
+                   procd. }.
+Object invokeSpecial := { procd := Proc clone.
+                          procd call := { meta sys doWithCallback#: parent self,
+                                                                    (parent dynamic hold '$1),
+                                                                    (parent dynamic hold '$2). }.
+                          procd. }.
+Object above := { orgn := self origin: $1.
+                  (hold 'orgn) parent hold: $1. }.
+Object tap := { (self invoke: (dynamic hold '$1)) call.
+                self. }.
+Object hierarchy := { arr := Array clone. ; DO NOT call this on Method or any self-evaluating objects
+                      curr := self.
+                      while { (arr detect: { ($1) === (curr). }) not. }
+                         do { arr pushBack: curr.
+                              parent curr := curr parent. }.
+                      arr. }.
+Object keys := { meta sys objectKeys#: hold 'self. }.
 
 ;; The $whereAmI variable
 global $whereAmI := Nil.
@@ -60,31 +62,31 @@ meta sigil := Object clone.
 meta toString := "meta".
 
 ;; Basics of exception handling
-(hold 'Method) handle := { meta sys handler#: dynamic hold '$1.
-                           result := self.
-                           meta sys unhandler#.
-                           hold 'result. }.
-(hold 'Method) resolve := { mthd := hold 'self.
-                            cond := dynamic hold '$1.
-                            catcher := dynamic hold '$2.
-                            jump := Nil.
-                            setJump := { parent jump := $1. }.
-                            callCC { outer := $1.
-                                     callCC { inner := $1.
-                                              result := callCC { setJump: $1.
-                                                                 inner call: meta Nil. }.
-                                              outer call: (catcher: result). }.
-                                     (hold 'mthd) handle { exc := $1.
-                                                           (cond: exc) ifTrue: { jump call: exc. }. }. }. }.
-(hold 'Method) catch := { (hold 'self) resolve: { $1 is: parent dynamic $1. }, dynamic hold '$2. }.
-(hold 'Method) catchAll := { (hold 'self) catch: Exception, dynamic hold '$1. }.
-(hold 'Method) default := { (hold 'self) catch: Exception, dynamic hold '$1. }.
+Method handle := { meta sys handler#: dynamic hold '$1.
+                   result := self.
+                   meta sys unhandler#.
+                   hold 'result. }.
+Method resolve := { mthd := hold 'self.
+                    cond := dynamic hold '$1.
+                    catcher := dynamic hold '$2.
+                    jump := Nil.
+                    setJump := { parent jump := $1. }.
+                    callCC { outer := $1.
+                             callCC { inner := $1.
+                                      result := callCC { setJump: $1.
+                                                         inner call: Nil. }.
+                                      outer call: (catcher: result). }.
+                             (hold 'mthd) handle { exc := $1.
+                                                   (cond: exc) ifTrue: { jump call: exc. }. }. }. }.
+Method catch := { (hold 'self) resolve: { $1 is: parent dynamic $1. }, dynamic hold '$2. }.
+Method catchAll := { (hold 'self) catch: Exception, dynamic hold '$1. }.
+Method default := { (hold 'self) catch: Exception, dynamic hold '$1. }.
 ; Observe that `rethrow` is not overriden in `Exception`, so it will never set the `stack` field.
 Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
 Exception throw := { self stack := currentStackTrace parent.
                      (self invoke: (Object hold 'throw)) call. }.
-(hold 'Method) protect := { thunk: { }, hold 'self, dynamic hold '$1. }.
+Method protect := { thunk: { }, hold 'self, dynamic hold '$1. }.
 global thunk := { meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
                   $1.
                   result := $2.
@@ -93,12 +95,12 @@ global thunk := { meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
                   hold 'result. }.
 
 ;; Procs and Methods handling
-(hold 'Method) closure := global.
+Method closure := global.
 Proc call := {}.
-(hold 'Method) call := { self. }.
-(hold 'Method) toString := "Method".
+Method call := { self. }.
+Method toString := "Method".
 Proc toString := "Proc".
-(hold 'Method) < := { (self) < ($1). }. ; Evaluate the method and then try again
+Method < := { (self) < ($1). }. ; Evaluate the method and then try again
 Proc <| := { proc { r := (parent dynamic hold '$1) call.
                     (parent hold 'self) call: r. }. }.
 Proc |> := { (dynamic hold '$1) <| (hold 'self). }.
@@ -149,15 +151,15 @@ Stream dump := { localize.
                  obj := dynamic hold '$1.
                  this println: obj.
                  obj keys visit { this putln: "  " ++ ($1 asText) ++ ": " ++ ((obj hold: $1) toString). }.
-                 meta Nil. }.
+                 Nil. }.
 Object println := { stdout println: hold 'self. }.
 Object dump := { stdout dump: hold 'self. }.
 
 ;; Process basics
 Process toString := "Process".
-Process stdin := { meta sys processInStream#: meta Stream clone, self. }.
-Process stdout := { meta sys processOutStream#: meta Stream clone, self. }.
-Process stderr := { meta sys processErrStream#: meta Stream clone, self. }.
+Process stdin := { meta sys processInStream#: Stream clone, self. }.
+Process stdout := { meta sys processOutStream#: Stream clone, self. }.
+Process stderr := { meta sys processErrStream#: Stream clone, self. }.
 Process spawn := { meta sys processCreate#: self, $1. }.
 Process finished? := { meta sys processFinished#: self. }.
 Process running? := { meta sys processRunning#: self. }.
@@ -175,7 +177,7 @@ Object me := { self. }.
 global do := { $1. }.
 global here := { if: (self has 'again),
                      { parent self hold 'again. },
-                     { meta Nil. }. }.
+                     { Nil. }. }.
 global toString := { if: (self) === (global),
                          "global",
                          "#<Scope>". }.
@@ -252,18 +254,18 @@ String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
 
 ; File headers
-meta FileHeader toString := "FileHeader".
-meta FileHeader packageName := Nil.
-meta FileHeader moduleName := Nil.
+FileHeader toString := "FileHeader".
+FileHeader packageName := Nil.
+FileHeader moduleName := Nil.
 
 ; Locality information
-meta StackFrame toString := "StackFrame".
-meta StackFrame line := 0.
-meta StackFrame file := "".
-meta StackFrame dump := { if: { (parent self) === (meta StackFrame). },
-                              { meta Nil. },
-                              { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
-                                parent self parent dump. }. }.
+StackFrame toString := "StackFrame".
+StackFrame line := 0.
+StackFrame file := "".
+StackFrame dump := { if: { (parent self) === (StackFrame). },
+                         { Nil. },
+                         { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
+                           parent self parent dump. }. }.
 global currentStackTrace := { meta sys stackTrace# parent. }.
 global printStackTrace := { self stackTrace parent dump. }.
 
