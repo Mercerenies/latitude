@@ -48,6 +48,7 @@ One-byte opcodes, followed by whatever arguments the system expects
 
  == Etc ==
 %trns (1C) - A stack of translation units
+%lit (1D) - A table of literal value objects, indexed by integers
 
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack
@@ -119,6 +120,9 @@ untr (2F) - Pop %trns once, discarding the result
 
 cmplx RL IM (30 STR STR) - Construct a complex number into %num0
 
+yld INT REG (31 INT REG) - Get the nth value from %lit and put it into the register, set %err0 if invalid
+yldc INT REG (32 INT REG) - Get the nth value from %lit and put a clone into the register, set %err0 if invalid
+
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)
@@ -157,3 +161,14 @@ It can be passed
  - %strm - To convert to stream ptr
  - %prcs - To convert to process ptr
  - %mthdz - To convert to method (as with %mthd)
+
+((( notes on rtrv / rtrvd )))
+ - rtrvd DOES check the current object
+ - rtrvd DOES NOT check parent objects
+ - rtrvd DOES NOT look for `missing` or `missed` declarations
+ - rtrvd DOES set the %err0 flag on failure
+ 1. rtrv first checks the current object
+ 2. rtrv then checks any parent objects recursively until it encounters a cycle
+ 3. rtrv then looks for a `missing` method in the current and parent objects
+ 4. rtrv then looks for a `missed` method in the lexical meta object
+ 5. If all of the above fail, rtrv triggers a kernel panic and terminates the virtual machine

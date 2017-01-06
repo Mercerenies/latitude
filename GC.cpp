@@ -74,16 +74,23 @@ void addWindToFrontier(const Container& visited, Container& frontier, stack<Wind
     }
 }
 
+template <typename Container, typename T>
+void addMapToFrontier(const Container& visited, Container& frontier, map<T, ObjectPtr>& map) {
+    for (auto& value : map)
+        addToFrontier(visited, frontier, value.second);
+}
+
 template <typename Container>
 void addContinuationToFrontier(const Container& visited, Container& frontier, IntState& state) {
-    addToFrontier(visited, frontier, state.ptr);
-    addToFrontier(visited, frontier, state.slf);
-    addToFrontier(visited, frontier, state.ret);
-    addStackToFrontier(visited, frontier, state.lex);
-    addStackToFrontier(visited, frontier, state.dyn);
-    addStackToFrontier(visited, frontier, state.arg);
-    addStackToFrontier(visited, frontier, state.sto);
+    addToFrontier     (visited, frontier, state.ptr );
+    addToFrontier     (visited, frontier, state.slf );
+    addToFrontier     (visited, frontier, state.ret );
+    addStackToFrontier(visited, frontier, state.lex );
+    addStackToFrontier(visited, frontier, state.dyn );
+    addStackToFrontier(visited, frontier, state.arg );
+    addStackToFrontier(visited, frontier, state.sto );
     addStackToFrontier(visited, frontier, state.hand);
+    addMapToFrontier  (visited, frontier, state.lit );
 }
 
 template <typename Container>
@@ -102,13 +109,6 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<ENTER GC>>" << std::endl;
 #endif
-    /* // This shouldn't be necessary anymore since we're using the standard lt operator
-    struct WeakLess {
-        bool operator()(const ObjectPtr& obj0, const ObjectPtr& obj1) const noexcept {
-            return obj0 < obj1;
-        }
-    };
-    */
     std::set<ObjectPtr> visited;
     std::set<ObjectPtr> frontier;
     for (auto elem : globals)

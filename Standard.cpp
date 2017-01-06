@@ -633,14 +633,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // stringConcat#: str1, str2.
     sys->put(Symbols::get()["stringConcat#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["String"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
+                          asmCode(makeAssemblerLine(Instr::YLDC, Lit::STRING, Reg::RET),
                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -669,14 +662,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // numPow#: n1, n2.
     sys->put(Symbols::get()["numAdd#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
+                          asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -698,14 +684,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
     sys->put(Symbols::get()["numSub#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
+                          asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -727,14 +706,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
     sys->put(Symbols::get()["numMul#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
+                          asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -756,14 +728,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
     sys->put(Symbols::get()["numDiv#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
+                          asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -785,14 +750,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
     sys->put(Symbols::get()["numMod#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
+                          asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -814,14 +772,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
     sys->put(Symbols::get()["numPow#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
+                          asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -1477,15 +1428,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      // FILE_HEADER (check the %str0 file and put a FileHeader object in %ret)
      // fileHeader#: filename.
      state.cpp[FILE_HEADER] = [](IntState& state0) {
-         InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["FileHeader"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF));
+         InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLDC, Lit::FHEAD, Reg::SLF));
          InstrSeq mid;
          Header header = getFileHeader(state0.str0);
          if (header.fields & (unsigned int)HeaderField::MODULE) {
@@ -1876,14 +1819,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      };
      sys->put(Symbols::get()["numTrig#"],
               defineMethod(unit, global, method,
-                           asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                   makeAssemblerLine(Instr::RTRV),
-                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                   makeAssemblerLine(Instr::RTRV),
-                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                   makeAssemblerLine(Instr::CLONE),
+                           asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                    makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                    makeAssemblerLine(Instr::GETD, Reg::SLF),
                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -1912,14 +1848,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      };
      sys->put(Symbols::get()["numFloor#"],
               defineMethod(unit, global, method,
-                           asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                   makeAssemblerLine(Instr::RTRV),
-                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index),
-                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                   makeAssemblerLine(Instr::RTRV),
-                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                   makeAssemblerLine(Instr::CLONE),
+                           asmCode(makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::RET),
                                    makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                    makeAssemblerLine(Instr::GETD, Reg::SLF),
                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
@@ -2110,7 +2039,19 @@ ObjectPtr spawnObjects(IntState& state) {
     stdin_->prim(inStream());
     stderr_->prim(errStream());
 
-    // The core libraries
+    // Spawn the literal objects table
+    state.lit[Lit::NIL   ] = nil;
+    state.lit[Lit::FALSE ] = false_;
+    state.lit[Lit::TRUE  ] = true_;
+    state.lit[Lit::BOOL  ] = boolean;
+    state.lit[Lit::STRING] = string;
+    state.lit[Lit::NUMBER] = number;
+    state.lit[Lit::SYMBOL] = symbol;
+    state.lit[Lit::METHOD] = method;
+    state.lit[Lit::SFRAME] = stackFrame;
+    state.lit[Lit::FHEAD ] = fileHeader;
+
+    // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);
 
     return global;

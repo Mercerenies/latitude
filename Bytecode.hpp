@@ -61,6 +61,7 @@ struct IntState {
     std::string file;
     std::stack<BacktraceFrame> trace;
     std::stack<TranslationUnitPtr> trns;
+    std::map<long, ObjectPtr> lit;
 };
 
 struct Thunk {

@@ -148,6 +148,10 @@ namespace _V {
     struct Necessary<Instr::UNTR> { typedef std::tuple<> type; };
     template <>
     struct Necessary<Instr::CMPLX> { typedef std::tuple<VString, VString> type; };
+    template <>
+    struct Necessary<Instr::YLD> { typedef std::tuple<VLong, VReg> type; };
+    template <>
+    struct Necessary<Instr::YLDC> { typedef std::tuple<VLong, VReg> type; };
 
 }
 

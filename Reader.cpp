@@ -346,13 +346,7 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     //stateLine(seq);
 
     // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Method"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::METHOD, Reg::RET)).appendOnto(seq);
 
     // Translate the method sequence
     InstrSeq mthd;
@@ -360,12 +354,7 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     stateFile(mthd);
     if (contents.empty()) {
         // If the method is empty, it defaults to `meta Nil.`
-        mthd = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                       makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                       makeAssemblerLine(Instr::RTRV),
-                       makeAssemblerLine(Instr::SYMN, Symbols::get()["Nil"].index),
-                       makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                       makeAssemblerLine(Instr::RTRV));
+        mthd = asmCode(makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET));
     } else {
         for (auto& val : contents) {
             val->translate(unit, mthd);
@@ -376,7 +365,6 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     FunctionIndex index = unit.pushMethod(mthd);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::MTHD, index)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::MTHD)).appendOnto(seq);
@@ -404,17 +392,9 @@ void StmtNumber::translate(TranslationUnit& unit, InstrSeq& seq) {
     //stateLine(seq);
 
     // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::FLOAT, to_string(value))).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -429,17 +409,9 @@ void StmtInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
     //stateLine(seq);
 
     // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::INT, value)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -454,17 +426,9 @@ void StmtBigInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
     //stateLine(seq);
 
     // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::NUM, value)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -479,17 +443,9 @@ void StmtString::translate(TranslationUnit& unit, InstrSeq& seq) {
     //stateLine(seq);
 
     // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["String"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::STRING, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::STR, value)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::STR0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -504,17 +460,9 @@ void StmtSymbol::translate(TranslationUnit& unit, InstrSeq& seq) {
     //stateLine(seq);
 
     // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Symbol"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYM, value)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -704,25 +652,14 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     auto prefix = [this, &unit](const InstrSeq& arg) {
         InstrSeq result;
         // Find the literal object to use
-        (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(result);
-        (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(result);
-        (makeAssemblerLine(Instr::RTRV)).appendOnto(result);
-        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(result);
-        (makeAssemblerLine(Instr::SYMN, Symbols::get()["Method"].index)).appendOnto(result);
-        (makeAssemblerLine(Instr::RTRV)).appendOnto(result);
-        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(result);
+        (makeAssemblerLine(Instr::YLDC, Lit::METHOD, Reg::PTR)).appendOnto(result);
         // Translate the method sequence
         InstrSeq mthd;
         stateLine(mthd); // TODO These are overwritten if arg is empty (same in StmtMethod)
         stateFile(mthd);
         if (arg.empty()) {
             // If the method is empty, it defaults to `meta Nil.`
-            mthd = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                           makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                           makeAssemblerLine(Instr::RTRV),
-                           makeAssemblerLine(Instr::SYMN, Symbols::get()["Nil"].index),
-                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                           makeAssemblerLine(Instr::RTRV));
+            mthd = asmCode(makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET));
         } else {
             mthd.insert(mthd.end(), arg.begin(), arg.end());
         }
@@ -730,8 +667,6 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
         // Register with the translation unit
         FunctionIndex index = unit.pushMethod(mthd);
         // Clone and put a prim() onto it
-        (makeAssemblerLine(Instr::CLONE)).appendOnto(result);
-        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(result);
         (makeAssemblerLine(Instr::MTHD, index)).appendOnto(result);
         (makeAssemblerLine(Instr::LOAD, Reg::MTHD)).appendOnto(result);
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(result);
@@ -805,17 +740,9 @@ void StmtComplex::translate(TranslationUnit& unit, InstrSeq& seq) {
     //stateLine(seq);
 
     // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Number"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CMPLX, to_string(rl), to_string(im))).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
@@ -854,20 +781,12 @@ void StmtDoubleEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Put the value
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO)).appendOnto(seq);
 
     // Get the function name as an object
-    (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["Symbol"].index)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::CLONE)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq);

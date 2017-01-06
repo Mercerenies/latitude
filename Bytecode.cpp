@@ -671,16 +671,8 @@ void executeInstr(Instr instr, IntState& state) {
                 // Find the literal object to use for the argument
                 (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::SYMN, Symbols::get()["Symbol"].index)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::RTRV)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq0);
+                (makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR)).appendOnto(seq0);
                 // Clone and put a prim() onto it
-                (makeAssemblerLine(Instr::CLONE)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::SYMN, backup.index)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
                 (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
@@ -1227,12 +1219,7 @@ void executeInstr(Instr instr, IntState& state) {
             }
         };
         stackUnwind(state.trace);
-        InstrSeq intro = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                 makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                 makeAssemblerLine(Instr::RTRV),
-                                 makeAssemblerLine(Instr::SYMN, Symbols::get()["StackFrame"].index),
-                                 makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                 makeAssemblerLine(Instr::RTRV));
+        InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLD, Lit::SFRAME, Reg::RET));
         total.insert(total.begin(), intro.begin(), intro.end());
         state.stack = pushNode(state.stack, state.cont);
         state.cont = CodeSeek(move(total));
@@ -1267,6 +1254,61 @@ void executeInstr(Instr instr, IntState& state) {
         double rl = strtod(str0.c_str(), NULL);
         double im = strtod(str1.c_str(), NULL);
         state.num0 = Number(Number::complex(rl, im));
+    }
+        break;
+    case Instr::YLD: {
+        long val = state.cont.popLong();
+        Reg reg = state.cont.popReg();
+#if DEBUG_INSTR > 0
+        cout << "YLD " << val << " " << (long)reg << endl;
+#endif
+        auto obj = state.lit[val];
+        if (obj) {
+            switch (reg) {
+            case Reg::PTR:
+                state.ptr = obj;
+                break;
+            case Reg::SLF:
+                state.slf = obj;
+                break;
+            case Reg::RET:
+                state.ret = obj;
+                break;
+            default:
+                state.err0 = true;
+                break;
+            }
+        } else {
+            state.err0 = true;
+        }
+    }
+        break;
+    case Instr::YLDC: {
+        long val = state.cont.popLong();
+        Reg reg = state.cont.popReg();
+#if DEBUG_INSTR > 0
+        cout << "YLDC " << val << " " << (long)reg << endl;
+#endif
+        auto obj = state.lit[val];
+        if (obj) {
+            obj = clone(obj);
+            switch (reg) {
+            case Reg::PTR:
+                state.ptr = obj;
+                break;
+            case Reg::SLF:
+                state.slf = obj;
+                break;
+            case Reg::RET:
+                state.ret = obj;
+                break;
+            default:
+                state.err0 = true;
+                break;
+            }
+        } else {
+            state.err0 = true;
+        }
     }
         break;
     }

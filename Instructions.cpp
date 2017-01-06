@@ -70,6 +70,8 @@ void InstructionSet::initialize() {
     props[Instr::LOCRT] = { };
     props[Instr::NRET] = { };
     props[Instr::UNTR] = { };
+    props[Instr::YLD] = { isLongRegisterArg, isObjectRegister };
+    props[Instr::YLDC] = { isLongRegisterArg, isObjectRegister };
 }
 
 bool isRegister(const RegisterArg& arg) {
