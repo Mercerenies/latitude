@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <unordered_map>
+#include <unordered_set>
 #include <string>
 #include <boost/variant.hpp>
 #include <boost/blank.hpp>
@@ -67,10 +68,10 @@ private:
     std::unordered_map<Symbolic, Slot> slots;
     Prim primitive;
 public:
-    virtual ~Object() = default;
-    virtual Slot operator [](Symbolic key) const;
-    virtual void put(Symbolic key, ObjectPtr ptr);
-    virtual std::set<Symbolic> directKeys() const;
+    ~Object() = default;
+    Slot operator [](Symbolic key) const;
+    void put(Symbolic key, ObjectPtr ptr);
+    std::set<Symbolic> directKeys() const;
     Prim& prim() noexcept;
     template <typename T>
     Prim prim(const T& prim0);
