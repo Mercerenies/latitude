@@ -12,11 +12,11 @@ Object has := { { (parent hold 'self) slot: parent dynamic $1.
 Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 Object origin := { meta sys origin#: self, $1. }.
 Object invoke := { procd := Proc clone.
-                   procd call := { meta sys invoke#: parent self,
+                   procd call := { meta sys invoke#: parent hold 'self,
                                                      (parent dynamic hold '$1). }.
                    procd. }.
 Object invokeSpecial := { procd := Proc clone.
-                          procd call := { meta sys doWithCallback#: parent self,
+                          procd call := { meta sys doWithCallback#: parent hold 'self,
                                                                     (parent dynamic hold '$1),
                                                                     (parent dynamic hold '$2). }.
                           procd. }.
@@ -76,7 +76,7 @@ global thunk := { meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
 ;; Procs and Methods handling
 Method closure := global.
 Proc call := {}.
-Method call := { self. }.
+Method call := { hold 'self invoke (hold 'self) call. }.
 Method toString := "Method".
 Proc toString := "Proc".
 Method < := { (self) < ($1). }. ; Evaluate the method and then try again
