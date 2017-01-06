@@ -198,6 +198,11 @@ Kernel GC trace := { self traced := True. }.
 Kernel GC untrace := { self traced := False. }.
 ; (The load function is defined in the main latitude.lat file)
 
+; NOTE: The kernel protection methods are provided for users who are making modifications to the language
+;       itself. They are designed to be used to prevent dangerous modifications which would crash the VM.
+;       The protection system is NOT designed to make fields on ordinary objects private or untouchable
+;       and should not be used as such.
+
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.
 Kernel env= := { if: { parent dynamic $2 nil?. },
