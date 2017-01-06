@@ -1,7 +1,6 @@
 ;;* MODULE util
 ;;* PACKAGE base
 
-ReadOnlyError := ReadOnlyError.
 Array := Array.
 ArgList := ArgList.
 Proc := Proc.
@@ -53,7 +52,7 @@ Generator toString := "Generator".
 Generator iterator := { self. }.
 Generator end? := True.
 Generator element := Nil.
-Generator element= := { ReadOnlyError clone tap { self message := "Generators are read-only". } throw. }.
+Generator element= := { err ReadOnlyError clone tap { self message := "Generators are read-only". } throw. }.
 Generator next := { }.
 Generator call := { self next.
                     self element. }.

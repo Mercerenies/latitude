@@ -35,12 +35,12 @@ Array pushBack := { value := $1.
                     self upperBound := self upperBound + 1.
                     value. }.
 Array popFront := { if: self empty?,
-                        { BoundsError clone throw. },
+                        { err BoundsError clone throw. },
                         { self := parent self.
                           self lowerBound := self lowerBound + 1.
                           self get: (self mapping: (self lowerBound - 1)) ordinal. }. }.
 Array popBack := { if: self empty?,
-                       { BoundsError clone throw. },
+                       { err BoundsError clone throw. },
                        { self := parent self.
                          self upperBound := self upperBound - 1.
                          self get: (self mapping: self upperBound) ordinal. }. }.
@@ -48,14 +48,14 @@ Array nth := { pos := if: ($1 < 0),
                           { (parent self upperBound) + (parent dynamic $1). },
                           { (parent self lowerBound) + (parent dynamic $1). }.
                if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                   { BoundsError clone throw. },
+                   { err BoundsError clone throw. },
                    { self := parent self.
                      self get: (self mapping: pos) ordinal. }. }.
 Array nth= := { pos := if: ($1 < 0),
                            { (parent self upperBound) + (parent dynamic $1). },
                            { (parent self lowerBound) + (parent dynamic $1). }.
                 if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                    { BoundsError clone throw. },
+                    { err BoundsError clone throw. },
                     { self := parent self.
                       self put: (self mapping: pos) ordinal, parent dynamic $2. }. }.
 Array size := { (self upperBound) - (self lowerBound). }.

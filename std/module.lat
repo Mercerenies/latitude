@@ -48,9 +48,9 @@ global use := { takes '[pname].
                 fname := $moduleLoader resolveImport: pname.
                 header := Kernel readHeader: fname.
                 (header moduleName) ifFalse
-                    { ModuleError clone tap { self message := "Module has no name". } throw. }.
+                    { err ModuleError clone tap { self message := "Module has no name". } throw. }.
                 (header packageName) ifFalse
-                    { ModuleError clone tap { self message := "Module has no package". } throw. }.
+                    { err ModuleError clone tap { self message := "Module has no package". } throw. }.
                 name := (header packageName) ++ " " ++ (header moduleName) intern.
                 if: $moduleLoader &loaded has (name),
                     { $moduleLoader &loaded get: name. },

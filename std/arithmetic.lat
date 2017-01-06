@@ -3,7 +3,7 @@
 Number toString := { meta sys numToString#: self. }.
 Number == := { meta sys primEquals#: self, $1. }.
 Number < := { if: { parent self isComplex?. } or { parent dynamic $1 isComplex?. },
-                  { TypeError clone tap { self message := "Cannot compare complex numbers". } throw. },
+                  { err TypeError clone tap { self message := "Cannot compare complex numbers". } throw. },
                   { meta sys primLT#: parent self, parent dynamic $1. }. }.
 
 Number + := { meta sys numAdd#: self, $1. }.
@@ -11,7 +11,7 @@ Number - := { meta sys numSub#: self, $1. }.
 Number * := { meta sys numMul#: self, $1. }.
 Number / := { meta sys numDiv#: self, $1. }.
 Number mod := { if: { parent self isComplex?. } or { parent dynamic $1 isComplex?. },
-                    { TypeError clone tap { self message := "Cannot modulo complex numbers". } throw. },
+                    { err TypeError clone tap { self message := "Cannot modulo complex numbers". } throw. },
                     { meta sys numMod#: parent self, parent dynamic $1. }. }.
 Number ^ := { meta sys numPow#: self, $1. }.
 
@@ -19,7 +19,7 @@ global - := { 0 - ($1). }.
 global / := { 1 / ($1). }.
 
 Number floor := { if: { parent self isComplex?. },
-                      { TypeError clone tap { self message := "Cannot round complex numbers". } throw. },
+                      { err TypeError clone tap { self message := "Cannot round complex numbers". } throw. },
                       { meta sys numFloor#: parent self. }. }.
 Number round := { (self + 0.5) floor. }.
 Number ceil := { - (- (self) floor). }.
@@ -79,7 +79,7 @@ Number isComplex? := { (meta sys numLevel#: self) == 4. }.
 
 ;; Radixes
 String radix := { takes '[rad].
-                  (rad < 2) or (rad > 36) ifTrue { ArgError clone tap
+                  (rad < 2) or (rad > 36) ifTrue { err ArgError clone tap
                                                        { self message := "Radix out of bounds". } throw. }.
                   convert := { takes '[n].
                                if: (n >= ("0" ord)) and (n <= ("9" ord)),
@@ -88,9 +88,9 @@ String radix := { takes '[rad].
                                          { n - ("a" ord) + 10. },
                                          { if: (n >= ("A" ord)) and (n <= ("Z" ord)),
                                                { n - ("A" ord) + 10. },
-                                               { InputError clone tap
+                                               { err InputError clone tap
                                                      { self message := "Text is not a number". } throw. }. }. }. }.
-                  validate := { ($1) >= (rad) ifTrue { InputError clone tap
+                  validate := { ($1) >= (rad) ifTrue { err InputError clone tap
                                                            { self message := "Text is not a number". } throw. }. }.
                   num := 0.
                   self visit { curr := convert: $1 ord.
@@ -104,7 +104,8 @@ modifiedRadix := { takes '[str, rad, parm].
                        { - (result). },
                        { if: (parm == '+) or (parm == '()),
                              { result. },
-                             { ArgError clone tap { self message := "Sign does not make sense". } throw. }. }. }.
+                             { err ArgError clone tap
+                                   { self message := "Sign does not make sense". } throw. }. }. }.
 
 meta radix x := { modifiedRadix: $1, 16, $2. }.
 meta radix X := { modifiedRadix: $1, 16, $2. }.

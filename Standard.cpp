@@ -1987,25 +1987,27 @@ ObjectPtr spawnObjects(IntState& state) {
     ObjectPtr true_(clone(boolean));
     ObjectPtr false_(clone(boolean));
 
-    // Meta calls for basic types
-    meta->put(Symbols::get()["Object"], object);
-    meta->put(Symbols::get()["Proc"], proc);
-    meta->put(Symbols::get()["Method"], method);
-    meta->put(Symbols::get()["Number"], number);
-    meta->put(Symbols::get()["String"], string);
-    meta->put(Symbols::get()["Symbol"], symbol);
-    meta->put(Symbols::get()["Stream"], stream);
-    meta->put(Symbols::get()["Process"], process);
-    meta->put(Symbols::get()["True"], true_);
-    meta->put(Symbols::get()["False"], false_);
-    meta->put(Symbols::get()["Nil"], nil);
-    meta->put(Symbols::get()["Boolean"], boolean);
-    meta->put(Symbols::get()["Cont"], cont);
-    meta->put(Symbols::get()["sys"], sys);
-    meta->put(Symbols::get()["Exception"], exception);
-    meta->put(Symbols::get()["SystemError"], systemError);
-    meta->put(Symbols::get()["Array"], array_);
-    meta->put(Symbols::get()["Kernel"], kernel);
+    // Global calls for basic types
+    global->put(Symbols::get()["Object"], object);
+    global->put(Symbols::get()["Proc"], proc);
+    global->put(Symbols::get()["Method"], method);
+    global->put(Symbols::get()["Number"], number);
+    global->put(Symbols::get()["String"], string);
+    global->put(Symbols::get()["Symbol"], symbol);
+    global->put(Symbols::get()["Stream"], stream);
+    global->put(Symbols::get()["Process"], process);
+    global->put(Symbols::get()["True"], true_);
+    global->put(Symbols::get()["False"], false_);
+    global->put(Symbols::get()["Nil"], nil);
+    global->put(Symbols::get()["Boolean"], boolean);
+    global->put(Symbols::get()["Cont"], cont);
+    global->put(Symbols::get()["sys"], sys);
+    global->put(Symbols::get()["Exception"], exception);
+    global->put(Symbols::get()["SystemError"], systemError);
+    global->put(Symbols::get()["Array"], array_);
+    global->put(Symbols::get()["Kernel"], kernel);
+    global->put(Symbols::get()["StackFrame"], stackFrame);
+    global->put(Symbols::get()["FileHeader"], fileHeader);
 
     // Object is its own parent
     object->put(Symbols::get()["parent"], object);
@@ -2014,8 +2016,6 @@ ObjectPtr spawnObjects(IntState& state) {
     meta->put(Symbols::get()["meta"], meta);
     object->put(Symbols::get()["meta"], meta);
     meta->put(Symbols::get()["sys"], sys);
-    meta->put(Symbols::get()["StackFrame"], stackFrame);
-    meta->put(Symbols::get()["FileHeader"], fileHeader);
 
     // Global variables not accessible in meta
     global->put(Symbols::get()["stdin"], stdin_);
@@ -2061,7 +2061,7 @@ void throwError(IntState& state, std::string name, std::string msg) {
     state.stack = pushNode(state.stack, state.cont);
     state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
+                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["err"].index),
                                   makeAssemblerLine(Instr::RTRV),
                                   makeAssemblerLine(Instr::SYM, name),
                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -2085,7 +2085,7 @@ void throwError(IntState& state, std::string name, std::string msg) {
 void throwError(IntState& state, std::string name) {
     state.stack = pushNode(state.stack, state.cont);
     state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
+                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["err"].index),
                                   makeAssemblerLine(Instr::RTRV),
                                   makeAssemblerLine(Instr::SYM, name),
                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),

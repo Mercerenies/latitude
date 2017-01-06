@@ -1,25 +1,4 @@
 
-;; Move all of the meta values to the global scope
-global Object := meta Object.
-global Proc := meta Proc.
-global Method := meta Method.
-global Number := meta Number.
-global String := meta String.
-global Symbol := meta Symbol.
-global Stream := meta Stream.
-global Process := meta Process.
-global True := meta True.
-global False := meta False.
-global Nil := meta Nil.
-global Boolean := meta Boolean.
-global Cont := meta Cont.
-global Exception := meta Exception.
-global SystemError := meta SystemError.
-global Array := meta Array.
-global Kernel := meta Kernel.
-global StackFrame := meta StackFrame.
-global FileHeader := meta FileHeader.
-
 ;; Cloning and metaprogramming basics
 ; The clone function itself is defined in 'latitude.lat'
 Object is := { meta sys instanceOf#: self, $1. }.
@@ -28,7 +7,7 @@ Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 Object hold := { meta sys accessSlot#: self, $1. }.
 Object get := { self invoke (self hold) call. }.
 Object has := { { (parent hold 'self) slot: parent dynamic $1.
-                  True. } catch: SlotError,
+                  True. } catch: err SlotError,
                                  { False. }. }.
 Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 Object origin := { meta sys origin#: self, $1. }.

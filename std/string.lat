@@ -63,10 +63,10 @@ String padRight := { takes '[ch, n].
                         do { newStr = (newStr) ++ (ch). }.
                      newStr. }.
 
-String ord := { self == "" ifTrue { ArgError clone tap { self message := "`ord` on empty string". } throw. }.
+String ord := { self == "" ifTrue { err ArgError clone tap { self message := "`ord` on empty string". } throw. }.
                 meta sys strOrd#: self. }.
 Number chr := { (self < 0) or (self > 255) ifTrue
-                    { ArgError clone tap { self message := "`chr` arg out of bounds". } throw. }.
+                    { err ArgError clone tap { self message := "`chr` arg out of bounds". } throw. }.
                 meta sys strChr#: self. }.
 
 String iterator := { Object clone tap
@@ -76,7 +76,7 @@ String iterator := { Object clone tap
                            self next := { self index := self index + 1. }.
                            self end? := { (self index) >= (self string size). }.
                            self element := { self string substring: self index, self index + 1. }.
-                           self element= := { ReadOnlyError clone tap
+                           self element= := { err ReadOnlyError clone tap
                                                   { self message := "Strings are immutable". } throw. }. }. }.
 String map := { takes '[mthd].
                 str := "".

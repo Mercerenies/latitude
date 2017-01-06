@@ -31,11 +31,11 @@
      st))
 
 (defvar latitude-mode-font-lock-keywords
-  (list `("\\_<\\(\\sw+\\)\\s-*::?=\\s-*{"
+  (list `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
           (1 font-lock-function-name-face))
-        `("\\_<\\(&?[A-Z]\\sw+\\)\\s-*::?="
+        `("\\_<\\(&?[A-Z]\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?="
           (1 font-lock-type-face))
-        `("\\_<\\(\\sw+\\)\\s-*:="
+        `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*:="
           (1 font-lock-variable-name-face))
         `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "dynamic" "parent"
                          "here" "again" "self" "invoke" "get" "has" "put" "slot" "hold" "callCC"
@@ -43,7 +43,7 @@
                          "catch" "handle" "load" "eval" "rethrow" "inject" "iterator" "$lexical"
                          "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
                          "implements" "takes" "localize" "this" "brackets" "origin" "resolve" "protect"
-                         "thunk" "sigil" "do")
+                         "thunk" "sigil" "do" "err")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"

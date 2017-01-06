@@ -2,66 +2,45 @@
 ;; Exceptions
 Exception message := "Exception!".
 Exception toString := "Exception".
+SystemError message := "System Exception!".
+SystemError toString := "SystemError".
 
 Exception pretty := { (self toString) ++ " - " ++ (self message). }.
 Exception stack := Nil.
 Exception printStackTrace := { self stack dump. }.
 
-; TODO It's not possible to delete slots right now; should we change that? /////
+;; Error object
+global err ::= Object clone.
+err Exception := Exception.
+err SystemError := SystemError.
 
-; TODO Which of these actually need to be in `meta`?
-global SystemCallError ::= SystemError clone tap { self message := "Error in system call". }.
-meta SystemCallError := SystemCallError.
+; TODO It's not possible to delete slots right now; should we change that?
 
-global SystemArgError ::= SystemError clone tap { self message := "Wrong number of arguments to system call". }.
-meta SystemArgError := SystemArgError.
-
-global TypeError ::= SystemError clone tap { self message := "Type error". }.
-meta TypeError := TypeError.
-
-global SlotError ::= SystemError clone tap { self message := "Could not find slot".
-                                             self slotName := meta Nil.
-                                             self objectInstance := meta Nil. }.
-meta SlotError := SlotError.
-
-global ContError ::= SystemError clone tap { self message := "Continuation error". }.
-meta ContError := ContError.
-
-global ParseError ::= SystemError clone tap { self message := "Parse error". }.
-meta ParseError := ParseError.
-
-global BoundsError ::= SystemError clone tap { self message := "Bounds error". }.
-meta BoundsError := BoundsError.
-
-global IOError ::= SystemError clone tap { self message := "IO error". }.
-meta IOError := IOError.
-
-global ReadOnlyError ::= SystemError clone tap { self message := "Write access prohibited". }.
-meta ReadOnlyError := ReadOnlyError.
-
-global NotSupportedError ::= SystemError clone tap { self message := "Not supported". }.
-meta NotSupportedError := NotSupportedError.
-
-global ModuleError ::= SystemError clone tap { self message := "Module error". }.
-meta ModuleError := ModuleError.
-
-global LangError ::= SystemError clone tap { self message := "Error reading from external language". }.
-meta LangError := LangError.
-
-global InputError ::= SystemError clone tap { self message := "Input error". }.
-meta InputError := InputError.
-
-global ArgError ::= SystemError clone tap { self message := "Argument error". }.
-meta ArgError := ArgError.
+err SystemCallError ::= SystemError clone tap { self message := "Error in system call". }.
+err SystemArgError ::= SystemError clone tap { self message := "Wrong number of arguments to system call". }.
+err TypeError ::= SystemError clone tap { self message := "Type error". }.
+err SlotError ::= SystemError clone tap { self message := { "Could not find slot " ++ (self slotName). }.
+                                          self slotName := Nil.
+                                          self objectInstance := Nil. }.
+err ContError ::= SystemError clone tap { self message := "Continuation error". }.
+err ParseError ::= SystemError clone tap { self message := "Parse error". }.
+err BoundsError ::= SystemError clone tap { self message := "Bounds error". }.
+err IOError ::= SystemError clone tap { self message := "IO error". }.
+err ReadOnlyError ::= SystemError clone tap { self message := "Write access prohibited". }.
+err NotSupportedError ::= SystemError clone tap { self message := "Not supported". }.
+err ModuleError ::= SystemError clone tap { self message := "Module error". }.
+err LangError ::= SystemError clone tap { self message := "Error reading from external language". }.
+err InputError ::= SystemError clone tap { self message := "Input error". }.
+err ArgError ::= SystemError clone tap { self message := "Argument error". }.
 
 ; It is only safe to define `missing` and `missed` once `SlotError` exists. If `missing` is sought before this
 ; point, it is a standard library error and the interpreter will terminate immediately
 ; IMPORTANT NOTE: `meta missed` is an absolute last resort that will be called by the virtual machine if
 ;                 `Object missing` cannot be found. Override at your own risk!
-meta missed := { err := meta SystemError clone.
+meta missed := { err := err SystemError clone.
                  err message := "Missing method left undefined".
                  err throw. }.
-Object missing := { err := meta SlotError clone.
+Object missing := { err := err SlotError clone.
                     err slotName := dynamic hold '$1.
                     err objectInstance := lexical hold 'self.
                     err throw. }.
