@@ -335,7 +335,6 @@ CodeSeek::CodeSeek(const InstrSeq& seq)
 CodeSeek::CodeSeek(InstrSeq&& seq)
     : seq(make_shared<InstrSeq>(forward<InstrSeq>(seq))) {}
 
-#include <iostream>
 unique_ptr<InstrSeek> CodeSeek::copy() {
     return unique_ptr<InstrSeek>(new CodeSeek(*this));
 }
