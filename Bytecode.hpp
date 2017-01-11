@@ -78,6 +78,10 @@ struct WindFrame {
 IntState intState();
 StatePtr statePtr(const IntState& state);
 
+// hardKill() leaves the interpreter state in a valid but unspecified state which is guaranteed
+// to return true for isIdling(state)
+void hardKill(IntState&);
+
 void resolveThunks(IntState& state, std::stack<WindPtr> oldWind, std::stack<WindPtr> newWind);
 
 unsigned char popChar(InstrSeq& state);

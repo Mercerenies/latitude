@@ -188,6 +188,7 @@ public:
     Instr popInstr();
     FunctionIndex popFunction();
     bool atEnd();
+    void killSelf();
 };
 
 template <typename T>

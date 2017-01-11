@@ -55,6 +55,11 @@ StatePtr statePtr(const IntState& state) {
     return make_shared<IntState>(state);
 }
 
+void hardKill(IntState& state) {
+    state.cont.killSelf();
+    state.stack = shared_ptr<StackNode>();
+}
+
 void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWind) {
     deque<WindPtr> exits;
     deque<WindPtr> enters;

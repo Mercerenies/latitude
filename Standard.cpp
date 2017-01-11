@@ -92,7 +92,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
         // A last-resort termination of a fiber that malfunctioned; this should ONLY
         // be used as a last resort, as it does not correctly unwind the frames
         // before aborting
-        state0 = intState();
+        hardKill(state0);
     };
 
     // KERNEL_LOAD ($1 = filename, $2 = global)

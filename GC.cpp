@@ -1,4 +1,5 @@
 #include "GC.hpp"
+#include "Allocator.hpp"
 #include <stack>
 #include <set>
 #include <algorithm>
@@ -14,7 +15,7 @@ GC& GC::get() noexcept {
 }
 
 ObjectPtr GC::allocate() {
-    ObjectPtr ptr = new Object();
+    ObjectPtr ptr = Allocator::get().allocate();
 #if GC_PRINT > 2
     std::cout << "<<Allocating " << ptr << ">>" << std::endl;
 #endif
@@ -147,7 +148,7 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #endif
     for (ObjectPtr res : result) {
         alloc.erase(res);
-        delete res;
+        Allocator::get().free(res);
     }
 #if GC_PRINT > 0
     std::cout << "<<EXIT GC>>" << std::endl;

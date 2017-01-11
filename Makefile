@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=-I $(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=-I $(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o
 
 all: Project
 
@@ -61,7 +61,7 @@ Stream.o:	Stream.cpp Stream.hpp
 Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Stream.hpp Reader.hpp Macro.hpp Process.hpp Bytecode.hpp Instructions.hpp Assembler.hpp
 	$(CXX) $(CXXFLAGS) Garnish.cpp
 
-GC.o:	GC.cpp GC.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp
+GC.o:	GC.cpp GC.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp Allocator.hpp
 	$(CXX) $(CXXFLAGS) GC.cpp
 
 Symbol.o:	Symbol.cpp Symbol.hpp
@@ -90,6 +90,8 @@ Environment.o:	Environment.cpp Environment.hpp Platform.hpp
 
 Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
 	$(CXX) $(CXXFLAGS) Pathname.cpp
+
+Allocator.o:	Allocator.cpp Allocator.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp
 	$(CXX) $(CXXFLAGS) main.cpp

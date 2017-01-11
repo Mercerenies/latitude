@@ -433,3 +433,7 @@ FunctionIndex SeekHolder::popFunction() {
 bool SeekHolder::atEnd() {
     return internal->atEnd();
 }
+
+void SeekHolder::killSelf() {
+    internal = unique_ptr<InstrSeek>(new CodeSeek());
+}
