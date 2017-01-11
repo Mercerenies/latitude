@@ -47,11 +47,16 @@ enum class SlotType { PTR, INH };
 class Slot {
 private:
     ObjectPtr obj;
+    bool is_protected;
 public:
     Slot() noexcept;
     Slot(ObjectPtr ptr) noexcept;
+    Slot(ObjectPtr ptr, bool protect) noexcept;
     SlotType getType() const noexcept;
     ObjectPtr getPtr() const;
+    void putPtr(ObjectPtr ptr);
+    void protect() noexcept;
+    bool isProtected() const noexcept;
 };
 
 /*
@@ -66,7 +71,6 @@ public:
 class Object {
 private:
     std::unordered_map<Symbolic, Slot> slots;
-    std::unordered_set<Symbolic> protected_slots;
     Prim primitive;
 public:
     Slot operator [](Symbolic key) const;

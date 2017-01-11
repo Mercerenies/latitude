@@ -8,11 +8,13 @@
 
 using namespace std;
 
-Slot::Slot() noexcept : obj(nullptr) {}
+Slot::Slot() noexcept : Slot(nullptr, false) {}
 
-Slot::Slot(ObjectPtr ptr) noexcept : obj(ptr) {}
+Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, false) {}
 
-SlotType Slot::getType() const noexcept{
+Slot::Slot(ObjectPtr ptr, bool protect) noexcept : obj(ptr), is_protected(protect) {}
+
+SlotType Slot::getType() const noexcept {
     if (obj != nullptr)
         return SlotType::PTR;
     else
@@ -26,6 +28,18 @@ ObjectPtr Slot::getPtr() const {
         return nullptr;
 }
 
+void Slot::putPtr(ObjectPtr ptr) {
+    obj = ptr;
+}
+
+void Slot::protect() noexcept {
+    is_protected = true;
+}
+
+bool Slot::isProtected() const noexcept {
+    return is_protected;
+}
+
 Slot Object::operator [](Symbolic key) const {
     auto iter = slots.find(key);
     if (iter == slots.end())
@@ -35,10 +49,11 @@ Slot Object::operator [](Symbolic key) const {
 }
 
 void Object::put(Symbolic key, ObjectPtr ptr) {
-    if (slots.find(key) == slots.end())
+    auto iter = slots.find(key);
+    if (iter == slots.end())
         slots.emplace(key, Slot(ptr));
     else
-        slots[key] = Slot(ptr);
+        iter->second.putPtr(ptr);
 }
 
 set<Symbolic> Object::directKeys() const {
@@ -49,11 +64,15 @@ set<Symbolic> Object::directKeys() const {
 }
 
 bool Object::isProtected(Symbolic key) const {
-    return protected_slots.find(key) != protected_slots.end();
+    return (*this)[key].isProtected();
 }
 
 void Object::protect(Symbolic key) {
-    protected_slots.insert(key);
+    auto iter = slots.find(key);
+    if (iter == slots.end())
+        slots.emplace(key, Slot(nullptr, true));
+    else
+        iter->second.protect();
 }
 
 void Object::protectAll() {}
