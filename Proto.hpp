@@ -33,9 +33,6 @@ using Prim = boost::variant<boost::blank, Number, std::string,
                             StreamPtr, Symbolic, ProcessPtr,
                             Method, StatePtr>;
 
-// TODO Overhaul the prim() interface and probably switch to using subclasses to represent "primitives",
-//      as the boost::variant approach to primitives is starting to explode in complexity.
-
 enum class SlotType { PTR, INH };
 
 /*
