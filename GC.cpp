@@ -62,6 +62,15 @@ void addStackToFrontier(const Container& visited, Container& frontier, stack<Obj
 }
 
 template <typename Container>
+void addStackToFrontier(const Container& visited, Container& frontier, NodePtr<ObjectPtr> stack) {
+    if (stack) {
+        auto fst = stack->get();
+        addToFrontier(visited, frontier, fst);
+        addStackToFrontier(visited, frontier, popNode(stack));
+    }
+}
+
+template <typename Container>
 void addWindToFrontier(const Container& visited, Container& frontier, stack<WindPtr>& stack) {
     if (!stack.empty()) {
         auto fst = stack.top();

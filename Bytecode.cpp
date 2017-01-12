@@ -48,16 +48,16 @@ void hardKill(IntState& state) {
     state.stack = NodePtr<SeekHolder>();
 }
 
-void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWind) {
+void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
     deque<WindPtr> exits;
     deque<WindPtr> enters;
-    while (!oldWind.empty()) {
-        exits.push_back(oldWind.top());
-        oldWind.pop();
+    while (oldWind) {
+        exits.push_back(oldWind->get());
+        oldWind = popNode(oldWind);
     }
-    while (!newWind.empty()) {
-        enters.push_front(newWind.top());
-        newWind.pop();
+    while (newWind) {
+        enters.push_front(newWind->get());
+        newWind = popNode(newWind);
     }
     // Determine what the two scopes have in common and remove them
     // (There's no reason to run an 'after' and then a corresponding 'before' from the same thunk)
@@ -418,7 +418,7 @@ void executeInstr(Instr instr, IntState& state) {
             state.lex.top()->protectAll(Symbols::get()["self"], Symbols::get()["again"],
                                         Symbols::get()["lexical"], Symbols::get()["dynamic"]);
             // (5) Push the trace information
-            state.trace.push( make_tuple(state.line, state.file) );
+            state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
             if (!state.dyn.empty()) {
                 int index = args;
@@ -512,7 +512,7 @@ void executeInstr(Instr instr, IntState& state) {
             state.lex.top()->protectAll(Symbols::get()["self"], Symbols::get()["again"],
                                         Symbols::get()["lexical"], Symbols::get()["dynamic"]);
             // (5) Push the trace information
-            state.trace.push( make_tuple(state.line, state.file) );
+            state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
             if (!state.dyn.empty()) {
                 int index = args;
@@ -544,10 +544,10 @@ void executeInstr(Instr instr, IntState& state) {
             state.err0 = true;
         else
             state.dyn.pop();
-        if (state.trace.empty())
+        if (!state.trace)
             state.err0 = true;
         else
-            state.trace.pop();
+            state.trace = popNode(state.trace);
         if (state.trns.empty())
             state.err0 = true;
         else
@@ -1060,7 +1060,7 @@ void executeInstr(Instr instr, IntState& state) {
             frame->after.code = *after;
             frame->after.lex = (*state.ptr)[ Symbols::get()["closure"] ].getPtr();
             frame->after.dyn = state.dyn.top();
-            state.wind.push(frame);
+            state.wind = pushNode(state.wind, frame);
         } else {
 #if DEBUG_INSTR > 0
         cout << "* Not methods" << endl;
@@ -1073,7 +1073,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "UNWND" << endl;
 #endif
-        state.wind.pop();
+        state.wind = popNode(state.wind);
     }
         break;
     case Instr::THROW: {
@@ -1186,40 +1186,35 @@ void executeInstr(Instr instr, IntState& state) {
         cout << "LOCRT" << endl;
 #endif
         InstrSeq total;
-        function<void(stack<BacktraceFrame>&)> stackUnwind = [&total, &stackUnwind](stack<BacktraceFrame>& stck) {
-            if (!stck.empty()) {
-                long line;
-                string file;
-                auto elem = stck.top();
-                tie(line, file) = elem;
-                stck.pop();
+        auto stck = state.trace;
+        while (stck) {
+            long line;
+            string file;
+            auto elem = stck->get();
+            tie(line, file) = elem;
+            stck = popNode(stck);
 
-                InstrSeq step0 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                         makeAssemblerLine(Instr::CLONE),
-                                         makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
-                InstrSeq step1 = garnishSeq(line);
-                InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["line"].index),
-                                         makeAssemblerLine(Instr::SETF));
-                InstrSeq step3 = garnishSeq(file);
-                InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                         makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                         makeAssemblerLine(Instr::SYMN, Symbols::get()["file"].index),
-                                         makeAssemblerLine(Instr::SETF),
-                                         makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
-                total.insert(total.begin(), step4.begin(), step4.end());
-                total.insert(total.begin(), step3.begin(), step3.end());
-                total.insert(total.begin(), step2.begin(), step2.end());
-                total.insert(total.begin(), step1.begin(), step1.end());
-                total.insert(total.begin(), step0.begin(), step0.end());
+            InstrSeq step0 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                     makeAssemblerLine(Instr::CLONE),
+                                     makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
+            InstrSeq step1 = garnishSeq(line);
+            InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["line"].index),
+                                     makeAssemblerLine(Instr::SETF));
+            InstrSeq step3 = garnishSeq(file);
+            InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["file"].index),
+                                     makeAssemblerLine(Instr::SETF),
+                                     makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
+            total.insert(total.begin(), step4.begin(), step4.end());
+            total.insert(total.begin(), step3.begin(), step3.end());
+            total.insert(total.begin(), step2.begin(), step2.end());
+            total.insert(total.begin(), step1.begin(), step1.end());
+            total.insert(total.begin(), step0.begin(), step0.end());
 
-                stackUnwind(stck);
-
-                stck.push(elem);
-            }
-        };
-        stackUnwind(state.trace);
+        }
         InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLD, Lit::SFRAME, Reg::RET));
         total.insert(total.begin(), intro.begin(), intro.end());
         state.stack = pushNode(state.stack, state.cont);
@@ -1230,7 +1225,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "NRET" << endl;
 #endif
-        state.trace.push( make_tuple(0, "") );
+        state.trace = pushNode(state.trace, make_tuple(0L, string("")));
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::RET));
         state.stack = pushNode(state.stack, state.cont);
         state.cont = CodeSeek(seq);

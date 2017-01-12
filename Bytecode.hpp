@@ -36,11 +36,11 @@ struct IntState {
     ProcessPtr prcs;
     Method mthdz;
     bool flag;
-    std::stack<WindPtr> wind;
+    NodePtr<WindPtr> wind;
     std::stack<ObjectPtr> hand;
     long line;
     std::string file;
-    std::stack<BacktraceFrame> trace;
+    NodePtr<BacktraceFrame> trace;
     std::stack<TranslationUnitPtr> trns;
     std::map<long, ObjectPtr> lit;
 };
@@ -64,7 +64,7 @@ StatePtr statePtr(IntState&& state);
 // to return true for isIdling(state)
 void hardKill(IntState&);
 
-void resolveThunks(IntState& state, std::stack<WindPtr> oldWind, std::stack<WindPtr> newWind);
+void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
 
 unsigned char popChar(InstrSeq& state);
 long popLong(InstrSeq& state);
