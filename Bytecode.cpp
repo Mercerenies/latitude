@@ -12,7 +12,7 @@ using namespace std;
 
 IntState intState() {
     IntState state;
-    // ptr, slf, ret default to null
+    state.ptr = state.slf = state.ret = nullptr;
     // lex, dyn, arg, sto default to empty
     // cont default to empty
     // stack default to empty
