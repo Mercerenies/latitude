@@ -380,6 +380,8 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(seq);
 
+    // TODO Find a way to protect the `closure` field here.
+
 }
 
 void StmtMethod::propogateFileName(std::string name) {

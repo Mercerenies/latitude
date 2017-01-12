@@ -21,7 +21,7 @@ using StatePtr = std::shared_ptr<IntState>;
 using WindPtr = std::shared_ptr<WindFrame>;
 using BacktraceFrame = std::tuple<long, std::string>;
 
-struct IntState {
+struct IntState { // TODO Should we make all std::stack be NodePtr here? More heap allocations but cheap copies.
     ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
     SeekHolder cont;
