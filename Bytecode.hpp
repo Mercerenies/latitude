@@ -10,26 +10,7 @@
 #include "Number.hpp"
 #include "Proto.hpp"
 #include "Instructions.hpp"
-
-class StackNode;
-
-using NodePtr = std::shared_ptr<StackNode>;
-
-// A home-baked stack implementation which allows sharing of data between continuations for
-// efficiency
-class StackNode {
-private:
-    NodePtr next;
-    SeekHolder data;
-public:
-    StackNode(const SeekHolder& data0);
-    const SeekHolder& get();
-    friend NodePtr pushNode(NodePtr node, const SeekHolder& data);
-    friend NodePtr popNode(NodePtr node);
-};
-
-NodePtr pushNode(NodePtr node, const SeekHolder& data);
-NodePtr popNode(NodePtr node);
+#include "Stack.hpp"
 
 struct Thunk;
 struct WindFrame;
@@ -44,7 +25,7 @@ struct IntState {
     ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
     SeekHolder cont;
-    NodePtr stack;
+    NodePtr<SeekHolder> stack;
     bool err0, err1;
     Symbolic sym;
     Number num0, num1;
@@ -77,6 +58,7 @@ struct WindFrame {
 
 IntState intState();
 StatePtr statePtr(const IntState& state);
+StatePtr statePtr(IntState&& state);
 
 // hardKill() leaves the interpreter state in a valid but unspecified state which is guaranteed
 // to return true for isIdling(state)

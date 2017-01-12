@@ -10,23 +10,6 @@
 
 using namespace std;
 
-StackNode::StackNode(const SeekHolder& data0)
-    : next(nullptr), data(data0) {}
-
-const SeekHolder& StackNode::get() {
-    return data;
-}
-
-NodePtr pushNode(NodePtr node, const SeekHolder& data) {
-    NodePtr ptr = NodePtr(new StackNode(data));
-    ptr->next = node;
-    return ptr;
-}
-
-NodePtr popNode(NodePtr node) {
-    return node->next;
-}
-
 IntState intState() {
     IntState state;
     // ptr, slf, ret default to null
@@ -48,6 +31,7 @@ IntState intState() {
     // file default to empty string
     // trace default to empty stack
     // trns default to empty stack
+    // lit default to empty map
     return state;
 }
 
@@ -55,9 +39,13 @@ StatePtr statePtr(const IntState& state) {
     return make_shared<IntState>(state);
 }
 
+StatePtr statePtr(IntState&& state) {
+    return make_shared<IntState>(forward<IntState&&>(state));
+}
+
 void hardKill(IntState& state) {
     state.cont.killSelf();
-    state.stack = shared_ptr<StackNode>();
+    state.stack = NodePtr<SeekHolder>();
 }
 
 void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWind) {
@@ -82,12 +70,12 @@ void resolveThunks(IntState& state, stack<WindPtr> oldWind, stack<WindPtr> newWi
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );
-        state.stack = pushNode(state.stack, MethodSeek(ptr->after.code));
+        state.stack = pushNode(state.stack, SeekHolder(MethodSeek(ptr->after.code)));
     }
     for (WindPtr ptr : enters) {
         state.lex.push( clone(ptr->before.lex) );
         state.dyn.push( clone(ptr->before.dyn) );
-        state.stack = pushNode(state.stack, MethodSeek(ptr->before.code));
+        state.stack = pushNode(state.stack, SeekHolder(MethodSeek(ptr->before.code)));
     }
 }
 
