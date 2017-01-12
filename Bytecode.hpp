@@ -21,6 +21,7 @@ using StatePtr = std::shared_ptr<IntState>;
 using WindPtr = std::shared_ptr<WindFrame>;
 using BacktraceFrame = std::tuple<long, std::string>;
 
+///// %cpp and %lit needn't be in here directly; they're being unnecessarily copied a bunch.
 struct IntState { // TODO Should we make all std::stack be NodePtr here? More heap allocations but cheap copies.
     ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
@@ -31,7 +32,6 @@ struct IntState { // TODO Should we make all std::stack be NodePtr here? More he
     Number num0, num1;
     std::string str0, str1;
     Method mthd;
-    std::map<long, CppFunction> cpp;
     StreamPtr strm;
     ProcessPtr prcs;
     Method mthdz;
@@ -42,6 +42,10 @@ struct IntState { // TODO Should we make all std::stack be NodePtr here? More he
     std::string file;
     NodePtr<BacktraceFrame> trace;
     std::stack<TranslationUnitPtr> trns;
+};
+
+struct ReadOnlyState {
+    std::map<long, CppFunction> cpp;
     std::map<long, ObjectPtr> lit;
 };
 
@@ -60,6 +64,8 @@ IntState intState();
 StatePtr statePtr(const IntState& state);
 StatePtr statePtr(IntState&& state);
 
+ReadOnlyState readOnlyState();
+
 // hardKill() leaves the interpreter state in a valid but unspecified state which is guaranteed
 // to return true for isIdling(state)
 void hardKill(IntState&);
@@ -73,9 +79,9 @@ Reg popReg(InstrSeq& state);
 Instr popInstr(InstrSeq& state);
 FunctionIndex popFunction(InstrSeq& state);
 
-void executeInstr(Instr instr, IntState& state);
+void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader);
 
-void doOneStep(IntState& state);
+void doOneStep(IntState& state, const ReadOnlyState& reader);
 
 bool isIdling(IntState& state);
 

@@ -9,7 +9,7 @@
 
 using namespace std;
 
-void runREPL(ObjectPtr global, IntState& state) {
+void runREPL(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
 
     cout << "Latitude ALPHA" << endl;
 
@@ -17,6 +17,5 @@ void runREPL(ObjectPtr global, IntState& state) {
     readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, state);
 
     while (!isIdling(state))
-        doOneStep(state);
-
+        doOneStep(state, reader);
 }

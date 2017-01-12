@@ -4,6 +4,6 @@
 #include "Proto.hpp"
 #include "Bytecode.hpp"
 
-void runREPL(ObjectPtr global, IntState& state);
+void runREPL(ObjectPtr global, IntState& state, ReadOnlyState& reader);
 
 #endif // _REPL_HPP_

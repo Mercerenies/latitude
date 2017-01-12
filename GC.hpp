@@ -32,7 +32,7 @@ public:
      * collector.
      */
     long garbageCollect(std::vector<ObjectPtr>);
-    long garbageCollect(IntState&);
+    long garbageCollect(IntState&, ReadOnlyState&);
     template <typename InputIterator>
     long garbageCollect(InputIterator begin, InputIterator end);
     size_t getTotal();

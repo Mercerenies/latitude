@@ -21,7 +21,6 @@ IntState intState() {
     // num0, num1 default to smallint(0)
     // str0, str1 default to empty string
     // mthd default to empty method
-    // cpp default to empty map
     // strm default to null
     // prcs default to null
     // mthdz default to empty method
@@ -31,7 +30,6 @@ IntState intState() {
     // file default to empty string
     // trace default to empty stack
     // trns default to empty stack
-    // lit default to empty map
     return state;
 }
 
@@ -41,6 +39,13 @@ StatePtr statePtr(const IntState& state) {
 
 StatePtr statePtr(IntState&& state) {
     return make_shared<IntState>(forward<IntState&&>(state));
+}
+
+ReadOnlyState readOnlyState() {
+    // Currently, this implementation is completely trivial. That may change in the future,
+    // so this should be preferred as a pseudo-constructor rather than using the default
+    // constructor.
+    return ReadOnlyState();
 }
 
 void hardKill(IntState& state) {
@@ -128,7 +133,7 @@ FunctionIndex popFunction(InstrSeq& state) {
     return { value };
 }
 
-void executeInstr(Instr instr, IntState& state) {
+void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     switch (instr) {
     case Instr::MOV: {
         Reg src = state.cont.popReg();
@@ -950,7 +955,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "CPP " << val << endl;
 #endif
-        auto func = state.cpp[val];
+        auto func = reader.cpp.at(val);
         if (func)
             func(state);
         else
@@ -1258,7 +1263,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "YLD " << val << " " << (long)reg << endl;
 #endif
-        auto obj = state.lit[val];
+        auto obj = reader.lit.at(val);
         if (obj) {
             switch (reg) {
             case Reg::PTR:
@@ -1285,7 +1290,7 @@ void executeInstr(Instr instr, IntState& state) {
 #if DEBUG_INSTR > 0
         cout << "YLDC " << val << " " << (long)reg << endl;
 #endif
-        auto obj = state.lit[val];
+        auto obj = reader.lit.at(val);
         if (obj) {
             obj = clone(obj);
             switch (reg) {
@@ -1310,7 +1315,7 @@ void executeInstr(Instr instr, IntState& state) {
     }
 }
 
-void doOneStep(IntState& state) {
+void doOneStep(IntState& state, const ReadOnlyState& reader) {
     if (state.cont.atEnd()) {
         // Pop off the stack
 #if DEBUG_INSTR > 0
@@ -1319,7 +1324,7 @@ void doOneStep(IntState& state) {
         if (state.stack) {
             state.cont = state.stack->get();
             state.stack = popNode(state.stack);
-            doOneStep(state);
+            doOneStep(state, reader);
         }
     } else {
         // Run one command
@@ -1327,7 +1332,7 @@ void doOneStep(IntState& state) {
 #if DEBUG_INSTR > 0
         cout << (long)instr << endl;
 #endif
-        executeInstr(instr, state);
+        executeInstr(instr, state, reader);
     }
 }
 

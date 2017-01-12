@@ -100,6 +100,10 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, In
     addStackToFrontier(visited, frontier, state.arg );
     addStackToFrontier(visited, frontier, state.sto );
     addStackToFrontier(visited, frontier, state.hand);
+}
+
+template <typename Container>
+void addContinuationToFrontier(const Container& visited, Container& frontier, ReadOnlyState& state) {
     addMapToFrontier  (visited, frontier, state.lit );
 }
 
@@ -165,7 +169,7 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
     return total;
 }
 
-long GC::garbageCollect(IntState& state) {
+long GC::garbageCollect(IntState& state, ReadOnlyState& reader) {
     // This little type is necessary to make the templated function addContinuationToFrontier
     // think that vectors are set-like.
     struct VectorProxy {
@@ -187,6 +191,7 @@ long GC::garbageCollect(IntState& state) {
     };
     VectorProxy globals;
     addContinuationToFrontier<decltype(globals)>({}, globals, state);
+    addContinuationToFrontier<decltype(globals)>({}, globals, reader);
     return garbageCollect(globals.value);
 }
 

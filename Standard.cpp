@@ -43,7 +43,10 @@ ObjectPtr defineMethodNoRet(TranslationUnitPtr unit, ObjectPtr global, ObjectPtr
     return obj;
 }
 
-void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntState& state) {
+void spawnSystemCallsNew(ObjectPtr global,
+                         ObjectPtr method,
+                         ObjectPtr sys,
+                         ReadOnlyState& reader) {
     static constexpr long
         TERMINATE = 0,
         KERNEL_LOAD = 1,
@@ -88,7 +91,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
     // TERMINATE
-    state.cpp[TERMINATE] = [](IntState& state0) {
+    reader.cpp[TERMINATE] = [](IntState& state0) {
         // A last-resort termination of a fiber that malfunctioned; this should ONLY
         // be used as a last resort, as it does not correctly unwind the frames
         // before aborting
@@ -99,7 +102,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     //  * Checks %num0 (if 0, then standard load; if 1, then raw load)
     // kernelLoad#: filename, global.
     // kernelLoadRaw#: filename, global.
-    state.cpp[KERNEL_LOAD] = [](IntState& state0) {
+    reader.cpp[KERNEL_LOAD] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr str = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr global = (*dyn)[ Symbols::get()["$2"] ].getPtr();
@@ -171,7 +174,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // STREAM_DIR ($1 = argument) (where %num0 specifies the direction; 0 = in, 1 = out)
     // streamIn#: stream.
     // streamOut#: stream.
-    state.cpp[STREAM_DIR] = [](IntState& state0) {
+    reader.cpp[STREAM_DIR] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         if (stream != nullptr) {
@@ -204,7 +207,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // STREAM_PUT ($1 = stream, $2 = string) (where %num0 specifies whether a newline is added; 0 = no, 1 = yes)
     // streamPuts#: stream, str.
     // streamPutln#: stream, str.
-    state.cpp[STREAM_PUT] = [](IntState& state0) {
+    reader.cpp[STREAM_PUT] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr str = (*dyn)[ Symbols::get()["$2"] ].getPtr();
@@ -248,7 +251,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // numToString#: num
     // strToString#: str
     // symToString#: sym
-    state.cpp[TO_STRING] = [](IntState& state0) {
+    reader.cpp[TO_STRING] = [](IntState& state0) {
         ostringstream oss;
         switch (state0.num0.asSmallInt()) {
         case 0:
@@ -342,7 +345,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // GENSYM (if %num0 is 1 then use %str0 as prefix, else if %num0 is 0 use default prefix; store in %sym)
     // gensym#: self.
     // gensymOf#: self, prefix.
-    state.cpp[GENSYM] = [](IntState& state0) {
+    reader.cpp[GENSYM] = [](IntState& state0) {
         switch (state0.num0.asSmallInt()) {
         case 0:
         state0.sym = Symbols::gensym();
@@ -526,7 +529,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // INSTANCE_OF (check if %slf is an instance of %ptr, put result in %flag)
     // instanceOf#: obj, anc
-    state.cpp[INSTANCE_OF] = [](IntState& state0) {
+    reader.cpp[INSTANCE_OF] = [](IntState& state0) {
         auto hier = hierarchy(state0.slf);
         state0.flag = (find_if(hier.begin(), hier.end(),
                                [&state0](auto& o){ return o == state0.ptr; }) != hier.end());
@@ -575,7 +578,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // - 0 - Read a line
     // - 1 - Read a single character
     // streamRead#: stream.
-    state.cpp[STREAM_READ] = [](IntState& state0) {
+    reader.cpp[STREAM_READ] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         if (stream != NULL) {
@@ -605,7 +608,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
     // eval#: lex, dyn, str.
-    state.cpp[EVAL] = [](IntState& state0) {
+    reader.cpp[EVAL] = [](IntState& state0) {
         eval(state0, state0.str0);
     };
     sys->put(Symbols::get()["eval#"],
@@ -797,7 +800,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // SYM_NAME (takes %sym, looks up its name, and outputs a string as %ret)
     // symName#: sym.
-    state.cpp[SYM_NAME] = [](IntState& state0) {
+    reader.cpp[SYM_NAME] = [](IntState& state0) {
         std::string name = Symbols::get()[ state0.sym ];
         garnishBegin(state0, name);
     };
@@ -814,7 +817,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
     // natSym#: num.
-    state.cpp[SYM_NUM] = [](IntState& state0) {
+    reader.cpp[SYM_NUM] = [](IntState& state0) {
         if (state0.num0.asSmallInt() <= 0) {
             throwError(state0, "TypeError", "Cannot produce symbols from non-positive numbers");
         } else {
@@ -874,7 +877,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // SYM_INTERN (takes %str0, looks it up, and puts the result as a symbol in %ret)
     // intern#: str.
-    state.cpp[SYM_INTERN] = [](IntState& state0) {
+    reader.cpp[SYM_INTERN] = [](IntState& state0) {
         Symbolic name = Symbols::get()[ state0.str0 ];
         garnishBegin(state0, name);
     };
@@ -897,7 +900,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // SIMPLE_CMP will compare strings, numbers, and symbols. Anything else returns false.
     // primEquals#: lhs, rhs.
     // primLT#: lhs, rhs.
-    state.cpp[SIMPLE_CMP] = [](IntState& state0) {
+    reader.cpp[SIMPLE_CMP] = [](IntState& state0) {
         bool doLT = false;
         if (state0.num0.asSmallInt() == 1)
             doLT = true;
@@ -954,7 +957,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // NUM_LEVEL (determine the "level" of %num0 and put the result in %ret)
     // numLevel#: num.
-    state.cpp[NUM_LEVEL] = [](IntState& state0) {
+    reader.cpp[NUM_LEVEL] = [](IntState& state0) {
         garnishBegin(state0, state0.num0.hierarchyLevel());
     };
     sys->put(Symbols::get()["numLevel#"],
@@ -978,7 +981,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
     // ORIGIN (find the origin of %sym in %slf, store resulting object in %ret, throw SlotError otherwise
     // origin#: self, sym.
-    state.cpp[ORIGIN] = [](IntState& state0) {
+    reader.cpp[ORIGIN] = [](IntState& state0) {
         list<ObjectPtr> parents;
         ObjectPtr curr = state0.slf;
         Symbolic name = state0.sym;
@@ -1031,7 +1034,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
     // processRunning#: prc.
     // processExitCode#: prc.
     // processExec#: prc.
-    state.cpp[PROCESS_TASK] = [](IntState& state0) {
+    reader.cpp[PROCESS_TASK] = [](IntState& state0) {
         switch (state0.num0.asSmallInt()) {
         case 0: {
             ProcessPtr proc = makeProcess(state0.str0);
@@ -1192,7 +1195,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      // OBJECT_KEYS (takes an object in %slf and outputs an array-like construct using `meta brackets`
      //              which contains all of the slot names of %slf)
      // objectKeys#: obj.
-     state.cpp[OBJECT_KEYS] = [](IntState& state0) {
+     reader.cpp[OBJECT_KEYS] = [](IntState& state0) {
          set<Symbolic> allKeys = keys(state0.slf);
          InstrSeq total = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
@@ -1235,7 +1238,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
      // streamFileOpen#: strm, fname, access, mode.
-     state.cpp[FILE_DOOPEN] = [](IntState& state0) {
+     reader.cpp[FILE_DOOPEN] = [](IntState& state0) {
          ObjectPtr dyn = state0.dyn.top();
          ObjectPtr access = (*dyn)[ Symbols::get()["$3"] ].getPtr();
          ObjectPtr mode = (*dyn)[ Symbols::get()["$4"] ].getPtr();
@@ -1285,7 +1288,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // FILE_DOCLOSE (takes %strm and closes it)
      // streamClose#: strm.
-     state.cpp[FILE_DOCLOSE] = [](IntState& state0) {
+     reader.cpp[FILE_DOCLOSE] = [](IntState& state0) {
          state0.strm->close();
      };
      sys->put(Symbols::get()["streamClose#"],
@@ -1302,7 +1305,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // FILE_EOF (takes %strm and outputs whether it's at eof into %flag)
      // streamEof#: strm.
-     state.cpp[FILE_EOF] = [](IntState& state0) {
+     reader.cpp[FILE_EOF] = [](IntState& state0) {
          state0.flag = state0.strm->isEof();
      };
      sys->put(Symbols::get()["streamEof#"],
@@ -1319,7 +1322,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // STRING_LENGTH (outputs length of %str0 into %ret)
      // stringLength#: str.
-     state.cpp[STRING_LENGTH] = [](IntState& state0) {
+     reader.cpp[STRING_LENGTH] = [](IntState& state0) {
          // TODO Possible loss of precision from size_t to signed long?
          garnishBegin(state0, (long)state0.str0.length());
      };
@@ -1336,7 +1339,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // STRING_SUB (outputs substring of %str0 from %num0 to %num1 into %ret)
      // stringSubstring#: str, beg, end.
-     state.cpp[STRING_SUB] = [](IntState& state0) {
+     reader.cpp[STRING_SUB] = [](IntState& state0) {
          long start1 = state0.num0.asSmallInt();
          long end1 = state0.num1.asSmallInt();
          long size = state0.str0.length();
@@ -1385,7 +1388,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      // STRING_FIND (find first occurence of %str1 in %str0 starting at %num0 index, storing
      //              new index or Nil in %ret)
      // stringFindFirst#: str, substr, pos.
-     state.cpp[STRING_FIND] = [](IntState& state0) {
+     reader.cpp[STRING_FIND] = [](IntState& state0) {
          auto pos = state0.str0.find(state0.str1, state0.num0.asSmallInt());
          if (pos == string::npos)
              garnishBegin(state0, boost::blank());
@@ -1419,8 +1422,10 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // GC_RUN (run the garbage collector and store the number of objects deleted at %ret)
      // runGC#.
-     state.cpp[GC_RUN] = [](IntState& state0) {
-         long result = GC::get().garbageCollect(state0);
+     reader.cpp[GC_RUN] = [&reader](IntState& state0) {
+         // TODO This assumes the reader that's in use is the same as the reader that was created
+         //      with this reader. Remove this unusual dependency somehow
+         long result = GC::get().garbageCollect(state0, reader);
          garnishBegin(state0, result);
      };
      sys->put(Symbols::get()["runGC#"],
@@ -1429,7 +1434,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // FILE_HEADER (check the %str0 file and put a FileHeader object in %ret)
      // fileHeader#: filename.
-     state.cpp[FILE_HEADER] = [](IntState& state0) {
+     reader.cpp[FILE_HEADER] = [](IntState& state0) {
          InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLDC, Lit::FHEAD, Reg::SLF));
          InstrSeq mid;
          Header header = getFileHeader(state0.str0);
@@ -1478,13 +1483,13 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      // STR_CHR (check the %num0 register and put the character in %ret)
      // strOrd#: str.
      // strChr#: num.
-     state.cpp[STR_ORD] = [](IntState& state0) {
+     reader.cpp[STR_ORD] = [](IntState& state0) {
          if (state0.str0 == "")
              garnishBegin(state0, 0);
          else
              garnishBegin(state0, (int)state0.str0[0]);
      };
-     state.cpp[STR_CHR] = [](IntState& state0) {
+     reader.cpp[STR_CHR] = [](IntState& state0) {
          garnishBegin(state0, string(1, (char)state0.num0.asSmallInt()));
      };
      sys->put(Symbols::get()["strOrd#"],
@@ -1510,7 +1515,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // GC_TOTAL (get the total number of allocated objects from the garbage collector and store it in %ret)
      // totalGC#.
-     state.cpp[GC_TOTAL] = [](IntState& state0) {
+     reader.cpp[GC_TOTAL] = [](IntState& state0) {
          // TODO Possible loss of precision
          garnishBegin(state0, (long)GC::get().getTotal());
      };
@@ -1522,7 +1527,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      //             determine whether local time (1) or global time (2))
      // timeSpawnLocal#: obj.
      // timeSpawnGlobal#: obj.
-     state.cpp[TIME_SPAWN] = [](IntState& state0) {
+     reader.cpp[TIME_SPAWN] = [](IntState& state0) {
          time_t raw;
          tm info;
          time(&raw);
@@ -1622,7 +1627,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // ENV_GET (retrieve the environment variable matching the name in %str0 and store the result in %ret)
      // envGet#: str.
-     state.cpp[ENV_GET] = [](IntState& state0) {
+     reader.cpp[ENV_GET] = [](IntState& state0) {
          boost::optional<std::string> value = getEnv(state0.str0);
          if (value)
              garnishBegin(state0, *value);
@@ -1643,7 +1648,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      // ENV_SET (assign the environment variable with name %str0 to value %str1 (or unset it, if %num0 is nonzero)
      // envSet#: name, value.
      // envUnset#: name.
-     state.cpp[ENV_SET] = [](IntState& state0) {
+     reader.cpp[ENV_SET] = [](IntState& state0) {
          bool success = false;
          if (state0.num0.asSmallInt() != 0) {
              success = unsetEnv(state0.str0);
@@ -1689,7 +1694,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      // EXE_PATH (put an appropriate pathname into %ret%, given by the %num0 argument)
      //  * %num0 == 1: Executable pathname
      // exePath#.
-     state.cpp[EXE_PATH] = [](IntState& state0) {
+     reader.cpp[EXE_PATH] = [](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
              garnishBegin(state0, getExecutablePathname());
@@ -1709,7 +1714,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      //  * %num0 == 1: Get directory of pathname
      //  * %num0 == 2: Get filename of pathname
      // dirName#: str.
-     state.cpp[PATH_OP] = [](IntState& state0) {
+     reader.cpp[PATH_OP] = [](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
              garnishBegin(state0, stripFilename(state0.str0));
@@ -1748,7 +1753,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // FILE_EXISTS (check the pathname in %str0 for existence, storing result in %flag)
      // fileExists#: fname.
-     state.cpp[FILE_EXISTS] = [](IntState& state0) {
+     reader.cpp[FILE_EXISTS] = [](IntState& state0) {
          std::ifstream f(state0.str0.c_str());
          state0.flag = f.good();
          f.close();
@@ -1767,7 +1772,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // TRIG_OP (perform the operation indicated in %num0 on the value in %num1, storing result in %num1)
      // numTrig#: num, op.
-     state.cpp[TRIG_OP] = [](IntState& state0) {
+     reader.cpp[TRIG_OP] = [](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 0: // Sin
              state0.num1 = state0.num1.sin();
@@ -1845,7 +1850,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // MATH_FLOOR (floor the value in %num0, storing result in %num0)
      // numFloor#: num.
-     state.cpp[MATH_FLOOR] = [](IntState& state0) {
+     reader.cpp[MATH_FLOOR] = [](IntState& state0) {
          state0.num0 = state0.num0.floor();
      };
      sys->put(Symbols::get()["numFloor#"],
@@ -1869,7 +1874,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
      // numInfinity#: number.
      // numNegInfinity#: number.
      // numEpsilon#: number.
-     state.cpp[NUM_CONST] = [](IntState& state0) {
+     reader.cpp[NUM_CONST] = [](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 0: { // NaN
              auto num = constantNan();
@@ -1954,7 +1959,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // PROT_VAR (protect the variable named %sym in the object %slf)
      // protectVar#: obj, var.
-     state.cpp[PROT_VAR] = [](IntState& state0) {
+     reader.cpp[PROT_VAR] = [](IntState& state0) {
          state0.slf->protect(state0.sym);
      };
      sys->put(Symbols::get()["protectVar#"],
@@ -1976,7 +1981,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
      // PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
      // protectIs#: obj, var.
-     state.cpp[PROT_IS] = [](IntState& state0) {
+     reader.cpp[PROT_IS] = [](IntState& state0) {
          garnishBegin(state0, state0.slf->isProtected(state0.sym));
      };
      sys->put(Symbols::get()["protectIs#"],
@@ -1997,7 +2002,7 @@ void spawnSystemCallsNew(ObjectPtr global, ObjectPtr method, ObjectPtr sys, IntS
 
 }
 
-ObjectPtr spawnObjects(IntState& state) {
+ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
 
     ObjectPtr object(GC::get().allocate());
     ObjectPtr meta(clone(object));
@@ -2072,7 +2077,7 @@ ObjectPtr spawnObjects(IntState& state) {
     state.dyn.push(global);
 
     // Method and system call properties
-    spawnSystemCallsNew(global, method, sys, state);
+    spawnSystemCallsNew(global, method, sys, reader);
 
     // Prim Fields
     // For pragmatic reasons, Method does NOT have a prim() field
@@ -2085,16 +2090,16 @@ ObjectPtr spawnObjects(IntState& state) {
     stderr_->prim(errStream());
 
     // Spawn the literal objects table
-    state.lit[Lit::NIL   ] = nil;
-    state.lit[Lit::FALSE ] = false_;
-    state.lit[Lit::TRUE  ] = true_;
-    state.lit[Lit::BOOL  ] = boolean;
-    state.lit[Lit::STRING] = string;
-    state.lit[Lit::NUMBER] = number;
-    state.lit[Lit::SYMBOL] = symbol;
-    state.lit[Lit::METHOD] = method;
-    state.lit[Lit::SFRAME] = stackFrame;
-    state.lit[Lit::FHEAD ] = fileHeader;
+    reader.lit[Lit::NIL   ] = nil;
+    reader.lit[Lit::FALSE ] = false_;
+    reader.lit[Lit::TRUE  ] = true_;
+    reader.lit[Lit::BOOL  ] = boolean;
+    reader.lit[Lit::STRING] = string;
+    reader.lit[Lit::NUMBER] = number;
+    reader.lit[Lit::SYMBOL] = symbol;
+    reader.lit[Lit::METHOD] = method;
+    reader.lit[Lit::SFRAME] = stackFrame;
+    reader.lit[Lit::FHEAD ] = fileHeader;
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);

@@ -17,8 +17,9 @@ using namespace std;
 int main(int argc, char** argv) {
 
     IntState state = intState();
-    ObjectPtr global = spawnObjects(state);
-    runREPL(global, state);
+    ReadOnlyState reader = readOnlyState();
+    ObjectPtr global = spawnObjects(state, reader);
+    runREPL(global, state, reader);
 
     return 0;
 }
