@@ -1,5 +1,6 @@
 
-meta sys kernelLoad0#: "std/latitude.lat", global.
-Kernel loadRaw: "std/repl.lat".
+meta sys kernelLoad0#: "std/latitude.lats", global.
 
-REPL loop.
+use 'repl.
+
+repl REPL loop.
