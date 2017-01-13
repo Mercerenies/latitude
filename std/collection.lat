@@ -21,7 +21,7 @@ id := id.
 ;; *  `clone` - Iterators must be cloneable at any intermediate point in their iteration
 ;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
 global Collection ::= Mixin clone.
-Collection interface := '[map!, visit, map, foldl, foldr, size, toArray, all, any, notall, notany,
+Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any, notall, notany,
                           detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
                           minimum, <>].
 Collection map! := { func := { (parent dynamic hold '$1) call. }.
@@ -47,6 +47,7 @@ Collection foldr := { func := proc { (parent dynamic hold '$2) call. }.
                                                                                 dynamic hold '$1. }). }.
                       accum call: $1. }.
 Collection size := { self foldl: 0, { $1 + 1. }. }.
+Collection length := { self size. }.
 Collection toArray := { arr := Array clone.
                         self visit: { arr pushBack. }.
                         arr. }.

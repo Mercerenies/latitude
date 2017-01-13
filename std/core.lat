@@ -79,6 +79,7 @@ Proc call := {}.
 Method call := { hold 'self invoke (hold 'self) call. }.
 Method toString := "Method".
 Proc toString := "Proc".
+Method == := { (self) == ($1). }. ; Evaluate the method and then try again
 Method < := { (self) < ($1). }. ; Evaluate the method and then try again
 Proc <| := { proc { r := (parent dynamic hold '$1) call.
                     (parent hold 'self) call: r. }. }.
