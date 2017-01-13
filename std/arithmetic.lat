@@ -2,9 +2,7 @@
 ;; Arithmetic and Number Types
 Number toString := { meta sys numToString#: self. }.
 Number == := { meta sys primEquals#: self, $1. }.
-Number < := { if: { parent self isComplex?. } or { parent dynamic $1 isComplex?. },
-                  { err TypeError clone tap { self message := "Cannot compare complex numbers". } throw. },
-                  { meta sys primLT#: parent self, parent dynamic $1. }. }.
+Number < := { meta sys primLT#: self, $1. }.
 
 Number + := { meta sys numAdd#: self, $1. }.
 Number - := { meta sys numSub#: self, $1. }.
