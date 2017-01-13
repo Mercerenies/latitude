@@ -5,7 +5,7 @@ Kernel loadRaw := { meta sys kernelLoad0#: $1, global clone. }.
 
 Kernel loadRaw: "std/core.lat".
 Kernel loadRaw: "std/exception.lat".
-Kernel loadRaw: "std/flow_control.lat".
+Kernel loadRaw: "std/flow-control.lat".
 Kernel loadRaw: "std/arithmetic.lat".
 Kernel loadRaw: "std/array.lat".
 Kernel loadRaw: "std/mixin.lat".
