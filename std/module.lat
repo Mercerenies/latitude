@@ -1,6 +1,4 @@
 
-global := global.
-
 ;; Modules
 Module ::= global clone.
 Module import := { localize. ; TODO Import seems to be not working sometimes (in other modules)

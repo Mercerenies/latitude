@@ -8,8 +8,6 @@
 
 use 'util.
 
-Nil := Nil.
-
 ; A monad implementation is expected to have the following methods
 ; * pure - A method of one argument that wraps the value in the monad
 ; * fmap - A method of two argument, a method and a monadic value, which maps the method over the structure

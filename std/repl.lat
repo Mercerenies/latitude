@@ -1,9 +1,6 @@
 ; This is NOT imported through latitude.lat; it is imported later during the spawning
 ; of the REPL object itself
 
-Kernel := Kernel.
-stderr := stderr.
-
 REPL ::= Object clone.
 
 REPL quitter := { jump := Nil.

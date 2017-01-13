@@ -1,12 +1,4 @@
 
-;; In case Array is changed later, we still want toArray to return the original idea of an "array"
-Array := Array.
-True := True.
-False := False.
-Nil := Nil.
-proc := hold 'proc.
-id := id.
-
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
 ;; for example the `size` method. The iterator returned by `iterator` must support the following:

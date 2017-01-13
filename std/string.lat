@@ -1,6 +1,4 @@
 
-Array := Array.
-
 ; While the basic string functionality is defined in core.lat, this file defines more sophisticated
 ; methods on strings.
 

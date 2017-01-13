@@ -3,12 +3,6 @@
 
 ; TODO Format (printf)
 
-True := True.
-False := False.
-Symbol := Symbol.
-Array := Array.
-proc := hold 'proc.
-
 ;; Pattern matching functionality
 Wildcard := Object clone.
 Wildcard symbol := Nil.

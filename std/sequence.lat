@@ -1,10 +1,6 @@
 ;;* MODULE sequence
 ;;* PACKAGE base
 
-Nil := Nil.
-proc := hold 'proc.
-memo := hold 'memo.
-
 ;; Forward linked lists
 Sequence := Object clone.
 Sequence toString := { "#<Sequence " ++ (self list pretty) ++ ">". }.

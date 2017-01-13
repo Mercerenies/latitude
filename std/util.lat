@@ -1,12 +1,6 @@
 ;;* MODULE util
 ;;* PACKAGE base
 
-Array := Array.
-ArgList := ArgList.
-Proc := Proc.
-proc := hold 'proc.
-Exception := Exception.
-
 ;; "Cells" a la MIT Scheme
 Cell := Object clone.
 Cell value := Nil.

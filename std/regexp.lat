@@ -3,9 +3,6 @@
 
 ; TODO Redesign the basis here so it can work (probably with `callAmb`, not monads), then finish
 
-Nil := Nil.
-Array := Array.
-
 use 'pattern import '[Match, NoMatch].
 
 RegexpError ::= Exception clone tap { self message := "Regexp Error". }.
