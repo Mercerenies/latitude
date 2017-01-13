@@ -58,6 +58,20 @@ Number times := { localize.
                   incr := { parent i := i + 1. }.
                   while { (i) < (this). } do { block (i).
                                                incr. }. }.
+Number upto := { localize.
+                 takes '[n].
+                 Object clone tap { self do := { block := { parent dynamic $1. }.
+                                                 i := this.
+                                                 incr := { parent i := i + 1. }.
+                                                 while { (i) < (n). } do { block (i).
+                                                                           incr. }. }. }. }.
+Number downto := { localize.
+                   takes '[n].
+                   Object clone tap { self do := { block := { parent dynamic $1. }.
+                                                   i := this.
+                                                   decr := { parent i := i - 1. }.
+                                                   while { (i) > (n). } do { block (i).
+                                                                             decr. }. }. }. }.
 
 ;; Cond Statement
 global cond := { takes '[block].
