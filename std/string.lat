@@ -14,9 +14,31 @@ String findAll := { localize.
                        do { matches pushBack: curr. }.
                     matches. }.
 
-String size := { meta sys stringLength#: self. }.
+String byteCount := { meta sys stringLength#: self. }.
+String bytes := { self clone tap
+                      { self iterator := self invoke (parent self hold 'iterator) call tap
+                            { self next := { self index := self index + 1. }.
+                              self element := { self string substringBytes: self index,
+                                                                            self index + 1. }. }. }. }.
 
-String substring := { meta sys stringSubstring#: self, $1, $2. }.
+String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
+String substring := { takes '[i, j].
+                      i= := { parent i := $1. }.
+                      j= := { parent j := $1. }.
+                      i1 := 0.
+                      j1 := self byteCount.
+                      i1= := { parent i1 := $1. }.
+                      j1= := { parent j1 := $1. }.
+                      iter := self iterator.
+                      while { iter end? not. }
+                         do { (i == 0) ifTrue { i1 = iter index. }.
+                              (j == 0) ifTrue { j1 = iter index. }.
+                              i = i - 1.
+                              j = j - 1.
+                              iter next. }.
+                      if: (i1) and (j1),
+                          { parent self substringBytes: i1, j1. },
+                          { err BoundsError clone throw. }. }.
 
 String split := { localize.
                   takes '[delim].
@@ -73,9 +95,12 @@ String iterator := { Object clone tap
                          { self toString := "StringIterator".
                            self index := 0.
                            self string := parent self.
-                           self next := { self index := self index + 1. }.
-                           self end? := { (self index) >= (self string size). }.
-                           self element := { self string substring: self index, self index + 1. }.
+                           self next := { self index := meta sys stringNext#: self string, self index.
+                                          self index ifFalse { err UTF8IntegrityError clone throw. }. }.
+                           self end? := { (self index) >= (self string byteCount). }.
+                           self element := { self string substringBytes: self index,
+                                                                         meta sys stringNext# (self string,
+                                                                                               self index). }.
                            self element= := { err ReadOnlyError clone tap
                                                   { self message := "Strings are immutable". } throw. }. }. }.
 String map := { takes '[mthd].

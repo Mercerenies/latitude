@@ -32,7 +32,9 @@ err ModuleError ::= SystemError clone tap { self message := "Module error". }.
 err LangError ::= SystemError clone tap { self message := "Error reading from external language". }.
 err InputError ::= SystemError clone tap { self message := "Input error". }.
 err ArgError ::= SystemError clone tap { self message := "Argument error". }.
+err IntegrityError ::= SystemError clone tap { self message := "Integrity error". }.
 err ProtectedError ::= err ReadOnlyError clone tap { self message := "Protected variable". }.
+err UTF8IntegrityError ::= err IntegrityError clone tap { self message := "UTF-8 Integrity error". }.
 
 ; It is only safe to define `missing` and `missed` once `SlotError` exists. If `missing` is sought before this
 ; point, it is a standard library error and the interpreter will terminate immediately

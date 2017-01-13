@@ -86,7 +86,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         MATH_FLOOR = 35,
         NUM_CONST = 36,
         PROT_VAR = 37,
-        PROT_IS = 38;
+        PROT_IS = 38,
+        STR_NEXT = 39;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1999,6 +2000,58 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                    makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                    makeAssemblerLine(Instr::CPP, PROT_IS))));
+
+     // STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)
+     // stringNext#: str, num.
+     reader.cpp[STR_NEXT] = [](IntState& state0) {
+         // Based on the algorithm at http://stackoverflow.com/a/4063258/2288659
+         bool valid = true;
+         auto i = state0.num0.asSmallInt();
+         auto full_len = state0.str0.length();
+         unsigned char c = static_cast<unsigned char>(state0.str0[i]);
+         unsigned long n = 0;
+         if ((c & 0x80) == 0x00)
+             n = 1;
+         else if ((c & 0xE0) == 0xC0)
+             n = 2;
+         else if ((c & 0xF0) == 0xE0)
+             n = 3;
+         else if ((c & 0xF8) == 0xF0)
+             n = 4;
+         else
+             valid = false;
+         if (n + i > full_len)
+             valid = false;
+         if (valid) {
+             for (unsigned long j = i + 1; j < i + n; j++) {
+                 unsigned char c1 = static_cast<unsigned char>(state0.str0[j]);
+                 if ((c1 & 0xC0) != 0x80)
+                     valid = false;
+             }
+         }
+         if (valid)
+             garnishBegin(state0, static_cast<signed long>(i + n));
+         else
+             garnishBegin(state0, boost::blank());
+     };
+     sys->put(Symbols::get()["stringNext#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::CPP, STR_NEXT))));
 
 }
 
