@@ -21,12 +21,12 @@ String bytes := { self clone tap
 
 String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
 String substring := { takes '[i, j].
-                      i= := { parent i := $1. }.
-                      j= := { parent j := $1. }.
+                      'i assign = { $1. }.
+                      'j assign = { $1. }.
                       i1 := 0.
                       j1 := self byteCount.
-                      i1= := { parent i1 := $1. }.
-                      j1= := { parent j1 := $1. }.
+                      'i1 assign = { $1. }.
+                      'j1 assign = { $1. }.
                       iter := self iterator.
                       while { iter end? not. }
                          do { (i == 0) ifTrue { i1 = iter index. }.
@@ -62,7 +62,7 @@ String replaceFirst := { self replace: $1, 0, $2. }.
 String replaceAll := { takes '[substr, mthd].
                        curr := self.
                        negativeIndex := curr size.
-                       negativeIndex= := { parent negativeIndex := $1. }.
+                       'negativeIndex assign = { $1. }.
                        index := { (curr size) - (negativeIndex). }.
                        index= := { $1 ifTrue: { negativeIndex = (curr size) - (parent dynamic $1). }. }.
                        while { index = curr find: substr, index. }
@@ -72,13 +72,13 @@ String replaceAll := { takes '[substr, mthd].
 
 String padLeft := { takes '[ch, n].
                     newStr := self.
-                    newStr= := { parent newStr := $1. }.
+                    'newStr assign = { $1. }.
                     while { (newStr size) < (n). }
                        do { newStr = (ch) ++ (newStr). }.
                     newStr. }.
 String padRight := { takes '[ch, n].
                      newStr := self.
-                     newStr= := { parent newStr := $1. }.
+                     'newStr assign = { $1. }.
                      while { (newStr size) < (n). }
                         do { newStr = (newStr) ++ (ch). }.
                      newStr. }.

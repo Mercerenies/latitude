@@ -243,6 +243,11 @@ String toString := { meta sys strToString#: self. }.
 String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
+Symbol assign= := { name := self.
+                    curr := dynamic parent $lexical.
+                    rhs := dynamic hold '$1.
+                    sym := self asText ++ "=" intern.
+                    curr put: sym, { curr put: name, rhs ($1). }. }.
 
 ; File headers
 FileHeader toString := "FileHeader".
