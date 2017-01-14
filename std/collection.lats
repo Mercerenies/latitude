@@ -55,7 +55,7 @@ Collection foldr := {
   self visit {
     parent accum := accum <| (proc {
       func call:
-        parent dynamic $1,
+        parent dynamic hold '$1,
         dynamic hold '$1.
     }).
   }.
@@ -75,8 +75,7 @@ Collection all := {
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      arg := $1.
-      (func call: arg) ifFalse: { return: False. }.
+      (func call: dynamic hold '$1) ifFalse: { return: False. }.
     }.
     True.
   }.
@@ -88,8 +87,7 @@ Collection any := {
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      arg := $1.
-      (func call: arg) ifTrue: { return: arg. }.
+      (func call: dynamic hold '$1) ifTrue: { return: parent dynamic hold '$1. }.
     }.
     False.
   }.
@@ -101,8 +99,7 @@ Collection notAll := {
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      arg := $1.
-      (func call: arg) ifFalse: { return: True. }.
+      (func call: dynamic hold '$1) ifFalse: { return: True. }.
     }.
     False.
   }.
@@ -114,8 +111,7 @@ Collection notAny := {
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      arg := $1.
-      (func call: arg) ifTrue: { return: False. }.
+      (func call: dynamic hold '$1) ifTrue: { return: False. }.
     }.
     True.
   }.
@@ -127,8 +123,7 @@ Collection detect := {
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      arg := $1.
-      (func call: arg) ifTrue: { return: arg. }.
+      (func call: dynamic hold '$1) ifTrue: { return: parent dynamic hold '$1. }.
     }.
     Nil.
   }.
@@ -138,16 +133,16 @@ Collection countIf := {
     (parent dynamic hold '$1) call.
   }.
   self foldl: 0, {
-    if (func call: $2)
-      then ($1 + 1)
-      else ($1).
+    if (func call: dynamic hold '$2)
+      then (dynamic hold '$1 + 1)
+      else (dynamic hold '$1).
   }.
 }.
 Collection count := {
-  self countIf: { (parent dynamic $1) == ($1). }.
+  self countIf: { (parent dynamic hold '$1) == (dynamic hold '$1). }.
 }.
 Collection find := {
-  self detect: { (parent dynamic $1) == ($1). }.
+  self detect: { (parent dynamic hold '$1) == (dynamic hold '$1). }.
 }.
 Collection containsIf := {
   func := proc {
@@ -156,14 +151,14 @@ Collection containsIf := {
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      arg := $1.
-      (func call: arg) ifTrue: { return: True. }.
+      arg := dynamic hold '$1.
+      (func call: hold 'arg) ifTrue: { return: True. }.
     }.
     False.
   }.
 }.
 Collection contains := {
-  self containsIf: { (parent dynamic $1) == ($1). }.
+  self containsIf { (parent dynamic hold '$1) == (dynamic hold '$1). }.
 }.
 ; Note that `zip` returns an array and will be of the shorter length of the two. It should not be used
 ;  unless at least one of the arguments is finite in length.

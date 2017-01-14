@@ -21,7 +21,6 @@ extern "C" {
 
 //#define DEBUG_LOADS
 
-
 using namespace std;
 
 PtrToList currentLine;

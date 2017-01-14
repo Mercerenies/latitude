@@ -14,13 +14,17 @@ Cons pretty := {
   }.
   "(" ++ (chain: self) ++ ")".
 }.
-Cons car := Nil.
-Cons cdr := Nil.
+Cons carCell := Nil.
+Cons cdrCell := Nil.
+Cons car := { self hold 'carCell. }.
+Cons cdr := { self hold 'cdrCell. }.
+Cons car= := { self put: 'carCell, dynamic hold '$1. }.
+Cons cdr= := { self put: 'cdrCell, dynamic hold '$1. }.
 
 global cons := {
   cc := Cons clone.
-  cc car := dynamic hold '$1.
-  cc cdr := dynamic hold '$2.
+  cc car = dynamic hold '$1.
+  cc cdr = dynamic hold '$2.
   cc.
 }.
 
@@ -37,23 +41,23 @@ Array mapping := {
 }.
 Array empty? := { (self lowerBound) >= (self upperBound). }.
 Array pushFront := {
-  value := $1.
+  value := dynamic hold '$1.
   self lowerBound := self lowerBound - 1.
-  self put: (self mapping: self lowerBound) ordinal, value.
-  value.
+  self put: (self mapping: self lowerBound) ordinal, hold 'value.
+  hold 'value.
 }.
 Array pushBack := {
-  value := $1.
-  self put: (self mapping: self upperBound) ordinal, value.
+  value := dynamic hold '$1.
+  self put: (self mapping: self upperBound) ordinal, hold 'value.
   self upperBound := self upperBound + 1.
-  value.
+  hold 'value.
 }.
 Array popFront := {
   if (self empty?)
     then { err BoundsError clone throw. }
     else {
       parent self lowerBound := parent self lowerBound + 1.
-      parent self get: (parent self mapping: (parent self lowerBound - 1)) ordinal.
+      parent self hold: (parent self mapping: (parent self lowerBound - 1)) ordinal.
     }.
 }.
 Array popBack := {
@@ -61,7 +65,7 @@ Array popBack := {
     then { err BoundsError clone throw. }
     else {
       parent self upperBound := parent self upperBound - 1.
-      parent self get: (parent self mapping: parent self upperBound) ordinal.
+      parent self hold: (parent self mapping: parent self upperBound) ordinal.
     }.
 }.
 Array nth := {
@@ -70,7 +74,7 @@ Array nth := {
     else { (parent self lowerBound) + (parent dynamic $1). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self get: (parent self mapping: pos) ordinal. }.
+    else { parent self hold: (parent self mapping: pos) ordinal. }.
 }.
 Array nth= := {
   pos := if ($1 < 0)
@@ -78,7 +82,7 @@ Array nth= := {
     else { (parent self lowerBound) + (parent dynamic $1). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self put: (parent self mapping: pos) ordinal, parent dynamic $2. }.
+    else { parent self put: (parent self mapping: pos) ordinal, parent dynamic hold '$2. }.
 }.
 Array size := { (self upperBound) - (self lowerBound). }.
 Array join := {
@@ -99,8 +103,8 @@ Array concat := {
   arr := Array clone.
   self visit {
     if ($1 is (Array))
-      then { parent dynamic $1 visit { arr pushBack: $1. }. }
-      else { arr pushBack: parent dynamic $1. }.
+      then { parent dynamic $1 visit { arr pushBack: dynamic hold '$1. }. }
+      else { arr pushBack: parent dynamic hold '$1. }.
   }.
   arr.
 }.
@@ -109,8 +113,8 @@ Array == := {
   localize.
   takes '[arr].
   { arr is: Array. } and
-    { ((this size) == (arr size)). } and
-    { (this zip: arr) all: { ($1 car) == ($1 cdr). }. }.
+    { (this size) == (arr size). } and
+    { this zip (arr) all { ($1 car) == ($1 cdr). }. }.
 }.
 Array < := {
   localize.
@@ -135,7 +139,7 @@ Array iterator := {
   ArrayIterator next := { self index := self index + 1. }.
   ArrayIterator end? := { (self index) >= (self array size). }.
   ArrayIterator element := { self array nth: self index. }.
-  ArrayIterator element= := { self array nth=: self index, $1. }.
+  ArrayIterator element= := { self array nth=: self index, dynamic hold '$1. }.
   ArrayIterator.
 }.
 
@@ -152,7 +156,7 @@ Array clone := {
 meta brackets := {
   ArrayBuilder ::= self Object clone.
   ArrayBuilder array := Array clone.
-  ArrayBuilder next := { self array pushBack: $1. }.
+  ArrayBuilder next := { self array pushBack: dynamic hold '$1. }.
   ArrayBuilder finish := { self array. }.
   ArrayBuilder.
 }.
