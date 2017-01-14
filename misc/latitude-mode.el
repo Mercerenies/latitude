@@ -4,6 +4,7 @@
 
 (defvar latitude-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "<backtab>") 'latitude-mode-dedent)
     map))
 
 ; TODO Lisp mode seems to define a lot of symbols as whitespace; change them to symbols here
@@ -56,38 +57,54 @@
                        'symbols)
           . font-lock-constant-face)))
 
-;; (defun latitude-mode-skip-blanks ()
-;;   (forward-line -1)
-;;   (while (and (not (bobp)) (looking-at-p "\n"))
-;;     (forward-line -1)))
+(defun latitude-mode-skip-blanks ()
+  (forward-line -1)
+  (while (and (not (bobp)) (looking-at-p "\n"))
+    (forward-line -1)))
 
-;; (defun latitude-mode-indent ()
-;;   (save-excursion
-;;     (beginning-of-line)
-;;     (if (bobp)
-;;         (indent-line-to 0)
-;;       (let ((curr-indent (save-excursion
-;;                            (latitude-mode-skip-blanks)
-;;                            (current-indentation))))
-;;         ; First, check if there is an unclosed open brace on the previous line. If so, we are
-;;         ; starting a new method
-;;         (
+(defun latitude-mode-indent ()
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (if (bobp)
+        (indent-line-to 0)
+      (let ((prev-indent (save-excursion
+                           (latitude-mode-skip-blanks)
+                           (current-indentation)))
+            (curr-indent (current-indentation)))
+        (if (<= (+ prev-indent latitude-mode-indent) curr-indent)
+            (indent-line-to 0)
+          (indent-line-to (+ curr-indent latitude-mode-indent))))))
+  (let ((final-indent (current-indentation)))
+    (format "~S ~S" (current-column) final-indent)
+    (if (< (current-column) final-indent)
+        (move-to-column final-indent))))
 
-(defvar latitude-mode-smie-grammar
-  (smie-prec2->grammar
-   (smie-bnf->prec2
-    '((id)
-      (exprs (exprs "." exprs) (expr))
-      (expr (id ":=" expr) (id "::=" expr) (id ":" args) ("[" args "]"))
-      (args (args "," args) ("(" expr ")")))
-    '((assoc ".") (assoc ",")))))
-
-(defun latitude-mode-smie-indent (kind token)
-  (prin1 (format " << %S %S >> " kind token))
-  (pcase (cons kind token)
-    (`(:list-intro . ":") t)))
+(defun latitude-mode-dedent ()
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (if (bobp)
+        (indent-line-to 0)
+      (let ((prev-indent (save-excursion
+                           (latitude-mode-skip-blanks)
+                           (current-indentation)))
+            (curr-indent (current-indentation)))
+        (if (> latitude-mode-indent curr-indent)
+            (indent-line-to (+ prev-indent latitude-mode-indent))
+          (indent-line-to (- curr-indent latitude-mode-indent))))))
+  (let ((final-indent (current-indentation)))
+    (format "~S ~S" (current-column) final-indent)
+    (if (< (current-column) final-indent)
+        (move-to-column final-indent))))
 
 (add-to-list 'auto-mode-alist '("\\.lat[s]?\\'" . latitude-mode))
+
+(defcustom latitude-mode-indent 2
+  "The number of spaces to indent one level of a code block in Latitude."
+  :type 'integer
+  :safe #'integerp
+  :group 'latitude)
 
 (defun latitude-mode ()
   (interactive)
@@ -97,7 +114,7 @@
   (set-syntax-table latitude-mode-syntax-table)
   (use-local-map latitude-mode-map)
   (set (make-local-variable 'font-lock-defaults) '(latitude-mode-font-lock-keywords))
-  ; (smie-setup latitude-mode-smie-grammar #'latitude-mode-smie-indent)
+  (set (make-local-variable 'indent-line-function) #'latitude-mode-indent)
   ;;
   (setq major-mode 'latitude-mode)
   (setq mode-name "Latitude")
