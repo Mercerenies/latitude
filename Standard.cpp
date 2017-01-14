@@ -87,7 +87,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         NUM_CONST = 36,
         PROT_VAR = 37,
         PROT_IS = 38,
-        STR_NEXT = 39;
+        STR_NEXT = 39,
+        COMPLEX = 40;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -2052,6 +2053,37 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::EXPD, Reg::STR0),
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, STR_NEXT))));
+
+     // COMPLEX (take %num0 as real part, %num1 as imaginary part, and produce complex number in %num0)
+     // complexNumber#: number, re, im.
+     reader.cpp[COMPLEX] = [](IntState& state0) {
+         state0.num0 = complex_number(state0.num0, state0.num1);
+     };
+     sys->put(Symbols::get()["complexNumber#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$3"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::CPP, COMPLEX),
+                                   makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                   makeAssemblerLine(Instr::LOAD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
 }
 

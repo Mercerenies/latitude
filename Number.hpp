@@ -61,7 +61,10 @@ public:
     std::string asString() const;
     smallint asSmallInt() const;
     int hierarchyLevel() const;
+    friend Number complex_number(const Number&, const Number&);
 };
+
+Number complex_number(const Number& real, const Number& imag);
 
 boost::optional<Number> constantNan();
 boost::optional<Number> constantInf();

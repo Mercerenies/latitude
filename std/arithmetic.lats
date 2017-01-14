@@ -55,7 +55,7 @@ Number exp := { meta sys numTrig#: self, 6. }.
 Number log := { meta sys numTrig#: self, 13. }.
 
 ;; Constructing complex numbers
-Number rect := { Number ii * ($2) + ($1). }.
+Number rect := { meta sys complexNumber#: Number clone, $1, $2. }.
 Number polar := { Number ii * ($2) exp * ($1). }.
 
 ;; Important constants

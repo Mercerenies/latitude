@@ -345,7 +345,11 @@ namespace MagicNumber {
         }
 
         void operator()(const Number::complex& first) {
-            stream << fixed << setprecision(2) << "@(" << real(first) << ", " << imag(first) << ")";
+            stream << fixed << setprecision(2) << "@(";
+            (*this)(real(first));
+            stream << ", ";
+            (*this)(imag(first));
+            stream << ")";
         }
 
         template <typename U>
@@ -426,6 +430,26 @@ namespace MagicNumber {
             return Number::complex(0, 0);
         }
 
+    };
+
+    struct ComplexVisitor : boost::static_visitor<Number::magic_t> {
+        template <typename U, typename V>
+        Number::magic_t operator()(const U& first, const V& second) const {
+            Number::floating first0 = static_cast<Number::floating>(first);
+            Number::floating second0 = static_cast<Number::floating>(second);
+            return Number::complex(first0, second0);
+        }
+        Number::magic_t operator()(const Number::complex& first, const Number::complex& second) const {
+            return first + second * Number::complex(0, 1);
+        }
+        template <typename V>
+        Number::magic_t operator()(const Number::complex& first, const V& second) const {
+            return (*this)(first, Coerce<Number::complex>::act(second));
+        }
+        template <typename U>
+        Number::magic_t operator()(const U& first, const Number::complex& second) const {
+            return (*this)(Coerce<Number::complex>::act(first), second);
+        }
     };
 
 }
@@ -658,6 +682,12 @@ auto Number::asSmallInt() const
 
 int Number::hierarchyLevel() const {
     return boost::apply_visitor(MagicNumber::LevelVisitor(), value);
+}
+
+Number complex_number(const Number& real, const Number& imag) {
+    Number curr;
+    curr.value = boost::apply_visitor(MagicNumber::ComplexVisitor(), real.value, imag.value);
+    return curr;
 }
 
 boost::optional<Number> constantNan() {
