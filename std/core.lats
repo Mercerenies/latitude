@@ -230,6 +230,18 @@ global lexical := global.
 global dynamic := global.
 global $lexical := global.
 global $dynamic := global.
+global scopeOf := {
+  s := self.
+  if ($1 asText substringBytes (0, 1) == "$")
+    then { s dynamic. }
+    else { s lexical. }.
+}.
+global $scopeOf := {
+  s := self.
+  if ($1 asText substringBytes (0, 1) == "$")
+    then { s $dynamic. }
+    else { s $lexical. }.
+}.
 Object me := { self. }.
 global do := { $1. }.
 global here := {
@@ -340,9 +352,11 @@ String toString := { meta sys strToString#: self. }.
 String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
-Symbol assign= := { ; TODO This assumes lexical; make it work dynamic if variable starts with $
+String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
+String byteCount := { meta sys stringLength#: self. }.
+Symbol assign= := {
   name := self.
-  curr := dynamic parent $lexical.
+  curr := dynamic parent $scopeOf (self).
   rhs := dynamic hold '$1.
   sym := self asText ++ "=" intern.
   curr put: sym, { curr put: name, rhs ($1). }.

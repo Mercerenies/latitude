@@ -14,7 +14,6 @@ String findAll := {
   matches.
 }.
 
-String byteCount := { meta sys stringLength#: self. }.
 String bytes := {
   localize.
   this clone tap {
@@ -32,7 +31,6 @@ String bytes := {
   }.
 }.
 
-String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
 String substring := {
   takes '[i, j].
   'i assign = { $1. }.

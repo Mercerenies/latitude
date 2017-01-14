@@ -24,8 +24,6 @@ using namespace std;
 //  std/core.lat: 180
 // Where one of these is technically a system call that isn't in core.lat
 
-// TODO Unicode support
-
 ObjectPtr defineMethod(TranslationUnitPtr unit, ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
     ObjectPtr obj = clone(method);
     (makeAssemblerLine(Instr::RET)).appendOnto(code);
