@@ -34,7 +34,7 @@
 (defvar latitude-mode-font-lock-keywords
   (list `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
           (1 font-lock-function-name-face))
-        `("\\_<\\(&?[A-Z]\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?="
+        `("\\_<\\(&?[A-Z]\\(?:\\sw\\|\\s_\\)*\\)\\_>"
           (1 font-lock-type-face))
         `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*:="
           (1 font-lock-variable-name-face))
