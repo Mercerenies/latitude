@@ -9,13 +9,17 @@ Month ::= Enumeration of '[January, February, March, April, May, June, July,
 Weekday ::= Enumeration of '[Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday].
 
 DateTime := Object clone.
-DateTime toString := { localize.
-                       if ((this) === (DateTime))
-                         then { "DateTime". }
-                         else { "#<DateTime " ++ (this month) ++ " " ++ (this day) ++
-                                  ", " ++ (this year) ++ " " ++ (this hour) ++ ":" ++
-                                  (this minute toString padLeft ("0", 2)) ++ ":" ++
-                                  (this second toString padLeft ("0", 2)) ++ ">". }. }.
+DateTime toString := {
+  localize.
+  if ((this) === (DateTime))
+    then { "DateTime". }
+    else {
+      "#<DateTime " ++ (this month) ++ " " ++ (this day) ++
+        ", " ++ (this year) ++ " " ++ (this hour) ++ ":" ++
+        (this minute toString padLeft ("0", 2)) ++ ":" ++
+        (this second toString padLeft ("0", 2)) ++ ">".
+    }.
+}.
 DateTime second := 0.
 DateTime minute := 0.
 DateTime hour := 0.
@@ -29,5 +33,9 @@ DateTime month := { Month value (self monthNumber). }.
 DateTime weekday := { Weekday value (self weekdayNumber). }.
 DateTime dst? := { self dstNumber >= 0. }.
 
-now := { DateTime clone tap { meta sys timeSpawnLocal#: self. }. }.
-utc := { DateTime clone tap { meta sys timeSpawnGlobal#: self. }. }.
+now := {
+  DateTime clone tap { meta sys timeSpawnLocal#: self. }.
+}.
+utc := {
+  DateTime clone tap { meta sys timeSpawnGlobal#: self. }.
+}.

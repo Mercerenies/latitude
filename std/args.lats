@@ -2,50 +2,85 @@
 ;; The argument list. When filled, it takes the current dynamic scope and references its argument list.
 global ArgList ::= Object clone.
 ArgList enclosingScope := global.
-ArgList clone := { procd := self invoke: (Object hold 'clone).
-                   procd call tap { self enclosingScope := self enclosingScope clone. }. }.
-ArgList fill := { self enclosingScope := dynamic parent.
-                  self. }.
-ArgList fillWith := { self enclosingScope := $1.
-                      self. }.
-ArgList shift := { if (self size == 0)
-                     then { Nil. }
-                     else { first := parent self enclosingScope hold '$1.
-                            arglist := parent self.
-                            size := parent self size.
-                            temp := hold 'first.
-                            index := 2.
-                            parent self map!: { if ((index) > (size))
-                                                  then { hold 'first. }
-                                                  else { result := arglist enclosingScope hold:
-                                                                      ((("$") ++ (index)) intern).
-                                                         parent parent index := index + 1.
-                                                         hold 'result. }. }.
-                         hold 'first. }. }.
-ArgList unshift := { if (self size == 0)
-                       then { Nil. }
-                       else { first := parent self enclosingScope $1.
-                              arglist := parent self.
-                              size := parent self size.
-                              temp := Nil.
-                               parent self map!: { temp1 := temp.
-                                                   parent temp := $1.
-                                                   temp1. }.
-                           parent self enclosingScope $1 := temp. }. }.
-ArgList iterator := { ArgIterator ::= Object clone.
-                      ArgIterator iterator := { self. }.
-                      ArgIterator array := self.
-                      ArgIterator index := 1.
-                      ArgIterator next := { self index := self index + 1. }.
-                      ArgIterator end? := { (self array enclosingScope has: ("$" ++ (self index)) intern) not. }.
-                      ArgIterator element := { self array enclosingScope hold: ("$" ++ (self index)) intern. }.
-                      ArgIterator element= := { self array enclosingScope put: ("$" ++ (self index)) intern,
-                                                                               dynamic hold '$1. }.
-                      ArgIterator. }.
-ArgList dropIn := { target := dynamic parent.
-                    index := 1.
-                    self visit { target put: (("$" ++ (index)) intern), dynamic hold '$1.
-                                 parent index := index + 1. }. }.
+ArgList clone := {
+  procd := self invoke: (Object hold 'clone).
+  procd call tap {
+    self enclosingScope := self enclosingScope clone.
+  }.
+}.
+ArgList fill := {
+  self enclosingScope := dynamic parent.
+  self.
+}.
+ArgList fillWith := {
+  self enclosingScope := $1.
+  self.
+}.
+ArgList shift := {
+  if (self size == 0)
+    then { Nil. }
+    else {
+      first := parent self enclosingScope hold '$1.
+      arglist := parent self.
+      size := parent self size.
+      temp := hold 'first.
+      index := 2.
+      'index assign = { $1. }.
+      parent self map! {
+        if ((index) > (size))
+          then { hold 'first. }
+          else {
+            result := arglist enclosingScope hold ((("$") ++ (index)) intern).
+            index = index + 1.
+            hold 'result.
+          }.
+      }.
+      hold 'first.
+    }.
+}.
+ArgList unshift := {
+  if (self size == 0)
+    then { Nil. }
+    else {
+      first := parent self enclosingScope $1.
+      arglist := parent self.
+      size := parent self size.
+      temp := Nil.
+      parent self map! {
+        temp1 := temp.
+        parent temp := $1.
+        temp1.
+      }.
+      parent self enclosingScope $1 := temp.
+    }.
+}.
+ArgList iterator := {
+  ArgIterator ::= Object clone.
+  ArgIterator iterator := { self. }.
+  ArgIterator array := self.
+  ArgIterator index := 1.
+  ArgIterator next := { self index := self index + 1. }.
+  ArgIterator end? := {
+    (self array enclosingScope has: ("$" ++ (self index)) intern) not.
+  }.
+  ArgIterator element := {
+    self array enclosingScope hold: ("$" ++ (self index)) intern.
+  }.
+  ArgIterator element= := {
+    self array enclosingScope put:
+      ("$" ++ (self index)) intern,
+      dynamic hold '$1.
+  }.
+  ArgIterator.
+}.
+ArgList dropIn := {
+  target := dynamic parent.
+  index := 1.
+  self visit {
+    target put: (("$" ++ (index)) intern), dynamic hold '$1.
+    parent index := index + 1.
+  }.
+}.
 
 Collection inject: ArgList.
 
@@ -53,17 +88,26 @@ Collection inject: ArgList.
 ; can be annoying, so the `localize` method will bind `this` to `self` in the calling scope. `this`
 ; will not rebind lexically until that scope exits.
 global this := { dynamic parent $lexical self. }.
-global localize := { dynamic parent $lexical this := dynamic parent $lexical hold 'self. }.
+global localize := {
+  dynamic parent $lexical this := dynamic parent $lexical hold 'self.
+}.
 
 ; Likewise, the dynamic argument behavior occasonally gets in the way, so this is provided to rebind
 ; dynamic arguments to lexical names. It expects a list of symbols (usually a literal list). The name
 ; `takes` implies that the method in question takes these arguments. It is designed to be read in English,
 ; as it is usually the first line of a method (possibly the second, after a `localize`).
-global takes := { args := ArgList clone fillWith: dynamic parent.
-                  target := dynamic parent $lexical.
-                  ($1 clone zip!: args) map!: { target put: ($1 car), ($1 hold 'cdr). $1 car. }. }.
+global takes := {
+  args := ArgList clone fillWith: dynamic parent.
+  target := dynamic parent $lexical.
+  $1 clone zip! (args) map! {
+    target put: $1 car, $1 hold 'cdr.
+    $1 car.
+  }.
+}.
 
-global $* := { ArgList clone fillWith: self. }.
+global $* := {
+  ArgList clone fillWith: self.
+}.
 
 ;; Return the script
 here.

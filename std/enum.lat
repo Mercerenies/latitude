@@ -9,12 +9,19 @@
 Enumeration ::= Object clone.
 Enumeration values := [].
 Enumeration value := { self values nth ($1). }.
-Enumeration of := { takes '[list].
-                    self clone tap { localize.
-                                     this values :=
-                                         list map { takes '[curr].
-                                                    val := this clone tap { self toString := curr asText. }.
-                                                    this put: curr, val.
-                                                    val. }. }. }.
+Enumeration of := {
+  takes '[list].
+  self clone tap {
+    localize.
+    this values := list map {
+      takes '[curr].
+      val := this clone tap {
+        self toString := curr asText.
+      }.
+      this put: curr, val.
+      val.
+    }.
+  }.
+}.
 
 $whereAmI.

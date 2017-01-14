@@ -3,6 +3,10 @@
 
 ; TODO Redesign the basis here so it can work (probably with `callAmb`, not monads), then finish
 
+; NOTE TO SELF: When you redo this file, change the indentation style to the new format.
+;               I would do it now, but I believe the branch regexp is relying on this
+;               file.
+
 use 'pattern import '[Match, NoMatch].
 
 RegexpError ::= Exception clone tap { self message := "Regexp Error". }.

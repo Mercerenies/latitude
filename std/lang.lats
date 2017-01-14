@@ -1,19 +1,28 @@
 
 ;; Languages and Syntax
 
-meta hashParen := { takes '[str].
-                    lang := meta lang.
-                    index := 0.
-                    increment := { parent index := index + 1. }.
-                    callCC { return := { parent dynamic $1 call. }.
-                             while { (index) <= (str size). }
-                                do { str0 := str substring: 0, index.
-                                     lang has (str0 intern) ifTrue
-                                         { return: lang hold (str0 intern) call
-                                               (str substring (index, str size)). }.
-                                     increment. }.
-                             err LangError clone tap { self message := "Language " ++ (str) ++ " does not exist". }
-                                 throw. }. }.
+meta hashParen := {
+  takes '[str].
+  lang := meta lang.
+  index := 0.
+  increment := {
+    parent index := index + 1.
+  }.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    while { (index) <= (str size). }
+      do {
+        str0 := str substring: 0, index.
+        lang has (str0 intern) ifTrue {
+          return: lang hold (str0 intern) call (str substring (index, str size)).
+        }.
+        increment.
+      }.
+    err LangError clone tap {
+      self message := "Language " ++ (str) ++ " does not exist".
+    } throw.
+  }.
+}.
 meta lang := Object clone.
 
 here.

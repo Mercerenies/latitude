@@ -19,9 +19,11 @@ err SystemError := SystemError.
 err SystemCallError ::= SystemError clone tap { self message := "Error in system call". }.
 err SystemArgError ::= SystemError clone tap { self message := "Wrong number of arguments to system call". }.
 err TypeError ::= SystemError clone tap { self message := "Type error". }.
-err SlotError ::= SystemError clone tap { self message := { "Could not find slot " ++ (self slotName). }.
-                                          self slotName := Nil.
-                                          self objectInstance := Nil. }.
+err SlotError ::= SystemError clone tap {
+  self message := { "Could not find slot " ++ (self slotName). }.
+  self slotName := Nil.
+  self objectInstance := Nil.
+}.
 err ContError ::= SystemError clone tap { self message := "Continuation error". }.
 err ParseError ::= SystemError clone tap { self message := "Parse error". }.
 err BoundsError ::= SystemError clone tap { self message := "Bounds error". }.
@@ -40,13 +42,17 @@ err UTF8IntegrityError ::= err IntegrityError clone tap { self message := "UTF-8
 ; point, it is a standard library error and the interpreter will terminate immediately
 ; IMPORTANT NOTE: `meta missed` is an absolute last resort that will be called by the virtual machine if
 ;                 `Object missing` cannot be found. Override at your own risk!
-meta missed := { err := err SystemError clone.
-                 err message := "Missing method left undefined".
-                 err throw. }.
-Object missing := { err := err SlotError clone.
-                    err slotName := dynamic hold '$1.
-                    err objectInstance := lexical hold 'self.
-                    err throw. }.
+meta missed := {
+  err := err SystemError clone.
+  err message := "Missing method left undefined".
+  err throw.
+}.
+Object missing := {
+  err := err SlotError clone.
+  err slotName := dynamic hold '$1.
+  err objectInstance := lexical hold 'self.
+  err throw.
+}.
 
 ;; We would return the script here, but the `has` function requires flow_control.lat
 1.

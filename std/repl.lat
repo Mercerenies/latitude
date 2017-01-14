@@ -3,13 +3,19 @@
 
 REPL ::= Object clone.
 
-REPL quitter := { jump := Nil.
-                  setJump := { parent jump := $1. }.
-                  callCC { inner := $1.
-                           callCC { setJump: $1.
-                                    inner call: Nil. }.
-                           Kernel kill. }.
-                  jump. }.
+REPL quitter := {
+  jump := Nil.
+  setJump := { parent jump := $1. }.
+  callCC {
+    inner := $1.
+    callCC {
+      setJump: $1.
+      inner call: Nil.
+    }.
+    Kernel kill.
+  }.
+  jump.
+}.
 REPL quit := { self quitter call: Nil. }.
 REPL scope := global clone.
 REPL $scope := Nil. ; To be assigned in-loop
@@ -21,26 +27,45 @@ global quit := { self REPL quit. }.
 global $except := { self REPL exception. }.
 global $it := { self REPL lastResult. }.
 
-REPL read := { stdout puts: "> ".
-               stdin readln. }.
-REPL eval := { Kernel eval: self scope, self $scope, $1. }.
-REPL print := { stdout println: dynamic hold '$1. }.
-REPL loop := { localize.
-               $whereAmI := this.
-               self $scope := dynamic clone.
-               (self scope) pairScopes (self $scope).
-               loop { { { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue
-                            { Kernel GC run.
-                              (Kernel GC total) >= (this maxObjects) ifTrue
-                                  { this maxObjects := this maxObjects * 2. }. }.
-                        expr := this read.
-                        this lastResult := this eval: expr.
-                        this print: this hold 'lastResult. } resolve:
-                            { True. },
-                            { this exception := $1.
-                              stderr putln: "***** EXCEPTION *****".
-                              stderr putln: this exception pretty.
-                              { this exception has 'printStackTrace. } ifTrue
-                                  { this exception printStackTrace. }. }. }. }.
+REPL read := {
+  stdout puts: "> ".
+  stdin readln.
+}.
+REPL eval := {
+  Kernel eval: self scope, self $scope, $1.
+}.
+REPL print := {
+  stdout println: dynamic hold '$1.
+}.
+REPL loop := {
+  localize.
+  $whereAmI := this.
+  self $scope := dynamic clone.
+  (self scope) pairScopes (self $scope).
+  loop {
+    {
+      { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue {
+        Kernel GC run.
+        (Kernel GC total) >= (this maxObjects) ifTrue {
+          this maxObjects := this maxObjects * 2.
+        }.
+      }.
+      expr := this read.
+      this lastResult := this eval: expr.
+      this print: this hold 'lastResult.
+    } resolve:
+      True,
+      {
+        this exception := $1.
+        stderr putln: "***** EXCEPTION *****".
+        stderr putln: this exception pretty.
+        {
+          this exception has 'printStackTrace.
+        } ifTrue {
+          this exception printStackTrace.
+        }.
+      }.
+  }.
+}.
 
 global REPL := REPL.

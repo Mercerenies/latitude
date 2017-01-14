@@ -6,30 +6,54 @@ Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 Object hold := { meta sys accessSlot#: self, $1. }.
 Object get := { self invoke (self hold) call. }.
-Object has := { { (parent hold 'self) slot: parent dynamic $1.
-                  True. } catch: err SlotError,
-                                 { False. }. }.
+Object has := {
+  {
+    (parent hold 'self) slot: parent dynamic $1.
+    True.
+  } catch:
+    err SlotError,
+    { False. }.
+}.
 Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 Object origin := { meta sys origin#: self, $1. }.
-Object invoke := { procd := Proc clone.
-                   procd call := { meta sys invoke#: parent hold 'self,
-                                                     (parent dynamic hold '$1). }.
-                   procd. }.
-Object invokeSpecial := { procd := Proc clone.
-                          procd call := { meta sys doWithCallback#: parent hold 'self,
-                                                                    (parent dynamic hold '$1),
-                                                                    (parent dynamic hold '$2). }.
-                          procd. }.
-Object above := { orgn := self origin: $1.
-                  (hold 'orgn) parent hold: $1. }.
-Object tap := { (self invoke: (dynamic hold '$1)) call.
-                self. }.
-Object hierarchy := { arr := Array clone. ; DO NOT call this on Method or any self-evaluating objects
-                      curr := self.
-                      while { (arr detect: { ($1) === (curr). }) not. }
-                         do { arr pushBack: curr.
-                              parent curr := curr parent. }.
-                      arr. }.
+Object invoke := {
+  procd := Proc clone.
+  procd call := {
+    meta sys invoke#:
+      parent hold 'self,
+      (parent dynamic hold '$1).
+  }.
+  procd.
+}.
+Object invokeSpecial := {
+  procd := Proc clone.
+  procd call := {
+    meta sys doWithCallback#:
+      parent hold 'self,
+      parent dynamic hold '$1,
+      parent dynamic hold '$2.
+  }.
+  procd.
+}.
+Object above := {
+  orgn := self origin: $1.
+  (hold 'orgn) parent hold: $1.
+}.
+Object tap := {
+  self invoke (dynamic hold '$1) call.
+  self.
+}.
+Object hierarchy := {
+  arr := Array clone. ; DO NOT call this on Method or any self-evaluating objects
+  curr := self.
+  while {
+    arr detect { ($1) === (curr). } not.
+  } do {
+    arr pushBack: curr.
+    parent curr := curr parent.
+  }.
+  arr.
+}.
 Object keys := { meta sys objectKeys#: hold 'self. }.
 
 ;; The $whereAmI variable
@@ -41,37 +65,59 @@ meta sigil := Object clone.
 meta toString := "meta".
 
 ;; Basics of exception handling
-Method handle := { meta sys handler#: dynamic hold '$1.
-                   result := self.
-                   meta sys unhandler#.
-                   hold 'result. }.
-Method resolve := { mthd := hold 'self.
-                    cond := dynamic hold '$1.
-                    catcher := dynamic hold '$2.
-                    jump := Nil.
-                    setJump := { parent jump := $1. }.
-                    callCC { outer := $1.
-                             callCC { inner := $1.
-                                      result := callCC { setJump: $1.
-                                                         inner call: Nil. }.
-                                      outer call: (catcher: result). }.
-                             (hold 'mthd) handle { exc := $1.
-                                                   (cond: exc) ifTrue: { jump call: exc. }. }. }. }.
-Method catch := { (hold 'self) resolve: { $1 is: parent dynamic $1. }, dynamic hold '$2. }.
+Method handle := {
+  meta sys handler#: dynamic hold '$1.
+  result := self.
+  meta sys unhandler#.
+  hold 'result.
+}.
+Method resolve := {
+  mthd := hold 'self.
+  cond := dynamic hold '$1.
+  catcher := dynamic hold '$2.
+  jump := Nil.
+  'jump assign = { $1. }.
+  callCC {
+    outer := $1.
+    callCC {
+      inner := $1.
+      result := callCC {
+        jump = $1.
+        inner call: Nil.
+      }.
+      outer call: (catcher: result).
+    }.
+    { mthd. } handle {
+      exc := $1.
+      cond (exc) ifTrue {
+        jump call: exc.
+      }.
+    }.
+  }.
+}.
+Method catch := {
+  (hold 'self) resolve: { $1 is: parent dynamic $1. }, dynamic hold '$2.
+}.
 Method catchAll := { (hold 'self) catch: Exception, dynamic hold '$1. }.
 Method default := { (hold 'self) catch: Exception, dynamic hold '$1. }.
 ; Observe that `rethrow` is not overriden in `Exception`, so it will never set the `stack` field.
 Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
-Exception throw := { self stack := currentStackTrace parent.
-                     (self invoke: (Object hold 'throw)) call. }.
-Method protect := { thunk: { }, hold 'self, dynamic hold '$1. }.
-global thunk := { meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
-                  $1.
-                  result := $2.
-                  $3.
-                  meta sys unthunk#.
-                  hold 'result. }.
+Exception throw := {
+  self stack := currentStackTrace parent.
+  self invoke (Object hold 'throw) call.
+}.
+Method protect := {
+  thunk: { }, hold 'self, dynamic hold '$1.
+}.
+global thunk := {
+  meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
+  $1.
+  result := $2.
+  $3.
+  meta sys unthunk#.
+  hold 'result.
+}.
 
 ;; Procs and Methods handling
 Method closure := global.
@@ -81,12 +127,22 @@ Method toString := "Method".
 Proc toString := "Proc".
 Method == := { (self) == ($1). }. ; Evaluate the method and then try again
 Method < := { (self) < ($1). }. ; Evaluate the method and then try again
-Proc <| := { proc { r := (parent dynamic hold '$1) call.
-                    (parent hold 'self) call: r. }. }.
-Proc |> := { (dynamic hold '$1) <| (hold 'self). }.
-Symbol toProc := { sym := self.
-                   proc { obj := ArgList clone fill shift.
-                          (obj invoke (obj hold: sym)) call. }. }.
+Proc <| := {
+  proc {
+    r := (parent dynamic hold '$1) call.
+    (parent hold 'self) call: r.
+  }.
+}.
+Proc |> := {
+  (dynamic hold '$1) <| (hold 'self).
+}.
+Symbol toProc := {
+  sym := self.
+  proc {
+    obj := ArgList clone fill shift.
+    (obj invoke (obj hold: sym)) call.
+  }.
+}.
 
 ;; Cached Procedures
 global Cached := Proc clone.
@@ -94,19 +150,29 @@ Cached toString := "Cached".
 Cached value := Nil.
 Cached done? := False.
 Cached procedure := {}.
-Cached call := { if (self done?)
-                   then { parent self value. }
-                   else { parent self done? := True.
-                          parent self value := parent self procedure call. }. }.
+Cached call := {
+  if (self done?)
+    then { parent self value. }
+    else {
+      parent self done? := True.
+      parent self value := parent self procedure call.
+    }.
+}.
 
-global proc := { curr := self Proc clone.
-                 curr call := dynamic hold '$1.
-                 curr. }.
-global memo := { curr := self Cached clone.
-                 curr procedure := self proc: (dynamic hold '$1).
-                 curr. }.
-meta sigil l := { cache := memo: (dynamic hold '$1).
-                  { cache call. }. }.
+global proc := {
+  curr := self Proc clone.
+  curr call := dynamic hold '$1.
+  curr.
+}.
+global memo := {
+  curr := self Cached clone.
+  curr procedure := self proc: (dynamic hold '$1).
+  curr.
+}.
+meta sigil l := {
+  cache := memo: (dynamic hold '$1).
+  { cache call. }.
+}.
 global id := proc { $1. }.
 
 ;; Stream general methods
@@ -121,18 +187,28 @@ Stream read := { meta sys streamReadChar#: self. }.
 Stream eof? := { meta sys streamEof#: self. }.
 Stream close := { meta sys streamClose#: self. }.
 Stream open := { meta sys streamFileOpen#: self clone, $1, $2, $3. }.
-Stream closeAfter := { stream := self.
-                       { (stream invoke: parent dynamic hold '$1) call. } protect { stream close. }. }.
+Stream closeAfter := {
+  stream := self.
+  {
+    stream invoke (parent dynamic hold '$1) call.
+  } protect {
+    stream close.
+  }.
+}.
 Stream exists? := { meta sys fileExists#: $1. }.
 Stream toString := "Stream".
 
 ; Dumping and Printing Convenience Functions
-Stream dump := { localize.
-                 obj := dynamic hold '$1.
-                 this println: hold 'obj.
-                 hold 'obj keys visit { p := if (Kernel protected (hold 'obj, $1)) then "! " else "  ".
-                                        this putln: p ++ ($1 asText) ++ ": " ++ ((hold 'obj hold: $1) toString). }.
-                 Nil. }.
+Stream dump := {
+  localize.
+  obj := dynamic hold '$1.
+  this println: hold 'obj.
+  hold 'obj keys visit {
+    p := if (Kernel protected (hold 'obj, $1)) then "! " else "  ".
+    this putln: p ++ ($1 asText) ++ ": " ++ ((hold 'obj hold: $1) toString).
+  }.
+  Nil.
+}.
 Object println := { stdout println: hold 'self. }.
 Object dump := { stdout dump: hold 'self. }.
 
@@ -156,19 +232,25 @@ global $lexical := global.
 global $dynamic := global.
 Object me := { self. }.
 global do := { $1. }.
-global here := { if (self has 'again)
-                   then { parent self hold 'again. }
-                   else { Nil. }. }.
-global toString := { if ((self) === (global))
-                       then "global"
-                       else "#<Scope>". }.
+global here := {
+  if (self has 'again)
+    then { parent self hold 'again. }
+    else { Nil. }.
+}.
+global toString := {
+  if ((self) === (global))
+    then "global"
+    else "#<Scope>".
+}.
 ; NOTE: pairScopes can only be called on custom-made scopes.
 ;       Attempting to re-pair implicitly created scopes will
 ;       trigger a protection error.
-global pairScopes := { self lexical := self.
-                       self dynamic := $1.
-                       $1 $lexical := self.
-                       $1 $dynamic := $1. }.
+global pairScopes := {
+  self lexical := self.
+  self dynamic := $1.
+  $1 $lexical := self.
+  $1 $dynamic := $1.
+}.
 
 ;; Equality and Comparability
 Object === := { meta sys ptrEquals#: self, $1. }.
@@ -192,8 +274,12 @@ Kernel protected := { meta sys protectIs#: dynamic hold '$1, $2. }.
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
 Kernel GC traced := False.
-Kernel GC run := { self traced ifTrue { stderr putln: "Running garbage collector... " ++ (parent self total). }.
-                   meta sys runGC#. }.
+Kernel GC run := {
+  self traced ifTrue {
+    stderr putln: "Running garbage collector... " ++ (parent self total).
+  }.
+  meta sys runGC#.
+}.
 Kernel GC total := { meta sys totalGC#. }.
 Kernel GC trace := { self traced := True. }.
 Kernel GC untrace := { self traced := False. }.
@@ -206,19 +292,28 @@ Kernel GC untrace := { self traced := False. }.
 
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.
-Kernel env= := { if { parent dynamic $2 nil?. }
-                   then { meta sys envUnset#: parent dynamic $1. }
-                   else { meta sys envSet#: parent dynamic $1, parent dynamic $2. }. }.
+Kernel env= := {
+  if { parent dynamic $2 nil?. }
+    then {
+      meta sys envUnset#: parent dynamic $1.
+    } else {
+      meta sys envSet#: parent dynamic $1, parent dynamic $2.
+    }.
+}.
 
 ;; FilePath functions
 global FilePath := Object clone.
 FilePath toString := "FilePath".
 FilePath directory := { meta sys dirName#: $1. }.
 FilePath filename := { meta sys fileName#: $1. }.
-FilePath rawname := { temp := self filename: $1.
-                      temp substring: 0, temp findAll "." nth -1. }.
-FilePath extension := { temp := self filename: $1.
-                        temp substring: temp findAll "." nth -1 + 1, temp size. }.
+FilePath rawname := {
+  temp := self filename: $1.
+  temp substring: 0, temp findAll "." nth -1.
+}.
+FilePath extension := {
+  temp := self filename: $1.
+  temp substring: temp findAll "." nth -1 + 1, temp size.
+}.
 
 ;; Symbol functions
 Symbol gensym := { meta sys gensym#: self clone. }.
@@ -235,19 +330,23 @@ Number ordinal := { meta sys natSym#: self. }.
 Object stringify := { self toString. }.
 String stringify := { self. }.
 Object ++ := { meta sys stringConcat#: self stringify, $1 stringify. }.
-Object :: := { hold 'self toString := $1 pretty.
-               hold 'self. }.
+Object :: := {
+  hold 'self toString := $1 pretty.
+  hold 'self.
+}.
 Object toString := "Object".
 Object pretty := { (hold 'self) toString. }.
 String toString := { meta sys strToString#: self. }.
 String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
-Symbol assign= := { name := self.
-                    curr := dynamic parent $lexical.
-                    rhs := dynamic hold '$1.
-                    sym := self asText ++ "=" intern.
-                    curr put: sym, { curr put: name, rhs ($1). }. }.
+Symbol assign= := { ; TODO This assumes lexical; make it work dynamic if variable starts with $
+  name := self.
+  curr := dynamic parent $lexical.
+  rhs := dynamic hold '$1.
+  sym := self asText ++ "=" intern.
+  curr put: sym, { curr put: name, rhs ($1). }.
+}.
 
 ; File headers
 FileHeader toString := "FileHeader".
@@ -258,10 +357,14 @@ FileHeader moduleName := Nil.
 StackFrame toString := "StackFrame".
 StackFrame line := 0.
 StackFrame file := "".
-StackFrame dump := { if { (parent self) === (StackFrame). }
-                       then { Nil. }
-                       else { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
-                              parent self parent dump. }. }.
+StackFrame dump := {
+  if { (parent self) === (StackFrame). }
+    then { Nil. }
+    else {
+      stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
+      parent self parent dump.
+    }.
+}.
 global currentStackTrace := { meta sys stackTrace# parent. }.
 global printStackTrace := { self stack parent dump. }.
 

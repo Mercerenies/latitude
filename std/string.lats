@@ -4,105 +4,163 @@
 
 String find := { meta sys stringFindFirst#: self, $1, $2. }.
 String findFirst := { self find: $1, 0. }.
-String findAll := { localize.
-                    takes '[substr].
-                    curr := -1.
-                    matches := Array clone.
-                    while { parent curr := this find: substr, curr + 1. }
-                       do { matches pushBack: curr. }.
-                    matches. }.
+String findAll := {
+  localize.
+  takes '[substr].
+  curr := -1.
+  matches := Array clone.
+  while { parent curr := this find: substr, curr + 1. }
+    do { matches pushBack: curr. }.
+  matches.
+}.
 
 String byteCount := { meta sys stringLength#: self. }.
-String bytes := { self clone tap
-                      { self iterator := self invoke (parent self hold 'iterator) call tap
-                            { self next := { self index := self index + 1. }.
-                              self element := { self string substringBytes: self index,
-                                                                            self index + 1. }. }. }. }.
+String bytes := {
+  localize.
+  this clone tap {
+    self iterator := {
+      self invoke (this hold 'iterator) call tap {
+        self next := {
+          self index := self index + 1.
+        }.
+        self element := {
+          self string substringBytes: self index,
+          self index + 1.
+        }.
+      }.
+    }.
+  }.
+}.
 
 String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
-String substring := { takes '[i, j].
-                      'i assign = { $1. }.
-                      'j assign = { $1. }.
-                      i1 := 0.
-                      j1 := self byteCount.
-                      'i1 assign = { $1. }.
-                      'j1 assign = { $1. }.
-                      iter := self iterator.
-                      while { iter end? not. }
-                         do { (i == 0) ifTrue { i1 = iter index. }.
-                              (j == 0) ifTrue { j1 = iter index. }.
-                              i = i - 1.
-                              j = j - 1.
-                              iter next. }.
-                      if ((i1) and (j1))
-                        then { parent self substringBytes: i1, j1. }
-                        else { err BoundsError clone throw. }. }.
+String substring := {
+  takes '[i, j].
+  'i assign = { $1. }.
+  'j assign = { $1. }.
+  i1 := 0.
+  j1 := self byteCount.
+  'i1 assign = { $1. }.
+  'j1 assign = { $1. }.
+  iter := self iterator.
+  while { iter end? not. }
+    do {
+      (i == 0) ifTrue { i1 = iter index. }.
+      (j == 0) ifTrue { j1 = iter index. }.
+      i = i - 1.
+      j = j - 1.
+      iter next.
+    }.
+  if ((i1) and (j1))
+    then { parent self substringBytes: i1, j1. }
+    else { err BoundsError clone throw. }.
+}.
 
-String split := { localize.
-                  takes '[delim].
-                  index := 0.
-                  found := { parent index := ($1) + (delim size). }.
-                  arr := Array clone.
-                  (this findAll: delim) visit { arr pushBack: (this substring: index, $1).
-                                                found: $1.
-                                                delim. }.
-                  arr pushBack: (this substring: index, this size).
-                  arr. }.
+String split := {
+  localize.
+  takes '[delim].
+  index := 0.
+  found := {
+    parent index := ($1) + (delim size).
+  }.
+  arr := Array clone.
+  (this findAll: delim) visit {
+    arr pushBack: (this substring: index, $1).
+    found: $1.
+    delim.
+  }.
+  arr pushBack: (this substring: index, this size).
+  arr.
+}.
 
-String replace := { takes '[substr, index, mthd].
-                    result := self.
-                    begin := self find: substr, index.
-                    begin ifTrue: { end := (begin) + (substr size).
-                                    str1 := result substring: 0, begin.
-                                    str2 := result substring: begin, end.
-                                    str3 := result substring: end, result size.
-                                    parent result := (str1) ++ (mthd: str2) ++ (str3). }.
-                    result. }.
+String replace := {
+  takes '[substr, index, mthd].
+  result := self.
+  begin := self find: substr, index.
+  begin ifTrue {
+    end := (begin) + (substr size).
+    str1 := result substring: 0, begin.
+    str2 := result substring: begin, end.
+    str3 := result substring: end, result size.
+    parent result := (str1) ++ (mthd: str2) ++ (str3).
+  }.
+  result.
+}.
 String replaceFirst := { self replace: $1, 0, $2. }.
-String replaceAll := { takes '[substr, mthd].
-                       curr := self.
-                       negativeIndex := curr size.
-                       'negativeIndex assign = { $1. }.
-                       index := { (curr size) - (negativeIndex). }.
-                       index= := { $1 ifTrue: { negativeIndex = (curr size) - (parent dynamic $1). }. }.
-                       while { index = curr find: substr, index. }
-                          do { parent curr := curr replace: substr, index, hold 'mthd.
-                               index = (index) + (substr size). }.
-                       curr. }.
+String replaceAll := {
+  takes '[substr, mthd].
+  curr := self.
+  negativeIndex := curr size.
+  'negativeIndex assign = { $1. }.
+  index := { (curr size) - (negativeIndex). }.
+  index= := {
+    $1 ifTrue {
+      negativeIndex = (curr size) - (parent dynamic $1).
+    }.
+  }.
+  while { index = curr find: substr, index. }
+    do {
+      parent curr := curr replace: substr, index, hold 'mthd.
+      index = (index) + (substr size).
+    }.
+  curr.
+}.
 
-String padLeft := { takes '[ch, n].
-                    newStr := self.
-                    'newStr assign = { $1. }.
-                    while { (newStr size) < (n). }
-                       do { newStr = (ch) ++ (newStr). }.
-                    newStr. }.
-String padRight := { takes '[ch, n].
-                     newStr := self.
-                     'newStr assign = { $1. }.
-                     while { (newStr size) < (n). }
-                        do { newStr = (newStr) ++ (ch). }.
-                     newStr. }.
+String padLeft := {
+  takes '[ch, n].
+  newStr := self.
+  'newStr assign = { $1. }.
+  while { (newStr size) < (n). }
+    do { newStr = (ch) ++ (newStr). }.
+  newStr.
+}.
+String padRight := {
+  takes '[ch, n].
+  newStr := self.
+  'newStr assign = { $1. }.
+  while { (newStr size) < (n). }
+    do { newStr = (newStr) ++ (ch). }.
+  newStr.
+}.
 
-String ord := { self == "" ifTrue { err ArgError clone tap { self message := "`ord` on empty string". } throw. }.
-                meta sys strOrd#: self. }.
-Number chr := { (self < 0) or (self > 255) ifTrue
-                    { err ArgError clone tap { self message := "`chr` arg out of bounds". } throw. }.
-                meta sys strChr#: self. }.
+String ord := {
+  self == "" ifTrue {
+    err ArgError clone tap { self message := "`ord` on empty string". } throw.
+  }.
+  meta sys strOrd#: self.
+}.
+Number chr := {
+  (self < 0) or (self > 255) ifTrue {
+    err ArgError clone tap { self message := "`chr` arg out of bounds". } throw.
+  }.
+  meta sys strChr#: self.
+}.
 
-String iterator := { Object clone tap
-                         { self toString := "StringIterator".
-                           self index := 0.
-                           self string := parent self.
-                           self next := { self index := meta sys stringNext#: self string, self index.
-                                          self index ifFalse { err UTF8IntegrityError clone throw. }. }.
-                           self end? := { (self index) >= (self string byteCount). }.
-                           self element := { self string substringBytes: self index,
-                                                                         meta sys stringNext# (self string,
-                                                                                               self index). }.
-                           self element= := { err ReadOnlyError clone tap
-                                                  { self message := "Strings are immutable". } throw. }. }. }.
-String map := { takes '[mthd].
-                str := "".
-                self visit { parent str := str ++ (mthd: $1). }.
-                str. }.
+String iterator := {
+  Object clone tap {
+    self toString := "StringIterator".
+    self index := 0.
+    self string := parent self.
+    self next := {
+      self index := meta sys stringNext#: self string, self index.
+      self index ifFalse { err UTF8IntegrityError clone throw. }.
+    }.
+    self end? := { (self index) >= (self string byteCount). }.
+    self element := {
+      self string substringBytes:
+        self index,
+        meta sys stringNext# (self string, self index).
+    }.
+    self element= := {
+      err ReadOnlyError clone tap { self message := "Strings are immutable". } throw.
+    }.
+  }.
+}.
+String map := {
+  takes '[mthd].
+  str := "".
+  self visit {
+    parent str := str ++ (mthd: $1).
+  }.
+  str.
+}.
 Collection inject: String.

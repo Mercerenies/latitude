@@ -1,128 +1,188 @@
 
 ;; "Cons" objects, as in Lisp
 global Cons ::= Object clone.
-Cons pretty := { chain := { curr := $1.
-                            cond { when (curr cdr nil?)
-                                     do { curr car toString. }.
-                                   when (curr cdr is (Cons))
-                                     do { (curr car toString) ++ " " ++ (chain: curr cdr). }.
-                                   else { (curr car toString) ++ " . " ++ (curr cdr toString). }. }. }.
-                 "(" ++ (chain: self) ++ ")". }.
+Cons pretty := {
+  chain := {
+    curr := $1.
+    cond {
+      when (curr cdr nil?)
+        do { curr car toString. }.
+      when (curr cdr is (Cons))
+        do { (curr car toString) ++ " " ++ (chain: curr cdr). }.
+      else { (curr car toString) ++ " . " ++ (curr cdr toString). }.
+    }.
+  }.
+  "(" ++ (chain: self) ++ ")".
+}.
 Cons car := Nil.
 Cons cdr := Nil.
 
-global cons := { cc := Cons clone.
-                 cc car := dynamic hold '$1.
-                 cc cdr := dynamic hold '$2.
-                 cc. }.
+global cons := {
+  cc := Cons clone.
+  cc car := dynamic hold '$1.
+  cc cdr := dynamic hold '$2.
+  cc.
+}.
 
 Cons := Cons.
 
 ;; Array functions
 Array lowerBound := 0.
 Array upperBound := 0.
-Array mapping := { var := $1.
-                   if { var >= 0. }
-                     then { (var * 2) + 1. }
-                     else { var * -2. }. }.
+Array mapping := {
+  var := $1.
+  if { var >= 0. }
+    then { (var * 2) + 1. }
+    else { var * -2. }.
+}.
 Array empty? := { (self lowerBound) >= (self upperBound). }.
-Array pushFront := { value := $1.
-                     self lowerBound := self lowerBound - 1.
-                     self put: (self mapping: self lowerBound) ordinal, value.
-                     value. }.
-Array pushBack := { value := $1.
-                    self put: (self mapping: self upperBound) ordinal, value.
-                    self upperBound := self upperBound + 1.
-                    value. }.
-Array popFront := { if (self empty?)
-                      then { err BoundsError clone throw. }
-                      else { parent self lowerBound := parent self lowerBound + 1.
-                             parent self get: (parent self mapping: (parent self lowerBound - 1)) ordinal. }. }.
-Array popBack := { if (self empty?)
-                     then { err BoundsError clone throw. }
-                     else { parent self upperBound := parent self upperBound - 1.
-                            parent self get: (parent self mapping: parent self upperBound) ordinal. }. }.
-Array nth := { pos := if ($1 < 0)
-                        then { (parent self upperBound) + (parent dynamic $1). }
-                        else { (parent self lowerBound) + (parent dynamic $1). }.
-               if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
-                 then { err BoundsError clone throw. }
-                 else { parent self get: (parent self mapping: pos) ordinal. }. }.
-Array nth= := { pos := if ($1 < 0)
-                         then { (parent self upperBound) + (parent dynamic $1). }
-                         else { (parent self lowerBound) + (parent dynamic $1). }.
-                if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
-                  then { err BoundsError clone throw. }
-                  else { parent self put: (parent self mapping: pos) ordinal, parent dynamic $2. }. }.
+Array pushFront := {
+  value := $1.
+  self lowerBound := self lowerBound - 1.
+  self put: (self mapping: self lowerBound) ordinal, value.
+  value.
+}.
+Array pushBack := {
+  value := $1.
+  self put: (self mapping: self upperBound) ordinal, value.
+  self upperBound := self upperBound + 1.
+  value.
+}.
+Array popFront := {
+  if (self empty?)
+    then { err BoundsError clone throw. }
+    else {
+      parent self lowerBound := parent self lowerBound + 1.
+      parent self get: (parent self mapping: (parent self lowerBound - 1)) ordinal.
+    }.
+}.
+Array popBack := {
+  if (self empty?)
+    then { err BoundsError clone throw. }
+    else {
+      parent self upperBound := parent self upperBound - 1.
+      parent self get: (parent self mapping: parent self upperBound) ordinal.
+    }.
+}.
+Array nth := {
+  pos := if ($1 < 0)
+    then { (parent self upperBound) + (parent dynamic $1). }
+    else { (parent self lowerBound) + (parent dynamic $1). }.
+  if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
+    then { err BoundsError clone throw. }
+    else { parent self get: (parent self mapping: pos) ordinal. }.
+}.
+Array nth= := {
+  pos := if ($1 < 0)
+    then { (parent self upperBound) + (parent dynamic $1). }
+    else { (parent self lowerBound) + (parent dynamic $1). }.
+  if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
+    then { err BoundsError clone throw. }
+    else { parent self put: (parent self mapping: pos) ordinal, parent dynamic $2. }.
+}.
 Array size := { (self upperBound) - (self lowerBound). }.
-Array join := { index := 1.
-                size := self size.
-                delim := { parent dynamic $1. }.
-                str := if (self empty?)
-                         then { "". }
-                         else { (parent self nth: 0) toString. }.
-                while { (index) < (size). }
-                   do { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
-                        parent index := index + 1. }.
-                str. }.
-Array concat := { arr := Array clone.
-                  self visit { if ($1 is (Array))
-                                 then { parent dynamic $1 visit { arr pushBack: $1. }. }
-                                 else { arr pushBack: parent dynamic $1. }. }.
-                  arr. }.
+Array join := {
+  index := 1.
+  size := self size.
+  delim := { parent dynamic $1. }.
+  str := if (self empty?)
+    then { "". }
+    else { (parent self nth: 0) toString. }.
+  while { (index) < (size). }
+    do {
+      parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
+      parent index := index + 1.
+    }.
+  str.
+}.
+Array concat := {
+  arr := Array clone.
+  self visit {
+    if ($1 is (Array))
+      then { parent dynamic $1 visit { arr pushBack: $1. }. }
+      else { arr pushBack: parent dynamic $1. }.
+  }.
+  arr.
+}.
 Array toString := { "[" ++ (self join ", ") ++ "]". }.
-Array == := { localize.
-              takes '[arr].
-              { arr is: Array. } and
-                  { ((this size) == (arr size)) and { (this zip: arr) all: { ($1 car) == ($1 cdr). }. }. }. }.
-Array < := { localize.
-             takes '[arr].
-             callCC { return := { parent dynamic $1 call. }.
-                      (arr is: Array) ifFalse { return: False. }.
-                      (this zip: arr) visit: { (($1 car) < ($1 cdr)) ifTrue: { return: True. }.
-                                               (($1 car) > ($1 cdr)) ifTrue: { return: False. }. }.
-                      (this size) < (arr size). }. }.
+Array == := {
+  localize.
+  takes '[arr].
+  { arr is: Array. } and
+    { ((this size) == (arr size)). } and
+    { (this zip: arr) all: { ($1 car) == ($1 cdr). }. }.
+}.
+Array < := {
+  localize.
+  takes '[arr].
+  callCC {
+    return := { parent dynamic $1 call. }.
+    (arr is: Array) ifFalse { return: False. }.
+    (this zip: arr) visit {
+      (($1 car) < ($1 cdr)) ifTrue: { return: True. }.
+      (($1 car) > ($1 cdr)) ifTrue: { return: False. }.
+    }.
+    (this size) < (arr size).
+  }.
+}.
 
 ;; Collection Methods
-Array iterator := { ArrayIterator ::= Object clone.
-                    ArrayIterator iterator := { self. }.
-                    ArrayIterator index := 0.
-                    ArrayIterator array := self.
-                    ArrayIterator next := { self index := self index + 1. }.
-                    ArrayIterator end? := { (self index) >= (self array size). }.
-                    ArrayIterator element := { self array nth: self index. }.
-                    ArrayIterator element= := { self array nth=: self index, $1. }.
-                    ArrayIterator. }.
+Array iterator := {
+  ArrayIterator ::= Object clone.
+  ArrayIterator iterator := { self. }.
+  ArrayIterator index := 0.
+  ArrayIterator array := self.
+  ArrayIterator next := { self index := self index + 1. }.
+  ArrayIterator end? := { (self index) >= (self array size). }.
+  ArrayIterator element := { self array nth: self index. }.
+  ArrayIterator element= := { self array nth=: self index, $1. }.
+  ArrayIterator.
+}.
 
 ;; This is a fix for a problem with `map` from `Collection`
-Array clone := { procd := self invoke: (Object hold 'clone).
-                 procd call tap { self lowerBound := self lowerBound.
-                                  self upperBound := self upperBound. }. }.
+Array clone := {
+  procd := self invoke: (Object hold 'clone).
+  procd call tap {
+    self lowerBound := self lowerBound.
+    self upperBound := self upperBound.
+  }.
+}.
 
 ;; Array Syntax
-meta brackets := { ArrayBuilder ::= self Object clone.
-                   ArrayBuilder array := Array clone.
-                   ArrayBuilder next := { self array pushBack: $1. }.
-                   ArrayBuilder finish := { self array. }.
-                   ArrayBuilder. }.
+meta brackets := {
+  ArrayBuilder ::= self Object clone.
+  ArrayBuilder array := Array clone.
+  ArrayBuilder next := { self array pushBack: $1. }.
+  ArrayBuilder finish := { self array. }.
+  ArrayBuilder.
+}.
 
 ;; Statement List Syntax
 SpecialMethod ::= Method clone.
 SpecialMethod statements := [].
-meta statements := { MethodBuilder ::= self Object clone.
-                     MethodBuilder array := Array clone.
-                     MethodBuilder next := { self array pushBack: proc (dynamic hold '$1). }.
-                     MethodBuilder finish := { spec := { args := $*.
-                                                         result := Nil.
-                                                         here statements visit
-                                                             { procd := parent self invoke: $1 hold 'call.
-                                                               args dropIn.
-                                                               parent result := procd call. }.
-                                                         result. }.
-                                               hold 'spec parent := SpecialMethod.
-                                               hold 'spec statements := self array.
-                                               hold 'spec. }.
-                     MethodBuilder. }.
+meta statements := {
+  MethodBuilder ::= self Object clone.
+  MethodBuilder array := Array clone.
+  MethodBuilder next := {
+    self array pushBack: proc (dynamic hold '$1).
+  }.
+  MethodBuilder finish := {
+    spec := {
+      args := $*.
+      result := Nil.
+      here statements visit {
+        procd := parent self invoke: $1 hold 'call.
+        args dropIn.
+        parent result := procd call.
+      }.
+      result.
+    }.
+    hold 'spec parent := SpecialMethod.
+    hold 'spec statements := self array.
+    hold 'spec.
+  }.
+  MethodBuilder.
+}.
 
 ;; Return the script
 here.

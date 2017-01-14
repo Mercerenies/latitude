@@ -7,28 +7,34 @@ Cell value := Nil.
 Cell toString := "Cell".
 
 ;; Cells are also iterable
-Cell iterator := { CellIterator := Object clone.
-                   CellIterator toString := "CellIterator".
-                   CellIterator cell := self.
-                   CellIterator end? := False.
-                   CellIterator next := { self end? := True. }.
-                   CellIterator element := { self cell value. }.
-                   CellIterator element= := { self cell value := dynamic hold '$1. }.
-                   CellIterator. }.
+Cell iterator := {
+  CellIterator := Object clone.
+  CellIterator toString := "CellIterator".
+  CellIterator cell := self.
+  CellIterator end? := False.
+  CellIterator next := { self end? := True. }.
+  CellIterator element := { self cell value. }.
+  CellIterator element= := { self cell value := dynamic hold '$1. }.
+  CellIterator.
+}.
 Collection inject: Cell.
 
 ;; Lockboxes and Latchkeys
 Latchkey := Object clone.
 Lockbox := Object clone.
 Latchkey tag := Symbol.
-Latchkey make := { key := self clone.
-                   key tag := key tag gensymOf: "KEY".
-                   key. }.
+Latchkey make := {
+  key := self clone.
+  key tag := key tag gensymOf: "KEY".
+  key.
+}.
 Lockbox store := { self put: $1 tag, $2. }.
 Lockbox fits := { self has: $1 tag. }.
-Lockbox retrieve := { if { parent self fits: parent dynamic $1. }
-                        then { parent self get: parent dynamic $1 tag. }
-                        else { Nil. }. }.
+Lockbox retrieve := {
+  if { parent self fits: parent dynamic $1. }
+    then { parent self get: parent dynamic $1 tag. }
+    else { Nil. }.
+}.
 Lockbox toString := "Lockbox".
 Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.
@@ -46,39 +52,64 @@ Generator toString := "Generator".
 Generator iterator := { self. }.
 Generator end? := True.
 Generator element := Nil.
-Generator element= := { err ReadOnlyError clone tap { self message := "Generators are read-only". } throw. }.
+Generator element= := {
+  err ReadOnlyError clone tap { self message := "Generators are read-only". } throw.
+}.
 Generator next := { }.
-Generator call := { self next.
-                    self element. }.
-Generator map := { localize.
-                   procd := proc { parent dynamic hold '$1 call. }.
-                   { this visit { $yield: procd call ($1). }. } generator. }.
-Proc generator := { procd := proc { parent hold 'self call. }.
-                    Generator clone tap { self end? := False.
-                                          self element := Nil.
-                                          self yieldStmt := Nil.
-                                          self resumeStmt := { localize.
-                                                               proc { this procStmt call.
-                                                                      this end? := True.
-                                                                      this yieldStmt call: Nil. }. }.
-                                          self procStmt :=
-                                              { localize.
-                                                procd invokeSpecial:
-                                                    { procd call. },
-                                                    { $2 $yield :=
-                                                          { takes '[result].
-                                                            parent this := callCC
-                                                                        { this resumeStmt := $1.
-                                                                          this yieldStmt call: result. }. }. }. }.
-                                          self next :=
-                                              { localize.
-                                                callCC { outer := $1.
-                                                         this element :=
-                                                             callCC { this yieldStmt := $1.
-                                                                      this element := this resumeStmt call: this.
-                                                                      this end? := True.
-                                                                      outer call: Nil. }. }. }.
-                                          self next. }. }.
+Generator call := {
+  self next.
+  self element.
+}.
+Generator map := {
+  localize.
+  procd := proc { parent dynamic hold '$1 call. }.
+  {
+    this visit { $yield: procd call ($1). }.
+  } generator.
+}.
+Proc generator := {
+  procd := proc { parent hold 'self call. }.
+  Generator clone tap {
+    self end? := False.
+    self element := Nil.
+    self yieldStmt := Nil.
+    self resumeStmt := {
+      localize.
+      proc {
+        this procStmt call.
+        this end? := True.
+        this yieldStmt call: Nil.
+      }.
+    }.
+    self procStmt := {
+      localize.
+      procd invokeSpecial:
+        { procd call. },
+        {
+          $2 $yield := {
+            takes '[result].
+            parent this := callCC {
+              this resumeStmt := $1.
+              this yieldStmt call: result.
+            }.
+          }.
+        }.
+    }.
+    self next := {
+      localize.
+      callCC {
+        outer := $1.
+        this element := callCC {
+          this yieldStmt := $1.
+          this element := this resumeStmt call: this.
+          this end? := True.
+          outer call: Nil.
+        }.
+      }.
+    }.
+    self next.
+  }.
+}.
 Collection inject: Generator.
 
 ;; McCarthy's 'amb' operator
@@ -93,18 +124,28 @@ AmbError := Exception clone tap { self toString := "AmbError".
 Amb := Object clone.
 Amb toString := "Amb".
 Amb nextHandler := { AmbError clone throw. }.
-callAmb := { ambObject := Amb clone.
-             ambFunc := proc { takes '[cases].
-                               callCC { escape := { parent dynamic $1 call. }.
-                                        oldHandler := ambObject hold 'nextHandler.
-                                        cases visit
-                                            { takes '[curr].
-                                              callCC { ambObject nextHandler := { parent dynamic $1 call. }.
-                                                       escape: curr. }. }.
-                                        oldHandler. }. }.
-             procd := ambObject invokeSpecial: dynamic hold '$1,
-                                               { $1 amb := { ambFunc call. }. }.
-             procd call. }.
+callAmb := {
+  ambObject := Amb clone.
+  ambFunc := proc {
+    takes '[cases].
+    callCC {
+      escape := { parent dynamic $1 call. }.
+      oldHandler := ambObject hold 'nextHandler.
+      cases visit {
+        takes '[curr].
+        callCC {
+          ambObject nextHandler := { parent dynamic $1 call. }.
+          escape: curr.
+        }.
+      }.
+      oldHandler.
+    }.
+  }.
+  procd := ambObject invokeSpecial:
+    dynamic hold '$1,
+    { $1 amb := { ambFunc call. }. }.
+  procd call.
+}.
 
 ;; Accumulator, similar to Haskell's Writer monad
 ;; Example usage:
@@ -112,12 +153,17 @@ callAmb := { ambObject := Amb clone.
 ;              tell 2.
 ;              tell 3. }.
 ; Results in [1, 2, 3]
-accumulate := { result := Array clone.
-                procd := result invokeSpecial: dynamic hold '$1,
-                                               { $1 tell := { result pushBack. }.
-                                                 $1 tellAll := { $1 visit { result pushBack. }. }. }.
-                procd call.
-                result. }.
+accumulate := {
+  result := Array clone.
+  procd := result invokeSpecial:
+    dynamic hold '$1,
+    {
+      $1 tell := { result pushBack. }.
+      $1 tellAll := { $1 visit { result pushBack. }. }.
+    }.
+  procd call.
+  result.
+}.
 
 ;; Return the script
 $whereAmI.

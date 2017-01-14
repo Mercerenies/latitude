@@ -16,143 +16,281 @@ global Collection ::= Mixin clone.
 Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any, notall, notany,
                           detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
                           minimum, <>].
-Collection map! := { func := { (parent dynamic hold '$1) call. }.
-                     iter := self iterator.
-                     while { iter end? not. }
-                        do { iter element=: (func: iter element).
-                             iter next. }.
-                     self. }.
-Collection visit := { func := { (parent dynamic hold '$1) call. }.
-                      iter := self iterator.
-                      while { iter end? not. }
-                         do { func: iter element.
-                              iter next. }.
-                      self. }.
-Collection map := { coll := self clone.
-                    coll map!: { (parent dynamic hold '$1) call. }. }.
-Collection foldl := { accum := $1.
-                      self visit: { parent accum := (parent dynamic hold '$2) call: accum, dynamic hold '$1. }.
-                      accum. }.
-Collection foldr := { func := proc { (parent dynamic hold '$2) call. }.
-                      accum := id.
-                      self visit: { parent accum := accum <| (proc { func call: parent dynamic $1,
-                                                                                dynamic hold '$1. }). }.
-                      accum call: $1. }.
+Collection map! := {
+  func := { (parent dynamic hold '$1) call. }.
+  iter := self iterator.
+  while { iter end? not. }
+    do {
+      iter element=: (func: iter element).
+      iter next.
+    }.
+  self.
+}.
+Collection visit := {
+  func := { (parent dynamic hold '$1) call. }.
+  iter := self iterator.
+  while { iter end? not. }
+    do {
+      func: iter element.
+      iter next.
+    }.
+  self.
+}.
+Collection map := {
+  coll := self clone.
+  coll map! {
+    (parent dynamic hold '$1) call.
+  }.
+}.
+Collection foldl := {
+  accum := $1.
+  self visit {
+    parent accum := (parent dynamic hold '$2) call: accum, dynamic hold '$1.
+  }.
+  accum.
+}.
+Collection foldr := {
+  func := proc { (parent dynamic hold '$2) call. }.
+  accum := id.
+  self visit {
+    parent accum := accum <| (proc {
+      func call:
+        parent dynamic $1,
+        dynamic hold '$1.
+    }).
+  }.
+  accum call: $1.
+}.
 Collection size := { self foldl: 0, { $1 + 1. }. }.
 Collection length := { self size. }.
-Collection toArray := { arr := Array clone.
-                        self visit: { arr pushBack. }.
-                        arr. }.
-Collection all := { func := proc { (parent dynamic hold '$1) call. }.
-                    callCC { return := { parent dynamic $1 call. }.
-                             parent self visit: { arg := $1.
-                                                  (func call: arg) ifFalse: { return: False. }. }.
-                             True. }. }.
-Collection any := { func := proc { (parent dynamic hold '$1) call. }.
-                    callCC { return := { parent dynamic $1 call. }.
-                             parent self visit: { arg := $1.
-                                                  (func call: arg) ifTrue: { return: arg. }. }.
-                             False. }. }.
-Collection notAll := { func := proc { (parent dynamic hold '$1) call. }.
-                       callCC { return := { parent dynamic $1 call. }.
-                                parent self visit: { arg := $1.
-                                                     (func call: arg) ifFalse: { return: True. }. }.
-                                False. }. }.
-Collection notAny := { func := proc { (parent dynamic hold '$1) call. }.
-                       callCC { return := { parent dynamic $1 call. }.
-                                parent self visit: { arg := $1.
-                                                     (func call: arg) ifTrue: { return: False. }. }.
-                                True. }. }.
-Collection detect := { func := proc { (parent dynamic hold '$1) call. }.
-                       callCC { return := { parent dynamic $1 call. }.
-                                parent self visit: { arg := $1.
-                                                     (func call: arg) ifTrue: { return: arg. }. }.
-                                Nil. }. }.
-Collection countIf := { func := proc { (parent dynamic hold '$1) call. }.
-                        self foldl: 0, { if (func call: $2)
-                                           then ($1 + 1)
-                                           else ($1). }. }.
-Collection count := { self countIf: { (parent dynamic $1) == ($1). }. }.
-Collection find := { self detect: { (parent dynamic $1) == ($1). }. }.
-Collection containsIf := { func := proc { (parent dynamic hold '$1) call. }.
-                           callCC { return := { parent dynamic $1 call. }.
-                                    parent self visit: { arg := $1.
-                                                         (func call: arg) ifTrue: { return: True. }. }.
-                                    False. }. }.
-Collection contains := { self containsIf: { (parent dynamic $1) == ($1). }. }.
+Collection toArray := {
+  arr := Array clone.
+  self visit: { arr pushBack. }.
+  arr.
+}.
+Collection all := {
+  func := proc {
+    (parent dynamic hold '$1) call.
+  }.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    parent self visit {
+      arg := $1.
+      (func call: arg) ifFalse: { return: False. }.
+    }.
+    True.
+  }.
+}.
+Collection any := {
+  func := proc {
+    (parent dynamic hold '$1) call.
+  }.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    parent self visit {
+      arg := $1.
+      (func call: arg) ifTrue: { return: arg. }.
+    }.
+    False.
+  }.
+}.
+Collection notAll := {
+  func := proc {
+    (parent dynamic hold '$1) call.
+  }.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    parent self visit {
+      arg := $1.
+      (func call: arg) ifFalse: { return: True. }.
+    }.
+    False.
+  }.
+}.
+Collection notAny := {
+  func := proc {
+    (parent dynamic hold '$1) call.
+  }.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    parent self visit {
+      arg := $1.
+      (func call: arg) ifTrue: { return: False. }.
+    }.
+    True.
+  }.
+}.
+Collection detect := {
+  func := proc {
+    (parent dynamic hold '$1) call.
+  }.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    parent self visit {
+      arg := $1.
+      (func call: arg) ifTrue: { return: arg. }.
+    }.
+    Nil.
+  }.
+}.
+Collection countIf := {
+  func := proc {
+    (parent dynamic hold '$1) call.
+  }.
+  self foldl: 0, {
+    if (func call: $2)
+      then ($1 + 1)
+      else ($1).
+  }.
+}.
+Collection count := {
+  self countIf: { (parent dynamic $1) == ($1). }.
+}.
+Collection find := {
+  self detect: { (parent dynamic $1) == ($1). }.
+}.
+Collection containsIf := {
+  func := proc {
+    (parent dynamic hold '$1) call.
+  }.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    parent self visit {
+      arg := $1.
+      (func call: arg) ifTrue: { return: True. }.
+    }.
+    False.
+  }.
+}.
+Collection contains := {
+  self containsIf: { (parent dynamic $1) == ($1). }.
+}.
 ; Note that `zip` returns an array and will be of the shorter length of the two. It should not be used
 ;  unless at least one of the arguments is finite in length.
 ; On the other hand, `zip!` modifies the `self` argument. If the argument is shorter than `self`, it will be
 ;  padded with Nil. As such, `zip!` is safe to use on infinite structures.
-Collection zip := { iter0 := self iterator.
-                    iter1 := $1 iterator.
-                    arr := Array clone.
-                    while { (iter0 end? not) and (iter1 end? not). }
-                       do { arr pushBack: (cons: iter0 element, iter1 element).
-                            iter0 next.
-                            iter1 next. }.
-                    arr. }.
-Collection zip! := { iter1 := $1 iterator.
-                     self map!: { curr := $1.
-                                  if (iter1 end?)
-                                    then { cons: curr, Nil. }
-                                    else { (cons: curr, iter1 element) tap { iter1 next. }. }. }. }.
-Collection take := { remaining := $1.
-                     decrement := { parent remaining := remaining - 1. }.
-                     arr := Array clone.
-                     callCC { return := { parent dynamic $1 call. }.
-                              parent self visit { if (remaining > 0)
-                                                    then { arr pushBack: parent dynamic $1.
-                                                           decrement. }
-                                                    else { return: Nil. }. }. }.
-                     arr. }.
-Collection maximum := { current := Nil.
-                        isSet := False.
-                        setCurrent := { parent isSet := True.
-                                        parent current := dynamic hold '$1. }.
-                        maximize := { takes '[value].
-                                      isSet ifFalse { setCurrent: hold 'value. }.
-                                      ((hold 'value) > (hold 'current)) ifTrue { setCurrent: hold 'value. }. }.
-                        self visit { maximize: dynamic hold '$1. }.
-                        current. }.
-Collection minimum := { current := Nil.
-                        isSet := False.
-                        setCurrent := { parent isSet := True.
-                                        parent current := dynamic hold '$1. }.
-                        minimize := { takes '[value].
-                                      isSet ifFalse { setCurrent: hold 'value. }.
-                                      ((hold 'value) < (hold 'current)) ifTrue { setCurrent: hold 'value. }. }.
-                        self visit { minimize: dynamic hold '$1. }.
-                        current. }.
-Collection <> := { Chain ::= Object clone.
-                   Chain iterator := { ; We must construct a "NilThing" to act like
-                                       ; Nil since Nil is a valid element in a chain
-                                       NilThing ::= Nil clone.
-                                       ChainIterator ::= Object clone.
-                                       ChainIterator iter := parent self iterator.
-                                       ChainIterator secondHalf := parent dynamic $1.
-                                       ChainIterator element := { self iter element. }.
-                                       ChainIterator element= := { self iter element=. }.
-                                       ChainIterator next := { localize.
-                                                               hasSecondHalf := this secondHalf is (NilThing) not.
-                                                               this iter next.
-                                                               (this iter end?) and (hasSecondHalf) ifTrue
-                                                                   { this iter := this secondHalf iterator.
-                                                                     this secondHalf := NilThing. }. }.
-                                       ChainIterator end? := { self iter end?. }.
-                                       (ChainIterator end?) ifTrue
-                                           { ChainIterator iter := ChainIterator secondHalf iterator.
-                                             ChainIterator secondHalf := NilThing. }.
-                                       ChainIterator. }.
-                   Collection inject: Chain.
-                   Chain. }.
+Collection zip := {
+  iter0 := self iterator.
+  iter1 := $1 iterator.
+  arr := Array clone.
+  while { (iter0 end? not) and (iter1 end? not). }
+    do {
+      arr pushBack: (cons: iter0 element, iter1 element).
+      iter0 next.
+      iter1 next.
+    }.
+  arr.
+}.
+Collection zip! := {
+  iter1 := $1 iterator.
+  self map! {
+    curr := $1.
+    if (iter1 end?)
+      then { cons: curr, Nil. }
+      else {
+        (cons: curr, iter1 element) tap {
+          iter1 next.
+        }.
+      }.
+  }.
+}.
+Collection take := {
+  remaining := $1.
+  decrement := {
+    parent remaining := remaining - 1.
+  }.
+  arr := Array clone.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    parent self visit {
+      if (remaining > 0)
+        then {
+          arr pushBack: parent dynamic $1.
+          decrement.
+        } else {
+          return: Nil.
+        }.
+    }.
+  }.
+  arr.
+}.
+Collection maximum := {
+  current := Nil.
+  isSet := False.
+  setCurrent := {
+    parent isSet := True.
+    parent current := dynamic hold '$1.
+  }.
+  maximize := {
+    takes '[value].
+    isSet ifFalse {
+      setCurrent: hold 'value.
+    }.
+    ((hold 'value) > (hold 'current)) ifTrue {
+      setCurrent: hold 'value.
+    }.
+  }.
+  self visit { maximize: dynamic hold '$1. }.
+  current.
+}.
+Collection minimum := {
+  current := Nil.
+  isSet := False.
+  setCurrent := {
+    parent isSet := True.
+    parent current := dynamic hold '$1.
+  }.
+  minimize := {
+    takes '[value].
+    isSet ifFalse {
+      setCurrent: hold 'value.
+    }.
+    ((hold 'value) < (hold 'current)) ifTrue {
+      setCurrent: hold 'value.
+    }.
+  }.
+  self visit { minimize: dynamic hold '$1. }.
+  current.
+}.
+Collection <> := {
+  Chain ::= Object clone.
+  Chain iterator := {
+    ; We must construct a "NilThing" to act like
+    ; Nil since Nil is a valid element in a chain
+    NilThing ::= Nil clone.
+    ChainIterator ::= Object clone.
+    ChainIterator iter := parent self iterator.
+    ChainIterator secondHalf := parent dynamic $1.
+    ChainIterator element := { self iter element. }.
+    ChainIterator element= := { self iter element=. }.
+    ChainIterator next := {
+      localize.
+      hasSecondHalf := this secondHalf is (NilThing) not.
+      this iter next.
+      (this iter end?) and (hasSecondHalf) ifTrue {
+        this iter := this secondHalf iterator.
+        this secondHalf := NilThing.
+      }.
+    }.
+    ChainIterator end? := { self iter end?. }.
+    (ChainIterator end?) ifTrue {
+      ChainIterator iter := ChainIterator secondHalf iterator.
+      ChainIterator secondHalf := NilThing.
+    }.
+    ChainIterator.
+  }.
+  Collection inject: Chain.
+  Chain.
+}.
 
 Collection inject: Array.
 
 ;; Nil is an iterator over an empty collection
-Nil iterator := { NilIterator ::= Object clone.
-                  NilIterator end? := True.
-                  NilIterator. }.
+Nil iterator := {
+  NilIterator ::= Object clone.
+  NilIterator end? := True.
+  NilIterator.
+}.
 Collection inject: Nil.
 
 ;; Return the script
