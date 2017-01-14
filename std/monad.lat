@@ -33,18 +33,18 @@ Monad call := { localize.
                                             $2. }. }.
                 iter0 := dynamic hold '$1 statements iterator.
                 continue := { takes '[iter, value].
-                              if: iter end?,
-                                  { Nil. },
-                                  { elem := iter element.
-                                    $binder ifTrue { newVariable: parent dynamic, $binder, value. }.
-                                    $binder := Nil.
-                                    result := (elem invokeSpecial: (elem hold 'call), hold 'prepare) call.
-                                    ; It is necessary not to destroy the iterator in case the monad
-                                    ; wishes to branch or perform multiple executions
-                                    iter1 := iter clone tap { self next. }.
-                                    if: iter1 end?,
-                                        { result. },
-                                        { this bind: result, { continue: iter1, $1. }. }. }. }.
+                              if (iter end?)
+                                then { Nil. }
+                                else { elem := iter element.
+                                       $binder ifTrue { newVariable: parent dynamic, $binder, value. }.
+                                       $binder := Nil.
+                                       result := (elem invokeSpecial: (elem hold 'call), hold 'prepare) call.
+                                       ; It is necessary not to destroy the iterator in case the monad
+                                       ; wishes to branch or perform multiple executions
+                                       iter1 := iter clone tap { self next. }.
+                                       if (iter1 end?)
+                                         then { result. }
+                                         else { this bind: result, { continue: iter1, $1. }. }. }. }.
                 continue: iter0, Nil. }.
 
 IdMonad ::= Object clone.
@@ -55,21 +55,21 @@ Monad inject: IdMonad.
 
 Maybe := Object clone.
 Maybe value := Nil.
-Maybe toString := { if: (self) === (Maybe),
-                        "Maybe",
-                        "#<Maybe (Just " ++ (self value toString) ++ ")>". }.
+Maybe toString := { if ((self) === (Maybe))
+                      then "Maybe"
+                      else "#<Maybe (Just " ++ (self value toString) ++ ")>". }.
 Nothing ::= Maybe clone falsify.
 just := { Maybe clone tap { self value := parent dynamic hold '$1. }. }.
 MaybeMonad ::= Object clone.
 MaybeMonad pure := { just. }.
 MaybeMonad fmap := { takes '[mthd, obj].
-                     if: obj is (Nothing),
-                         { obj. },
-                         { just: mthd (obj value). }. }.
+                     if (obj is (Nothing))
+                       then { obj. }
+                       else { just: mthd (obj value). }. }.
 MaybeMonad join := { takes '[obj].
-                     if: { obj is (Nothing). },
-                         { obj. },
-                         { obj value. }. }.
+                     if { obj is (Nothing). }
+                       then { obj. }
+                       else { obj value. }. }.
 Monad inject: MaybeMonad.
 
 IterMonad ::= Object clone.

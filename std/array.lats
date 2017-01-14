@@ -2,11 +2,11 @@
 ;; "Cons" objects, as in Lisp
 global Cons ::= Object clone.
 Cons pretty := { chain := { curr := $1.
-                            if: curr cdr nil?,
-                                { curr car toString. },
-                                { if: (curr cdr is: Cons),
-                                      { (curr car toString) ++ " " ++ (chain: curr cdr). },
-                                      { (curr car toString) ++ " . " ++ (curr cdr toString). }. }. }.
+                            cond { when (curr cdr nil?)
+                                     do { curr car toString. }.
+                                   when (curr cdr is (Cons))
+                                     do { (curr car toString) ++ " " ++ (chain: curr cdr). }.
+                                   else { (curr car toString) ++ " . " ++ (curr cdr toString). }. }. }.
                  "(" ++ (chain: self) ++ ")". }.
 Cons car := Nil.
 Cons cdr := Nil.
@@ -22,9 +22,9 @@ Cons := Cons.
 Array lowerBound := 0.
 Array upperBound := 0.
 Array mapping := { var := $1.
-                   if: { var >= 0. },
-                       { (var * 2) + 1. },
-                       { var * -2. }. }.
+                   if { var >= 0. }
+                     then { (var * 2) + 1. }
+                     else { var * -2. }. }.
 Array empty? := { (self lowerBound) >= (self upperBound). }.
 Array pushFront := { value := $1.
                      self lowerBound := self lowerBound - 1.
@@ -34,41 +34,41 @@ Array pushBack := { value := $1.
                     self put: (self mapping: self upperBound) ordinal, value.
                     self upperBound := self upperBound + 1.
                     value. }.
-Array popFront := { if: self empty?,
-                        { err BoundsError clone throw. },
-                        { parent self lowerBound := parent self lowerBound + 1.
-                          parent self get: (parent self mapping: (parent self lowerBound - 1)) ordinal. }. }.
-Array popBack := { if: self empty?,
-                       { err BoundsError clone throw. },
-                       { parent self upperBound := parent self upperBound - 1.
-                         parent self get: (parent self mapping: parent self upperBound) ordinal. }. }.
-Array nth := { pos := if: ($1 < 0),
-                          { (parent self upperBound) + (parent dynamic $1). },
-                          { (parent self lowerBound) + (parent dynamic $1). }.
-               if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                   { err BoundsError clone throw. },
-                   { parent self get: (parent self mapping: pos) ordinal. }. }.
-Array nth= := { pos := if: ($1 < 0),
-                           { (parent self upperBound) + (parent dynamic $1). },
-                           { (parent self lowerBound) + (parent dynamic $1). }.
-                if: ((pos < (self lowerBound)) or (pos >= (self upperBound))),
-                    { err BoundsError clone throw. },
-                    { parent self put: (parent self mapping: pos) ordinal, parent dynamic $2. }. }.
+Array popFront := { if (self empty?)
+                      then { err BoundsError clone throw. }
+                      else { parent self lowerBound := parent self lowerBound + 1.
+                             parent self get: (parent self mapping: (parent self lowerBound - 1)) ordinal. }. }.
+Array popBack := { if (self empty?)
+                     then { err BoundsError clone throw. }
+                     else { parent self upperBound := parent self upperBound - 1.
+                            parent self get: (parent self mapping: parent self upperBound) ordinal. }. }.
+Array nth := { pos := if ($1 < 0)
+                        then { (parent self upperBound) + (parent dynamic $1). }
+                        else { (parent self lowerBound) + (parent dynamic $1). }.
+               if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
+                 then { err BoundsError clone throw. }
+                 else { parent self get: (parent self mapping: pos) ordinal. }. }.
+Array nth= := { pos := if ($1 < 0)
+                         then { (parent self upperBound) + (parent dynamic $1). }
+                         else { (parent self lowerBound) + (parent dynamic $1). }.
+                if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
+                  then { err BoundsError clone throw. }
+                  else { parent self put: (parent self mapping: pos) ordinal, parent dynamic $2. }. }.
 Array size := { (self upperBound) - (self lowerBound). }.
 Array join := { index := 1.
                 size := self size.
                 delim := { parent dynamic $1. }.
-                str := if: self empty?,
-                           { "". },
-                           { (parent self nth: 0) toString. }.
+                str := if (self empty?)
+                         then { "". }
+                         else { (parent self nth: 0) toString. }.
                 while { (index) < (size). }
                    do { parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
                         parent index := index + 1. }.
                 str. }.
 Array concat := { arr := Array clone.
-                  self visit { if: $1 is (Array),
-                                   { parent dynamic $1 visit { arr pushBack: $1. }. },
-                                   { arr pushBack: parent dynamic $1. }. }.
+                  self visit { if ($1 is (Array))
+                                 then { parent dynamic $1 visit { arr pushBack: $1. }. }
+                                 else { arr pushBack: parent dynamic $1. }. }.
                   arr. }.
 Array toString := { "[" ++ (self join ", ") ++ "]". }.
 Array == := { localize.

@@ -9,15 +9,15 @@ RegexpError ::= Exception clone tap { self message := "Regexp Error". }.
 
 Regexp ::= Object clone.
 Regexp specialChars := ["\\", "/"].
-Regexp escapeText := { $1 map { if: parent self specialChars find ($1),
-                                    { "\\" ++ (parent dynamic $1). },
-                                    { parent dynamic $1. }. }. }.
+Regexp escapeText := { $1 map { if (parent self specialChars find ($1))
+                                  then { "\\" ++ (parent dynamic $1). }
+                                  else { parent dynamic $1. }. }. }.
 Regexp pattern := { node := Object clone tap { self elem := ReLiteral make "". }.
                     node= := { parent node := $1. }.
                     concatenate := { takes '[arg].
-                                     if: (node elem is (ReLiteral)) and (arg is (ReLiteral)),
-                                         { node elem text := (node elem text) ++ (arg text). },
-                                         { node elem = ReConcat make: node elem, arg. }. }.
+                                     if ((node elem is (ReLiteral)) and (arg is (ReLiteral)))
+                                       then { node elem text := (node elem text) ++ (arg text). }
+                                       else { node elem = ReConcat make: node elem, arg. }. }.
                     iter := $1 iterator.
                     while { iter end? not. }
                        do { curr := iter element.

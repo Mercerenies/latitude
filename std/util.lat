@@ -26,9 +26,9 @@ Latchkey make := { key := self clone.
                    key. }.
 Lockbox store := { self put: $1 tag, $2. }.
 Lockbox fits := { self has: $1 tag. }.
-Lockbox retrieve := { if: { parent self fits: parent dynamic $1. },
-                          { parent self get: parent dynamic $1 tag. },
-                          { Nil. }. }.
+Lockbox retrieve := { if { parent self fits: parent dynamic $1. }
+                        then { parent self get: parent dynamic $1 tag. }
+                        else { Nil. }. }.
 Lockbox toString := "Lockbox".
 Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.

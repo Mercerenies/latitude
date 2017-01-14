@@ -34,9 +34,9 @@ String substring := { takes '[i, j].
                               i = i - 1.
                               j = j - 1.
                               iter next. }.
-                      if: (i1) and (j1),
-                          { parent self substringBytes: i1, j1. },
-                          { err BoundsError clone throw. }. }.
+                      if ((i1) and (j1))
+                        then { parent self substringBytes: i1, j1. }
+                        else { err BoundsError clone throw. }. }.
 
 String split := { localize.
                   takes '[delim].

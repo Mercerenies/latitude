@@ -94,10 +94,10 @@ Cached toString := "Cached".
 Cached value := Nil.
 Cached done? := False.
 Cached procedure := {}.
-Cached call := { if: self done?,
-                     { parent self value. },
-                     { parent self done? := True.
-                       parent self value := parent self procedure call. }. }.
+Cached call := { if (self done?)
+                   then { parent self value. }
+                   else { parent self done? := True.
+                          parent self value := parent self procedure call. }. }.
 
 global proc := { curr := self Proc clone.
                  curr call := dynamic hold '$1.
@@ -130,7 +130,7 @@ Stream toString := "Stream".
 Stream dump := { localize.
                  obj := dynamic hold '$1.
                  this println: hold 'obj.
-                 hold 'obj keys visit { p := if: (Kernel protected: hold 'obj, $1), "! ", "  ".
+                 hold 'obj keys visit { p := if (Kernel protected (hold 'obj, $1)) then "! " else "  ".
                                         this putln: p ++ ($1 asText) ++ ": " ++ ((hold 'obj hold: $1) toString). }.
                  Nil. }.
 Object println := { stdout println: hold 'self. }.
@@ -156,12 +156,12 @@ global $lexical := global.
 global $dynamic := global.
 Object me := { self. }.
 global do := { $1. }.
-global here := { if: (self has 'again),
-                     { parent self hold 'again. },
-                     { Nil. }. }.
-global toString := { if: (self) === (global),
-                         "global",
-                         "#<Scope>". }.
+global here := { if (self has 'again)
+                   then { parent self hold 'again. }
+                   else { Nil. }. }.
+global toString := { if ((self) === (global))
+                       then "global"
+                       else "#<Scope>". }.
 ; NOTE: pairScopes can only be called on custom-made scopes.
 ;       Attempting to re-pair implicitly created scopes will
 ;       trigger a protection error.
@@ -177,8 +177,8 @@ Object > := { ($1) < (self). }.
 Object >= := { ((self) > ($1)) or ((self) == ($1)). }.
 Object <= := { ((self) < ($1)) or ((self) == ($1)). }.
 Object /= := { ((self) == ($1)) not. }.
-Object min := { if: ((self) < ($1)), self, $1. }.
-Object max := { if: ((self) > ($1)), self, $1. }.
+Object min := { if ((self) < ($1)) then (self) else ($1). }.
+Object max := { if ((self) > ($1)) then (self) else ($1). }.
 
 ;; Kernel functions
 Kernel toString := "Kernel".
@@ -206,9 +206,9 @@ Kernel GC untrace := { self traced := False. }.
 
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.
-Kernel env= := { if: { parent dynamic $2 nil?. },
-                     { meta sys envUnset#: parent dynamic $1. },
-                     { meta sys envSet#: parent dynamic $1, parent dynamic $2. }. }.
+Kernel env= := { if { parent dynamic $2 nil?. }
+                   then { meta sys envUnset#: parent dynamic $1. }
+                   else { meta sys envSet#: parent dynamic $1, parent dynamic $2. }. }.
 
 ;; FilePath functions
 global FilePath := Object clone.
@@ -258,10 +258,10 @@ FileHeader moduleName := Nil.
 StackFrame toString := "StackFrame".
 StackFrame line := 0.
 StackFrame file := "".
-StackFrame dump := { if: { (parent self) === (StackFrame). },
-                         { Nil. },
-                         { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
-                           parent self parent dump. }. }.
+StackFrame dump := { if { (parent self) === (StackFrame). }
+                       then { Nil. }
+                       else { stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
+                              parent self parent dump. }. }.
 global currentStackTrace := { meta sys stackTrace# parent. }.
 global printStackTrace := { self stack parent dump. }.
 

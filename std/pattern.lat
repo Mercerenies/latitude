@@ -7,14 +7,14 @@
 Wildcard := Object clone.
 Wildcard symbol := Nil.
 Wildcard named? := { self symbol is: Symbol. }.
-Wildcard toString := { if: self named?,
-                           { "#<Wildcard " ++ (parent self symbol) ++ ">". },
-                           { "Wildcard". }. }.
+Wildcard toString := { if (self named?)
+                         then { "#<Wildcard " ++ (parent self symbol) ++ ">". }
+                         else { "Wildcard". }. }.
 
 Ellipsis := Wildcard clone.
-Ellipsis toString := { if: self named?,
-                           { "#<Ellipsis " ++ (parent self symbol) ++ ">". },
-                           { "Ellipsis". }. }.
+Ellipsis toString := { if (self named?)
+                         then { "#<Ellipsis " ++ (parent self symbol) ++ ">". }
+                         else { "Ellipsis". }. }.
 
 ; The "match" object is a Proc. If no match was found, the match object is falsy and its `call`
 ; is a no-op. If a match was made, the object is truthy and the `call` expects a single argument,
@@ -42,14 +42,14 @@ Wildcard ... := { ellipsis := self clone.
                   ellipsis. }.
 
 ; The actual matching behavior is defined here.
-Object =~ := { if: (self) == ($1),
-                   { Match clone. },
-                   { NoMatch clone. }. }.
+Object =~ := { if ((self) == ($1))
+                 then { Match clone. }
+                 else { NoMatch clone. }. }.
 Wildcard =~ := { localize.
                  takes '[arg].
-                 if: this named?,
-                     { Match clone tap { self callback := { $1 put: this symbol, hold 'arg. }. }. },
-                     { Match clone. }. }.
+                 if (this named?)
+                   then { Match clone tap { self callback := { $1 put: this symbol, hold 'arg. }. }. }
+                   else { Match clone. }. }.
 
 ; Collection matching always binds a finite collection on the RHS to an array on the LHS. The array
 ; can have at most one ellipsis element.
@@ -58,17 +58,17 @@ Array =~ := { localize.
               callCC { return := { parent dynamic $1 call. }.
                        (rhs implements: Collection) ifFalse: { return: NoMatch clone. }.
                        isEllipsis := (this detect { $1 is: Ellipsis. }) toBool.
-                       (if: isEllipsis,
-                            { (this size - 1) <= (rhs size). },
-                            { (this size) == (rhs size). }) ifFalse: { return: NoMatch clone. }.
+                       (if (isEllipsis)
+                          then { (this size - 1) <= (rhs size). }
+                          else { (this size) == (rhs size). }) ifFalse: { return: NoMatch clone. }.
                        afterIndex := ({ checking := False.
                                         check := { parent checking := True. }.
                                         after := 0.
                                         increment := { parent after := after + 1. }.
                                         this visit { takes '[elem].
-                                                     if: checking,
-                                                         { increment. },
-                                                         { (elem is: Ellipsis) ifTrue: { check. }. }. }.
+                                                     if (checking)
+                                                       then { increment. }
+                                                       else { (elem is: Ellipsis) ifTrue: { check. }. }. }.
                                         (rhs size) - (after). }) me.
                        currIndex := 0.
                        currIter := rhs iterator.
@@ -81,18 +81,18 @@ Array =~ := { localize.
                                            newResult: { proc { parent dynamic $1 call.
                                                                procd callback. }. }. }.
                        this visit { curr := $1.
-                                    if: (curr is: Ellipsis),
-                                        { accum := Array clone.
-                                          while { (currIndex) < (afterIndex). }
-                                             do { accum pushBack: currIter element.
-                                                  iterNext. }.
-                                          currMatch := (curr) =~ (accum).
-                                          currMatch ifFalse: { return currMatch. }.
-                                          sequenceResult: currMatch. },
-                                        { currMatch := (curr) =~ (currIter element).
-                                          currMatch ifFalse: { return currMatch. }.
-                                          sequenceResult: currMatch.
-                                          iterNext. }. }.
+                                    if (curr is: Ellipsis)
+                                      then { accum := Array clone.
+                                             while { (currIndex) < (afterIndex). }
+                                                do { accum pushBack: currIter element.
+                                                     iterNext. }.
+                                             currMatch := (curr) =~ (accum).
+                                             currMatch ifFalse: { return currMatch. }.
+                                             sequenceResult: currMatch. }
+                                      else { currMatch := (curr) =~ (currIter element).
+                                             currMatch ifFalse: { return currMatch. }.
+                                             sequenceResult: currMatch.
+                                             iterNext. }. }.
                        Match clone tap { self callback := { result call. }. }. }. }.
 
 Cons =~ := { localize.
@@ -101,9 +101,9 @@ Cons =~ := { localize.
                       (rhs is: Cons) ifFalse: { return: NoMatch clone. }.
                       carPart := (this car) =~ (rhs car).
                       cdrPart := (this cdr) =~ (rhs cdr).
-                      if: ((carPart) and (cdrPart)),
-                          { Match clone tap := { self callback := { carPart callback.
-                                                                    cdrPart callback. }. }. },
-                          { NoMatch clone. }. }. }.
+                      if ((carPart) and (cdrPart))
+                        then { Match clone tap := { self callback := { carPart callback.
+                                                                       cdrPart callback. }. }. }
+                        else { NoMatch clone. }. }. }.
 
 $whereAmI.

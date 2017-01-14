@@ -10,12 +10,12 @@ Weekday ::= Enumeration of '[Monday, Tuesday, Wednesday, Thursday, Friday, Satur
 
 DateTime := Object clone.
 DateTime toString := { localize.
-                       if: (this) === (DateTime),
-                           { "DateTime". },
-                           { "#<DateTime " ++ (this month) ++ " " ++ (this day) ++
-                                 ", " ++ (this year) ++ " " ++ (this hour) ++ ":" ++
-                                 (this minute toString padLeft ("0", 2)) ++ ":" ++
-                                 (this second toString padLeft ("0", 2)) ++ ">". }. }.
+                       if ((this) === (DateTime))
+                         then { "DateTime". }
+                         else { "#<DateTime " ++ (this month) ++ " " ++ (this day) ++
+                                  ", " ++ (this year) ++ " " ++ (this hour) ++ ":" ++
+                                  (this minute toString padLeft ("0", 2)) ++ ":" ++
+                                  (this second toString padLeft ("0", 2)) ++ ">". }. }.
 DateTime second := 0.
 DateTime minute := 0.
 DateTime hour := 0.

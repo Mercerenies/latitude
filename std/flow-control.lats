@@ -23,19 +23,25 @@ Object falsify := { hold 'self toBool := False.
 
 ;; Control Statements
 ; TODO Make `self` for the conditionals well-defined
-; TODO What if `if` had syntax like "if X then Y else Z" so each part only took one argument?
-global if := { meta sys ifThenElse#: True,
-                                     $1 toBool,
-                                     { parent dynamic $2. },
-                                     { parent dynamic $3. }. }.
-Object ifTrue := { if: self, { parent dynamic $1. }, { Nil. }.
+global if := { truthy := $1 toBool.
+               Object clone tap
+                   { self then :=
+                         { trueCase := { parent dynamic $1. }.
+                           Object clone tap
+                               { self else :=
+                                     { falseCase := { parent dynamic $1. }.
+                                       meta sys ifThenElse#: True,
+                                                             truthy,
+                                                             { trueCase. },
+                                                             { falseCase. }. }. }. }. }. }.
+Object ifTrue := { if (self) then { parent dynamic $1. } else { Nil. }.
                    hold 'self. }.
-Object ifFalse := { if: self, { Nil. }, { parent dynamic $1. }.
+Object ifFalse := { if (self) then { Nil. } else { parent dynamic $1. }.
                     hold 'self. }.
-Object and := { if: self, { parent dynamic $1. }, { False. }. }.
+Object and := { if (self) then { parent dynamic $1. } else { False. }. }.
 Object or := { fst := self.
-               if: fst, { fst. }, { parent dynamic $1. }. }.
-Object not := { if: self, { False. }, { True. }. }.
+               if (fst) then { fst. } else { parent dynamic $1. }. }.
+Object not := { if (self) then { False. } else { True. }. }.
 
 ;; Loops
 global loop := { restart := callCC { $1. }.
@@ -44,9 +50,9 @@ global loop := { restart := callCC { $1. }.
 global while := { cond := { parent dynamic $1. }.
                   Object clone tap { self do := { stmt := { parent dynamic $1. }.
                                                   callCC { $break := { parent dynamic $1 call. }.
-                                                           loop { if: cond,
-                                                                      { stmt. },
-                                                                      { $break: Nil. }. }. }. }. }. }.
+                                                           loop { if (cond)
+                                                                    then { stmt. }
+                                                                    else { $break: Nil. }. }. }. }. }. }.
 
 Number times := { localize.
                   block := { parent dynamic $1. }.
@@ -72,9 +78,9 @@ Number downto := { localize.
 ;; Cond Statement
 global cond := { takes '[block].
                  callCC { finished := $1.
-                          whenProc := proc { if: $1,
-                                                 { Object clone tap { self do := { finished call: $1. }. }. },
-                                                 { Object clone tap { self do := { }. }. }. }.
+                          whenProc := proc { if ($1)
+                                               then { Object clone tap { self do := { finished call: $1. }. }. }
+                                               else { Object clone tap { self do := { }. }. }. }.
                           procd := dynamic invokeSpecial: hold 'block,
                                                           { $1 when := { whenProc call. }.
                                                             $1 else := { self when (True) do ($1). }. }.

@@ -18,23 +18,23 @@ Sequence iterator := { SequenceIterator ::= Object clone.
                        SequenceIterator element := { self inside car. }.
                        SequenceIterator element= := { self inside car := $1. }.
                        SequenceIterator. }.
-Sequence head := { if: self list nil?,
-                       { Nil. },
-                       { parent self list car. }. }.
+Sequence head := { if (self list nil?)
+                     then { Nil. }
+                     else { parent self list car. }. }.
 Sequence tail := { seq := self clone.
-                   if: self list nil?,
-                       { seq list := Nil. },
-                       { seq list := parent self list cdr. }.
+                   if (self list nil?)
+                     then { seq list := Nil. }
+                     else { seq list := parent self list cdr. }.
                    seq. }.
 Sequence lazy := { cons0 := self list.
                    seq := LazySequence clone.
                    lazyCons := { cache := memo { lazyCons: parent dynamic $1 cdr. }.
-                                 if: ($1 nil?),
-                                     { Nil. },
-                                     { cc := Cons clone.
-                                       cc car := parent dynamic $1 car.
-                                       cc cdr := { cache call. }.
-                                       cc. }. }.
+                                 if ($1 nil?)
+                                   then { Nil. }
+                                   else { cc := Cons clone.
+                                          cc car := parent dynamic $1 car.
+                                          cc cdr := { cache call. }.
+                                          cc. }. }.
                    seq list := lazyCons: cons0.
                    seq. }.
 
@@ -44,33 +44,33 @@ Collection inject: Sequence.
 ;; allow these to work, it is necessary to manually override several Collection
 ;; functions.
 LazySequence := Sequence clone.
-LazySequence toString := { if: self list nil?,
-                               { "#<LazySequence ()>". },
-                               { "#<LazySequence (" ++ (parent self list car) ++ " ...)>". }. }.
+LazySequence toString := { if (self list nil?)
+                             then { "#<LazySequence ()>". }
+                             else { "#<LazySequence (" ++ (parent self list car) ++ " ...)>". }. }.
 LazySequence list := Nil.
 LazySequence map! := { func := { (parent dynamic hold '$1) call. }.
                        recurse := { curr := $1.
-                                    if: curr nil?,
-                                        { Nil. },
-                                        { cell := Cons clone.
-                                          cell car := { func: curr car. }.
-                                          cell cdr := { recurse: curr cdr. }. }. }.
+                                    if (curr nil?)
+                                      then { Nil. }
+                                      else { cell := Cons clone.
+                                             cell car := { func: curr car. }.
+                                             cell cdr := { recurse: curr cdr. }. }. }.
                        self tap { self list := recurse: self list. }. }.
 LazySequence visit := { func := { (parent dynamic hold '$1) call. }.
                         recurse := { curr := $1.
-                                     if: curr nil?,
-                                         { Nil. },
-                                         { cell := Cons clone.
-                                           cell car := func: curr car.
-                                           cell cdr := recurse: curr cdr. }. }.
+                                     if (curr nil?)
+                                       then { Nil. }
+                                       else { cell := Cons clone.
+                                              cell car := func: curr car.
+                                              cell cdr := recurse: curr cdr. }. }.
                         self tap { recurse: self list. }. }.
 LazySequence foldr := { func := { (parent dynamic hold '$2) call. }.
                         init := { parent dynamic $1. }.
                         recurse := { curr := $1.
                                      cache := memo { recurse: curr cdr. }.
-                                     if: curr nil?,
-                                         { init. },
-                                         { func: curr car, { cache call. }. }. }.
+                                     if (curr nil?)
+                                       then { init. }
+                                       else { func: curr car, { cache call. }. }. }.
                         recurse: self list. }.
 
 Proc iterate := { procd := proc { (parent hold 'self) call. }.

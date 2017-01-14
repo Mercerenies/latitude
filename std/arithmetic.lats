@@ -8,17 +8,17 @@ Number + := { meta sys numAdd#: self, $1. }.
 Number - := { meta sys numSub#: self, $1. }.
 Number * := { meta sys numMul#: self, $1. }.
 Number / := { meta sys numDiv#: self, $1. }.
-Number mod := { if: { parent self isComplex?. } or { parent dynamic $1 isComplex?. },
-                    { err TypeError clone tap { self message := "Cannot modulo complex numbers". } throw. },
-                    { meta sys numMod#: parent self, parent dynamic $1. }. }.
+Number mod := { if ({ parent self isComplex?. } or { parent dynamic $1 isComplex?. })
+                  then { err TypeError clone tap { self message := "Cannot modulo complex numbers". } throw. }
+                  else { meta sys numMod#: parent self, parent dynamic $1. }. }.
 Number ^ := { meta sys numPow#: self, $1. }.
 
 global - := { 0 - ($1). }.
 global / := { 1 / ($1). }.
 
-Number floor := { if: { parent self isComplex?. },
-                      { err TypeError clone tap { self message := "Cannot round complex numbers". } throw. },
-                      { meta sys numFloor#: parent self. }. }.
+Number floor := { if { parent self isComplex?. }
+                    then { err TypeError clone tap { self message := "Cannot round complex numbers". } throw. }
+                    else { meta sys numFloor#: parent self. }. }.
 Number round := { (self + 0.5) floor. }.
 Number ceil := { - (- (self) floor). }.
 
@@ -80,14 +80,14 @@ String radix := { takes '[rad].
                   (rad < 2) or (rad > 36) ifTrue { err ArgError clone tap
                                                        { self message := "Radix out of bounds". } throw. }.
                   convert := { takes '[n].
-                               if: (n >= ("0" ord)) and (n <= ("9" ord)),
-                                   { n - ("0" ord). },
-                                   { if: (n >= ("a" ord)) and (n <= ("z" ord)),
-                                         { n - ("a" ord) + 10. },
-                                         { if: (n >= ("A" ord)) and (n <= ("Z" ord)),
-                                               { n - ("A" ord) + 10. },
-                                               { err InputError clone tap
-                                                     { self message := "Text is not a number". } throw. }. }. }. }.
+                               cond { when { (n >= ("0" ord)) and (n <= ("9" ord)). }
+                                        do { n - ("0" ord). }.
+                                      when { (n >= ("a" ord)) and (n <= ("z" ord)). }
+                                        do { n - ("a" ord) + 10. }.
+                                      when { (n >= ("A" ord)) and (n <= ("Z" ord)). }
+                                        do { n - ("A" ord) + 10. }.
+                                      else { err InputError clone tap
+                                                 { self message := "Text is not a number". } throw. }. }. }.
                   validate := { ($1) >= (rad) ifTrue { err InputError clone tap
                                                            { self message := "Text is not a number". } throw. }. }.
                   num := 0.
@@ -98,12 +98,12 @@ String radix := { takes '[rad].
 
 modifiedRadix := { takes '[str, rad, parm].
                    result := str radix: rad.
-                   if: parm == '-,
-                       { - (result). },
-                       { if: (parm == '+) or (parm == '()),
-                             { result. },
-                             { err ArgError clone tap
-                                   { self message := "Sign does not make sense". } throw. }. }. }.
+                   cond { when (parm == '-)
+                            do { - (result). }.
+                          when ((parm == '+) or (parm == '()))
+                            do { result. }.
+                          else { err ArgError clone tap
+                                     { self message := "Sign does not make sense". } throw. }. }. }.
 
 meta radix x := { modifiedRadix: $1, 16, $2. }.
 meta radix X := { modifiedRadix: $1, 16, $2. }.
