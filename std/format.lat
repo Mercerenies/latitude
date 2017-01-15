@@ -1,0 +1,63 @@
+;;* MODULE format
+;;* PACKAGE base
+
+use 'pattern import '[case].
+
+FormatString ::= Proc clone.
+FormatString original := "".
+FormatString contents := [].
+FormatString pretty := { self original pretty. }.
+FormatString call := {
+  args := $*.
+  self contents map {
+    $1 (args).
+  } join "".
+}.
+
+format := {
+  takes '[text].
+  FormatString clone tap {
+    localize.
+    this original := text.
+    this contents := [""].
+    iter := text iterator.
+    while { iter end? not. }
+      do {
+        if { iter element == "~". }
+          then {
+            iter next.
+            { iter end?. } ifTrue {
+              err IntegrityError clone tap {
+                self message := "Invalid format string".
+              } throw.
+            }.
+            case { iter element. } do {
+              when "~"
+                do {
+                  this contents nth -1 = (this contents nth -1) ++ (iter element).
+                }.
+              when "S"
+                do {
+                  this contents pushBack { $1 shift toString. }.
+                  this contents pushBack "".
+                }.
+              when "A"
+                do {
+                  this contents pushBack { $1 shift pretty. }.
+                  this contents pushBack "".
+                }.
+              else {
+                err IntegrityError clone tap {
+                  self message := "Invalid format string".
+                } throw.
+              }.
+            }.
+          } else {
+            this contents nth -1 = (this contents nth -1) ++ (iter element).
+          }.
+        iter next.
+      }.
+  }.
+}.
+
+$whereAmI.
