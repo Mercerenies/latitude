@@ -91,6 +91,20 @@ Array join := {
   delim := { parent dynamic $1. }.
   str := if (self empty?)
     then { "". }
+    else { (parent self nth: 0) toString. }.
+  while { (index) < (size). }
+    do {
+      parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
+      parent index := index + 1.
+    }.
+  str.
+}.
+Array joinText := {
+  index := 1.
+  size := self size.
+  delim := { parent dynamic $1. }.
+  str := if (self empty?)
+    then { "". }
     else { (parent self nth: 0) pretty. }.
   while { (index) < (size). }
     do {
