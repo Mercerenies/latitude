@@ -11,7 +11,11 @@ FormatString call := {
   args := $*.
   self contents map {
     $1 (args).
-  } join "".
+  } joinText "".
+}.
+FormatString printf := {
+  result := self call.
+  stdout putln: result.
 }.
 
 format := {
@@ -59,5 +63,7 @@ format := {
       }.
   }.
 }.
+
+meta lang put: '(fmt ), { format. }.
 
 $whereAmI.
