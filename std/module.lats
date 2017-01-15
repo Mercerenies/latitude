@@ -1,4 +1,7 @@
 
+; TODO importAll and import behave differently if a method has the same name as a package
+;      (like `format` in `format`)
+
 ;; Modules
 Module ::= global clone.
 Module import := {
