@@ -32,8 +32,10 @@ global Module := Module.
 ; ///// Do some more work on non-traditional objects for convenience (and definedness)
 ;       Ideally, we want to define absolutely no methods (save for `parent` and maybe `clone`)
 ;       on this NTO (non-traditional object).
-&LoadedModules := Object clone tap { self invoke := self hold 'invoke.
-                                     self parent := self. }.
+global &LoadedModules := Object clone tap {
+  self invoke := self hold 'invoke.
+  self parent := self.
+}.
 &LoadedModules clone := { self invoke (Object hold 'clone) call. }.
 &LoadedModules put := { self invoke (Object hold 'put) call. }.
 &LoadedModules get := { self invoke (Object hold 'get) call. }.
@@ -44,7 +46,7 @@ global Module := Module.
 &LoadedModules missing := { self invoke (Object hold 'missing) call. }.
 &LoadedModules toString := "&LoadedModules".
 
-ModuleLoader ::= Object clone.
+global ModuleLoader ::= Object clone.
 ModuleLoader &loaded := &LoadedModules.
 ModuleLoader clone := { self invoke (Object hold 'clone) call tap { self &loaded := self &loaded clone. }. }.
 ModuleLoader resolveImport := {

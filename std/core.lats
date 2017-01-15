@@ -1,7 +1,7 @@
 
 ;; Cloning and metaprogramming basics
 ; The clone function itself is defined in 'latitude.lat'
-Object is := { meta sys instanceOf#: self, $1. }.
+Object is := { meta sys instanceOf#: hold 'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
 Object hold := { meta sys accessSlot#: self, $1. }.

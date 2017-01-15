@@ -149,7 +149,7 @@ global cond := {
       hold 'block,
       {
         $1 when := { whenProc call. }.
-        $1 else := { self when (True) do ($1). }.
+        $1 else := { self when (True) do { parent dynamic $1. }. }.
       }.
     procd call.
     Nil.
