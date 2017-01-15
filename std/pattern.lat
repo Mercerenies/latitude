@@ -168,4 +168,42 @@ Cons =~ := {
   }.
 }.
 
+case := {
+  elem := $1. ; Evaluate if a method is passed in
+  Object clone tap {
+    self do := {
+      takes '[block].
+      callCC {
+        finished := $1.
+        whenProc := proc {
+          match := ($1) =~ (elem).
+          if (match)
+            then {
+              Object clone tap {
+                self do := {
+                  finished call:
+                    if (dynamic hold '$1 is (Method))
+                      then { match call (parent dynamic hold '$1). }
+                      else { parent dynamic $1. }.
+                }.
+              }.
+            } else {
+              Object clone tap {
+                self do := { }.
+              }.
+            }.
+        }.
+        procd := dynamic invokeSpecial:
+          hold 'block,
+          {
+            $1 when := { whenProc call. }.
+            $1 else := { self when (*) do { parent dynamic $1. }. }.
+          }.
+        procd call.
+        Nil.
+      }.
+    }.
+  }.
+}.
+
 $whereAmI.
