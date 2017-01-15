@@ -91,10 +91,10 @@ Array join := {
   delim := { parent dynamic $1. }.
   str := if (self empty?)
     then { "". }
-    else { (parent self nth: 0) toString. }.
+    else { (parent self nth: 0) pretty. }.
   while { (index) < (size). }
     do {
-      parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
+      parent str := (str) ++ ((delim) ++ ((parent self nth: index) pretty)).
       parent index := index + 1.
     }.
   str.

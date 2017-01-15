@@ -1,6 +1,6 @@
 
 ;; Continuations
-Cont call := { meta sys exitCC#: self, $1. }.
+Cont call := { meta sys exitCC#: self, dynamic hold '$1. }.
 Cont toString := "Cont".
 global callCC := {
   meta sys callCC#: Cont clone, { parent dynamic $1. }.
