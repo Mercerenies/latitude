@@ -452,6 +452,104 @@ namespace MagicNumber {
         }
     };
 
+    struct AndVisitor : boost::static_visitor<Number::magic_t> {
+
+        Number::magic_t operator()(const Number::smallint& first, const Number::smallint& second) const {
+            return Number::magic_t(first & second);
+        }
+
+        template <typename V>
+        Number::magic_t operator()(const Number::bigint& first, const V& second) const {
+            return (*this)(first, Coerce<Number::bigint>::act(second));
+        }
+
+        template <typename U>
+        Number::magic_t operator()(const U& first, const Number::bigint& second) const {
+            return (*this)(Coerce<Number::bigint>::act(first), second);
+        }
+
+        Number::magic_t operator()(const Number::bigint& first, const Number::bigint& second) const {
+            return Number::magic_t((Number::bigint)(first & second));
+        }
+
+        template <typename U, typename V>
+        Number::magic_t operator()(const U& first, const V& second) const {
+            return Number::magic_t(0L); // Doesn't make sense, so return a default value
+        }
+
+    };
+
+    struct OrVisitor : boost::static_visitor<Number::magic_t> {
+
+        Number::magic_t operator()(const Number::smallint& first, const Number::smallint& second) const {
+            return Number::magic_t(first | second);
+        }
+
+        template <typename V>
+        Number::magic_t operator()(const Number::bigint& first, const V& second) const {
+            return (*this)(first, Coerce<Number::bigint>::act(second));
+        }
+
+        template <typename U>
+        Number::magic_t operator()(const U& first, const Number::bigint& second) const {
+            return (*this)(Coerce<Number::bigint>::act(first), second);
+        }
+
+        Number::magic_t operator()(const Number::bigint& first, const Number::bigint& second) const {
+            return Number::magic_t((Number::bigint)(first | second));
+        }
+
+        template <typename U, typename V>
+        Number::magic_t operator()(const U& first, const V& second) const {
+            return Number::magic_t(0L); // Doesn't make sense, so return a default value
+        }
+
+    };
+
+    struct XorVisitor : boost::static_visitor<Number::magic_t> {
+
+        Number::magic_t operator()(const Number::smallint& first, const Number::smallint& second) const {
+            return Number::magic_t(first ^ second);
+        }
+
+        template <typename V>
+        Number::magic_t operator()(const Number::bigint& first, const V& second) const {
+            return (*this)(first, Coerce<Number::bigint>::act(second));
+        }
+
+        template <typename U>
+        Number::magic_t operator()(const U& first, const Number::bigint& second) const {
+            return (*this)(Coerce<Number::bigint>::act(first), second);
+        }
+
+        Number::magic_t operator()(const Number::bigint& first, const Number::bigint& second) const {
+            return Number::magic_t((Number::bigint)(first ^ second));
+        }
+
+        template <typename U, typename V>
+        Number::magic_t operator()(const U& first, const V& second) const {
+            return Number::magic_t(0L); // Doesn't make sense, so return a default value
+        }
+
+    };
+
+    struct ComplVisitor : boost::static_visitor<Number::magic_t> {
+
+        Number::magic_t operator()(const Number::smallint& first) const {
+            return Number::magic_t(~first);
+        }
+
+        Number::magic_t operator()(const Number::bigint& first) const {
+            return Number::magic_t((Number::bigint)~first);
+        }
+
+        template <typename U>
+        Number::magic_t operator()(const U& first) const {
+            return Number::magic_t(0L); // Doesn't make sense, so return a default value
+        }
+
+    };
+
 }
 
 Number::Number(smallint arg)
@@ -545,6 +643,30 @@ Number Number::recip() const {
     Number curr = *this;
     curr.value = boost::apply_visitor(MagicNumber::RecipVisitor(), curr.value);
     return curr;
+}
+
+Number& Number::operator &=(const Number& other) {
+    auto second = other.value;
+    value = boost::apply_visitor(MagicNumber::AndVisitor(), value, second);
+    return *this;
+}
+
+Number& Number::operator |=(const Number& other) {
+    auto second = other.value;
+    value = boost::apply_visitor(MagicNumber::OrVisitor(), value, second);
+    return *this;
+}
+
+Number& Number::operator ^=(const Number& other) {
+    auto second = other.value;
+    value = boost::apply_visitor(MagicNumber::XorVisitor(), value, second);
+    return *this;
+}
+
+Number Number::operator ~() const {
+    Number next;
+    next.value = boost::apply_visitor(MagicNumber::ComplVisitor(), value);
+    return next;
 }
 
 Number Number::sin() const {

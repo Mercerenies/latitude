@@ -151,6 +151,9 @@ yldc INT REG (32 INT REG) - Get the nth value from %lit and put a clone into the
  - 4L - Division
  - 5L - Modulo
  - 6L - Power
+ - 7L - And
+ - 8L - Or
+ - 9L - Xor
 
 ((( expd / load )))
 It can be passed

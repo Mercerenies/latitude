@@ -43,6 +43,10 @@ public:
     Number pow(const Number& other) const;
     Number operator -() const;
     Number recip() const;
+    Number& operator &=(const Number& other);
+    Number& operator |=(const Number& other);
+    Number& operator ^=(const Number& other);
+    Number operator ~() const;
     Number sin() const;
     Number cos() const;
     Number tan() const;

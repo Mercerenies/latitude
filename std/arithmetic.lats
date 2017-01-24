@@ -32,6 +32,41 @@ Number floor := {
 Number round := { (self + 0.5) floor. }.
 Number ceil := { - (- (self) floor). }.
 
+;; Bitwise
+Number bitAnd := {
+  if ({ parent self isInteger?. } and { parent dynamic $1 isInteger?. })
+    then {
+      meta sys numAnd#: parent self, parent dynamic $1.
+    } else {
+      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    }.
+}.
+Number bitOr := {
+  if ({ parent self isInteger?. } and { parent dynamic $1 isInteger?. })
+    then {
+      meta sys numIor#: parent self, parent dynamic $1.
+    } else {
+      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    }.
+}.
+Number bitXor := {
+  if ({ parent self isInteger?. } and { parent dynamic $1 isInteger?. })
+    then {
+      meta sys numEor#: parent self, parent dynamic $1.
+    } else {
+      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    }.
+}.
+Number bitNot := { self bitXor -1. }.
+Number bitShift := {
+  if ({ parent self isInteger?. } and { parent dynamic $1 isInteger?. })
+    then {
+      (parent self) * (2 ^ (parent dynamic $1)) floor.
+    } else {
+      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    }.
+}.
+
 ;; Trigonometry
 Number sin := { meta sys numTrig#: self, 0. }.
 Number cos := { meta sys numTrig#: self, 1. }.

@@ -92,6 +92,7 @@ Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
 	$(CXX) $(CXXFLAGS) Pathname.cpp
 
 Allocator.o:	Allocator.cpp Allocator.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp
+	$(CXX) $(CXXFLAGS) Pathname.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp
 	$(CXX) $(CXXFLAGS) main.cpp

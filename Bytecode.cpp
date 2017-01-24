@@ -1155,6 +1155,15 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         case 6L:
             state.num0 = state.num0.pow(state.num1);
             break;
+        case 7L:
+            state.num0 &= state.num1;
+            break;
+        case 8L:
+            state.num0 |= state.num1;
+            break;
+        case 9L:
+            state.num0 ^= state.num1;
+            break;
         default:
             state.err0 = true;
             break;
