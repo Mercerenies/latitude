@@ -2156,9 +2156,13 @@ void spawnSystemCallsNew(ObjectPtr global,
 
 ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
 
+    std::cout << "oo A" << std::endl;
     ObjectPtr object(GC::get().allocate());
+    std::cout << "oo B" << std::endl;
     ObjectPtr meta(clone(object));
+    std::cout << "oo C" << std::endl;
     ObjectPtr global(clone(object));
+    std::cout << "oo D" << std::endl;
 
     ObjectPtr proc(clone(object));
     ObjectPtr method(clone(proc));
