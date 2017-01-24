@@ -147,16 +147,38 @@ namespace MagicNumber {
         }
     };
 
+    struct PrimFloorVisitor {
+
+        Number::smallint operator()(const Number::smallint& value) const {
+            return value;
+        }
+
+        Number::bigint operator()(const Number::bigint& value) const {
+            return value;
+        }
+
+        Number::bigint operator()(const Number::ratio& value) const {
+            return static_cast<Number::bigint>(numerator(value) / denominator(value));
+        }
+
+        Number::bigint operator()(const Number::floating& value) const {
+            return static_cast<Number::bigint>(floor(value));
+        }
+
+    };
+
     struct ModVisitor : boost::static_visitor<Number::magic_t> {
         template <typename U, typename V>
         Number::magic_t operator()(U& first, V& second) const {
+            typedef typename Wider<U, V>::type wide_t;
+            PrimFloorVisitor floor;
             if (second == 0)
                 return fmod(Coerce<Number::floating>::act(first),
                             Coerce<Number::floating>::act(second));
             auto first0 = Coerce<V>::act(first);
             auto second0 = Coerce<U>::act(second);
-            typename Wider<U, V>::type result =
-                first0 - (int)(first0 / second0) * second0;
+            auto div = Coerce<wide_t>::act(floor((wide_t)(first0 / second0)));
+            wide_t result = first0 - div * second0;
             return Number::magic_t(result);
         }
         Number::magic_t operator()(Number::complex& first, Number::complex& second) const {
