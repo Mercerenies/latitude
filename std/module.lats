@@ -22,7 +22,7 @@ Module importAll := {
   target := target parent.
   target missing := {
     takes '[sym].
-    if { this is (target) not. } and { this has (sym). }
+    if { { this is (target) not. } and { this has (sym). }. }
       then { this hold (sym). }
       else {
         target invoke (target parent hold 'missing) call: sym.
