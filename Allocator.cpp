@@ -25,13 +25,13 @@ ObjectPtr Allocator::allocate() {
                 if (!entry.in_use) {
                     carray.used++;
                     entry.in_use = true;
+                    entry.object = Object();
                     return &entry.object;
                 }
             }
         }
     }
     // No openings available anywhere, so rehash and move on
-    std::cout << "Grow " << vec.size() << std::endl;
     vec.push_back(CountedArray());
     return allocate();
     //return new Object();

@@ -4,7 +4,7 @@
 #include <set>
 #include <algorithm>
 
-#define GC_PRINT 3
+#define GC_PRINT 0
 
 using namespace std;
 
