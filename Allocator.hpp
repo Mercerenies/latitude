@@ -4,9 +4,13 @@
 #include <vector>
 #include "Proto.hpp"
 
+struct ObjectEntry;
+struct CountedArray;
+
 struct ObjectEntry {
     Object object;
     bool in_use;
+    unsigned int index;
 };
 
 struct CountedArray {

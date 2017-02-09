@@ -18,6 +18,7 @@ Allocator& Allocator::get() noexcept {
 }
 
 ObjectPtr Allocator::allocate() {
+    unsigned int index = 0;
     for (CountedArray& carray : vec) {
         if (carray.used < BUCKET_SIZE) {
             // There is an opening, so use it (first fit)
@@ -25,11 +26,13 @@ ObjectPtr Allocator::allocate() {
                 if (!entry.in_use) {
                     carray.used++;
                     entry.in_use = true;
+                    entry.index = index;
                     entry.object = Object();
                     return &entry.object;
                 }
             }
         }
+        ++index;
     }
     // No openings available anywhere, so rehash and move on
     vec.push_back(CountedArray());
@@ -38,18 +41,8 @@ ObjectPtr Allocator::allocate() {
 }
 
 void Allocator::free(ObjectPtr obj) {
-    // Find the object in one of the arrays
-    for (CountedArray& carray : vec) {
-        void* begin = static_cast<void*>(&carray.array.front());
-        void* end = static_cast<void*>(&carray.array.back());
-        if (((void*)obj >= begin) && ((void*)obj < end)) {
-            // Found it
-            carray.used--;
-            // This should be safe because Object is the first field in ObjectEntry, and ObjectEntry is
-            // standard layout.
-            reinterpret_cast<ObjectEntry*>(obj)->in_use = false;
-            return;
-        }
-    }
-    //delete obj;
+    ObjectEntry* entry = reinterpret_cast<ObjectEntry*>(obj);
+    CountedArray& carray = vec[entry->index];
+    entry->in_use = false;
+    carray.used--;
 }
