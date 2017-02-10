@@ -35,7 +35,7 @@ REPL eval := {
   Kernel eval: self scope, self $scope, $1.
 }.
 REPL print := {
-  stdout println: dynamic hold '$1.
+  stdout println: #'$1.
 }.
 REPL loop := {
   localize.

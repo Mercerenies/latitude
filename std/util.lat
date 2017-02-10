@@ -14,7 +14,7 @@ Cell iterator := {
   CellIterator end? := False.
   CellIterator next := { self end? := True. }.
   CellIterator element := { self cell value. }.
-  CellIterator element= := { self cell value := dynamic hold '$1. }.
+  CellIterator element= := { self cell value := #'$1. }.
   CellIterator.
 }.
 Collection inject: Cell.
@@ -142,7 +142,7 @@ callAmb := {
     }.
   }.
   procd := ambObject invokeSpecial:
-    dynamic hold '$1,
+    #'$1,
     { $1 amb := { ambFunc call. }. }.
   procd call.
 }.
@@ -156,7 +156,7 @@ callAmb := {
 accumulate := {
   result := Array clone.
   procd := result invokeSpecial:
-    dynamic hold '$1,
+    #'$1,
     {
       $1 tell := { result pushBack. }.
       $1 tellAll := { $1 visit { result pushBack. }. }.

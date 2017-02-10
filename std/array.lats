@@ -18,13 +18,13 @@ Cons carCell := Nil.
 Cons cdrCell := Nil.
 Cons car := { self hold 'carCell. }.
 Cons cdr := { self hold 'cdrCell. }.
-Cons car= := { self put: 'carCell, dynamic hold '$1. }.
-Cons cdr= := { self put: 'cdrCell, dynamic hold '$1. }.
+Cons car= := { self put: 'carCell, #'$1. }.
+Cons cdr= := { self put: 'cdrCell, #'$1. }.
 
 global cons := {
   cc := Cons clone.
-  cc car = dynamic hold '$1.
-  cc cdr = dynamic hold '$2.
+  cc car = #'$1.
+  cc cdr = #'$2.
   cc.
 }.
 
@@ -41,16 +41,16 @@ Array mapping := {
 }.
 Array empty? := { (self lowerBound) >= (self upperBound). }.
 Array pushFront := {
-  value := dynamic hold '$1.
+  value := #'$1.
   self lowerBound := self lowerBound - 1.
-  self put: (self mapping: self lowerBound) ordinal, hold 'value.
-  hold 'value.
+  self put: (self mapping: self lowerBound) ordinal, #'value.
+  #'value.
 }.
 Array pushBack := {
-  value := dynamic hold '$1.
-  self put: (self mapping: self upperBound) ordinal, hold 'value.
+  value := #'$1.
+  self put: (self mapping: self upperBound) ordinal, #'value.
   self upperBound := self upperBound + 1.
-  hold 'value.
+  #'value.
 }.
 Array popFront := {
   if (self empty?)
@@ -88,7 +88,7 @@ Array size := { (self upperBound) - (self lowerBound). }.
 Array join := {
   index := 1.
   size := self size.
-  delim := { parent dynamic $1. }.
+  delim := #'$1.
   str := if (self empty?)
     then { "". }
     else { (parent self nth: 0) toString. }.
@@ -102,7 +102,7 @@ Array join := {
 Array joinText := {
   index := 1.
   size := self size.
-  delim := { parent dynamic $1. }.
+  delim := #'$1.
   str := if (self empty?)
     then { "". }
     else { (parent self nth: 0) pretty. }.
@@ -117,7 +117,7 @@ Array concat := {
   arr := Array clone.
   self visit {
     if ($1 is (Array))
-      then { parent dynamic $1 visit { arr pushBack: dynamic hold '$1. }. }
+      then { parent dynamic $1 visit { arr pushBack: #'$1. }. }
       else { arr pushBack: parent dynamic hold '$1. }.
   }.
   arr.
@@ -153,7 +153,7 @@ Array iterator := {
   ArrayIterator next := { self index := self index + 1. }.
   ArrayIterator end? := { (self index) >= (self array size). }.
   ArrayIterator element := { self array nth: self index. }.
-  ArrayIterator element= := { self array nth=: self index, dynamic hold '$1. }.
+  ArrayIterator element= := { self array nth=: self index, #'$1. }.
   ArrayIterator.
 }.
 
@@ -170,7 +170,7 @@ Array clone := {
 meta brackets := {
   ArrayBuilder ::= self Object clone.
   ArrayBuilder array := Array clone.
-  ArrayBuilder next := { self array pushBack: dynamic hold '$1. }.
+  ArrayBuilder next := { self array pushBack: #'$1. }.
   ArrayBuilder finish := { self array. }.
   ArrayBuilder.
 }.
@@ -182,7 +182,7 @@ meta statements := {
   MethodBuilder ::= self Object clone.
   MethodBuilder array := Array clone.
   MethodBuilder next := {
-    self array pushBack: proc (dynamic hold '$1).
+    self array pushBack: proc #'$1.
   }.
   MethodBuilder finish := {
     spec := {
@@ -195,9 +195,9 @@ meta statements := {
       }.
       result.
     }.
-    hold 'spec parent := SpecialMethod.
-    hold 'spec statements := self array.
-    hold 'spec.
+    #'spec parent := SpecialMethod.
+    #'spec statements := self array.
+    #'spec.
   }.
   MethodBuilder.
 }.

@@ -1,9 +1,9 @@
 
 ;; Continuations
-Cont call := { meta sys exitCC#: self, dynamic hold '$1. }.
+Cont call := { meta sys exitCC#: self, #'$1. }.
 Cont toString := "Cont".
 global callCC := {
-  meta sys callCC#: Cont clone, { parent dynamic $1. }.
+  meta sys callCC#: Cont clone, #'$1.
 }.
 
 ;; Booleans
@@ -21,8 +21,8 @@ True toString := "True".
 False toString := "False".
 Nil toString := "Nil".
 Object falsify := {
-  hold 'self toBool := False.
-  hold 'self.
+  #'self toBool := False.
+  #'self.
 }.
 
 ;; Control Statements
@@ -31,10 +31,10 @@ global if := {
   truthy := $1 toBool.
   Object clone tap {
     self then := {
-      trueCase := { parent dynamic $1. }.
+      trueCase := #'$1.
       Object clone tap {
         self else := {
-          falseCase := { parent dynamic $1. }.
+          falseCase := #'$1.
           meta sys ifThenElse#: True, truthy, { trueCase. }, { falseCase. }.
         }.
       }.
@@ -42,19 +42,19 @@ global if := {
   }.
 }.
 Object ifTrue := {
-  if (self) then { parent dynamic $1. } else { Nil. }.
-  hold 'self.
+  if (self) then #'$1 else { Nil. }.
+  #'self.
 }.
 Object ifFalse := {
-  if (self) then { Nil. } else { parent dynamic $1. }.
-  hold 'self.
+  if (self) then { Nil. } else #'$1.
+  #'self.
 }.
 Object and := {
-  if (self) then { parent dynamic $1. } else { False. }.
+  if (self) then #'$1 else { False. }.
 }.
 Object or := {
   fst := self.
-  if (fst) then { fst. } else { parent dynamic $1. }.
+  if (fst) then { fst. } else #'$1.
 }.
 Object not := {
   if (self) then { False. } else { True. }.
@@ -67,10 +67,10 @@ global loop := {
   restart call: restart.
 }.
 global while := {
-  cond := { parent dynamic $1. }.
+  cond := #'$1.
   Object clone tap {
     self do := {
-      stmt := { parent dynamic $1. }.
+      stmt := #'$1.
       callCC {
         $break := { parent dynamic $1 call. }.
         loop {
@@ -85,7 +85,7 @@ global while := {
 
 Number times := {
   localize.
-  block := { parent dynamic $1. }.
+  block := #'$1.
   i := 0.
   incr := {
     parent i := i + 1.
@@ -100,7 +100,7 @@ Number upto := {
   takes '[n].
   Object clone tap {
     self do := {
-      block := { parent dynamic $1. }.
+      block := #'$1.
       i := this.
       incr := { parent i := i + 1. }.
       while { (i) < (n). } do {
@@ -115,7 +115,7 @@ Number downto := {
   takes '[n].
   Object clone tap {
     self do := {
-      block := { parent dynamic $1. }.
+      block := #'$1.
       i := this.
       decr := {
         parent i := i - 1.
@@ -146,10 +146,10 @@ global cond := {
         }.
     }.
     procd := dynamic invokeSpecial:
-      hold 'block,
+      #'block,
       {
         $1 when := { whenProc call. }.
-        $1 else := { self when (True) do { parent dynamic $1. }. }.
+        $1 else := { self when (True) do #'$1. }.
       }.
     procd call.
     Nil.

@@ -49,8 +49,8 @@ meta missed := {
 }.
 Object missing := {
   err := err SlotError clone.
-  err slotName := dynamic hold '$1.
-  err objectInstance := lexical hold 'self.
+  err slotName := #'$1.
+  err objectInstance := #'self.
   err throw.
 }.
 

@@ -37,10 +37,10 @@ Object invokeSpecial := {
 }.
 Object above := {
   orgn := self origin: $1.
-  (hold 'orgn) parent hold: $1.
+  #'orgn parent hold: $1.
 }.
 Object tap := {
-  self invoke (dynamic hold '$1) call.
+  self invoke #'$1 call.
   self.
 }.
 Object hierarchy := {
@@ -54,7 +54,7 @@ Object hierarchy := {
   }.
   arr.
 }.
-Object keys := { meta sys objectKeys#: hold 'self. }.
+Object keys := { meta sys objectKeys#: #'self. }.
 
 ;; The $whereAmI variable
 global $whereAmI := Nil.
@@ -66,15 +66,15 @@ meta toString := "meta".
 
 ;; Basics of exception handling
 Method handle := {
-  meta sys handler#: dynamic hold '$1.
+  meta sys handler#: #'$1.
   result := self.
   meta sys unhandler#.
-  hold 'result.
+  #'result.
 }.
 Method resolve := {
-  mthd := hold 'self.
-  cond := dynamic hold '$1.
-  catcher := dynamic hold '$2.
+  mthd := #'self.
+  cond := #'$1.
+  catcher := #'$2.
   jump := Nil.
   'jump assign = { $1. }.
   callCC {
@@ -96,10 +96,10 @@ Method resolve := {
   }.
 }.
 Method catch := {
-  (hold 'self) resolve: { $1 is: parent dynamic $1. }, dynamic hold '$2.
+  #'self resolve: { $1 is: parent dynamic $1. }, #'$2.
 }.
-Method catchAll := { (hold 'self) catch: Exception, dynamic hold '$1. }.
-Method default := { (hold 'self) catch: Exception, dynamic hold '$1. }.
+Method catchAll := { #'self catch: Exception, #'$1. }.
+Method default := { #'self catch: Exception, #'$1. }.
 ; Observe that `rethrow` is not overriden in `Exception`, so it will never set the `stack` field.
 Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
@@ -108,21 +108,21 @@ Exception throw := {
   self invoke (Object hold 'throw) call.
 }.
 Method protect := {
-  thunk: { }, hold 'self, dynamic hold '$1.
+  thunk: { }, #'self, #'$1.
 }.
 global thunk := {
-  meta sys thunk#: (dynamic hold '$1), (dynamic hold '$3).
+  meta sys thunk#: #'$1, #'$3.
   $1.
   result := $2.
   $3.
   meta sys unthunk#.
-  hold 'result.
+  #'result.
 }.
 
 ;; Procs and Methods handling
 Method closure := global.
 Proc call := {}.
-Method call := { hold 'self invoke (hold 'self) call. }.
+Method call := { #'self invoke #'self call. }.
 Method toString := "Method".
 Proc toString := "Proc".
 Method == := { (self) == ($1). }. ; Evaluate the method and then try again
@@ -134,7 +134,7 @@ Proc <| := {
   }.
 }.
 Proc |> := {
-  (dynamic hold '$1) <| (hold 'self).
+  #'$1 <| #'self.
 }.
 Symbol toProc := {
   sym := self.
@@ -161,16 +161,16 @@ Cached call := {
 
 global proc := {
   curr := self Proc clone.
-  curr call := dynamic hold '$1.
+  curr call := #'$1.
   curr.
 }.
 global memo := {
   curr := self Cached clone.
-  curr procedure := self proc: (dynamic hold '$1).
+  curr procedure := proc #'$1.
   curr.
 }.
 meta sigil l := {
-  cache := memo: (dynamic hold '$1).
+  cache := memo #'$1.
   { cache call. }.
 }.
 global id := proc { $1. }.
@@ -180,8 +180,8 @@ Stream in? := { meta sys streamIn#: self. }.
 Stream out? := { meta sys streamOut#: self. }.
 Stream puts := { meta sys streamPuts#: self, $1. }.
 Stream putln := { meta sys streamPutln#: self, $1. }.
-Stream print := { self puts: dynamic hold '$1 toString. }.
-Stream println := { self putln: dynamic hold '$1 toString. }.
+Stream print := { self puts: #'$1 toString. }.
+Stream println := { self putln: #'$1 toString. }.
 Stream readln := { meta sys streamRead#: self. }.
 Stream read := { meta sys streamReadChar#: self. }.
 Stream eof? := { meta sys streamEof#: self. }.
@@ -201,16 +201,16 @@ Stream toString := "Stream".
 ; Dumping and Printing Convenience Functions
 Stream dump := {
   localize.
-  obj := dynamic hold '$1.
-  this println: hold 'obj.
-  hold 'obj keys visit {
-    p := if (Kernel protected (hold 'obj, $1)) then "! " else "  ".
-    this putln: p ++ ($1 asText) ++ ": " ++ ((hold 'obj hold: $1) toString).
+  obj := #'$1.
+  this println: #'obj.
+  #'obj keys visit {
+    p := if (Kernel protected (#'obj, $1)) then "! " else "  ".
+    this putln: p ++ ($1 asText) ++ ": " ++ ((#'obj hold: $1) toString).
   }.
   Nil.
 }.
-Object println := { stdout println: hold 'self. }.
-Object dump := { stdout dump: hold 'self. }.
+Object println := { stdout println: #'self. }.
+Object dump := { stdout dump: #'self. }.
 
 ;; Process basics
 Process toString := "Process".
@@ -281,8 +281,8 @@ Kernel eval := { meta sys eval#: $1, $2, $3. }.
 Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
 Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
-Kernel protect := { meta sys protectVar#: dynamic hold '$1, $2. }.
-Kernel protected := { meta sys protectIs#: dynamic hold '$1, $2. }.
+Kernel protect := { meta sys protectVar#: #'$1, $2. }.
+Kernel protected := { meta sys protectIs#: #'$1, $2. }.
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
 Kernel GC traced := False.
@@ -343,11 +343,11 @@ Object stringify := { self toString. }.
 String stringify := { self. }.
 Object ++ := { meta sys stringConcat#: self stringify, $1 stringify. }.
 Object :: := {
-  hold 'self toString := $1 pretty.
-  hold 'self.
+  #'self toString := $1 pretty.
+  #'self.
 }.
 Object toString := "Object".
-Object pretty := { (hold 'self) toString. }.
+Object pretty := { #'self toString. }.
 String toString := { meta sys strToString#: self. }.
 String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
@@ -357,7 +357,7 @@ String byteCount := { meta sys stringLength#: self. }.
 Symbol assign= := {
   name := self.
   curr := dynamic parent $scopeOf (self).
-  rhs := dynamic hold '$1.
+  rhs := #'$1.
   sym := self asText ++ "=" intern.
   curr put: sym, { curr put: name, rhs ($1). }.
 }.

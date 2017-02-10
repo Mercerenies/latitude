@@ -15,7 +15,7 @@ Regexp ::= Object clone.
 Regexp specialChars := ["\\", "/"].
 Regexp escapeText := { $1 map { if (parent self specialChars find ($1))
                                   then { "\\" ++ (parent dynamic $1). }
-                                  else { parent dynamic $1. }. }. }.
+                                  else #'$1. }. }.
 Regexp pattern := { node := Object clone tap { self elem := ReLiteral make "". }.
                     node= := { parent node := $1. }.
                     concatenate := { takes '[arg].

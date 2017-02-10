@@ -101,9 +101,7 @@ LazySequence foldr := {
   func := {
     (parent dynamic hold '$2) call.
   }.
-  init := {
-    parent dynamic $1.
-  }.
+  init := #'$1.
   recurse := {
     curr := $1.
     cache := memo { recurse: curr cdr. }.

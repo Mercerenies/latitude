@@ -100,7 +100,7 @@ String replaceAll := {
   }.
   while { index = curr find: substr, index. }
     do {
-      parent curr := curr replace: substr, index, hold 'mthd.
+      parent curr := curr replace: substr, index, #'mthd.
       index = (index) + (substr size).
     }.
   curr.

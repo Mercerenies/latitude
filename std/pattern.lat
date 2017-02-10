@@ -26,7 +26,7 @@ Ellipsis toString := {
 Match ::= Proc clone.
 Match callback := {}.
 Match call := {
-  (self invokeSpecial: dynamic hold '$1, self hold 'callback) call.
+  (self invokeSpecial: #'$1, self hold 'callback) call.
 }.
 
 NoMatch ::= Match clone falsify.
@@ -62,7 +62,7 @@ Wildcard =~ := {
   takes '[arg].
   if (this named?)
     then {
-      Match clone tap { self callback := { $1 put: this symbol, hold 'arg. }. }.
+      Match clone tap { self callback := { $1 put: this symbol, #'arg. }. }.
     } else {
       Match clone.
     }.
@@ -182,9 +182,9 @@ case := {
               Object clone tap {
                 self do := {
                   finished call:
-                    if (dynamic hold '$1 is (Method))
+                    if (#'$1 is (Method))
                       then { match call (parent dynamic hold '$1). }
-                      else { parent dynamic $1. }.
+                      else #'$1.
                 }.
               }.
             } else {
@@ -194,10 +194,10 @@ case := {
             }.
         }.
         procd := dynamic invokeSpecial:
-          hold 'block,
+          #'block,
           {
             $1 when := { whenProc call. }.
-            $1 else := { self when (*) do { parent dynamic $1. }. }.
+            $1 else := { self when (*) do #'$1. }.
           }.
         procd call.
         Nil.
