@@ -98,6 +98,9 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         auto func = expr->name;
         auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtDoubleEqual(line, lhs, func, rhs));
+    } else if (expr->isHashQuote) {
+        auto lhs = unique_ptr<Stmt>();
+        return unique_ptr<Stmt>(new StmtHeld(line, lhs, expr->name));
     } else {
         auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
         string func;
@@ -269,7 +272,7 @@ void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
 
     // "Evaluate" the name to lookup (may incur `missing`)
-    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
@@ -325,7 +328,7 @@ void StmtEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
 
     // Put the name in the symbol field
-    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
 
     // Put the value
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
@@ -779,7 +782,7 @@ void StmtDoubleEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
 
     // Put the name in the symbol field
-    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
 
     // Put the value
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
@@ -808,5 +811,35 @@ void StmtDoubleEqual::propogateFileName(std::string name) {
         className->propogateFileName(name);
     if (rhs)
         rhs->propogateFileName(name);
+    Stmt::propogateFileName(name);
+}
+
+StmtHeld::StmtHeld(int line_no, unique_ptr<Stmt>& cls, const string& func)
+    : Stmt(line_no), className(move(cls)), functionName(func) {}
+
+void StmtHeld::translate(TranslationUnit& unit, InstrSeq& seq) {
+
+    if (!className)
+        stateLine(seq);
+
+    // Evaluate the class name
+    if (className) {
+        className->translate(unit, seq);
+    } else if ((functionName != "") && (functionName[0] == '$')) {
+        (makeAssemblerLine(Instr::GETD, Reg::RET)).appendOnto(seq);
+    } else {
+        (makeAssemblerLine(Instr::GETL, Reg::RET)).appendOnto(seq);
+    }
+
+    // "Evaluate" the name to lookup (may incur `missing`)
+    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+
+}
+
+void StmtHeld::propogateFileName(std::string name) {
+    if (className)
+        className->propogateFileName(name);
     Stmt::propogateFileName(name);
 }

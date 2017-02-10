@@ -165,6 +165,13 @@ ID        {SNORMAL}{NORMAL}*
     return SYMBOL;
 }
 
+#\'{NORMAL}+ {
+    char* arr = calloc(strlen(yytext) - 1, sizeof(char));
+    strcpy(arr, yytext + 2);
+    yylval.sval = arr;
+    return HASHQUOTE;
+}
+
 \'\[ { return LISTLIT; }
 
 \. { return '.'; }

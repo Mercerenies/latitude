@@ -54,6 +54,7 @@
         bool isBind; // Treated like call with a rhs
         bool isComplex; // Check number and number1
         bool equals2; // ::= (`a b ::= c.` desugars to `a b := c. a b :: 'b.`)
+        bool isHashQuote; // Check name
     };
 
     struct List {
@@ -111,6 +112,7 @@
 %token <sval> SYMBOL
 %token <sval> HASHPAREN
 %token <sval> ZERODISPATCH
+%token <sval> HASHQUOTE
 %token LISTLIT
 %token CEQUALS
 %token DCEQUALS
@@ -197,7 +199,8 @@ literal:
     LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
     HASHPAREN { $$ = makeExpr(); $$->isHashParen = true; $$->name = $1; } |
     ZERODISPATCH { $$ = makeExpr(); $$->isZeroDispatch = true;
-                   $$->name = $1; }
+                   $$->name = $1; } |
+    HASHQUOTE { $$ = makeExpr(); $$->isHashQuote = true; $$->name = $1; }
     ;
 linelist:
     line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |
