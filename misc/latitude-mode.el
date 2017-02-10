@@ -55,7 +55,9 @@
                          "IOError" "Wildcard" "Ellipsis" "Match" "NoMatch" "LazySequence" "Process"
                          "StackFrame" "NotSupportedError" "REPL" "FilePath" "FileHeader")
                        'symbols)
-          . font-lock-constant-face)))
+          . font-lock-constant-face)
+        `(,(regexp-opt '(":=" "::=" "=" "<-"))
+          . font-lock-keyword-face)))
 
 (defun latitude-mode-skip-blanks ()
   (forward-line -1)
