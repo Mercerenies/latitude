@@ -1,7 +1,23 @@
 #ifndef _ALLOCATOR_HPP_
 #define _ALLOCATOR_HPP_
 
+#include <vector>
 #include "Proto.hpp"
+
+struct ObjectEntry;
+struct CountedArray;
+
+struct ObjectEntry {
+    Object object;
+    bool in_use;
+    unsigned int index;
+};
+
+struct CountedArray {
+    size_t used;
+    std::vector<ObjectEntry> array;
+    CountedArray();
+};
 
 /*
  * A singleton object which manages allocation and deallocation of objects. Note that the GC object
@@ -11,11 +27,13 @@
 class Allocator {
 private:
     static Allocator instance;
-    Allocator() = default;
+    std::vector<CountedArray> vec;
+    Allocator();
 public:
     static Allocator& get() noexcept;
     ObjectPtr allocate();
     void free(ObjectPtr);
+    void DEBUG();
 };
 
 #endif // _ALLOCATOR_HPP_

@@ -51,7 +51,7 @@ Slot Object::operator [](Symbolic key) const {
 void Object::put(Symbolic key, ObjectPtr ptr) {
     auto iter = slots.find(key);
     if (iter == slots.end())
-        slots.emplace(key, Slot(ptr));
+        slots[key] = Slot(ptr);
     else
         iter->second.putPtr(ptr);
 }

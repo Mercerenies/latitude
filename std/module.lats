@@ -22,6 +22,8 @@ Module importAll := {
   target := target parent.
   target missing := {
     takes '[sym].
+    ; TODO This fails:
+    ; if { this is (target) not. } and { this has (sym). }
     if { { this is (target) not. } and { this has (sym). }. }
       then { this hold (sym). }
       else {
