@@ -56,6 +56,10 @@ void Object::put(Symbolic key, ObjectPtr ptr) {
         iter->second.putPtr(ptr);
 }
 
+void Object::remove(Symbolic key) {
+    slots.erase(key); ///// An instruction/std call to do this
+}
+
 set<Symbolic> Object::directKeys() const {
     set<Symbolic> result;
     for (auto curr : slots)

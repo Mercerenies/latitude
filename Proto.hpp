@@ -72,6 +72,7 @@ private:
 public:
     Slot operator [](Symbolic key) const;
     void put(Symbolic key, ObjectPtr ptr);
+    void remove(Symbolic key);
     std::set<Symbolic> directKeys() const;
     bool isProtected(Symbolic key) const;
     void protect(Symbolic key);

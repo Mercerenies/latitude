@@ -123,6 +123,8 @@ cmplx RL IM (30 STR STR) - Construct a complex number into %num0
 yld INT REG (31 INT REG) - Get the nth value from %lit and put it into the register, set %err0 if invalid
 yldc INT REG (32 INT REG) - Get the nth value from %lit and put a clone into the register, set %err0 if invalid
 
+del (33) - Delete the %sym slot of $slf, sets %err0 if %slf is null
+
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)

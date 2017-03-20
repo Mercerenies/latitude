@@ -15,6 +15,7 @@ Object has := {
     { False. }.
 }.
 Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
+Object delete := { meta sys remSlot#: self, $1. Nil. }. ; Only deletes slots directly accessible, not parent slots
 Object origin := { meta sys origin#: self, $1. }.
 Object invoke := {
   procd := Proc clone.

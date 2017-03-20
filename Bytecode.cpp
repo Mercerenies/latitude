@@ -1321,6 +1321,17 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
     }
         break;
+    case Instr::DEL: {
+#if DEBUG_INSTR > 0
+        cout << "DEL" << endl;
+#endif
+        if (state.slf == nullptr) {
+            state.err0 = true;
+        } else {
+            state.slf->remove(state.sym);
+        }
+    }
+        break;
     }
 }
 

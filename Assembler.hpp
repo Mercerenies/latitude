@@ -152,6 +152,8 @@ namespace _V {
     struct Necessary<Instr::YLD> { typedef std::tuple<VLong, VReg> type; };
     template <>
     struct Necessary<Instr::YLDC> { typedef std::tuple<VLong, VReg> type; };
+    template <>
+    struct Necessary<Instr::DEL> { typedef std::tuple<> type; };
 
 }
 
