@@ -15,7 +15,7 @@
 global Collection ::= Mixin clone.
 Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any, notall, notany,
                           detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
-                          minimum, <>].
+                          minimum, <>, sum, product, append].
 Collection map! := {
   func := { (parent dynamic hold '$1) call. }.
   iter := self iterator.
@@ -277,6 +277,11 @@ Collection <> := {
   Collection inject: Chain.
   Chain.
 }.
+
+;; Utility functions
+Collection sum := { self foldl: 0, '+ toProc. }.
+Collection product := { self foldl: 1, '* toProc. }.
+Collection append := { self foldl: "", '++ toProc. }.
 
 Collection inject: Array.
 
