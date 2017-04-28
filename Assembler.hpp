@@ -157,6 +157,11 @@ namespace _V {
 
 }
 
+/*
+ * This procedure compiles an assembler line with the given arguments, ignoring all of the coherence conditions
+ * defined. This should only be used internally except in very special circumstances, and even then it should be
+ * used very sparingly and carefully.
+ */
 template <typename... Ts>
 AssemblerLine makeAssemblerLineUnchecked(Instr instr, Ts... args) {
     AssemblerLine line;
@@ -167,6 +172,11 @@ AssemblerLine makeAssemblerLineUnchecked(Instr instr, Ts... args) {
     return line;
 }
 
+/*
+ * This procedure bypasses the compile-time argument checks, instead opting to validate the assembler line
+ * at runtime. This is safer than makeAssemblerLineUnchecked but slower than makeAssemblerLine. The
+ * makeAssemblerLine macro should be preferred when compile-time checking is possible.
+ */
 template <typename... Ts>
 AssemblerLine makeRuntimeAssemblerLine(Instr instr, Ts... args) {
     auto line = makeAssemblerLineUnchecked(instr, args...);
