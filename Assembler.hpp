@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <tuple>
 
+// Enter this namespace at your own risk. Good luck, my friend. :)
 namespace _V {
 
     struct VLong { typedef std::false_type is_register; };

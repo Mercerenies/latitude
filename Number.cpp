@@ -5,6 +5,7 @@
 
 using namespace std;
 
+// Implementation details for type coercion inside the boost::variant for the number types
 namespace MagicNumber {
     using namespace boost;
     using namespace boost::mpl;
