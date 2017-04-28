@@ -57,7 +57,7 @@ void Object::put(Symbolic key, ObjectPtr ptr) {
 }
 
 void Object::remove(Symbolic key) {
-    slots.erase(key); ///// An instruction/std call to do this
+    slots.erase(key);
 }
 
 set<Symbolic> Object::directKeys() const {
