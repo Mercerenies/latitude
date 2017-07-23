@@ -14,8 +14,6 @@ global err ::= Object clone.
 err Exception := Exception.
 err SystemError := SystemError.
 
-; TODO It's not possible to delete slots right now; should we change that?
-
 err SystemCallError ::= SystemError clone tap { self message := "Error in system call". }.
 err SystemArgError ::= SystemError clone tap { self message := "Wrong number of arguments to system call". }.
 err TypeError ::= SystemError clone tap { self message := "Type error". }.
