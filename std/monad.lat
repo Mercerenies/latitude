@@ -26,16 +26,16 @@ Monad call := {
   $binder= := { dynamic origin '$binder $binder := $1. }.
   $varBomb := { }.
   newVariable := {
-    oldBomb := $1 hold '$varBomb.
+    oldBomb := $1 slot '$varBomb.
     $1 $varBomb := {
       oldBomb.
-      $1 put: parent dynamic $2, parent dynamic $3.
+      $1 slot (parent dynamic $2) = parent dynamic $3.
     }.
   }.
   prepare := {
     $varBomb.
     $1 context := this.
-    $1 put: '<-, {
+    $1 slot '<- = {
       $binder = $1.
       $2.
     }.
@@ -51,7 +51,7 @@ Monad call := {
           newVariable: parent dynamic, $binder, value.
         }.
         $binder := Nil.
-        result := (elem invokeSpecial: (elem hold 'call), #'prepare) call.
+        result := (elem invokeSpecial: (elem slot 'call), #'prepare) call.
         ; It is necessary not to destroy the iterator in case the monad
         ; wishes to branch or perform multiple executions
         iter1 := iter clone tap { self next. }.
@@ -80,7 +80,7 @@ Maybe toString := {
 }.
 Nothing ::= Maybe clone falsify.
 just := {
-  Maybe clone tap { self value := parent dynamic hold '$1. }.
+  Maybe clone tap { self value := parent dynamic slot '$1. }.
 }.
 MaybeMonad ::= Object clone.
 MaybeMonad pure := { just. }.
@@ -100,7 +100,7 @@ Monad inject: MaybeMonad.
 
 IterMonad ::= Object clone.
 IterMonad pure := {
-  util Cell clone tap { self value := parent dynamic hold '$1. }.
+  util Cell clone tap { self value := parent dynamic slot '$1. }.
 }.
 IterMonad fmap := { $2 map. }.
 IterMonad join := { $1 foldl: Nil, '<> toProc. }.

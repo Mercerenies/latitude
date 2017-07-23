@@ -1,28 +1,28 @@
 
 ;; Cloning and metaprogramming basics
 ; The clone function itself is defined in 'latitude.lat'
-Object is := { meta sys instanceOf#: hold 'self, $1. }.
+Object is := { meta sys instanceOf#: slot 'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
-Object slot= := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
-Object hold := { meta sys accessSlot#: self, $1. }.
-Object get := { self invoke (self hold) call. }.
+Object slot= := { meta sys putSlot#: self, $1, (dynamic slot '$2). }.
+;; Object hold := { meta sys accessSlot#: self, $1. }.
+;; Object get := { self invoke (self slot) call. }.
 Object has := {
   {
-    (parent hold 'self) slot: parent dynamic $1.
+    (parent slot 'self) slot: parent dynamic $1.
     True.
   } catch:
     err SlotError,
     { False. }.
 }.
-Object put := { meta sys putSlot#: self, $1, (dynamic hold '$2). }.
+;; Object put := { meta sys putSlot#: self, $1, (dynamic slot '$2). }.
 Object delete := { meta sys remSlot#: self, $1. Nil. }. ; Only deletes slots directly accessible, not parent slots
 Object origin := { meta sys origin#: self, $1. }.
 Object invoke := {
   procd := Proc clone.
   procd call := {
     meta sys invoke#:
-      parent hold 'self,
-      (parent dynamic hold '$1).
+      parent slot 'self,
+      (parent dynamic slot '$1).
   }.
   procd.
 }.
@@ -30,15 +30,15 @@ Object invokeSpecial := {
   procd := Proc clone.
   procd call := {
     meta sys doWithCallback#:
-      parent hold 'self,
-      parent dynamic hold '$1,
-      parent dynamic hold '$2.
+      parent slot 'self,
+      parent dynamic slot '$1,
+      parent dynamic slot '$2.
   }.
   procd.
 }.
 Object above := {
   orgn := self origin: $1.
-  #'orgn parent hold: $1.
+  #'orgn parent slot: $1.
 }.
 Object tap := {
   self invoke #'$1 call.
@@ -106,7 +106,7 @@ Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
 Exception throw := {
   self stack := currentStackTrace parent.
-  self invoke (Object hold 'throw) call.
+  self invoke (Object slot 'throw) call.
 }.
 Method protect := {
   thunk: { }, #'self, #'$1.
@@ -130,8 +130,8 @@ Method == := { (self) == ($1). }. ; Evaluate the method and then try again
 Method < := { (self) < ($1). }. ; Evaluate the method and then try again
 Proc <| := {
   proc {
-    r := (parent dynamic hold '$1) call.
-    (parent hold 'self) call: r.
+    r := (parent dynamic slot '$1) call.
+    (parent slot 'self) call: r.
   }.
 }.
 Proc |> := {
@@ -141,7 +141,7 @@ Symbol toProc := {
   sym := self.
   proc {
     obj := ArgList clone fill shift.
-    (obj invoke (obj hold: sym)) call.
+    (obj invoke (obj slot: sym)) call.
   }.
 }.
 
@@ -191,7 +191,7 @@ Stream open := { meta sys streamFileOpen#: self clone, $1, $2, $3. }.
 Stream closeAfter := {
   stream := self.
   {
-    stream invoke (parent dynamic hold '$1) call.
+    stream invoke (parent dynamic slot '$1) call.
   } protect {
     stream close.
   }.
@@ -206,7 +206,7 @@ Stream dump := {
   this println: #'obj.
   #'obj keys visit {
     p := if (Kernel protected (#'obj, $1)) then "! " else "  ".
-    this putln: p ++ ($1 asText) ++ ": " ++ ((#'obj hold: $1) toString).
+    this putln: p ++ ($1 asText) ++ ": " ++ ((#'obj slot: $1) toString).
   }.
   Nil.
 }.
@@ -247,7 +247,7 @@ Object me := { self. }.
 global do := { $1. }.
 global here := {
   if (self has 'again)
-    then { parent self hold 'again. }
+    then { parent self slot 'again. }
     else { Nil. }.
 }.
 global toString := {
@@ -360,7 +360,7 @@ Symbol assign= := {
   curr := dynamic parent $scopeOf (self).
   rhs := #'$1.
   sym := self asText ++ "=" intern.
-  curr put: sym, { curr put: name, rhs ($1). }.
+  curr slot (sym) = { curr slot (name) = rhs ($1). }.
 }.
 
 ; File headers

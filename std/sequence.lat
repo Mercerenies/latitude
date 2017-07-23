@@ -67,7 +67,7 @@ LazySequence toString := {
 LazySequence list := Nil.
 LazySequence map! := {
   func := {
-    parent dynamic hold '$1 call.
+    parent dynamic slot '$1 call.
   }.
   recurse := {
     curr := $1.
@@ -83,7 +83,7 @@ LazySequence map! := {
 }.
 LazySequence visit := {
   func := {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   recurse := {
     curr := $1.
@@ -99,7 +99,7 @@ LazySequence visit := {
 }.
 LazySequence foldr := {
   func := {
-    (parent dynamic hold '$2) call.
+    (parent dynamic slot '$2) call.
   }.
   init := #'$1.
   recurse := {
@@ -115,7 +115,7 @@ LazySequence foldr := {
 }.
 
 Proc iterate := {
-  procd := proc { (parent hold 'self) call. }.
+  procd := proc { (parent slot 'self) call. }.
   recurse := {
     curr := $1.
     cell := Cons clone.

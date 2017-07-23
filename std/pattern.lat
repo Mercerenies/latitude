@@ -26,7 +26,7 @@ Ellipsis toString := {
 Match ::= Proc clone.
 Match callback := {}.
 Match call := {
-  (self invokeSpecial: #'$1, self hold 'callback) call.
+  (self invokeSpecial: #'$1, self slot 'callback) call.
 }.
 
 NoMatch ::= Match clone falsify.
@@ -62,7 +62,7 @@ Wildcard =~ := {
   takes '[arg].
   if (this named?)
     then {
-      Match clone tap { self callback := { $1 put: this symbol, #'arg. }. }.
+      Match clone tap { self callback := { $1 slot (this symbol) = #'arg. }. }.
     } else {
       Match clone.
     }.
@@ -183,7 +183,7 @@ case := {
                 self do := {
                   finished call:
                     if (#'$1 is (Method))
-                      then { match call (parent dynamic hold '$1). }
+                      then { match call (parent dynamic slot '$1). }
                       else #'$1.
                 }.
               }.

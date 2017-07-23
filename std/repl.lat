@@ -52,7 +52,7 @@ REPL loop := {
       }.
       expr := this read.
       this lastResult := this eval: expr.
-      this print: this hold 'lastResult.
+      this print: this slot 'lastResult.
     } resolve:
       True,
       {

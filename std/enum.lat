@@ -18,7 +18,7 @@ Enumeration of := {
       val := this clone tap {
         self toString := curr asText.
       }.
-      this put: curr, val.
+      this slot (curr) = val.
       val.
     }.
   }.

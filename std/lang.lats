@@ -14,7 +14,7 @@ meta hashParen := {
       do {
         str0 := str substring: 0, index.
         lang has (str0 intern) ifTrue {
-          return: lang hold (str0 intern) call (str substring (index, str size)).
+          return: lang slot (str0 intern) call (str substring (index, str size)).
         }.
         increment.
       }.

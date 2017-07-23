@@ -33,7 +33,7 @@ MersenneConfig f := 1812433253.
 MersenneConfig lowerMask := { 1 bitShift (- (self r)) - 1. }.
 MersenneConfig upperMask := { self lowerMask bitNot. }.
 MersenneConfig clone := {
-  self invoke (Object hold 'clone) call tap {
+  self invoke (Object slot 'clone) call tap {
     self w := self w.
     self n := self n.
     self m := self m.

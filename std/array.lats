@@ -16,10 +16,10 @@ Cons pretty := {
 }.
 Cons carCell := Nil.
 Cons cdrCell := Nil.
-Cons car := { self hold 'carCell. }.
-Cons cdr := { self hold 'cdrCell. }.
-Cons car= := { self put: 'carCell, #'$1. }.
-Cons cdr= := { self put: 'cdrCell, #'$1. }.
+Cons car := { self slot 'carCell. }.
+Cons cdr := { self slot 'cdrCell. }.
+Cons car= := { self carCell := #'$1. }.
+Cons cdr= := { self cdrCell := #'$1. }.
 
 global cons := {
   cc := Cons clone.
@@ -43,12 +43,12 @@ Array empty? := { (self lowerBound) >= (self upperBound). }.
 Array pushFront := {
   value := #'$1.
   self lowerBound := self lowerBound - 1.
-  self put: (self mapping: self lowerBound) ordinal, #'value.
+  self slot ((self mapping: self lowerBound) ordinal) = #'value.
   #'value.
 }.
 Array pushBack := {
   value := #'$1.
-  self put: (self mapping: self upperBound) ordinal, #'value.
+  self slot ((self mapping: self upperBound) ordinal) = #'value.
   self upperBound := self upperBound + 1.
   #'value.
 }.
@@ -57,7 +57,7 @@ Array popFront := {
     then { err BoundsError clone throw. }
     else {
       parent self lowerBound := parent self lowerBound + 1.
-      parent self hold: (parent self mapping: (parent self lowerBound - 1)) ordinal.
+      parent self slot: (parent self mapping: (parent self lowerBound - 1)) ordinal.
     }.
 }.
 Array popBack := {
@@ -65,7 +65,7 @@ Array popBack := {
     then { err BoundsError clone throw. }
     else {
       parent self upperBound := parent self upperBound - 1.
-      parent self hold: (parent self mapping: parent self upperBound) ordinal.
+      parent self slot: (parent self mapping: parent self upperBound) ordinal.
     }.
 }.
 Array nth := {
@@ -74,7 +74,7 @@ Array nth := {
     else { (parent self lowerBound) + (parent dynamic $1). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self hold: (parent self mapping: pos) ordinal. }.
+    else { parent self slot: (parent self mapping: pos) ordinal. }.
 }.
 Array nth= := {
   pos := if ($1 < 0)
@@ -82,7 +82,7 @@ Array nth= := {
     else { (parent self lowerBound) + (parent dynamic $1). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self put: (parent self mapping: pos) ordinal, parent dynamic hold '$2. }.
+    else { parent self slot ((parent self mapping: pos) ordinal) = parent dynamic slot '$2. }.
 }.
 Array size := { (self upperBound) - (self lowerBound). }.
 Array join := {
@@ -118,7 +118,7 @@ Array concat := {
   self visit {
     if ($1 is (Array))
       then { parent dynamic $1 visit { arr pushBack: #'$1. }. }
-      else { arr pushBack: parent dynamic hold '$1. }.
+      else { arr pushBack: parent dynamic slot '$1. }.
   }.
   arr.
 }.
@@ -159,7 +159,7 @@ Array iterator := {
 
 ;; This is a fix for a problem with `map` from `Collection`
 Array clone := {
-  procd := self invoke: (Object hold 'clone).
+  procd := self invoke: (Object slot 'clone).
   procd call tap {
     self lowerBound := self lowerBound.
     self upperBound := self upperBound.
@@ -189,7 +189,7 @@ meta statements := {
       args := $*.
       result := Nil.
       here statements visit {
-        procd := parent self invoke: $1 hold 'call.
+        procd := parent self invoke: $1 slot 'call.
         args dropIn.
         parent result := procd call.
       }.

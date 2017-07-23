@@ -17,7 +17,7 @@ Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray,
                           detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
                           minimum, <>, sum, product, append].
 Collection map! := {
-  func := { (parent dynamic hold '$1) call. }.
+  func := { (parent dynamic slot '$1) call. }.
   iter := self iterator.
   while { iter end? not. }
     do {
@@ -27,7 +27,7 @@ Collection map! := {
   self.
 }.
 Collection visit := {
-  func := { (parent dynamic hold '$1) call. }.
+  func := { (parent dynamic slot '$1) call. }.
   iter := self iterator.
   while { iter end? not. }
     do {
@@ -39,23 +39,23 @@ Collection visit := {
 Collection map := {
   coll := self clone.
   coll map! {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
 }.
 Collection foldl := {
   accum := $1.
   self visit {
-    parent accum := (parent dynamic hold '$2) call: accum, #'$1.
+    parent accum := (parent dynamic slot '$2) call: accum, #'$1.
   }.
   accum.
 }.
 Collection foldr := {
-  func := proc { (parent dynamic hold '$2) call. }.
+  func := proc { (parent dynamic slot '$2) call. }.
   accum := id.
   self visit {
     parent accum := accum <| (proc {
       func call:
-        parent dynamic hold '$1,
+        parent dynamic slot '$1,
         #'$1.
     }).
   }.
@@ -70,7 +70,7 @@ Collection toArray := {
 }.
 Collection all := {
   func := proc {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   callCC {
     return := { parent dynamic $1 call. }.
@@ -82,19 +82,19 @@ Collection all := {
 }.
 Collection any := {
   func := proc {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      (func call: dynamic hold '$1) ifTrue: { return: parent dynamic hold '$1. }.
+      (func call: dynamic slot '$1) ifTrue: { return: parent dynamic slot '$1. }.
     }.
     False.
   }.
 }.
 Collection notAll := {
   func := proc {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   callCC {
     return := { parent dynamic $1 call. }.
@@ -106,7 +106,7 @@ Collection notAll := {
 }.
 Collection notAny := {
   func := proc {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   callCC {
     return := { parent dynamic $1 call. }.
@@ -118,19 +118,19 @@ Collection notAny := {
 }.
 Collection detect := {
   func := proc {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   callCC {
     return := { parent dynamic $1 call. }.
     parent self visit {
-      (func call #'$1) ifTrue: { return: parent dynamic hold '$1. }.
+      (func call #'$1) ifTrue: { return: parent dynamic slot '$1. }.
     }.
     Nil.
   }.
 }.
 Collection countIf := {
   func := proc {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   self foldl: 0, {
     if (func call #'$2)
@@ -139,14 +139,14 @@ Collection countIf := {
   }.
 }.
 Collection count := {
-  self countIf: { (parent dynamic hold '$1) == #'$1. }.
+  self countIf: { (parent dynamic slot '$1) == #'$1. }.
 }.
 Collection find := {
-  self detect: { (parent dynamic hold '$1) == #'$1. }.
+  self detect: { (parent dynamic slot '$1) == #'$1. }.
 }.
 Collection containsIf := {
   func := proc {
-    (parent dynamic hold '$1) call.
+    (parent dynamic slot '$1) call.
   }.
   callCC {
     return := { parent dynamic $1 call. }.
@@ -158,7 +158,7 @@ Collection containsIf := {
   }.
 }.
 Collection contains := {
-  self containsIf { (parent dynamic hold '$1) == #'$1. }.
+  self containsIf { (parent dynamic slot '$1) == #'$1. }.
 }.
 ; Note that `zip` returns an array and will be of the shorter length of the two. It should not be used
 ;  unless at least one of the arguments is finite in length.

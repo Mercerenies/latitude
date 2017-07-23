@@ -64,6 +64,6 @@ format := {
   }.
 }.
 
-meta lang put: '(fmt ), { format. }.
+meta lang slot '(fmt ) = { format. }.
 
 $whereAmI.

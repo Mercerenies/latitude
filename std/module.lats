@@ -8,10 +8,9 @@ Module import := {
   localize. ; TODO Import seems to be not working sometimes (in other modules)
   target := dynamic parent $lexical.
   $1 visit {
-    target put:
-      $1,
+    target slot ($1) =
       {
-        this hold (parent dynamic $1) me.
+        this slot (parent dynamic $1) me.
       }.
   }.
 }.
@@ -25,9 +24,9 @@ Module importAll := {
     ; TODO This fails:
     ; if { this is (target) not. } and { this has (sym). }
     if { { this is (target) not. } and { this has (sym). }. }
-      then { this hold (sym). }
+      then { this slot (sym). }
       else {
-        target invoke (target parent hold 'missing) call: sym.
+        target invoke (target parent slot 'missing) call: sym.
       }.
   }.
   this.
@@ -38,22 +37,20 @@ global Module := Module.
 ;       Ideally, we want to define absolutely no methods (save for `parent` and maybe `clone`)
 ;       on this NTO (non-traditional object).
 global &LoadedModules := Object clone tap {
-  self invoke := self hold 'invoke.
+  self invoke := self slot 'invoke.
   self parent := self.
 }.
-&LoadedModules clone := { self invoke (Object hold 'clone) call. }.
-&LoadedModules put := { self invoke (Object hold 'put) call. }.
-&LoadedModules get := { self invoke (Object hold 'get) call. }.
-&LoadedModules slot := { self invoke (Object hold 'slot) call. }.
-&LoadedModules hold := { self invoke (Object hold 'hold) call. }.
-&LoadedModules has := { self invoke (Object hold 'has) call. }.
-&LoadedModules keys := { self invoke (Object hold 'keys) call. }.
-&LoadedModules missing := { self invoke (Object hold 'missing) call. }.
+&LoadedModules clone := { self invoke (Object slot 'clone) call. }.
+&LoadedModules slot := { self invoke (Object slot 'slot) call. }.
+&LoadedModules slot= := { self invoke (Object slot 'slot=) call. }.
+&LoadedModules has := { self invoke (Object slot 'has) call. }.
+&LoadedModules keys := { self invoke (Object slot 'keys) call. }.
+&LoadedModules missing := { self invoke (Object slot 'missing) call. }.
 &LoadedModules toString := "&LoadedModules".
 
 global ModuleLoader ::= Object clone.
 ModuleLoader &loaded := &LoadedModules.
-ModuleLoader clone := { self invoke (Object hold 'clone) call tap { self &loaded := self &loaded clone. }. }.
+ModuleLoader clone := { self invoke (Object slot 'clone) call tap { self &loaded := self &loaded clone. }. }.
 ModuleLoader resolveImport := {
   takes '[imp]. ; TODO Use an environment variable for extended load path
   if (imp is (String))
@@ -79,15 +76,15 @@ global use := {
   }.
   name := (header packageName) ++ " " ++ (header moduleName) intern.
   if ($moduleLoader &loaded has (name))
-    then { $moduleLoader &loaded get: name. }
+    then { $moduleLoader &loaded invoke ($moduleLoader &loaded slot: name) call. }
     else {
       mod := Module clone tap { self header := header. }.
       do {
         $whereAmI := mod.
         Kernel evalFile: fname, mod.
       }.
-      $moduleLoader &loaded put: name, mod.
-      global put: header moduleName intern, mod.
+      $moduleLoader &loaded slot (name) = mod.
+      global slot (header moduleName intern) = mod.
       mod.
     }.
 }.

@@ -38,7 +38,7 @@ Regexp pattern := { node := Object clone tap { self elem := ReLiteral make "". }
 
 ReMatch ::= pattern Match clone.
 ReMatch groups := Array.
-ReMatch clone := { self invoke (Object hold 'clone) tap { self groups := self groups clone. }. }.
+ReMatch clone := { self invoke (Object slot 'clone) tap { self groups := self groups clone. }. }.
 
 meta lang / := { Regexp pattern: ($1 substring: 0,
                                                 $1 size - 1). }.

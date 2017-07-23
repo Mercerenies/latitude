@@ -14,13 +14,12 @@ Mixin inject := {
   while { iter end? not. }
     do {
       curr := iter element.
-      injector put:
-        curr,
+      injector slot (curr) =
         {
-          procd := self invoke: (mixin hold: curr).
+          procd := self invoke: (mixin slot: curr).
           procd call.
         }.
-        iter next.
+      iter next.
     }.
   injector.
 }.

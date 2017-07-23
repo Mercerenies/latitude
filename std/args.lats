@@ -3,7 +3,7 @@
 global ArgList ::= Object clone.
 ArgList enclosingScope := global.
 ArgList clone := {
-  procd := self invoke: (Object hold 'clone).
+  procd := self invoke: (Object slot 'clone).
   procd call tap {
     self enclosingScope := self enclosingScope clone.
   }.
@@ -20,7 +20,7 @@ ArgList shift := {
   if (self size == 0)
     then { Nil. }
     else {
-      first := parent self enclosingScope hold '$1.
+      first := parent self enclosingScope slot '$1.
       arglist := parent self.
       size := parent self size.
       temp := #'first.
@@ -30,7 +30,7 @@ ArgList shift := {
         if ((index) > (size))
           then { #'first. }
           else {
-            result := arglist enclosingScope hold ((("$") ++ (index)) intern).
+            result := arglist enclosingScope slot ((("$") ++ (index)) intern).
             index = index + 1.
             #'result.
           }.
@@ -64,12 +64,10 @@ ArgList iterator := {
     (self array enclosingScope has: ("$" ++ (self index)) intern) not.
   }.
   ArgIterator element := {
-    self array enclosingScope hold: ("$" ++ (self index)) intern.
+    self array enclosingScope slot (("$" ++ (self index)) intern).
   }.
   ArgIterator element= := {
-    self array enclosingScope put:
-      ("$" ++ (self index)) intern,
-      #'$1.
+    self array enclosingScope slot (("$" ++ (self index)) intern) = #'$1.
   }.
   ArgIterator.
 }.
@@ -77,7 +75,7 @@ ArgList dropIn := {
   target := dynamic parent.
   index := 1.
   self visit {
-    target put: (("$" ++ (index)) intern), #'$1.
+    target slot (("$" ++ (index)) intern) = #'$1.
     parent index := index + 1.
   }.
 }.
@@ -89,7 +87,7 @@ Collection inject: ArgList.
 ; will not rebind lexically until that scope exits.
 global this := { dynamic parent $lexical self. }.
 global localize := {
-  dynamic parent $lexical this := dynamic parent $lexical hold 'self.
+  dynamic parent $lexical this := dynamic parent $lexical slot 'self.
 }.
 
 ; Likewise, the dynamic argument behavior occasonally gets in the way, so this is provided to rebind
@@ -100,7 +98,7 @@ global takes := {
   args := ArgList clone fillWith: dynamic parent.
   target := dynamic parent $lexical.
   $1 clone zip! (args) map! {
-    target put: $1 car, $1 cdr.
+    target slot ($1 car) = $1 cdr.
     $1 car.
   }.
 }.
