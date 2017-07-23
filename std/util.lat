@@ -29,7 +29,7 @@ Latchkey make := {
   key.
 }.
 Lockbox store := { self slot ($1 tag) = $2. }.
-Lockbox fits := { self has: $1 tag. }.
+Lockbox fits := { self slot? ($1 tag). }.
 Lockbox retrieve := {
   if { parent self fits: parent dynamic $1. }
     then { parent self slot: parent dynamic $1 tag. }

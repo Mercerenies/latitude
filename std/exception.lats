@@ -52,5 +52,5 @@ Object missing := {
   err throw.
 }.
 
-;; We would return the script here, but the `has` function requires flow_control.lat
+;; We would return the script here, but the `slot?` function requires flow_control.lat
 1.

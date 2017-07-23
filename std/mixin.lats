@@ -27,7 +27,7 @@ Mixin inject := {
 Object implements := {
   takes '[mxn].
   self hierarchy detect {
-    { parent dynamic $1 has 'mixin. } and { (mxn) === (parent dynamic $1 mixin). }.
+    { parent dynamic $1 slot? 'mixin. } and { (mxn) === (parent dynamic $1 mixin). }.
   } toBool.
 }.
 

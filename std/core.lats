@@ -1,12 +1,11 @@
 
 ;; Cloning and metaprogramming basics
-; The clone function itself is defined in 'latitude.lat'
+;; The clone function itself is defined in 'latitude.lat'
+;; TODO In support of NTOs, let's move a lot of this stuff to `Kernel Slots` or something similar.
 Object is := { meta sys instanceOf#: slot 'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, #'$2. }.
-;; Object hold := { meta sys accessSlot#: self, $1. }.
-;; Object get := { self invoke (self slot) call. }.
-Object has := {
+Object slot? := {
   {
     (parent slot 'self) slot: parent dynamic $1.
     True.
@@ -14,8 +13,6 @@ Object has := {
     err SlotError,
     { False. }.
 }.
-;; Object put := { meta sys putSlot#: self, $1, (dynamic slot '$2). }.
-;; Object delete := { meta sys remSlot#: self, $1. Nil. }. ; Only deletes slots directly accessible, not parent slots
 Object origin := { meta sys origin#: self, $1. }.
 Object invoke := {
   procd := Proc clone.
@@ -246,7 +243,7 @@ global $scopeOf := {
 Object me := { self. }.
 global do := { $1. }.
 global here := {
-  if (self has 'again)
+  if (self slot? 'again)
     then { parent self slot 'again. }
     else { Nil. }.
 }.
@@ -323,6 +320,14 @@ Kernel Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
 Kernel Slots get := { #'$1 invoke (self hold) call. }.
 Kernel Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
 Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
+Kernel Slots has := {
+  {
+    (parent slot 'self) slot: parent dynamic $1.
+    True.
+  } catch:
+    err SlotError,
+    { False. }.
+}.
 
 ;; FilePath functions
 global FilePath := Object clone.
@@ -393,5 +398,5 @@ StackFrame dump := {
 global currentStackTrace := { meta sys stackTrace# parent. }.
 global printStackTrace := { self stack parent dump. }.
 
-;; We would return the script here, but the `has` function requires flow_control.lat
+;; We would return the script here, but the `slot?` function requires flow_control.lat
 1.

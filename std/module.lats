@@ -22,8 +22,8 @@ Module importAll := {
   target missing := {
     takes '[sym].
     ; TODO This fails:
-    ; if { this is (target) not. } and { this has (sym). }
-    if { { this is (target) not. } and { this has (sym). }. }
+    ; if { this is (target) not. } and { this slot? (sym). }
+    if { { this is (target) not. } and { this slot? (sym). }. }
       then { this slot (sym). }
       else {
         target invoke (target parent slot 'missing) call: sym.
@@ -43,7 +43,7 @@ global &LoadedModules := Object clone tap {
 &LoadedModules clone := { self invoke (Object slot 'clone) call. }.
 &LoadedModules slot := { self invoke (Object slot 'slot) call. }.
 &LoadedModules slot= := { self invoke (Object slot 'slot=) call. }.
-&LoadedModules has := { self invoke (Object slot 'has) call. }.
+&LoadedModules slot? := { self invoke (Object slot 'slot?) call. }.
 &LoadedModules keys := { self invoke (Object slot 'keys) call. }.
 &LoadedModules missing := { self invoke (Object slot 'missing) call. }.
 &LoadedModules toString := "&LoadedModules".
@@ -75,7 +75,7 @@ global use := {
     err ModuleError clone tap { self message := "Module has no package". } throw.
   }.
   name := (header packageName) ++ " " ++ (header moduleName) intern.
-  if ($moduleLoader &loaded has (name))
+  if ($moduleLoader &loaded slot? (name))
     then { $moduleLoader &loaded invoke ($moduleLoader &loaded slot: name) call. }
     else {
       mod := Module clone tap { self header := header. }.

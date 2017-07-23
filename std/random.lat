@@ -101,9 +101,9 @@ MersenneTwister twist := {
 }.
 MersenneTwister next := { self extract. }.
 
-;; By default, the random generator will just produce 0, for it has not been seeded. Dynamically rebinding
-;; the $random variable to a random-ish object (such as a MersenneTwister instance) will cause the random-
-;; producing functions to produce useful values.
+;; By default, the random generator will just produce 0, for it has not been seeded. Dynamically
+;; rebinding the $random variable to a random-ish object (such as a MersenneTwister instance) will
+;; cause the random-producing functions to produce useful values.
 global $random := Object clone :: '#<ConstantRandom> tap { self next := { 0. }. }.
 
 nextInt := { $random next. }.

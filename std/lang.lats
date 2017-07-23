@@ -13,7 +13,7 @@ meta hashParen := {
     while { (index) <= (str size). }
       do {
         str0 := str substring: 0, index.
-        lang has (str0 intern) ifTrue {
+        lang slot? (str0 intern) ifTrue {
           return: lang slot (str0 intern) call (str substring (index, str size)).
         }.
         increment.

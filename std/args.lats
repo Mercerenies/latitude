@@ -61,7 +61,7 @@ ArgList iterator := {
   ArgIterator index := 1.
   ArgIterator next := { self index := self index + 1. }.
   ArgIterator end? := {
-    (self array enclosingScope has: ("$" ++ (self index)) intern) not.
+    (self array enclosingScope slot? (("$" ++ (self index)) intern)) not.
   }.
   ArgIterator element := {
     self array enclosingScope slot (("$" ++ (self index)) intern).
