@@ -86,7 +86,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         PROT_VAR = 37,
         PROT_IS = 38,
         STR_NEXT = 39,
-        COMPLEX = 40;
+        COMPLEX = 40,
+        PRIM_METHOD = 41;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -2169,6 +2170,20 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                    makeAssemblerLine(Instr::DEL),
                                    makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET))));
+
+     // PRIM_METHOD (takes %slf and puts whether or not it has a method prim in %flag)
+     // primIsMethod#: obj.
+     reader.cpp[PRIM_METHOD] = [](IntState& state0) {
+         state0.flag = variantIsType<Method>(state0.slf->prim());
+     };
+     sys->put(Symbols::get()["primIsMethod#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                   makeAssemblerLine(Instr::CPP, PRIM_METHOD),
+                                   makeAssemblerLine(Instr::BOL))));
 
 }
 

@@ -42,7 +42,7 @@ Object tap := {
   self.
 }.
 Object hierarchy := {
-  arr := Array clone. ; DO NOT call this on Method or any self-evaluating objects
+  arr := Array clone. ; DO NOT call this on Method or any self-evaluating objects (TODO Fix this)
   curr := self.
   while {
     arr detect { ($1) === (curr). } not.
@@ -281,6 +281,7 @@ Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
 Kernel protect := { meta sys protectVar#: #'$1, $2. }.
 Kernel protected := { meta sys protectIs#: #'$1, $2. }.
+Kernel selfEvaluating? := { meta sys primIsMethod#: #'$1. }.
 
 ;; GC functions
 Kernel GC := Object clone.
