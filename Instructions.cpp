@@ -5,6 +5,9 @@
 
 using namespace std;
 
+Instruction::Instruction(Instr i, const std::vector<RegisterArg> v)
+    : instr(i), args(v) {}
+
 InstructionSet InstructionSet::iset;
 
 InstructionSet& InstructionSet::getInstance() {
@@ -122,7 +125,7 @@ string AssemblerError::getMessage() {
 }
 
 struct AppendVisitor {
-    InstrSeq* instructions;
+    SerialInstrSeq* instructions;
 
     void operator()(const Reg& reg) {
         instructions->push_back((unsigned char)reg);
@@ -159,12 +162,12 @@ struct AppendVisitor {
 
 };
 
-void appendRegisterArg(const RegisterArg& arg, InstrSeq& seq) {
+void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq) {
     AppendVisitor visitor { &seq };
     boost::apply_visitor(visitor, arg);
 }
 
-void appendInstruction(const Instr& instr, InstrSeq& seq) {
+void appendInstruction(const Instr& instr, SerialInstrSeq& seq) {
     seq.push_back((unsigned char)instr);
 }
 
@@ -194,6 +197,12 @@ void AssemblerLine::validate() {
 }
 
 void AssemblerLine::appendOnto(InstrSeq& seq) const {
+    seq.emplace_back(command, args);
+}
+
+// We may rename this function to overload with the above function in the future.
+// Just using a different name now to avoid implicit casts messing us up.
+void AssemblerLine::appendOntoSerial(SerialInstrSeq& seq) const {
     appendInstruction(command, seq);
     for (auto& arg : args)
         appendRegisterArg(arg, seq);
@@ -252,7 +261,9 @@ FunctionIndex Method::index() {
     return ind;
 }
 
-InstrSeek::InstrSeek() : pos(0L), _size_set(false), _size(0L) {}
+// -1L will become the maximum unsigned long value
+// TODO I can't believe I'm considering this corner case, but what if the number of instructions is exactly equal to std::numeric_limits<unsigned long>::max()
+InstrSeek::InstrSeek() : pos(-1L), _size_set(false), _size(0L) {}
 
 unsigned long InstrSeek::position() {
     return pos;
@@ -278,53 +289,24 @@ bool InstrSeek::atEnd() {
     return size() == position();
 }
 
-unsigned char InstrSeek::popChar() {
-    if (atEnd())
-        return 0;
-    unsigned char val = instructions()[position()];
-    advancePosition(1);
-    return val;
+long InstrSeek::readLong(int n) {
+    return boost::get<long>(instructions()[position()].args[n]);
 }
 
-long InstrSeek::popLong() {
-    int sign = 1;
-    if (popChar() > 0)
-        sign *= -1;
-    long value = 0;
-    long pow = 1;
-    for (int i = 0; i < 4; i++) {
-        value += pow * (long)popChar();
-        pow <<= 8;
-    }
-    return sign * value;
+string InstrSeek::readString(int n) {
+    return boost::get<string>(instructions()[position()].args[n]);
 }
 
-string InstrSeek::popString() {
-    string str;
-    unsigned char ch;
-    while ((ch = popChar()) != 0)
-        str += ch;
-    return str;
+Reg InstrSeek::readReg(int n) {
+    return boost::get<Reg>(instructions()[position()].args[n]);
 }
 
-Reg InstrSeek::popReg() {
-    unsigned char ch = popChar();
-    return (Reg)ch;
+Instr InstrSeek::readInstr() {
+    return instructions()[position()].instr;
 }
 
-Instr InstrSeek::popInstr() {
-    unsigned char ch = popChar();
-    return (Instr)ch;
-}
-
-FunctionIndex InstrSeek::popFunction() {
-    int value = 0;
-    int pow = 1;
-    for (int i = 0; i < 4; i++) {
-        value += pow * (long)popChar();
-        pow <<= 8;
-    }
-    return { value };
+FunctionIndex InstrSeek::readFunction(int n) {
+    return boost::get<FunctionIndex>(instructions()[position()].args[n]);
 }
 
 CodeSeek::CodeSeek()
@@ -382,53 +364,24 @@ void SeekHolder::advancePosition(unsigned long arg) {
     internal->advancePosition(arg);
 }
 
-unsigned char SeekHolder::popChar() {
-    if (atEnd())
-        return 0;
-    unsigned char val = instructions()[position()];
-    advancePosition(1);
-    return val;
+long SeekHolder::readLong(int n) {
+    return boost::get<long>(instructions()[position()].args[n]);
 }
 
-long SeekHolder::popLong() {
-    int sign = 1;
-    if (popChar() > 0)
-        sign *= -1;
-    long value = 0;
-    long pow = 1;
-    for (int i = 0; i < 4; i++) {
-        value += pow * (long)popChar();
-        pow <<= 8;
-    }
-    return sign * value;
+string SeekHolder::readString(int n) {
+    return boost::get<string>(instructions()[position()].args[n]);
 }
 
-std::string SeekHolder::popString() {
-    string str;
-    unsigned char ch;
-    while ((ch = popChar()) != 0)
-        str += ch;
-    return str;
+Reg SeekHolder::readReg(int n) {
+    return boost::get<Reg>(instructions()[position()].args[n]);
 }
 
-Reg SeekHolder::popReg() {
-    unsigned char ch = popChar();
-    return (Reg)ch;
+Instr SeekHolder::readInstr() {
+    return instructions()[position()].instr;
 }
 
-Instr SeekHolder::popInstr() {
-    unsigned char ch = popChar();
-    return (Instr)ch;
-}
-
-FunctionIndex SeekHolder::popFunction() {
-    int value = 0;
-    int pow = 1;
-    for (int i = 0; i < 4; i++) {
-        value += pow * (long)popChar();
-        pow <<= 8;
-    }
-    return { value };
+FunctionIndex SeekHolder::readFunction(int n) {
+    return boost::get<FunctionIndex>(instructions()[position()].args[n]);
 }
 
 bool SeekHolder::atEnd() {
