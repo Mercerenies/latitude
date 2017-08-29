@@ -1,5 +1,5 @@
-#ifndef _BYTECODE_HPP_
-#define _BYTECODE_HPP_
+#ifndef BYTECODE_HPP
+#define BYTECODE_HPP
 
 #include <map>
 #include <vector>
@@ -84,4 +84,4 @@ void doOneStep(IntState& state, const ReadOnlyState& reader);
 
 bool isIdling(IntState& state);
 
-#endif // _BYTECODE_HPP_
+#endif // BYTECODE_HPP

@@ -1,5 +1,5 @@
-#ifndef _PLATFORM_HPP_
-#define _PLATFORM_HPP_
+#ifndef PLATFORM_HPP
+#define PLATFORM_HPP
 
 /*
  * This is where things start to get a bit messy. Ideally, we'd like to make this as similar
@@ -15,4 +15,4 @@
 #  define USE_NULL
 #endif
 
-#endif
+#endif // PLATFORM_HPP

@@ -1,5 +1,5 @@
-#ifndef _PROTO_HPP_
-#define _PROTO_HPP_
+#ifndef PROTO_HPP
+#define PROTO_HPP
 
 #include "Process.hpp"
 #include "Stream.hpp"
@@ -124,4 +124,4 @@ std::list<ObjectPtr> hierarchy(ObjectPtr obj);
  */
 void hereIAm(ObjectPtr dyn, ObjectPtr here);
 
-#endif // _PROTO_HPP_
+#endif // PROTO_HPP

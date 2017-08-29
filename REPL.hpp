@@ -1,9 +1,9 @@
-#ifndef _REPL_HPP_
-#define _REPL_HPP_
+#ifndef REPL_HPP
+#define REPL_HPP
 
 #include "Proto.hpp"
 #include "Bytecode.hpp"
 
 void runREPL(ObjectPtr global, IntState& state, ReadOnlyState& reader);
 
-#endif // _REPL_HPP_
+#endif // REPL_HPP

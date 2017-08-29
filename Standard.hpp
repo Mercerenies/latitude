@@ -1,5 +1,5 @@
-#ifndef _STANDARD_HPP_
-#define _STANDARD_HPP_
+#ifndef STANDARD_HPP
+#define STANDARD_HPP
 
 #include <string>
 #include "Proto.hpp"
@@ -10,4 +10,4 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader);
 void throwError(IntState& state, std::string name, std::string msg);
 void throwError(IntState& state, std::string name);
 
-#endif // _STANDARD_HPP_
+#endif // STANDARD_HPP

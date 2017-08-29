@@ -1,5 +1,5 @@
-#ifndef _STACK_HPP_
-#define _STACK_HPP_
+#ifndef STACK_HPP
+#define STACK_HPP
 
 template <typename T>
 class StackNode;
@@ -49,4 +49,4 @@ NodePtr<T> popNode(NodePtr<T> node) {
     return node->next;
 }
 
-#endif // _STACK_HPP_
+#endif // STACK_HPP

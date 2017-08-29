@@ -1,5 +1,5 @@
-#ifndef _MACRO_HPP_
-#define _MACRO_HPP_
+#ifndef MACRO_HPP
+#define MACRO_HPP
 
 #include <list>
 #include <tuple>
@@ -69,4 +69,4 @@ bool variantIsType(const boost::variant<Ss...>& variant) {
     return boost::apply_visitor(_VariantVisitor<T>(), variant);
 }
 
-#endif // _MACRO_HPP_
+#endif // MACRO_HPP

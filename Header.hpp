@@ -1,5 +1,5 @@
-#ifndef _HEADER_HPP_
-#define _HEADER_HPP_
+#ifndef HEADER_HPP
+#define HEADER_HPP
 
 #include <string>
 
@@ -13,4 +13,4 @@ struct Header {
 
 Header getFileHeader(std::string filename);
 
-#endif // _HEADER_HPP_
+#endif // HEADER_HPP

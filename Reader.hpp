@@ -1,5 +1,5 @@
-#ifndef _READER_HPP_
-#define _READER_HPP_
+#ifndef READER_HPP
+#define READER_HPP
 extern "C" {
 #include "Parser.tab.h"
 }
@@ -267,4 +267,4 @@ public:
     virtual void propogateFileName(std::string name);
 };
 
-#endif // _READER_HPP_
+#endif // READER_HPP

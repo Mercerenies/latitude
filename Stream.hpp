@@ -1,5 +1,5 @@
-#ifndef _STREAM_HPP_
-#define _STREAM_HPP_
+#ifndef STREAM_HPP
+#define STREAM_HPP
 
 #include <iostream>
 #include <sstream>
@@ -101,4 +101,4 @@ StreamPtr outStream();
 StreamPtr inStream();
 StreamPtr errStream();
 
-#endif // _STREAM_HPP_
+#endif // STREAM_HPP

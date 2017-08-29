@@ -1,5 +1,5 @@
-#ifndef _NUMBER_HPP_
-#define _NUMBER_HPP_
+#ifndef NUMBER_HPP
+#define NUMBER_HPP
 
 #include <ios>
 #include <string>
@@ -75,4 +75,4 @@ boost::optional<Number> constantInf();
 boost::optional<Number> constantNegInf();
 Number constantEps();
 
-#endif // _NUMBER_HPP_
+#endif // NUMBER_HPP

@@ -1,5 +1,5 @@
-#ifndef _INSTRUCTIONS_HPP_
-#define _INSTRUCTIONS_HPP_
+#ifndef INSTRUCTIONS_HPP
+#define INSTRUCTIONS_HPP
 #include <deque>
 #include <vector>
 #include <map>
@@ -216,4 +216,4 @@ SeekHolder& SeekHolder::operator=(const T& other) {
     return *this;
 }
 
-#endif
+#endif // INSTRUCTIONS_HPP

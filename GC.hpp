@@ -1,5 +1,5 @@
-#ifndef _GC_HPP_
-#define _GC_HPP_
+#ifndef GC_HPP
+#define GC_HPP
 
 #include "Bytecode.hpp"
 #include "Proto.hpp"
@@ -45,4 +45,4 @@ long GC::garbageCollect(InputIterator begin, InputIterator end) {
     return GC::garbageCollect(globals);
 }
 
-#endif // _GC_HPP_
+#endif // GC_HPP

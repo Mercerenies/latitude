@@ -1,5 +1,5 @@
-#ifndef _ENVIRONMENT_HPP_
-#define _ENVIRONMENT_HPP_
+#ifndef ENVIRONMENT_HPP
+#define ENVIRONMENT_HPP
 
 #include <string>
 #include <boost/optional.hpp>
@@ -10,4 +10,4 @@ bool setEnv(std::string name, std::string value); // Returns whether supported
 
 bool unsetEnv(std::string name); // Returns whether supported
 
-#endif
+#endif // ENVIRONMENT_HPP

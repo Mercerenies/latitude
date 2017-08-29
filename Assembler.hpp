@@ -1,5 +1,5 @@
-#ifndef _ASSEMBLER_HPP_
-#define _ASSEMBLER_HPP_
+#ifndef ASSEMBLER_HPP
+#define ASSEMBLER_HPP
 #include "Instructions.hpp"
 #include <type_traits>
 #include <tuple>
@@ -218,4 +218,4 @@ InstrSeq asmCode(Ts... args) {
     return seq;
 }
 
-#endif
+#endif // ASSEMBLER_HPP

@@ -1,5 +1,5 @@
-#ifndef _PATHNAME_HPP_
-#define _PATHNAME_HPP_
+#ifndef PATHNAME_HPP
+#define PATHNAME_HPP
 
 #include <string>
 
@@ -9,4 +9,4 @@ std::string stripFilename(std::string path);
 
 std::string stripDirname(std::string path);
 
-#endif
+#endif // PATHNAME_HPP

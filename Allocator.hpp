@@ -1,5 +1,5 @@
-#ifndef _ALLOCATOR_HPP_
-#define _ALLOCATOR_HPP_
+#ifndef ALLOCATOR_HPP
+#define ALLOCATOR_HPP
 
 #include <vector>
 #include "Proto.hpp"
@@ -45,4 +45,4 @@ public:
     void DEBUG();
 };
 
-#endif // _ALLOCATOR_HPP_
+#endif // ALLOCATOR_HPP

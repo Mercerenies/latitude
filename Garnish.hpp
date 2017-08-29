@@ -1,5 +1,5 @@
-#ifndef _GARNISH_HPP_
-#define _GARNISH_HPP_
+#ifndef GARNISH_HPP
+#define GARNISH_HPP
 
 #include <string>
 #include <boost/blank.hpp>
@@ -20,4 +20,4 @@ void garnishBegin(IntState& state, T value) {
     state.cont = CodeSeek(std::move(seq));
 }
 
-#endif // _GARNISH_HPP_
+#endif // GARNISH_HPP

@@ -1,5 +1,5 @@
-#ifndef _SYMBOL_HPP_
-#define _SYMBOL_HPP_
+#ifndef SYMBOL_HPP
+#define SYMBOL_HPP
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
@@ -69,4 +69,4 @@ namespace std {
     };
 }
 
-#endif
+#endif // SYMBOL_HPP

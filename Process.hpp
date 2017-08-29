@@ -1,5 +1,5 @@
-#ifndef _PROCESS_HPP_
-#define _PROCESS_HPP_
+#ifndef PROCESS_HPP
+#define PROCESS_HPP
 
 #include "Stream.hpp"
 #include <string>
@@ -27,4 +27,4 @@ using ProcessPtr = std::shared_ptr<Process>;
 
 ProcessPtr makeProcess(std::string);
 
-#endif // _PROCESS_HPP_
+#endif // PROCESS_HPP
