@@ -1,7 +1,7 @@
 
 ifndef BOOST
-  BOOST='D:/boost/boost_1_60_0'
-  #BOOST="/root/Downloads/boost_1_60_0"
+  #BOOST='D:/boost/boost_1_60_0'
+  BOOST=$(shell readlink -f ~/D/Downloads/boost_1_64_0)
 endif
 
 CCFLAGS=-c -Wall
