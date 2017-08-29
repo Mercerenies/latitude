@@ -71,12 +71,12 @@ void hardKill(IntState&);
 
 void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
 
-unsigned char popChar(InstrSeq& state);
-long popLong(InstrSeq& state);
-std::string popString(InstrSeq& state);
-Reg popReg(InstrSeq& state);
-Instr popInstr(InstrSeq& state);
-FunctionIndex popFunction(InstrSeq& state);
+unsigned char popChar(SerialInstrSeq& state);
+long popLong(SerialInstrSeq& state);
+std::string popString(SerialInstrSeq& state);
+Reg popReg(SerialInstrSeq& state);
+Instr popInstr(SerialInstrSeq& state);
+FunctionIndex popFunction(SerialInstrSeq& state);
 
 void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader);
 

@@ -43,8 +43,20 @@ struct FunctionIndex {
     int index;
 };
 
-using InstrSeq = std::deque<unsigned char>;
+struct Instruction;
+
+using SerialInstrSeq = std::deque<unsigned char>;
+using InstrSeq = std::deque<Instruction>;
 using RegisterArg = boost::variant<Reg, long, std::string, FunctionIndex>;
+
+
+struct Instruction {
+    Instr instr;
+    std::vector<RegisterArg> args;
+
+    Instruction(Instr, const std::vector<RegisterArg>);
+
+};
 
 class InstructionSet {
 public:
@@ -78,9 +90,11 @@ public:
     std::string getMessage();
 };
 
-void appendRegisterArg(const RegisterArg& arg, InstrSeq& seq);
-void appendInstruction(const Instr& instr, InstrSeq& seq);
+void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq);
+void appendInstruction(const Instr& instr, SerialInstrSeq& seq);
 
+// TODO When we're done, it's possible that this class could end up serving the purpose of the
+// Instruction struct as well.
 class AssemblerLine {
 private:
     Instr command;
@@ -91,6 +105,7 @@ public:
     void addRegisterArg(const RegisterArg&);
     void validate(); // Throws if invalid
     void appendOnto(InstrSeq&) const;
+    void appendOntoSerial(SerialInstrSeq&) const;
 };
 
 class TranslationUnit {
@@ -136,12 +151,11 @@ public:
     void advancePosition(unsigned long);
     unsigned long size();
     bool atEnd();
-    unsigned char popChar();
-    long popLong();
-    std::string popString();
-    Reg popReg();
-    Instr popInstr();
-    FunctionIndex popFunction();
+    long readLong(int n);
+    std::string readString(int n);
+    Reg readReg(int n);
+    Instr readInstr();
+    FunctionIndex readFunction(int n);
 };
 
 class CodeSeek : public InstrSeek {
@@ -181,12 +195,11 @@ public:
     InstrSeq& instructions();
     unsigned long position();
     void advancePosition(unsigned long);
-    unsigned char popChar();
-    long popLong();
-    std::string popString();
-    Reg popReg();
-    Instr popInstr();
-    FunctionIndex popFunction();
+    long readLong(int n);
+    std::string readString(int n);
+    Reg readReg(int n);
+    Instr readInstr();
+    FunctionIndex readFunction(int n);
     bool atEnd();
     void killSelf();
 };

@@ -84,7 +84,7 @@ void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> n
     }
 }
 
-unsigned char popChar(InstrSeq& state) {
+unsigned char popChar(SerialInstrSeq& state) {
     if (state.empty())
         return 0;
     char val = state.front();
@@ -92,7 +92,7 @@ unsigned char popChar(InstrSeq& state) {
     return val;
 }
 
-long popLong(InstrSeq& state) {
+long popLong(SerialInstrSeq& state) {
     int sign = 1;
     if (popChar(state) > 0)
         sign *= -1;
@@ -105,7 +105,7 @@ long popLong(InstrSeq& state) {
     return sign * value;
 }
 
-string popString(InstrSeq& state) {
+string popString(SerialInstrSeq& state) {
     string str;
     unsigned char ch;
     while ((ch = popChar(state)) != 0)
@@ -113,17 +113,17 @@ string popString(InstrSeq& state) {
     return str;
 }
 
-Reg popReg(InstrSeq& state) {
+Reg popReg(SerialInstrSeq& state) {
     unsigned char ch = popChar(state);
     return (Reg)ch;
 }
 
-Instr popInstr(InstrSeq& state) {
+Instr popInstr(SerialInstrSeq& state) {
     unsigned char ch = popChar(state);
     return (Instr)ch;
 }
 
-FunctionIndex popFunction(InstrSeq& state) {
+FunctionIndex popFunction(SerialInstrSeq& state) {
     int value = 0;
     int pow = 1;
     for (int i = 0; i < 4; i++) {
@@ -136,8 +136,8 @@ FunctionIndex popFunction(InstrSeq& state) {
 void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     switch (instr) {
     case Instr::MOV: {
-        Reg src = state.cont.popReg();
-        Reg dest = state.cont.popReg();
+        Reg src = state.cont.readReg(0);
+        Reg dest = state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "MOV " << (long)src << " " << (long)dest << endl;
 #endif
@@ -174,8 +174,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::PUSH: {
-        Reg src = state.cont.popReg();
-        Reg stack = state.cont.popReg();
+        Reg src = state.cont.readReg(0);
+        Reg stack = state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "PUSH " << (long)src << " " << (long)stack << endl;
 #endif
@@ -219,8 +219,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         break;
     case Instr::POP: {
         stack<ObjectPtr>* stack;
-        Reg dest = state.cont.popReg();
-        Reg reg = state.cont.popReg();
+        Reg dest = state.cont.readReg(0);
+        Reg reg = state.cont.readReg(1);
         ObjectPtr mid = nullptr;
 #if DEBUG_INSTR > 0
         cout << "POP " << (long)reg << endl;
@@ -274,7 +274,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "GETL" << endl;
         cout << "* " << state.lex.top() << endl;
 #endif
-        Reg dest = state.cont.popReg();
+        Reg dest = state.cont.readReg(0);
         if (state.lex.empty()) {
             state.err0 = true;
         } else {
@@ -302,7 +302,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "* " << state.dyn.top() << endl;
 #endif
 #endif
-        Reg dest = state.cont.popReg();
+        Reg dest = state.cont.readReg(0);
         if (state.dyn.empty()) {
             state.err0 = true;
         } else {
@@ -345,7 +345,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::SYM: {
-        string str = state.cont.popString();
+        string str = state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "SYM \"" << str << "\"" << endl;
 #endif
@@ -353,7 +353,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::NUM: {
-        string str = state.cont.popString();
+        string str = state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "NUM \"" << str << "\"" << endl;
 #endif
@@ -361,7 +361,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::INT: {
-        long val = state.cont.popLong();
+        long val = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "INT " << val << endl;
 #endif
@@ -369,7 +369,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::FLOAT: {
-        string str = state.cont.popString();
+        string str = state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "FLOAT \"" << str << "\"" << endl;
 #endif
@@ -385,7 +385,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::CALL: {
-        long args = state.cont.popLong();
+        long args = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #if DEBUG_INSTR > 1
@@ -488,7 +488,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::XCALL0: {
-        long args = state.cont.popLong();
+        long args = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "XCALL0 " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
@@ -713,7 +713,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::STR: {
-        string str = state.cont.popString();
+        string str = state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "STR \"" << str << "\"" << endl;
 #endif
@@ -728,7 +728,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::EXPD: {
-        Reg expd = state.cont.popReg();
+        Reg expd = state.cont.readReg(0);
 #if DEBUG_INSTR > 0
         cout << "EXPD " << (long)expd << endl;
 #endif
@@ -815,12 +815,12 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "MTHD ..." << endl;
 #endif
-        FunctionIndex index = state.cont.popFunction();
+        FunctionIndex index = state.cont.readFunction(0);
         state.mthd = Method(state.trns.top(), index);
     }
         break;
     case Instr::LOAD: {
-        Reg ld = state.cont.popReg();
+        Reg ld = state.cont.readReg(0);
 #if DEBUG_INSTR > 0
         cout << "LOAD " << (long)ld << endl;
 #endif
@@ -893,8 +893,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         break;
     case Instr::PEEK: {
         stack<ObjectPtr>* stack;
-        Reg dest = state.cont.popReg();
-        Reg reg = state.cont.popReg();
+        Reg dest = state.cont.readReg(0);
+        Reg reg = state.cont.readReg(1);
         ObjectPtr mid = nullptr;
 #if DEBUG_INSTR > 0
         cout << "PEEK " << (long)reg << endl;
@@ -943,7 +943,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::SYMN: {
-        long val = state.cont.popLong();
+        long val = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "SYMN " << val << endl;
 #endif
@@ -951,7 +951,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::CPP: {
-        long val = state.cont.popLong();
+        long val = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "CPP " << val << endl;
 #endif
@@ -1132,7 +1132,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::ARITH: {
-        long val = state.cont.popLong();
+        long val = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "ARITH " << val << endl;
 #endif
@@ -1171,7 +1171,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::THROA: {
-        string msg = state.cont.popString();
+        string msg = state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
@@ -1180,7 +1180,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::LOCFN: {
-        string msg = state.cont.popString();
+        string msg = state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "LOCFN \"" << msg << "\"" << endl;
 #endif
@@ -1188,7 +1188,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::LOCLN: {
-        long num = state.cont.popLong();
+        long num = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "LOCLN " << num << endl;
 #endif
@@ -1256,8 +1256,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::CMPLX: {
-        string str0 = state.cont.popString();
-        string str1 = state.cont.popString();
+        string str0 = state.cont.readString(0);
+        string str1 = state.cont.readString(1);
 #if DEBUG_INSTR > 0
         cout << "CMPLX" << endl;
 #endif
@@ -1267,8 +1267,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::YLD: {
-        long val = state.cont.popLong();
-        Reg reg = state.cont.popReg();
+        long val = state.cont.readLong(0);
+        Reg reg = state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "YLD " << val << " " << (long)reg << endl;
 #endif
@@ -1294,8 +1294,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
         break;
     case Instr::YLDC: {
-        long val = state.cont.popLong();
-        Reg reg = state.cont.popReg();
+        long val = state.cont.readLong(0);
+        Reg reg = state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "YLDC " << val << " " << (long)reg << endl;
 #endif
@@ -1336,6 +1336,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 }
 
 void doOneStep(IntState& state, const ReadOnlyState& reader) {
+    state.cont.advancePosition(1);
     if (state.cont.atEnd()) {
         // Pop off the stack
 #if DEBUG_INSTR > 0
@@ -1348,7 +1349,7 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
         }
     } else {
         // Run one command
-        Instr instr = state.cont.popInstr();
+        Instr instr = state.cont.readInstr();
 #if DEBUG_INSTR > 0
         cout << (long)instr << endl;
 #endif
