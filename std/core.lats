@@ -202,7 +202,7 @@ Stream dump := {
   obj := #'$1.
   this println: #'obj.
   #'obj keys visit {
-    p := if (Kernel protected (#'obj, $1)) then "! " else "  ".
+    p := if (Kernel protected? (#'obj, $1)) then "! " else "  ".
     this putln: p ++ ($1 asText) ++ ": " ++ ((#'obj slot: $1) toString).
   }.
   Nil.
@@ -280,7 +280,7 @@ Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
 Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
 Kernel protect := { meta sys protectVar#: #'$1, $2. }.
-Kernel protected := { meta sys protectIs#: #'$1, $2. }.
+Kernel protected? := { meta sys protectIs#: #'$1, $2. }.
 Kernel selfEvaluating? := { meta sys primIsMethod#: #'$1. }.
 
 ;; GC functions
