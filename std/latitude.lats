@@ -1,7 +1,7 @@
 
-Object clone := { meta sys doClone#: self. }.
-Kernel load := { meta sys kernelLoad#: $1, global clone. }.
-Kernel loadRaw := { meta sys kernelLoad0#: $1, global clone. }.
+Kernel cloneObject := { meta sys doClone#: #'$1. }.
+Kernel load := { meta sys kernelLoad#: $1, Kernel cloneObject (global). }.
+Kernel loadRaw := { meta sys kernelLoad0#: $1, Kernel cloneObject (global). }.
 
 Kernel loadRaw: "std/core.lats".
 Kernel loadRaw: "std/exception.lats".

@@ -1,6 +1,6 @@
 
 ;; Cloning and metaprogramming basics
-;; The clone function itself is defined in 'latitude.lat'
+Object clone := { Kernel cloneObject: #'self. }.
 Object is := { meta sys instanceOf#: #'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, #'$2. }.

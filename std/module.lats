@@ -35,18 +35,14 @@ global Module := Module.
 
 ; TODO Can a self-evaluating object be a parent of something else? If so, what does its hierarchy look like?
 
-; ///// Do some more work on non-traditional objects for convenience (and definedness)
-;       Ideally, we want to define absolutely no methods (save for `parent` and maybe `clone`)
-;       on this NTO (non-traditional object).
 global &LoadedModules := Object clone tap {
   self parent := self.
+  self toString := "&LoadedModules".
 }.
-&LoadedModules clone := { Kernel invokeOn (self, Object slot 'clone) call. }.
-&LoadedModules toString := "&LoadedModules".
 
 global ModuleLoader ::= Object clone.
 ModuleLoader &loaded := &LoadedModules.
-ModuleLoader clone := { self invoke (Object slot 'clone) call tap { self &loaded := self &loaded clone. }. }.
+ModuleLoader clone := { self invoke (Object slot 'clone) call tap { self &loaded := Kernel cloneObject: self &loaded. }. }.
 ModuleLoader resolveImport := {
   takes '[imp]. ; TODO Use an environment variable for extended load path
   if (imp is (String))
