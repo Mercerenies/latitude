@@ -33,6 +33,8 @@ Module importAll := {
 }.
 global Module := Module.
 
+; TODO Can a self-evaluating object be a parent of something else? If so, what does its hierarchy look like?
+
 ; ///// Do some more work on non-traditional objects for convenience (and definedness)
 ;       Ideally, we want to define absolutely no methods (save for `parent` and maybe `clone`)
 ;       on this NTO (non-traditional object).
