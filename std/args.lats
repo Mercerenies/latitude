@@ -16,6 +16,7 @@ ArgList fillWith := {
   self enclosingScope := $1.
   self.
 }.
+; TODO A version of `unshift` that can insert additional arguments
 ArgList shift := {
   if (self size == 0)
     then { Nil. }

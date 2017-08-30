@@ -1,7 +1,6 @@
 
 ;; Cloning and metaprogramming basics
 ;; The clone function itself is defined in 'latitude.lat'
-;; TODO In support of NTOs, let's move a lot of this stuff to `Kernel Slots` or something similar. (/////)
 Object is := { meta sys instanceOf#: #'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, #'$2. }.
@@ -13,24 +12,14 @@ Object slot? := {
     err SlotError,
     { False. }.
 }.
+;; Note that these delegate to `Kernel` functions. The `Kernel`
+;; versions should be used directly if it is possible that the caller
+;; is an NTO.
 Object invoke := {
-  procd := Proc clone.
-  procd call := {
-    meta sys invoke#:
-      parent slot 'self,
-      (parent dynamic slot '$1).
-  }.
-  procd.
+  Kernel invokeOn: #'self, #'$1.
 }.
 Object invokeSpecial := {
-  procd := Proc clone.
-  procd call := {
-    meta sys doWithCallback#:
-      parent slot 'self,
-      parent dynamic slot '$1,
-      parent dynamic slot '$2.
-  }.
-  procd.
+  Kernel invokeOnSpecial: #'self, #'$1, #'$2.
 }.
 Object tap := {
   self invoke #'$1 call.
@@ -181,12 +170,12 @@ Stream toString := "Stream".
 
 ; Dumping and Printing Convenience Functions
 Stream dump := {
-  localize.
+  streamObj := self. ; Would use `localize` here but the core functions should be very low-dependency
   obj := #'$1.
-  this println: #'obj.
+  streamObj println: #'obj.
   Kernel keys #'obj visit {
     p := if (Kernel protected? (#'obj, $1)) then "! " else "  ".
-    this putln: p ++ ($1 asText) ++ ": " ++ ((#'obj slot: $1) toString).
+    streamObj putln: p ++ ($1 asText) ++ ": " ++ ((#'obj slot: $1) toString).
   }.
   Nil.
 }.
@@ -267,6 +256,27 @@ Kernel protected? := { meta sys protectIs#: #'$1, $2. }.
 Kernel selfEvaluating? := { meta sys primIsMethod#: #'$1. }.
 Kernel keys := { meta sys objectKeys#: #'$1. }.
 Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
+
+;; Kernel invocations
+Kernel invokeOn := {
+  procd := Proc clone.
+  procd call := {
+    meta sys invoke#:
+      parent dynamic slot '$1,
+      parent dynamic slot '$2.
+  }.
+  procd.
+}.
+Kernel invokeOnSpecial := {
+  procd := Proc clone.
+  procd call := {
+    meta sys doWithCallback#:
+      parent dynamic slot '$1,
+      parent dynamic slot '$2,
+      parent dynamic slot '$3.
+  }.
+  procd.
+}.
 
 ;; GC functions
 Kernel GC := Object clone.
