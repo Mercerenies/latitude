@@ -77,7 +77,7 @@ Array =~ := {
     return := {
       parent dynamic $1 call.
     }.
-    (rhs implements: Collection) ifFalse {
+    (rhs implements? (Collection)) ifFalse {
       return: NoMatch clone.
     }.
     isEllipsis := this detect { $1 is (Ellipsis). } toBool.
