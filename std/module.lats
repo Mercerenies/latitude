@@ -42,10 +42,6 @@ global &LoadedModules := Object clone tap {
   self parent := self.
 }.
 &LoadedModules clone := { Kernel invokeOn (self, Object slot 'clone) call. }.
-&LoadedModules slot := { Kernel invokeOn (self, Object slot 'slot) call. }.
-&LoadedModules slot= := { Kernel invokeOn (self, Object slot 'slot=) call. }.
-&LoadedModules slot? := { Kernel invokeOn (self, Object slot 'slot?) call. }.
-&LoadedModules missing := { Kernel invokeOn (self, Object slot 'missing) call. }.
 &LoadedModules toString := "&LoadedModules".
 
 global ModuleLoader ::= Object clone.
