@@ -44,7 +44,6 @@ global &LoadedModules := Object clone tap {
 &LoadedModules slot := { self invoke (Object slot 'slot) call. }.
 &LoadedModules slot= := { self invoke (Object slot 'slot=) call. }.
 &LoadedModules slot? := { self invoke (Object slot 'slot?) call. }.
-&LoadedModules keys := { self invoke (Object slot 'keys) call. }.
 &LoadedModules missing := { self invoke (Object slot 'missing) call. }.
 &LoadedModules toString := "&LoadedModules".
 

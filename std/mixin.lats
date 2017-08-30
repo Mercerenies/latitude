@@ -23,12 +23,12 @@ Mixin inject := {
     }.
   injector.
 }.
-
-Object implements? := {
-  takes '[mxn].
-  self hierarchy detect {
+Mixin member? := {
+  localize.
+  takes '[arg].
+  Kernel Parents hierarchy (#'arg) detect {
     takes '[obj].
-    { obj slot? 'mixin. } and { (mxn) === (obj mixin). }.
+    { obj slot? 'mixin. } and { (this) === (obj mixin). }.
   } toBool.
 }.
 

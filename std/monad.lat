@@ -23,7 +23,7 @@ Monad seq := { self bind: $1, #'$2. }.
 Monad call := {
   localize.
   $binder := Nil.
-  $binder= := { dynamic origin '$binder $binder := $1. }.
+  $binder= := { Kernel origin (dynamic, '$binder) $binder := $1. }.
   $varBomb := { }.
   newVariable := {
     oldBomb := $1 slot '$varBomb.

@@ -43,7 +43,7 @@
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
                          "catch" "handle" "load" "eval" "rethrow" "inject" "iterator" "$lexical"
                          "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
-                         "implements?" "takes" "localize" "this" "brackets" "origin" "resolve"
+                         "member?" "takes" "localize" "this" "brackets" "origin" "resolve"
                          "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?")
                        'symbols)
           . font-lock-builtin-face)
