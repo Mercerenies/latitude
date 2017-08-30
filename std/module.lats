@@ -39,14 +39,13 @@ global Module := Module.
 ;       Ideally, we want to define absolutely no methods (save for `parent` and maybe `clone`)
 ;       on this NTO (non-traditional object).
 global &LoadedModules := Object clone tap {
-  self invoke := self slot 'invoke.
   self parent := self.
 }.
-&LoadedModules clone := { self invoke (Object slot 'clone) call. }.
-&LoadedModules slot := { self invoke (Object slot 'slot) call. }.
-&LoadedModules slot= := { self invoke (Object slot 'slot=) call. }.
-&LoadedModules slot? := { self invoke (Object slot 'slot?) call. }.
-&LoadedModules missing := { self invoke (Object slot 'missing) call. }.
+&LoadedModules clone := { Kernel invokeOn (self, Object slot 'clone) call. }.
+&LoadedModules slot := { Kernel invokeOn (self, Object slot 'slot) call. }.
+&LoadedModules slot= := { Kernel invokeOn (self, Object slot 'slot=) call. }.
+&LoadedModules slot? := { Kernel invokeOn (self, Object slot 'slot?) call. }.
+&LoadedModules missing := { Kernel invokeOn (self, Object slot 'missing) call. }.
 &LoadedModules toString := "&LoadedModules".
 
 global ModuleLoader ::= Object clone.
@@ -76,15 +75,15 @@ global use := {
     err ModuleError clone tap { self message := "Module has no package". } throw.
   }.
   name := (header packageName) ++ " " ++ (header moduleName) intern.
-  if ($moduleLoader &loaded slot? (name))
-    then { $moduleLoader &loaded invoke ($moduleLoader &loaded slot: name) call. }
+  if (Kernel Slots has? ($moduleLoader &loaded, name))
+    then { Kernel Slots hold ($moduleLoader &loaded, name). }
     else {
       mod := Module clone tap { self header := header. }.
       do {
         $whereAmI := mod.
         Kernel evalFile: fname, mod.
       }.
-      $moduleLoader &loaded slot (name) = mod.
+      Kernel Slots put: $moduleLoader &loaded, name, mod.
       global slot (header moduleName intern) = mod.
       mod.
     }.
