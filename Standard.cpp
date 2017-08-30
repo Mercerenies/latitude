@@ -102,7 +102,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // KERNEL_LOAD ($1 = filename, $2 = global)
     //  * Checks %num0 (if 0, then standard load; if 1, then raw load)
     // kernelLoad#: filename, global.
-    // kernelLoadRaw#: filename, global.
+    // kernelLoad0#: filename, global.
     reader.cpp[KERNEL_LOAD] = [](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr str = (*dyn)[ Symbols::get()["$1"] ].getPtr();
