@@ -1,7 +1,7 @@
 
 ;; Cloning and metaprogramming basics
 ;; The clone function itself is defined in 'latitude.lat'
-;; TODO In support of NTOs, let's move a lot of this stuff to `Kernel Slots` or something similar.
+;; TODO In support of NTOs, let's move a lot of this stuff to `Kernel Slots` or something similar. (/////)
 Object is := { meta sys instanceOf#: #'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, #'$2. }.
@@ -246,7 +246,7 @@ global pairScopes := {
 }.
 
 ;; Equality and Comparability
-Object === := { meta sys ptrEquals#: self, $1. }.
+Object === := { Kernel eq: #'self, #'$1. }.
 Object == := { (self) === ($1). }.
 Object > := { ($1) < (self). }.
 Object >= := { ((self) > ($1)) or ((self) == ($1)). }.
@@ -265,7 +265,8 @@ Kernel executablePath := { meta sys exePath#. }.
 Kernel protect := { meta sys protectVar#: #'$1, $2. }.
 Kernel protected? := { meta sys protectIs#: #'$1, $2. }.
 Kernel selfEvaluating? := { meta sys primIsMethod#: #'$1. }.
-Kernel keys := { meta sys objectKeys#: #'$1. }. ; ///// Move calls to the Object function for keys and Kernel Parents stuff to Kernel calls explicitly, then consider removing the Object versions
+Kernel keys := { meta sys objectKeys#: #'$1. }.
+Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
 
 ;; GC functions
 Kernel GC := Object clone.
@@ -328,7 +329,7 @@ Kernel Parents hierarchy := {
   arr := Array clone.
   curr := #'$1.
   while {
-    arr detect { #'$1 === #'curr. } not.
+    arr containsIf { Kernel eq: #'$1, #'curr. } not.
   } do {
     arr pushBack #'curr.
     parent curr := #'curr parent.
