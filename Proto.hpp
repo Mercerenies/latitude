@@ -35,6 +35,15 @@ using Prim = boost::variant<boost::blank, Number, std::string,
 
 enum class SlotType { PTR, INH };
 
+// TODO A completely correct design would use these special constants internally but expose a class-based API that overrides the | and & operators, to avoid using the wrong type accidentally.
+enum {
+    NO_PROTECTION = 0,
+    PROTECT_ASSIGN = 1,
+    PROTECT_DELETE = 2
+};
+
+typedef char protection_t;
+
 /*
  * A slot in an object, which may or may not exist. If it does not exist,
  * the type of the slot is INH, which indicates that it may exist in a parent
@@ -44,16 +53,17 @@ enum class SlotType { PTR, INH };
 class Slot {
 private:
     ObjectPtr obj;
-    bool is_protected;
+    protection_t protection;
 public:
     Slot() noexcept;
     Slot(ObjectPtr ptr) noexcept;
-    Slot(ObjectPtr ptr, bool protect) noexcept;
+    Slot(ObjectPtr ptr, protection_t protect) noexcept;
     SlotType getType() const noexcept;
     ObjectPtr getPtr() const;
     void putPtr(ObjectPtr ptr);
-    void protect() noexcept;
-    bool isProtected() const noexcept;
+    void addProtection(protection_t p) noexcept;
+    bool isProtected(protection_t p) const noexcept;
+    bool hasAnyProtection() const noexcept;
 };
 
 /*
@@ -74,20 +84,21 @@ public:
     void put(Symbolic key, ObjectPtr ptr);
     void remove(Symbolic key);
     std::set<Symbolic> directKeys() const;
-    bool isProtected(Symbolic key) const;
-    void protect(Symbolic key);
-    void protectAll();
+    bool isProtected(Symbolic key, protection_t p) const;
+    bool hasAnyProtection(Symbolic key) const;
+    void addProtection(Symbolic key, protection_t p);
+    void protectAll(protection_t);
     template <typename T, typename... Ts>
-    void protectAll(T key, Ts... keys);
+    void protectAll(protection_t p, T key, Ts... keys);
     Prim& prim() noexcept;
     template <typename T>
     Prim prim(const T& prim0);
 };
 
 template <typename T, typename... Ts>
-void Object::protectAll(T key, Ts... keys) {
-    protect(key);
-    protectAll(keys...);
+void Object::protectAll(protection_t p, T key, Ts... keys) {
+    addProtection(key, p);
+    protectAll(p, keys...);
 }
 
 template <typename T>

@@ -418,9 +418,11 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
                 state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
-                state.dyn.top()->protectAll(Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
+                state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+                                            Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
             }
-            state.lex.top()->protectAll(Symbols::get()["self"], Symbols::get()["again"],
+            state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+                                        Symbols::get()["self"], Symbols::get()["again"],
                                         Symbols::get()["lexical"], Symbols::get()["dynamic"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
@@ -512,9 +514,11 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
                 state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
-                state.dyn.top()->protectAll(Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
+                state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+                                            Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
             }
-            state.lex.top()->protectAll(Symbols::get()["self"], Symbols::get()["again"],
+            state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+                                        Symbols::get()["self"], Symbols::get()["again"],
                                         Symbols::get()["lexical"], Symbols::get()["dynamic"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
@@ -885,10 +889,10 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         if (state.slf == nullptr)
             state.err0 = true;
-        else if (!state.slf->isProtected(state.sym))
-            state.slf->put(state.sym, state.ptr);
-        else
+        else if (state.slf->isProtected(state.sym, PROTECT_ASSIGN))
             throwError(state, "ProtectedError");
+        else
+            state.slf->put(state.sym, state.ptr);
     }
         break;
     case Instr::PEEK: {
@@ -1327,6 +1331,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         if (state.slf == nullptr) {
             state.err0 = true;
+        } else if (state.slf->isProtected(state.sym, PROTECT_DELETE)) {
+            throwError(state, "ProtectedError", "Delete-protected variable");
         } else {
             state.slf->remove(state.sym);
         }

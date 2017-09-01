@@ -2027,10 +2027,15 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
+     // TODO At some point, let's expose the complexities of the
+     // protection API to the user. Currently, all we do is let them
+     // apply every protection at once and check whether any are
+     // applied at all.
+
      // PROT_VAR (protect the variable named %sym in the object %slf)
      // protectVar#: obj, var.
      reader.cpp[PROT_VAR] = [](IntState& state0) {
-         state0.slf->protect(state0.sym);
+         state0.slf->addProtection(state0.sym, PROTECT_ASSIGN | PROTECT_DELETE);
      };
      sys->put(Symbols::get()["protectVar#"],
               defineMethod(unit, global, method,
@@ -2052,7 +2057,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
      // protectIs#: obj, var.
      reader.cpp[PROT_IS] = [](IntState& state0) {
-         garnishBegin(state0, state0.slf->isProtected(state0.sym));
+         garnishBegin(state0, state0.slf->hasAnyProtection(state0.sym));
      };
      sys->put(Symbols::get()["protectIs#"],
               defineMethod(unit, global, method,
@@ -2246,6 +2251,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
 
     // Object is its own parent
     object->put(Symbols::get()["parent"], object);
+    object->addProtection(Symbols::get()["parent"], PROTECT_DELETE);
 
     // Meta linkage
     meta->put(Symbols::get()["meta"], meta);
