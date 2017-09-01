@@ -32,6 +32,7 @@
 
 # Misc.
 etc/*
+doc/*
 
 # Flex/Bison output data
 lex.yy.c
