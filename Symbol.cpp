@@ -37,7 +37,7 @@ bool Symbols::isUninterned(const std::string& str) {
     return (str[0] == '~');
 }
 
-bool Symbols::requiresEscape(const std::string& str){
+bool Symbols::requiresEscape(const std::string& str) {
     string str0(str); // Need a copy
     if ((str0 == "") || (str0 == "~"))
         return true;
@@ -48,6 +48,13 @@ bool Symbols::requiresEscape(const std::string& str){
     set_intersection(str0.begin(), str0.end(), special.begin(), special.end(),
                      inserter(str1, str1.begin()));
     return (str1.begin() != str1.end());
+}
+
+bool Symbols::canBeDeleted(const std::string& str) {
+    // Currently, the only "delete-protected" symbol is `parent`.
+    if (str == "parent")
+        return false;
+    return true;
 }
 
 Symbolic Symbols::operator[](const std::string& str) {
