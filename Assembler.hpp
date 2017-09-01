@@ -4,6 +4,12 @@
 #include <type_traits>
 #include <tuple>
 
+/// \file
+///
+/// \brief Argument type-checking for assembler-level VM instructions.
+
+/// \cond
+
 // Enter this namespace at your own risk. Good luck, my friend. :)
 namespace _V {
 
@@ -158,11 +164,17 @@ namespace _V {
 
 }
 
-/*
- * This procedure compiles an assembler line with the given arguments, ignoring all of the coherence conditions
- * defined. This should only be used internally except in very special circumstances, and even then it should be
- * used very sparingly and carefully.
- */
+/// \endcond
+
+/// This procedure compiles an assembler line with the given
+/// arguments, ignoring all of the coherence conditions defined. This
+/// should only be used internally except in very special
+/// circumstances, and even then it should be used very sparingly and
+/// carefully.
+///
+/// \param instr a VM instruction
+/// \param args the arguments to provide to the instruction
+/// \return a compiled assembler line
 template <typename... Ts>
 AssemblerLine makeAssemblerLineUnchecked(Instr instr, Ts... args) {
     AssemblerLine line;
@@ -173,11 +185,16 @@ AssemblerLine makeAssemblerLineUnchecked(Instr instr, Ts... args) {
     return line;
 }
 
-/*
- * This procedure bypasses the compile-time argument checks, instead opting to validate the assembler line
- * at runtime. This is safer than makeAssemblerLineUnchecked but slower than makeAssemblerLine. The
- * makeAssemblerLine macro should be preferred when compile-time checking is possible.
- */
+/// This procedure bypasses the compile-time argument checks, instead
+/// opting to validate the assembler line at runtime. This is safer
+/// than #makeAssemblerLineUnchecked but slower than
+/// #makeAssemblerLine. The #makeAssemblerLine macro should be
+/// preferred when compile-time checking is possible.
+///
+/// \param instr a VM instruction
+/// \param args the arguments to provide to the instruction
+/// \return a compiled assembler line
+/// \throw AssemblerError if the compiled line contains an integrity error
 template <typename... Ts>
 AssemblerLine makeRuntimeAssemblerLine(Instr instr, Ts... args) {
     auto line = makeAssemblerLineUnchecked(instr, args...);
@@ -185,19 +202,38 @@ AssemblerLine makeRuntimeAssemblerLine(Instr instr, Ts... args) {
     return line;
 }
 
-/*
- * The CompileTimeAsmChecker (usually invoked using the makeAssemblerLine macro) performs
- * type checking for the arguments of the assembly instruction at compile-time rather than
- * using runtime validation. Note that the compile-time validation is slightly weaker than
- * the runtime check, in that it does not check the specific register arguments, only that
- * they are register arguments. However, its performance is significantly better than that
- * of the runtime checker.
- */
-
+/// The CompileTimeAsmChecker (usually invoked using the
+/// #makeAssemblerLine macro) performs type checking for the arguments
+/// of the assembly instruction at compile-time rather than using
+/// runtime validation. Note that the compile-time validation is
+/// slightly weaker than the runtime check, in that it does not check
+/// the specific register arguments, only that they are register
+/// arguments. However, its performance is significantly better than
+/// that of the runtime checker.
+///
+/// \param I the instruction
+/// \param ... the arguments
+/// \return a compiled assembler line
 #define makeAssemblerLine(I, ...) (CompileTimeAsmChecker<(I)>::invoke(__VA_ARGS__))
 
+/// This structure is used statically to perform type checking for the
+/// arguments given to an assembly instruction at compile-time rather
+/// than using runtime validation.
+///
+/// \tparam instr the instruction to compile
+/// \see makeAssemblerLine
 template <Instr instr>
 struct CompileTimeAsmChecker {
+    /// Given an instruction known at compile-time and a sequence of
+    /// argments, this static function returns the AssemblerLine
+    /// constructed as a result, as though by
+    /// #makeAssemblerLineUnchecked. However, calls to this function
+    /// will only typecheck if the arguments are correct for the
+    /// instruction.
+    ///
+    /// \tparam Ts the argument types
+    /// \param args the arguments to provide to the instruction
+    /// \return a compiled assembler line
     template <typename... Ts>
     static AssemblerLine invoke(Ts... args) {
         typedef typename _V::Necessary<instr>::type parms_t;
@@ -209,6 +245,13 @@ struct CompileTimeAsmChecker {
     };
 };
 
+/// Given a sequence of AssemblerLine objects, this function returns
+/// an InstrSeq object containing all of the given lines compiled
+/// together.
+///
+/// \tparam Ts the argument types
+/// \param args the assembler lines
+/// \return an InstrSeq containing the lines
 template <typename... Ts>
 InstrSeq asmCode(Ts... args) {
     InstrSeq seq;

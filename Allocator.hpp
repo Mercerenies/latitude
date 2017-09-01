@@ -6,7 +6,7 @@
 
 /// \file
 ///
-/// \brief The Allocator class and the structures it depends on
+/// \brief The Allocator class and the structures it depends on.
 
 struct ObjectEntry;
 struct CountedArray;
