@@ -24,15 +24,16 @@ public:
     typedef std::complex<double> complex;
     typedef boost::variant<smallint, bigint, ratio, floating, complex> magic_t;
 private:
-    magic_t value;
+    std::unique_ptr<magic_t> value;
 public:
-    Number() = default;
-    Number(const Number&) = default;
+    Number();
     Number(smallint);
     Number(bigint);
     Number(ratio);
     Number(floating);
     Number(complex);
+    Number(const Number&);
+    Number& operator=(Number);
     bool operator ==(const Number& other) const;
     bool operator <(const Number& other) const;
     Number& operator +=(const Number& other);
