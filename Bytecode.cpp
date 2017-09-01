@@ -1327,8 +1327,6 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         if (state.slf == nullptr) {
             state.err0 = true;
-        } else if (!Symbols::canBeDeleted(Symbols::get()[state.sym])) {
-            throwError(state, "ProtectedError", "Delete-protected variable");
         } else {
             state.slf->remove(state.sym);
         }
