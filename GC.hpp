@@ -7,35 +7,62 @@
 #include <array>
 #include <algorithm>
 
-/*
- * A singleton object representing the global garbage collector. All
- * language `Object` instances should be allocated through this object
- * so that they can be cleaned up through this object.
- */
+/// \file
+///
+/// \brief The garbage collector class
+
+/// A singleton object representing the global garbage collector. All
+/// language `Object` instances should be allocated through this
+/// object so that they can be cleaned up through this object.
 class GC {
 private:
     static GC instance;
     std::set<ObjectPtr> alloc;
     GC() = default;
 public:
+
+    /// Returns the garbage collector singleton instance.
+    ///
+    /// \return the singleton GC instance
     static GC& get() noexcept;
-    /*
-     * Creates an object and returns a pointer to it.
-     */
+
+    /// Creates an object and returns a pointer to it.
+    ///
+    /// \return a pointer to a new object
     ObjectPtr allocate();
-    /*
-     * Cleans up objects. Any object references which C++ or the embedded
-     * code maintains should be passed in as arguments, as the algorithm
-     * will assume anything that is unreachable from the arguments should
-     * be freed. As an aside to this, `garbageCollect` called with no
-     * arguments will free every object that was created using the garbage
-     * collector.
-     */
-    long garbageCollect(std::vector<ObjectPtr>);
-    long garbageCollect(IntState&, ReadOnlyState&);
+
+    /// Cleans up objects. Any object references maintained by C++ or
+    /// by the embedded code should be passed in as arguments, as the
+    /// algorithm will assume anything that is unreachable from the
+    /// arguments should be freed. As a consequence of this,
+    /// garbageCollect called with no arguments will free every object
+    /// that was created using the garbage collector.
+    ///
+    /// \param globals the global variables accessible to the program
+    /// \return the number of objects freed
+    long garbageCollect(std::vector<ObjectPtr> globals);
+
+    /// This is a convenience function which calls
+    /// #garbageCollect(std::vector<ObjectPtr>) with all of the arguments from
+    /// the various registers in the VM.
+    ///
+    /// \param state the interpreter state
+    /// \param reader the read-only interpreter state
+    /// \return the number of objects freed
+    long garbageCollect(IntState& state, ReadOnlyState& reader);
+
+    /// A convenience function which garbage collects given an
+    /// arbitrary iterable sequence of global values.
+    ///
+    /// \param begin the begin iterator
+    /// \param end the end iterator
+    /// \return the number of objects freed
+    /// \see garbageCollect(std::vector<ObjectPtr>)
     template <typename InputIterator>
     long garbageCollect(InputIterator begin, InputIterator end);
+
     size_t getTotal();
+
 };
 
 template <typename InputIterator>
