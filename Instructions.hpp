@@ -301,6 +301,8 @@ public:
 /// A smart pointer to a translation unit.
 using TranslationUnitPtr = std::shared_ptr<TranslationUnit>;
 
+/// A method is referenced by a Method object, which consists of a
+/// pointer to a translation unit and an index within that unit.
 class Method {
 private:
     TranslationUnitPtr unit;
