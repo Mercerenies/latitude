@@ -372,6 +372,7 @@ public:
     CodeSeek();
     CodeSeek(const InstrSeq&);
     CodeSeek(InstrSeq&&);
+    virtual ~CodeSeek() = default;
     virtual std::unique_ptr<InstrSeek> copy();
     virtual InstrSeq& instructions();
 };
@@ -381,6 +382,7 @@ private:
     Method method;
 public:
     MethodSeek(Method);
+    virtual ~MethodSeek() = default;
     virtual std::unique_ptr<InstrSeek> copy();
     virtual InstrSeq& instructions();
 };
