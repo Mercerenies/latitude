@@ -71,6 +71,19 @@ struct Thunk {
     Method code;
     ObjectPtr lex;
     ObjectPtr dyn;
+
+    /// Constructs a thunk with an empty call stack.
+    ///
+    /// \param code the body of the thunk
+    explicit Thunk(Method code);
+
+    /// Constructs a thunk.
+    ///
+    /// \param code the body of the thunk
+    /// \param lex the lexical scope
+    /// \param dyn the dynamic scope
+    Thunk(Method code, ObjectPtr lex, ObjectPtr dyn);
+
 };
 
 /// A wind frame protects the call stack by executing certain code
@@ -79,6 +92,13 @@ struct Thunk {
 struct WindFrame {
     Thunk before;
     Thunk after;
+
+    /// Constructs a wind frame.
+    ///
+    /// \param before the thunk to run before entering the scope
+    /// \param after the thunk to run after exiting the scope
+    WindFrame(const Thunk& before, const Thunk& after);
+
 };
 
 /// This pseudo-constructor creates an empty interpreter state.

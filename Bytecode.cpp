@@ -10,6 +10,15 @@
 
 using namespace std;
 
+Thunk::Thunk(Method code)
+    : Thunk(code, nullptr, nullptr) {}
+
+Thunk::Thunk(Method code, ObjectPtr lex, ObjectPtr dyn)
+    : code(code), lex(lex), dyn(dyn) {}
+
+WindFrame::WindFrame(const Thunk& before, const Thunk& after)
+    : before(before), after(after) {}
+
 IntState intState() {
     IntState state;
     state.ptr = state.slf = state.ret = nullptr;
@@ -42,9 +51,6 @@ StatePtr statePtr(IntState&& state) {
 }
 
 ReadOnlyState readOnlyState() {
-    // Currently, this implementation is completely trivial. That may change in the future,
-    // so this should be preferred as a pseudo-constructor rather than using the default
-    // constructor.
     return ReadOnlyState();
 }
 
@@ -1062,11 +1068,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         auto before = boost::get<Method>(&state.slf->prim()),
              after  = boost::get<Method>(&state.ptr->prim());
         if (before && after) {
-            WindPtr frame = WindPtr(new WindFrame());
-            frame->before.code = *before;
+            WindPtr frame = WindPtr(new WindFrame(Thunk(*before), Thunk(*after)));
             frame->before.lex = (*state.slf)[ Symbols::get()["closure"] ].getPtr();
             frame->before.dyn = state.dyn.top();
-            frame->after.code = *after;
             frame->after.lex = (*state.ptr)[ Symbols::get()["closure"] ].getPtr();
             frame->after.dyn = state.dyn.top();
             state.wind = pushNode(state.wind, frame);

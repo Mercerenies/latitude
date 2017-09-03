@@ -308,12 +308,40 @@ private:
     TranslationUnitPtr unit;
     FunctionIndex ind;
 public:
+
+    /// Default-constructs a method. This constructor should be used
+    /// sparingly, as it creates a "null" method object which cannot
+    /// be called.
     Method();
-    Method(const TranslationUnitPtr&, FunctionIndex);
+
+    /// Constructs a callable method object.
+    ///
+    /// \param ptr the translation unit in which the method code resides
+    /// \param index the position in the translation unit of the code
+    Method(const TranslationUnitPtr& ptr, FunctionIndex index);
+
+    /// Retrieves the sequence of instructions belonging to this method.
+    ///
+    /// \return the method's instruction sequence
     InstrSeq& instructions();
+
+    /// Returns the size of the method instruction sequence.
+    ///
+    /// \return the size of the instruction sequence
     size_t size();
+
+    /// Retrieves a pointer to the translation unit to which this
+    /// method belongs.
+    ///
+    /// \return the translation unit to which the method belongs
     TranslationUnitPtr translationUnit();
+
+    /// Returns the index within translationUnit() where this method
+    /// can be found.
+    ///
+    /// \return the function index within the translation unit
     FunctionIndex index();
+
 };
 
 class InstrSeek {
