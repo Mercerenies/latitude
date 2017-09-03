@@ -344,16 +344,38 @@ public:
 
 };
 
+/// An InstrSeek instance stores, in some appropriate and efficient
+/// way, an InstrSeq instance and provides access to it.
 class InstrSeek {
 private:
     unsigned long pos;
     bool _size_set;
     unsigned long _size;
 public:
+
+    /// Default-constructs an InstrSeek.
     InstrSeek();
+
+    /// Destructs an InstrSeek.
     virtual ~InstrSeek() = default;
+
+    /// An InstrSeek subclass must be copyable in a unified way. This
+    /// copy function should return a new instance of the same class
+    /// as the original.
+    ///
+    /// \return a new copy of the instance
     virtual std::unique_ptr<InstrSeek> copy() = 0;
+
+    /// An InstrSeek must provide a way to get access to the
+    /// underlying instruction sequence.
+    ///
+    /// \return the underlying instruction sequence
     virtual InstrSeq& instructions() = 0;
+
+    /// Returns the position of the InstrSeek object within the
+    /// InstrSeq data.
+    ///
+    /// \return the position
     unsigned long position();
     void advancePosition(unsigned long);
     unsigned long size();
