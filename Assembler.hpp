@@ -216,6 +216,8 @@ AssemblerLine makeRuntimeAssemblerLine(Instr instr, Ts... args) {
 /// \return a compiled assembler line
 #define makeAssemblerLine(I, ...) (CompileTimeAsmChecker<(I)>::invoke(__VA_ARGS__))
 
+/// \brief Static type checking for instruction arguments.
+///
 /// This structure is used statically to perform type checking for the
 /// arguments given to an assembly instruction at compile-time rather
 /// than using runtime validation.

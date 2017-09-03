@@ -5,8 +5,15 @@
 #include <map>
 #include <boost/variant.hpp>
 
+/// \file
+///
+/// \brief Data types for managing VM instructions.
+
 class AssemblerLine;
 
+/// The instruction enumeration, containing all of the opcodes for
+/// every instruction supported by the Latitude VM. Any value not
+/// listed here is not a valid opcode.
 enum class Instr : unsigned char {
     MOV = 0x01, PUSH = 0x02, POP = 0x03, GETL = 0x04, GETD = 0x05, ESWAP = 0x06, ECLR = 0x07,
     ESET = 0x08, SYM = 0x09, NUM = 0x0A, INT = 0x0B, FLOAT = 0x0C, NSWAP = 0x0D, CALL = 0x0E,
@@ -18,6 +25,8 @@ enum class Instr : unsigned char {
     YLDC = 0x32, DEL = 0x33
 };
 
+/// The register enumeration, containing numerical values for
+/// referencing every register in an instance of the Latitude VM.
 enum class Reg : unsigned char {
     PTR = 0x01, SLF = 0x02, RET = 0x03, LEX = 0x04, DYN = 0x05, ARG = 0x06, STO = 0x07,
     CONT = 0x08, STACK = 0x09, ERR0 = 0x0A, ERR1 = 0x0B, SYM = 0x0C, NUM0 = 0x0D,
@@ -26,6 +35,11 @@ enum class Reg : unsigned char {
     FILE = 0x1A, TRACE = 0x1B, TRNS = 0x1C, LIT = 0x1D
 };
 
+/// \brief A namespace containing `%%lit` table references.
+///
+/// This namespace contains constants for referencing the positions in
+/// the read-only `%%lit` register, which contains a table of special
+/// objects.
 namespace Lit {
     constexpr long NIL    = 0L;
     constexpr long FALSE  = 1L;
@@ -39,17 +53,29 @@ namespace Lit {
     constexpr long FHEAD  = 9L;
 }
 
+/// A function index is fundamentally just an integral value. This
+/// type is provided to avoid accidentally treating function indices
+/// as ordinary integers and vice versa.
 struct FunctionIndex {
     int index;
 };
 
 struct Instruction;
 
+/// A serial instruction sequence is a sequence of characters.
 using SerialInstrSeq = std::deque<unsigned char>;
+
+/// A (non-serial) instruction sequence is a sequence of instructions.
 using InstrSeq = std::deque<Instruction>;
+
+/// \brief An argument to an instruction.
+///
+/// Arguments to instructions can be references to registers, integer
+/// values, string values, or indices of functions in the VM.
 using RegisterArg = boost::variant<Reg, long, std::string, FunctionIndex>;
 
-
+/// A single instruction consists of the instruction's opcode,
+/// followed by zero or more arguments.
 struct Instruction {
     Instr instr;
     std::vector<RegisterArg> args;
@@ -58,9 +84,19 @@ struct Instruction {
 
 };
 
+/// The singleton InstructionSet instance manages the collection of
+/// valid instruction opcodes. It is used by makeRuntimeAssemblerLine
+/// to validate the arguments to an instruction and can be used to
+/// query the expected argument types.
 class InstructionSet {
 public:
+    /// \brief A validator for determining argument correctness.
+    ///
+    /// A validator contains criteria for determining whether or not
+    /// an argument is correct. It is a 1-ary predicate which takes a
+    /// RegisterArg.
     typedef std::function<bool(const RegisterArg&)> Validator;
+    /// A ValidList value represents a sequence of Validator values.
     typedef std::vector<Validator> ValidList;
 private:
     bool initialized;
@@ -69,59 +105,200 @@ private:
     void initialize();
     InstructionSet() = default;
 public:
+
+    /// Returns the singleton instruction set.
+    ///
+    /// \return the singleton value
     static InstructionSet& getInstance();
+
+    /// Returns whether or not the instruction set considers the given
+    /// opcode to be valid.
+    ///
+    /// \return whether the opcode is valid or not
     bool hasInstruction(Instr instr);
+
+    /// Returns a sequence of Validator predicates describing all of
+    /// the arguments to a given opcode.
+    ///
+    /// \return the appropriate ValidList value
     ValidList getParams(Instr instr);
+
 };
 
+/// This function is an InstructionSet::Validator representing
+/// arguments which are register references.
+///
+/// \param arg the instruction argument
+/// \return whether the argument is a register reference
 bool isRegister(const RegisterArg& arg);
+
+/// This function is an InstructionSet::Validator representing
+/// arguments which are references to object registers.
+///
+/// \param arg the instruction arguments
+/// \return whether the argument is an object register reference
 bool isObjectRegister(const RegisterArg& arg);
+
+/// This function is an InstructionSet::Validator representing
+/// arguments which are references to stack registers.
+///
+/// \param arg the instruction arguments
+/// \return whether the argument is an stack register reference
 bool isStackRegister(const RegisterArg& arg);
+
+/// This function is an InstructionSet::Validator representing string
+/// arguments.
+///
+/// \param arg the instruction arguments
+/// \return whether the argument is a string
 bool isStringRegisterArg(const RegisterArg& arg);
+
+/// This function is an InstructionSet::Validator representing integer
+/// arguments.
+///
+/// \param arg the instruction arguments
+/// \return whether the argument is an integer
 bool isLongRegisterArg(const RegisterArg& arg);
+
+/// This function is an InstructionSet::Validator representing
+/// function arguments.
+///
+/// \param arg the instruction arguments
+/// \return whether the argument is a function
 bool isAsmRegisterArg(const RegisterArg& arg);
 
+/// This is the general error class for exceptions in the VM system,
+/// usually with the integrity of a VM instruction.
 class AssemblerError {
 private:
     std::string message;
 public:
+    /// \brief Constructs an assembler error with a generic message.
     AssemblerError();
+    /// \brief Constructs an assembler error with a specific message.
     AssemblerError(std::string message);
+    /// \brief Returns the error's message.
+    ///
+    /// \return the message
     std::string getMessage();
 };
 
+/// Appends an argument to a serialized instruction sequence, as a
+/// sequence of characters.
+///
+/// \param arg the instruction argument
+/// \param seq the serialized instruction sequence
 void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq);
+
+/// Appends an opcode to a serialized instruction sequence, as a
+/// sequence of characters.
+///
+/// \param arg the instruction
+/// \param seq the serialized instruction sequence
 void appendInstruction(const Instr& instr, SerialInstrSeq& seq);
 
-// TODO When we're done, it's possible that this class could end up serving the purpose of the
-// Instruction struct as well.
+// TODO When we're done, it's possible that AssemblerLine could end up
+// serving the purpose of the Instruction struct as well.
+
+/// An AssemblerLine is a single instruction as it is being built
+/// up. Assembler lines consist of a single opcode and zero or more
+/// arguments.
 class AssemblerLine {
 private:
     Instr command;
     std::vector<RegisterArg> args;
 public:
+
+    /// \brief Constructs an empty assembler line.
     AssemblerLine() = default;
-    void setCommand(Instr);
-    void addRegisterArg(const RegisterArg&);
-    void validate(); // Throws if invalid
-    void appendOnto(InstrSeq&) const;
-    void appendOntoSerial(SerialInstrSeq&) const;
+
+    /// \brief Sets the opcode for the assembler line.
+    ///
+    /// \param str the opcode
+    void setCommand(Instr str);
+
+    /// \brief Adds an argument to the instruction.
+    ///
+    /// \param arg the argument
+    void addRegisterArg(const RegisterArg& arg);
+
+    /// \brief Verifies the integrity of the instruction and its arguments.
+    ///
+    /// If the instruction is valid and correct, no operations
+    /// occur. Otherwise, an exception is thrown.
+    ///
+    /// \throw AssemblerError in the case of an integrity error
+    void validate();
+
+    /// \brief Appends the assembler line onto an instruction sequence.
+    ///
+    /// \param seq the sequence of instructions
+    void appendOnto(InstrSeq& seq) const;
+
+    /// \brief Appends the assembler line onto a serialized
+    /// instruction sequence.
+    ///
+    /// \param seq the serialized instruction sequence
+    void appendOntoSerial(SerialInstrSeq& seq) const;
 };
 
+/// For efficiency reasons, it is undesirable to pass around methods
+/// as sequences of instructions. Thus, all methods in Latitude code
+/// are stored in localized translation units, where they can be
+/// referenced by a pointer and an index. A translation unit consists
+/// of a global sequence of instructions (usually the "top-level" code
+/// in a file or module) and an ordered sequence of instruction
+/// sequences, which are often (but not necessarily) referenced as
+/// methods.
 class TranslationUnit {
 private:
     InstrSeq seq;
     std::vector<InstrSeq> methods;
 public:
+
+    /// Constructs a default translation unit consisting of no code
+    /// and no methods.
     TranslationUnit();
+
+    /// Constructs a translation unit consisting of the given
+    /// top-level code and no methods.
     TranslationUnit(const InstrSeq& seq);
+
+    /// Returns the translation unit's top-level instruction sequnce.
+    ///
+    /// \return the top-level sequence of instructions
     InstrSeq& instructions();
-    InstrSeq& method(int);
+
+    /// Returns the nth method in the translation unit. <em>No bounds
+    /// checking is performed.</em> It is the caller's responsibility
+    /// to ensure that the argument to this method is between 0 and
+    /// methodCount(), inclusive.
+    ///
+    /// \param index the index of the method
+    /// \return the method itself
+    InstrSeq& method(int index);
+
+    /// Returns the number of methods in the translation unit.
+    ///
+    /// \return the method count
     int methodCount();
-    FunctionIndex pushMethod(const InstrSeq&);
-    FunctionIndex pushMethod(InstrSeq&&);
+
+    /// Adds a method to the translation unit. The argument will be
+    /// copied into the translation unit.
+    ///
+    /// \param mthd the method to add
+    /// \return the index of the method
+    FunctionIndex pushMethod(const InstrSeq& mthd);
+
+    /// Adds a method to the translation unit, using move semantics.
+    ///
+    /// \param mthd the method to add
+    /// \return the index of the method
+    FunctionIndex pushMethod(InstrSeq&& mthd);
+
 };
 
+/// A smart pointer to a translation unit.
 using TranslationUnitPtr = std::shared_ptr<TranslationUnit>;
 
 class Method {
