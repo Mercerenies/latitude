@@ -377,36 +377,124 @@ public:
     ///
     /// \return the position
     unsigned long position();
-    void advancePosition(unsigned long);
+
+    /// Advances the InstrSeek's position by an integer amount, which
+    /// must be positive.
+    ///
+    /// \param val the number by which to advance the position
+    void advancePosition(unsigned long val);
+
+    /// Returns the size of the instructions() sequence.
+    ///
+    /// \return the size
     unsigned long size();
+
+    /// Returns whether the sequence is at its end. Specifically, this
+    /// checks whether or not size() is equal to position().
+    ///
+    /// \return whether or not the sequence is at its end
     bool atEnd();
+
+    /// Reads a single long argument from the instruction
+    /// sequence. The behavior is undefined if the given argment is
+    /// not a long integer.
+    ///
+    /// \param n the position of the argument within the current instruction
+    /// \return the long argument
     long readLong(int n);
+
+    /// Reads a single string argument from the instruction
+    /// sequence. The behavior is undefined if the given argment is
+    /// not a string.
+    ///
+    /// \param n the position of the argument within the current instruction
+    /// \return the string argument
     std::string readString(int n);
+
+    /// Reads a single register argument from the instruction
+    /// sequence. The behavior is undefined if the given argment is
+    /// not a register.
+    ///
+    /// \param n the position of the argument within the current instruction
+    /// \return the register argument
     Reg readReg(int n);
+
+    /// Retrieves the opcode of the current instruction in the
+    /// sequence.
+    ///
+    /// \return the instruction opcode
     Instr readInstr();
+
+    /// Reads a single function argument from the instruction
+    /// sequence. The behavior is undefined if the given argment is
+    /// not a function index.
+    ///
+    /// \param n the position of the argument within the current instruction
+    /// \return the function argument
     FunctionIndex readFunction(int n);
+
 };
 
+/// A CodeSeek is an InstrSeek that keeps a direct pointer to its
+/// sequence of instructions. It is used for evaluating top-level
+/// code, performing eval statements, and injecting raw assembly
+/// instructions into a sequence.
 class CodeSeek : public InstrSeek {
 private:
     std::shared_ptr<InstrSeq> seq;
 public:
+
+    /// Default-constructs a CodeSeek containing no
+    /// code. Specifically, the resulting CodeSeek will contain an
+    /// empty instruction sequence.
     CodeSeek();
-    CodeSeek(const InstrSeq&);
-    CodeSeek(InstrSeq&&);
+
+    /// Constructs a CodeSeek by copying the argument.
+    ///
+    /// \param seq the instruction sequence
+    CodeSeek(const InstrSeq& seq);
+
+    /// Constructs a CodeSeek by moving the argument.
+    ///
+    /// \param seq the instruction sequence
+    CodeSeek(InstrSeq&& seq);
+
+    /// Destructs the CodeSeek.
     virtual ~CodeSeek() = default;
+
+    /// Returns a semantically identical copy of the CodeSeek.
+    ///
+    /// \return a new copy
     virtual std::unique_ptr<InstrSeek> copy();
+
     virtual InstrSeq& instructions();
+
 };
 
+/// For efficiency reasons, it is undesirable to store methods
+/// directly. Therefore, a MethodSeek instance stores a sequence of
+/// instructions, not directly, but by reference to a translation
+/// unit.
 class MethodSeek : public InstrSeek {
 private:
     Method method;
 public:
-    MethodSeek(Method);
+
+    /// Constructs a MethodSeek which points to the specified method.
+    ///
+    /// \param m a method
+    MethodSeek(Method m);
+
+    /// Destructs a MethodSeek.
     virtual ~MethodSeek() = default;
+
+    /// Returns a new MethodSeek pointing to the same method.
+    ///
+    /// \return a new copy
     virtual std::unique_ptr<InstrSeek> copy();
+
     virtual InstrSeq& instructions();
+
 };
 
 class SeekHolder {
