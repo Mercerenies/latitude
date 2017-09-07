@@ -49,6 +49,7 @@ One-byte opcodes, followed by whatever arguments the system expects
  == Etc ==
 %trns (1C) - A stack of translation units
 %lit (1D) - A table of literal value objects, indexed by integers
+%gtu (1E) - A single designated global translation unit object
 
 mov SRC DEST (01 REG REG) - For ObjectPtr registers only, move from src to dest
 push PTR STACK (02 REG REG) - Push ObjectPtr onto ObjectPtr stack

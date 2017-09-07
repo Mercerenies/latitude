@@ -51,7 +51,9 @@ StatePtr statePtr(IntState&& state) {
 }
 
 ReadOnlyState readOnlyState() {
-    return ReadOnlyState();
+    ReadOnlyState reader;
+    reader.gtu = make_shared<TranslationUnit>();
+    return reader;
 }
 
 void hardKill(IntState& state) {

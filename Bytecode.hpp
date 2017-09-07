@@ -63,6 +63,7 @@ struct IntState {
 struct ReadOnlyState {
     std::map<long, CppFunction> cpp;
     std::map<long, ObjectPtr> lit;
+    TranslationUnitPtr gtu;
 };
 
 /// A thunk contains a method and dynamic and lexical scoping
