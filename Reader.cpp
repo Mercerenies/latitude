@@ -167,7 +167,7 @@ void eval(IntState& state, string str) {
             (makeAssemblerLine(Instr::UNTR)).appendOnto(toplevel);
             state.stack = pushNode(state.stack, state.cont);
             unit->instructions() = toplevel;
-            state.cont = CodeSeek(unit->instructions());
+            state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } else {
             garnishBegin(state, boost::blank());
@@ -216,7 +216,7 @@ void readFile(string fname, Scope defScope, IntState& state) {
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.stack = pushNode(state.stack, state.cont);
             unit->instructions() = toplevel;
-            state.cont = CodeSeek(unit->instructions());
+            state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
             throwError(state, "ParseError", parseException);
