@@ -209,13 +209,17 @@ void AssemblerLine::appendOntoSerial(SerialInstrSeq& seq) const {
 }
 
 TranslationUnit::TranslationUnit()
-    : seq(), methods() {}
+    : methods() {
+    methods.emplace_back();
+}
 
 TranslationUnit::TranslationUnit(const InstrSeq& seq)
-    : seq(seq), methods() {}
+    : methods() {
+    methods.emplace_back(seq);
+}
 
 InstrSeq& TranslationUnit::instructions() {
-    return seq;
+    return methods[0];
 }
 
 InstrSeq& TranslationUnit::method(int index) {

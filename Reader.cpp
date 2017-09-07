@@ -160,11 +160,13 @@ void eval(IntState& state, string str) {
         auto result = parse(str);
         if (!result.empty()) {
             TranslationUnitPtr unit = make_shared<TranslationUnit>();
+            InstrSeq toplevel;
             for (auto& stmt : result) {
-                stmt->translate(*unit, unit->instructions());
+                stmt->translate(*unit, toplevel);
             }
-            (makeAssemblerLine(Instr::UNTR)).appendOnto(unit->instructions());
+            (makeAssemblerLine(Instr::UNTR)).appendOnto(toplevel);
             state.stack = pushNode(state.stack, state.cont);
+            unit->instructions() = toplevel;
             state.cont = CodeSeek(unit->instructions());
             state.trns.push(unit);
         } else {
@@ -196,11 +198,12 @@ void readFile(string fname, Scope defScope, IntState& state) {
             for (unique_ptr<Stmt>& stmt : stmts)
                 stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
             TranslationUnitPtr unit = make_shared<TranslationUnit>();
-            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(unit->instructions());
+            InstrSeq toplevel;
+            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(toplevel);
             for (auto& stmt : stmts1) {
-                stmt->translate(*unit, unit->instructions());
+                stmt->translate(*unit, toplevel);
             }
-            (makeAssemblerLine(Instr::RET)).appendOnto(unit->instructions());
+            (makeAssemblerLine(Instr::RET)).appendOnto(toplevel);
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
@@ -212,6 +215,7 @@ void readFile(string fname, Scope defScope, IntState& state) {
             state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.stack = pushNode(state.stack, state.cont);
+            unit->instructions() = toplevel;
             state.cont = CodeSeek(unit->instructions());
             state.trns.push(unit);
         } catch (std::string parseException) {

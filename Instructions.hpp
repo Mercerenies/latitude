@@ -252,7 +252,6 @@ public:
 /// methods.
 class TranslationUnit {
 private:
-    InstrSeq seq;
     std::vector<InstrSeq> methods;
 public:
 
