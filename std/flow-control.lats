@@ -26,9 +26,9 @@ Object falsify := {
 }.
 
 ;; Control Statements
-; TODO Make `self` for the conditionals well-defined
+Conditional ::= Object clone.
 global if := {
-  truthy := $1 toBool.
+  truthy := Conditional invoke #'$1 call toBool.
   Object clone tap {
     self then := {
       trueCase := #'$1.
@@ -36,18 +36,24 @@ global if := {
         self else := {
           falseCase := #'$1.
           ; We'd like ifThenElse# to use the global symbol table's true value, not the True variable.
-          meta sys ifThenElse#: True, truthy, { trueCase. }, { falseCase. }.
+          meta sys ifThenElse#:
+            True,
+            truthy,
+            { Conditional invoke #'trueCase call. },
+            { Conditional invoke #'falseCase call. }.
         }.
       }.
     }.
   }.
 }.
 Object ifTrue := {
-  if (self) then #'$1 else { Nil. }.
+  content := #'$1.
+  if (self) then { Kernel invokeOn (parent slot 'self, #'content) call. } else { Nil. }.
   #'self.
 }.
 Object ifFalse := {
-  if (self) then { Nil. } else #'$1.
+  content := #'$1.
+  if (self) then { Nil. } else { Kernel invokeOn (parent slot 'self, #'content) call. }.
   #'self.
 }.
 Object and := {
