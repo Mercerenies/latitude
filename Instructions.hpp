@@ -577,7 +577,7 @@ public:
 
 template <typename T>
 SeekHolder::SeekHolder(const T& other)
-    : internal(std::unique_ptr<InstrSeek>(new T(prev)))
+    : internal(std::unique_ptr<InstrSeek>(new T(other)))
     , instr(&internal->instructions()) {}
 
 template <typename T>
