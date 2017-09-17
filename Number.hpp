@@ -254,21 +254,73 @@ public:
     /// \return the result of the computation
     Number log() const;
 
-    /// Returns the floor of the number.
+    /// Returns the floor of the number, truncated toward negative
+    /// infinity. The behavior of this function is not specified for
+    /// complex numbers, but it may be specified at some later point.
     ///
     /// \return the result of the computation
-    Number floor() const;
+    Number floor() const; // TODO Complex numbers?
+
+    /// Returns a string representation of the number. Where possible,
+    /// the string is be a valid Latitude string that evaluates to the
+    /// number.
+    ///
+    /// \return the string representation
     std::string asString() const;
+
+    /// Forcibly casts the number to the C++ integral type
+    /// corresponding to Number::smallint. If the value was wider, it
+    /// will be truncated. This is useful in VM functions that require
+    /// an enumeration value, as it is convenient to simply assume
+    /// that the enumeration value is a small integer.
+    ///
+    /// \return the casted value
     smallint asSmallInt() const;
+
+    /// Returns a numerical value corresponding to the level of the
+    /// hierarchy that the value belongs to, with 0 being the
+    /// narrowest type (small integer) and 4 being the largest
+    /// (complex number).
+    ///
+    /// \return the hierarchy level
     int hierarchyLevel() const;
+
     friend Number complex_number(const Number&, const Number&);
+
 };
 
+/// Constructs a complex number from its real and imaginary parts. If
+/// either of the real or the imaginary parts is itself a non-real
+/// number, then the complex number is constructed using the formula
+/// `a + b i` where `a` is the first argument and `b` is the second,
+/// even if they are complex.
+///
+/// \param real the real part
+/// \param imag the imaginary part
+/// \return the complex number
 Number complex_number(const Number& real, const Number& imag);
 
+/// Returns a floating point number representing NaN, if it exists.
+///
+/// \return the value NaN
 boost::optional<Number> constantNan();
+
+/// Returns a floating point number representing positive infinity, if
+/// it exists.
+///
+/// \return the value infinity
 boost::optional<Number> constantInf();
+
+/// Returns a floating point number representing negative infinity, if
+/// it exists.
+///
+/// \return the value negative infinity
 boost::optional<Number> constantNegInf();
+
+/// Returns the smallest floating point number strictly greater than
+/// zero representable on the current system.
+///
+/// \return the epsilon value
 Number constantEps();
 
 #endif // NUMBER_HPP
