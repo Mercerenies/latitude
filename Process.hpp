@@ -4,6 +4,10 @@
 #include "Stream.hpp"
 #include <string>
 
+/// \file
+///
+/// \brief The Process class and a platform-specific constructor.
+
 /// A Process instance represents an external instance of some program
 /// that is running as a separate process. The Process class itself is
 /// abstract and should be instantiated using makeProcess(), which
