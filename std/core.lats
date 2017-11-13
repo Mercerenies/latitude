@@ -317,7 +317,7 @@ Kernel Slots toString := "Slots".
 Kernel Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
 Kernel Slots get := { Kernel invokeOn (#'$1, self hold) call. }.
 Kernel Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
-Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }. ; TODO `parent` should not be deletable
+Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
 Kernel Slots has? := {
   {
     Kernel Slots hold: parent dynamic hold '$1, parent dynamic hold '$2.
