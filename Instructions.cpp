@@ -137,7 +137,6 @@ struct AppendVisitor {
         instructions->push_back('\0');
     }
 
-    // TODO I'm using a whole byte for the sign right now; minimize that as best as possible
     void operator()(const long& val) {
         long val1 = val;
         if (val1 < 0)

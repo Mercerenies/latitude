@@ -1,11 +1,8 @@
 
-; TODO importAll and import behave differently if a method has the same name as a package
-;      (like `format` in `format`)
-
 ;; Modules
 Module ::= global clone.
 Module import := {
-  localize. ; TODO Import seems to be not working sometimes (in other modules)
+  localize.
   target := dynamic parent $lexical.
   $1 visit {
     target slot ($1) =
@@ -44,7 +41,7 @@ global ModuleLoader ::= Object clone.
 ModuleLoader &loaded := &LoadedModules.
 ModuleLoader clone := { self invoke (Object slot 'clone) call tap { self &loaded := Kernel cloneObject: self &loaded. }. }.
 ModuleLoader resolveImport := {
-  takes '[imp]. ; TODO Use an environment variable for extended load path
+  takes '[imp].
   if (imp is (String))
     then { imp. }
     else {

@@ -4,8 +4,6 @@
 #include "Standard.hpp"
 #include "Assembler.hpp"
 
-// TODO Make some standard test cases that can be run as a module
-
 #define DEBUG_INSTR 0
 
 using namespace std;

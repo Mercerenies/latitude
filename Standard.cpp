@@ -15,15 +15,6 @@
 
 using namespace std;
 
-// TODO Some syntax sugar for pattern matching key-value pairs
-//    (So we can do a `capture3` which returns three values)
-//    (Or maybe a "variable bomb" method which introduces variables into the local scope)
-
-// TODO Something about the fact that system calls cause Latitude to "double report" stack frames
-//  std/core.lat: 180
-//  std/core.lat: 180
-// Where one of these is technically a system call that isn't in core.lat
-
 ObjectPtr defineMethod(TranslationUnitPtr unit, ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
     ObjectPtr obj = clone(method);
     (makeAssemblerLine(Instr::RET)).appendOnto(code);
@@ -2027,11 +2018,6 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
-
-     // TODO At some point, let's expose the complexities of the
-     // protection API to the user. Currently, all we do is let them
-     // apply every protection at once and check whether any are
-     // applied at all.
 
      // PROT_VAR (protect the variable named %sym in the object %slf)
      // protectVar#: obj, var.

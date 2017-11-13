@@ -1,8 +1,6 @@
 ;;* MODULE pattern
 ;;* PACKAGE base
 
-; TODO Format (printf)
-
 ;; Pattern matching functionality
 Wildcard := Object clone.
 Wildcard symbol := Nil.

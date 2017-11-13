@@ -2,9 +2,6 @@
 ; While the basic string functionality is defined in core.lat, this file defines more sophisticated
 ; methods on strings.
 
-; TODO We changed some of the functions to work using Unicode bytes but not all of them.
-;      `find` and `replace` and company need to decide which indexing system they're using.
-
 String find := { meta sys stringFindFirst#: self, $1, $2. }.
 String findFirst := { self find: $1, 0. }.
 String findAll := {

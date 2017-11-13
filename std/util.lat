@@ -45,8 +45,6 @@ Latchkey == := { (self tag) == (self tag). }.
 ; Example usage:
 ; { $yield 1. $yield 2. } generator toArray.
 ;    ==> [1, 2]
-; TODO Figure out how to make generators clone-able to make them multi-pass
-;      (something bizarre is happening between the continuation jumps when a clone is used)
 Generator := Proc clone.
 Generator toString := "Generator".
 Generator iterator := { self. }.
@@ -118,7 +116,6 @@ Collection inject: Generator.
 ;           y := amb [2, 4, 6].
 ;           ((x) * (y) == 8) ifFalse: { amb []. }.
 ;           [x, y]. }.
-; TODO This one is a bit sloppy when it's cloned as well; work on that
 AmbError := Exception clone tap { self toString := "AmbError".
                                   self message := "Amb expression failed". }.
 Amb := Object clone.
