@@ -167,6 +167,7 @@ Array clone := {
 }.
 
 ;; Array Syntax
+;; TODO Performance improvements?
 meta brackets := {
   ArrayBuilder ::= self Object clone.
   ArrayBuilder array := Array clone.

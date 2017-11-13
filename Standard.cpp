@@ -87,7 +87,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         PROT_IS = 38,
         STR_NEXT = 39,
         COMPLEX = 40,
-        PRIM_METHOD = 41;
+        PRIM_METHOD = 41,
+        LOOP_DO = 42;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -2189,6 +2190,24 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                    makeAssemblerLine(Instr::CPP, PRIM_METHOD),
                                    makeAssemblerLine(Instr::BOL))));
+
+     // LOOP_DO (takes %ptr, calls it, then does LOOP_DO again)
+     // loopDo#: method.
+     reader.cpp[LOOP_DO] = [](IntState& state0) {
+         state0.stack = pushNode(state0.stack, state0.cont);
+         state0.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
+                                        makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                        makeAssemblerLine(Instr::CALL, 0L),
+                                        makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                        makeAssemblerLine(Instr::CPP, LOOP_DO)));
+     };
+     sys->put(Symbols::get()["loopDo#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::CPP, LOOP_DO))));
 
 }
 

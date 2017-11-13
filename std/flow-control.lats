@@ -68,10 +68,12 @@ Object not := {
 }.
 
 ;; Loops
+;; TODO Make `self` on these methods well-defined.
 global loop := {
-  restart := callCC { $1. }.
-  $1.
-  restart call: restart.
+  meta sys loopDo#: #'$1.
+; restart := callCC { $1. }.
+; $1.
+; restart call: restart.
 }.
 global while := {
   cond := #'$1.
