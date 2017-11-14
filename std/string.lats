@@ -2,7 +2,31 @@
 ; While the basic string functionality is defined in core.lat, this file defines more sophisticated
 ; methods on strings.
 
-String find := { meta sys stringFindFirst#: self, $1, $2. }.
+String findBytes := { meta sys stringFindFirst#: self, $1, $2. }.
+String find := {
+  localize.
+  takes '[substr, index].
+  byteIndex := 0.
+  index times {
+    parent byteIndex := meta sys stringNext#: this, byteIndex.
+  }.
+  byteResult := self findBytes: substr, byteIndex.
+  callCC {
+    return := { parent dynamic $1 call. }.
+    byteResult nil? ifTrue {
+      return: Nil.
+    }.
+    result := 0.
+    count := 0.
+    loop {
+      (result) >= (byteResult) ifTrue {
+        return: count.
+      }.
+      parent result := meta sys stringNext#: this, result.
+      parent count := count + 1.
+    }.
+  }.
+}.
 String findFirst := { self find: $1, 0. }.
 String findAll := {
   localize.
@@ -14,6 +38,7 @@ String findAll := {
   matches.
 }.
 
+String bytes? := False.
 String bytes := {
   localize.
   this clone tap {
@@ -28,6 +53,8 @@ String bytes := {
         }.
       }.
     }.
+    self find := self slot 'findBytes.
+    self bytes? := True.
   }.
 }.
 
@@ -171,6 +198,7 @@ String map := {
   self visit {
     parent str := str ++ (mthd: $1).
   }.
+  self bytes? ifTrue { parent str := str bytes. }.
   str.
 }.
 Collection inject: String.
