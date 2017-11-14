@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=-I $(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=-I $(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o
 
 all: Project
 
@@ -93,6 +93,9 @@ Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
 
 Allocator.o:	Allocator.cpp Allocator.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp
 	$(CXX) $(CXXFLAGS) Allocator.cpp
+
+Unicode.o:	Unicode.cpp Unicode.hpp
+	$(CXX) $(CXXFLAGS) Unicode.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp
 	$(CXX) $(CXXFLAGS) main.cpp

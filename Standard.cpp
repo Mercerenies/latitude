@@ -7,6 +7,7 @@
 #include "GC.hpp"
 #include "Environment.hpp"
 #include "Pathname.hpp"
+#include "Unicode.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -2067,33 +2068,9 @@ void spawnSystemCallsNew(ObjectPtr global,
      // STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)
      // stringNext#: str, num.
      reader.cpp[STR_NEXT] = [](IntState& state0) {
-         // Based on the algorithm at http://stackoverflow.com/a/4063258/2288659
-         bool valid = true;
-         auto i = state0.num0.asSmallInt();
-         auto full_len = state0.str0.length();
-         unsigned char c = static_cast<unsigned char>(state0.str0[i]);
-         unsigned long n = 0;
-         if ((c & 0x80) == 0x00)
-             n = 1;
-         else if ((c & 0xE0) == 0xC0)
-             n = 2;
-         else if ((c & 0xF0) == 0xE0)
-             n = 3;
-         else if ((c & 0xF8) == 0xF0)
-             n = 4;
-         else
-             valid = false;
-         if (n + i > full_len)
-             valid = false;
-         if (valid) {
-             for (unsigned long j = i + 1; j < i + n; j++) {
-                 unsigned char c1 = static_cast<unsigned char>(state0.str0[j]);
-                 if ((c1 & 0xC0) != 0x80)
-                     valid = false;
-             }
-         }
-         if (valid)
-             garnishBegin(state0, static_cast<signed long>(i + n));
+         auto result = nextCharPos(state0.str0, state0.num0.asSmallInt());
+         if (result)
+             garnishBegin(state0, *result);
          else
              garnishBegin(state0, boost::blank());
      };
@@ -2202,67 +2179,14 @@ void spawnSystemCallsNew(ObjectPtr global,
      // uniOrd#: str.
      // uniChr#: num.
      reader.cpp[UNI_ORD] = [](IntState& state0) {
-         bool valid = true;
-         long result = 0L;
-         auto i = state0.num0.asSmallInt();
-         auto full_len = state0.str0.length();
-         unsigned char c = static_cast<unsigned char>(state0.str0[i]);
-         unsigned long n = 0;
-         if ((c & 0x80) == 0x00) {
-             n = 1;
-             result = c & 0x7F;
-         } else if ((c & 0xE0) == 0xC0) {
-             n = 2;
-             result = c & 0x1F;
-         } else if ((c & 0xF0) == 0xE0) {
-             n = 3;
-             result = c & 0x0F;
-         } else if ((c & 0xF8) == 0xF0) {
-             n = 4;
-             result = c & 0x07;
-         } else {
-             valid = false;
-           }
-         if (n + i > full_len)
-             valid = false;
-         if (valid) {
-             for (unsigned long j = i + 1; j < i + n; j++) {
-                 unsigned char c1 = static_cast<unsigned char>(state0.str0[j]);
-                 if ((c1 & 0xC0) == 0x80) {
-                     result <<= 6;
-                     result += c1 & 0x3F;
-                 } else {
-                     valid = false;
-                 }
-             }
-         }
-         if (valid)
-             garnishBegin(state0, result);
+         auto ch = charAt(state0.str0, 0L);
+         if (ch)
+             garnishBegin(state0, uniOrd(*ch));
          else
              garnishBegin(state0, 0L);
      };
      reader.cpp[UNI_CHR] = [](IntState& state0) {
-         long value = state0.num0.asSmallInt();
-         std::string result;
-         int n = 0;
-         if (value <= 0x7F) {
-             result += (char)value;
-             n = 1;
-         } else if (value <= 0x7FF) {
-             result += (char)((value >> 6) | 0xC0);
-             n = 2;
-         } else if (value <= 0xFFFF) {
-             result += (char)((value >> 12) | 0xE0);
-             n = 3;
-         } else if (value <= 0x10FFFF) {
-             result += (char)((value >> 18) | 0xF0);
-             n = 4;
-         }
-         for (int i = n - 1; i > 0; i--) {
-             int shift = (i - 1) * 6;
-             result += (char)(((value >> shift) & 0x3F) | 0x80);
-         }
-         garnishBegin(state0, result);
+         garnishBegin(state0, static_cast<std::string>(UniChar(state0.num0.asSmallInt())));
      };
      sys->put(Symbols::get()["uniOrd#"],
               defineMethod(unit, global, method,
