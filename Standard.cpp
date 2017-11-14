@@ -79,7 +79,9 @@ void spawnSystemCallsNew(ObjectPtr global,
         STR_NEXT = 39,
         COMPLEX = 40,
         PRIM_METHOD = 41,
-        LOOP_DO = 42;
+        LOOP_DO = 42,
+        UNI_ORD = 43,
+        UNI_CHR = 44;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -2194,6 +2196,94 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::RTRV),
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                    makeAssemblerLine(Instr::CPP, LOOP_DO))));
+
+     // UNI_ORD (check the %str0 register and put the code point in %ret, empty string returns 0)
+     // UNI_CHR (check the %num0 register and put the character in %ret)
+     // uniOrd#: str.
+     // uniChr#: num.
+     reader.cpp[UNI_ORD] = [](IntState& state0) {
+         bool valid = true;
+         long result = 0L;
+         auto i = state0.num0.asSmallInt();
+         auto full_len = state0.str0.length();
+         unsigned char c = static_cast<unsigned char>(state0.str0[i]);
+         unsigned long n = 0;
+         if ((c & 0x80) == 0x00) {
+             n = 1;
+             result = c & 0x7F;
+         } else if ((c & 0xE0) == 0xC0) {
+             n = 2;
+             result = c & 0x1F;
+         } else if ((c & 0xF0) == 0xE0) {
+             n = 3;
+             result = c & 0x0F;
+         } else if ((c & 0xF8) == 0xF0) {
+             n = 4;
+             result = c & 0x07;
+         } else {
+             valid = false;
+           }
+         if (n + i > full_len)
+             valid = false;
+         if (valid) {
+             for (unsigned long j = i + 1; j < i + n; j++) {
+                 unsigned char c1 = static_cast<unsigned char>(state0.str0[j]);
+                 if ((c1 & 0xC0) == 0x80) {
+                     result <<= 6;
+                     result += c1 & 0x3F;
+                 } else {
+                     valid = false;
+                 }
+             }
+         }
+         if (valid)
+             garnishBegin(state0, result);
+         else
+             garnishBegin(state0, 0L);
+     };
+     reader.cpp[UNI_CHR] = [](IntState& state0) {
+         long value = state0.num0.asSmallInt();
+         std::string result;
+         int n = 0;
+         if (value <= 0x7F) {
+             result += (char)value;
+             n = 1;
+         } else if (value <= 0x7FF) {
+             result += (char)((value >> 6) | 0xC0);
+             n = 2;
+         } else if (value <= 0xFFFF) {
+             result += (char)((value >> 12) | 0xE0);
+             n = 3;
+         } else if (value <= 0x10FFFF) {
+             result += (char)((value >> 18) | 0xF0);
+             n = 4;
+         }
+         for (int i = n - 1; i > 0; i--) {
+             int shift = (i - 1) * 6;
+             result += (char)(((value >> shift) & 0x3F) | 0x80);
+         }
+         garnishBegin(state0, result);
+     };
+     sys->put(Symbols::get()["uniOrd#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::CPP, UNI_ORD))));
+     sys->put(Symbols::get()["uniChr#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::CPP, UNI_CHR))));
 
 }
 

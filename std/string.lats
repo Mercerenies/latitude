@@ -120,17 +120,29 @@ String padRight := {
   newStr.
 }.
 
+String asciiOrd := {
+  self == "" ifTrue {
+    err ArgError clone tap { self message := "`asciiOrd` on empty string". } throw.
+  }.
+  meta sys strOrd#: self.
+}.
 String ord := {
   self == "" ifTrue {
     err ArgError clone tap { self message := "`ord` on empty string". } throw.
   }.
-  meta sys strOrd#: self.
+  meta sys uniOrd#: self.
 }.
-Number chr := {
+Number asciiChr := {
   (self < 0) or (self > 255) ifTrue {
-    err ArgError clone tap { self message := "`chr` arg out of bounds". } throw.
+    err ArgError clone tap { self message := "`asciiChr` arg out of bounds". } throw.
   }.
   meta sys strChr#: self.
+}.
+Number chr := {
+  (self < 0) or (self > 1114111) ifTrue {
+    err ArgError clone tap { self message := "`chr` arg out of bounds". } throw.
+  }.
+  meta sys uniChr#: self.
 }.
 
 String iterator := {
