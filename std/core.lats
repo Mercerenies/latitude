@@ -398,6 +398,14 @@ Symbol assign= := {
   curr slot (sym) = { curr slot (name) = rhs ($1). }.
 }.
 
+;; Method cloning
+Method clone := {
+  procd := #'self invoke: (Object slot 'clone).
+  procd call tap {
+    #'self closure := parent slot 'self closure.
+  }.
+}.
+
 ; File headers
 FileHeader toString := "FileHeader".
 FileHeader packageName := Nil.
