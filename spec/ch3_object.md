@@ -18,9 +18,9 @@ The Latitude memory model is organized into four parts.
  * An object pool consisting of all of the objects that are reachable
    from a Latitude program, as well as zero or more uninitialized
    objects which may be used in the future.
- * An interpreter state, consisting of special internal registers
-   available to the VM which contain the current continuation and
-   program state.
+ * An interpreter state, sometimes referred to as register memory,
+   consisting of special internal registers available to the VM which
+   contain the current continuation and program state.
  * A global symbol table consisting of a bidirectional map between
    integers and names.
  * A collection of read-only registers, often function tables, which
@@ -69,6 +69,34 @@ number, a string, a symbol, a continuation, and a
 method. Implementations are free to allow primitive fields to contain
 other values as needed.
 
+An object with a primitive field containing a method is called an
+evaluating object.
+
+Every object must always have a `parent` slot. An object's `parent`
+slot is delete-protected but can be reassigned freely. The value of
+the `parent` slot is considered to be the object's parent. An object's
+inheritance hierarchy, often referred to simply as the object's
+hierarchy, is a list calculated as follows
+
+ * The first object in an object's hierarchy is itself.
+ * Each successive object is the previous object's parent.
+ * The list continues until a duplicate element is encountered.
+
+`Object` is the root object and, as a consequence, is its own
+parent. It is possible to construct objects that do not inherit from
+`Object`. These objects are called non-traditional objects, as they
+have an object hierarchy that is not of the traditional
+form. Conversely, an object that has `Object` in its inheritance
+hierarchy is called a traditional object.
+
+Many standard library functions expect objects to have several other
+slots, which traditional objects have by default. Thus, care must be
+taken when passing non-traditional objects to standard library
+functions. Unless otherwise specified, standard library functions
+expect only traditional objects to be passed to them. As a convention,
+non-traditional objects are often bound to variables beginning with an
+ampersand (`&`) to clearly denote them.
+
 ## Protection
 
 Every slot can have different protections applied to it. A slot with
@@ -78,3 +106,12 @@ protection cannot be deleted. An implementation is free to provide
 more types of protection or to provide more fine-grained versions of
 the existing ones, as long as the required functionality is
 implemented.
+
+## Cloning Objects
+
+A fundamental part of any prototype-oriented programming language is
+the ability to clone objects. When an object is cloned, a new,
+distinct object is created from the object pool. The new object is
+given only one slot: the `parent` slot. The new object's parent is set
+to be the old object. Additionally, the parent object's primitive
+field is copied into the new object's primitive field.

@@ -73,6 +73,9 @@ The following exceptions take precedence over the above rule.
    by at least one digit, followed by any other characters is not a
    valid identifier, as it will be parsed as a numerical literal.
 
+Note also that identifiers that begin with a dollar-sign (`$`) are
+treated specially by scope resolution.
+
 ## Code Structure
 
 A source file consists of zero or more lines, as defined by the
