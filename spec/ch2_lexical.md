@@ -137,4 +137,15 @@ following grammar.
               <name>
 ```
 
-[TODO: What is `<text>`? And `<number>`? `<letter>`? `<name>`?]
+A `<number>` is a string of characters which satisfies one of the
+following regular expressions.
+
+    [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)?
+    [-+]?[0-9]+([eE][-+]?[0-9]+)
+    [-+]?[0-9]+
+
+The first two forms construct a floating-point number; the third form
+constructs an integer. For more information on the different types of
+integers, refer to [TODO: This].
+
+[TODO: What is `<text>`? `<letter>`? `<name>`?]
