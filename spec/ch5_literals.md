@@ -42,4 +42,40 @@ of the method object. The method object is the initial value of the
 global `Method` slot. The cloned object will have a primitive field
 containing the method's inner code.
 
+A numerical literal will result in a clone of the number object, which
+is the initial value of the global `Number` slot. The number object
+has a primitive field containing the floating-point value positive
+zero. The resulting cloned object will have a primitive field
+containing the numerical value of the literal. Note that the at-brace
+syntax `@(..., ...)` is also a numerical literal, which results in a
+complex number whose real part is listed first and whose imaginary
+part is listed second.
+
+A string literal will result in a clone of the string object, which is
+the initial value of the global `String` slot. The string object has a
+primitive field containing the empty string. The resulting cloned
+object will have a primitive field containing the string value
+enclosed in the literal. This applies both to raw strings and ordinary
+strings, but DSL strings are treated differently, as detailed [TODO:
+This].
+
+A symbol literal that begins with a single-quote (`'`) or a
+quote-paren (`'(`) will result in a clone of the symbol object. The
+symbol object is the initial value of the global `Symbol` slot. The
+symbol object has a primitive field containing the empty symbol. The
+resulting cloned object will have a primitive field containing the
+symbol value enclosed in the literal. In the quote-paren case, the
+enclosing parentheses are not included in the symbol's name. In either
+case, the single-quote is not included in the symbol's name. A symbol
+literal that begins with a tilde (`~`) also results in a clone of the
+symbol object with an appropriately set primitive field, but in this
+case the tilde *is* included in the symbol's name. As a consequence,
+the literals `'~abc` and `~abc` evaluate to symbols with the same name
+(although they will evaluate to different symbols as the names are
+uninterned).
+
 /////
+
+[TODO: We refer to the global version as *the* method object and a
+subobject as *a* method object. This is confusing; we need better
+terminology for these literals.]
