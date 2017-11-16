@@ -52,4 +52,5 @@
               <number> |
               "'" "(" <text> ")" |
               "[" <literallist> "]" |
+              "#" "\"" <text> "\"" "#" |
               <name>

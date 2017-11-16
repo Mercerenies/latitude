@@ -105,37 +105,42 @@ following grammar.
 <shortarglist> ::= "(" <arglist> ")" |
                    "(" <chain> <name> ":" <arg> ")" |
                    <literal>
-<literalish> ::= "~" <text> <literalish> |
+<literalish> ::= "~" <ename> <literalish> |
                  "(" <stmt> ")" |
                  <literal>
 <literal> ::= "{" <linelist> "}" |
               <number> |
-              "\"" <text> "\"" |
-              "'" <text> |
-              "'(" <text> ")" |
-              "~" <text> |
+              "\"" <string> "\"" |
+              "'" <ename> |
+              "'(" <symbol> ")" |
+              "~" <ename> |
               "[" <arglist> "]" |
               "'[" <literallist> "]" |
-              "#\"" <text> "\"#" |
-              "#(" <text> ")" |
+              "#\"" <rawstring> "\"#" |
+              "#(" <dslstring> ")" |
               "0" <letter> { <alphanum> } |
               "@{" <linelist> "}" |
               "@(" <number> "," <number> ")" |
-              "#'" <text>
+              "#'" <ename>
 <linelist> ::= <line> <linelist> |
                λ
 <literallist> ::= <listlist> <literallist1> |
                   λ
 <literallist1> ::= "," <listlist> <literallist1> |
                    λ
-<listlit> ::= "\"" <text> "\"" |
-              "'" <text> |
-              "~" <text> |
+<listlit> ::= "\"" <string> "\"" |
+              "'" <ename> |
+              "~" <ename> |
               <number> |
-              "'(" <text> ")" |
+              "'(" <symbol> ")" |
               "[" <literallist> "]" |
+              "#\"" <rawstring> "\"#" |
               <name>
 ```
+
+Note that a `<letter>` is any single lowercase or capital alphabetic
+letter. A `<name>` is any valid identifier. An `<ename>` is any
+nonempty sequence of normal characters.
 
 A `<number>` is a string of characters which satisfies one of the
 following regular expressions.
@@ -146,6 +151,51 @@ following regular expressions.
 
 The first two forms construct a floating-point number; the third form
 constructs an integer. For more information on the different types of
-integers, refer to [TODO: This].
+numbers, refer to [TODO: This].
 
-[TODO: What is `<text>`? `<letter>`? `<name>`?]
+A `<symbol>` consists of any sequence of non-close-paren characters
+and backslash literals. Any character other than a backslash (`\`) or
+a close-parenthesis (`)`) is interpreted literally as part of the
+symbol's name. This includes spaces and newlines. A backslash
+interprets the character immediately following it literally, even if
+the character following it is another backslash or a
+close-parenthesis. Note that escape sequences (such as `\n`) are not
+interpreted in this context.
+
+## String Literals
+
+A `<string>` consists of a sequence of non-double-quote characters and
+backslash escape sequences. Any character other than a backslash (`\`)
+or a double-quote (`"`) is interpreted literally and placed into the
+string literal. A quotation mark closes the string literal. Note that
+newlines can be placed within strings freely and will be interpreted
+as part of the string.
+
+A backslash causes the character immediately following it to be
+interpreted specially. The following special translations take place.
+
+| Sequence | Result   |
+| -------- | -------- |
+| `\n`     | `U+000A` |
+| `\r`     | `U+000D` |
+| `\t`     | `U+0009` |
+| `\a`     | `U+0007` |
+| `\b`     | `U+0008` |
+| `\f`     | `U+000C` |
+| `\v`     | `U+000B` |
+
+A backslash followed by any other character (including a second
+backslash or a double quote) will be treated as that second character
+literally.
+
+A `<rawstring>` consists of any sequence of characters until the `"#`
+terminator is found. Note that no escape sequences are interpreted in
+a raw string. Aside from the difference in parsing, raw string
+literals are equivalent to ordinary string literals and are treated
+the same way at runtime.
+
+A `<dslstring>` consists of any number of characters, all interpreted
+literally, up until a close-parenthesis (`)`) which is not included in
+the DSL string. Note that backslashes are not treated specially in DSL
+strings. Pairs of parentheses may appear inside a DSL string, so long
+as they are balanced (so every `(` must be matched by a `)`).
