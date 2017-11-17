@@ -15,7 +15,6 @@ will be treated as equivalent to a single character of whitespace.
 
 [TODO: Should some non-ASCII characters be whitespace?]
 
-
 ## Character Sets
 
 Aside from whitespace characters, there are three other classes of
