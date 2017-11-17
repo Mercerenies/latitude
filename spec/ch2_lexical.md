@@ -117,7 +117,7 @@ following grammar.
               "'[" <literallist> "]" |
               "#\"" <rawstring> "\"#" |
               "#(" <dslstring> ")" |
-              "0" <letter> { <alphanum> } |
+              [ "-" | "+" ] "0" <letter> { <alphanum> } |
               "@{" <linelist> "}" |
               "@(" <number> "," <number> ")" |
               "#'" <ename>
@@ -138,8 +138,9 @@ following grammar.
 ```
 
 Note that a `<letter>` is any single lowercase or capital alphabetic
-letter. A `<name>` is any valid identifier. An `<ename>` is any
-nonempty sequence of normal characters.
+letter. Similarly, an `<alphanum>` is a letter or single digit. A `<name>`
+is any valid identifier. An `<ename>` is any nonempty sequence of
+normal characters.
 
 A `<number>` is a string of characters which satisfies one of the
 following regular expressions.
@@ -198,3 +199,15 @@ literally, up until a close-parenthesis (`)`) which is not included in
 the DSL string. Note that backslashes are not treated specially in DSL
 strings. Pairs of parentheses may appear inside a DSL string, so long
 as they are balanced (so every `(` must be matched by a `)`).
+
+## Comments
+
+Line comments in Latitude start with a semicolon (`;`) and continue
+until the next newline character (`U+000A`). Block comments start with
+an opening brace followed by a star (`{*`) and end with a star
+followed by a closing brace (`*}`). Note that block comments can be
+nested, so matching pairs of `{*` and `*}` can appear within a block
+comment so long as they are balanced. Comments can be placed in the
+code anywhere that whitespace would be ignored, so in particular
+comments cannot be placed in the middle of an identifier or inside a
+string.
