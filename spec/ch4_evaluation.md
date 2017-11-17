@@ -20,6 +20,9 @@ Scope objects should always be traditional objects. The consequences
 are undefined if a scope object is made to be part of an inheritance
 hierarchy that does not contain `Object`.
 
+At the top-level, there is a global scope object. This global scope
+object has a `global` slot that contains itself.
+
 ## Slot Lookup
 
 The act of looking up a slot in the associative array of an object is

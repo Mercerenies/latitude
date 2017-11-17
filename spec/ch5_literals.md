@@ -34,35 +34,76 @@ will desugar to
 
     meta sigil name (someExpr).
 
+## Literal Objects
+
+There are several predefined objects which are related to
+literals. All of these objects are stored in a table in read-only
+memory, called the literal object table, or simply the literal
+table. Many of these objects can also be accessed using specific names
+from global scope.
+
+ * The nil object, accessible from the global `Nil` slot, is a special
+   object used to denote the general concept of emptiness.
+ * The Boolean object and its two subobjects, the true and false
+   objects, define, appropriately, the Boolean notions of true and
+   false. They are accessible from, respectively, the global names
+   `Boolean`, `True`, and `False`.
+ * The string object, number object, and symbol object, denoted as
+   `String`, `Number`, and `Symbol`, respectively, in the global
+   scope, are used to represent string, numeral, and symbolic
+   literals. The literal string object has a primitive field
+   containing the empty string, the literal number object has a
+   primitive field containing the floating-point value positive zero,
+   and the literal symbol object has a primitive field containing the
+   symbol with the empty string as its name.
+ * The method object, denoted `Method` in the global scope, is used to
+   represent method literals defined in the code. Note that, unlike
+   string, number, and symbol objects, the method object has an empty
+   primitive field and does *not* contain a method in its primitive
+   field. This is to prevent the method object from accidentally
+   evaluating, resulting in confusing and undesired results.
+ * The stack frame object and file header object are used,
+   respectively, in reporting stack traces and in loading source code
+   files. These are accessible using the respective global names
+   `StackFrame` and `FileHeader`. Their usage is discussed in more
+   detail in [TODO: This].
+
+Note that these objects will be referred to as "literal objects", or
+as "objects from the literal table". This does not imply anything
+about the object itself; literal objects are still ordinary objects in
+the language. All it implies is that the object can be found in the
+literal table. So, for instance, the literal method object is the
+object that defines a method in the literal object table, and a method
+object is any object that has the literal method object as a direct or
+indirect parent.
+
+Implementations are free to place additional entries in the literal
+object table, but once the process has finished being started up and
+is running user code, objects can neither be added nor removed from
+the literal object table, as it is intended to be in read-only memory.
+
 ## Literals
 
 A method literal consists of any number of statements, all terminated
 by dots, enclosed in curly braces. A method literal results in a clone
-of the method object. The method object is the initial value of the
-global `Method` slot. The cloned object will have a primitive field
-containing the method's inner code.
+of the literal method object. The cloned object will have a primitive
+field containing the method's inner code.
 
-A numerical literal will result in a clone of the number object, which
-is the initial value of the global `Number` slot. The number object
-has a primitive field containing the floating-point value positive
-zero. The resulting cloned object will have a primitive field
-containing the numerical value of the literal. Note that the at-brace
-syntax `@(..., ...)` is also a numerical literal, which results in a
-complex number whose real part is listed first and whose imaginary
-part is listed second.
+A numerical literal will result in a clone of the number object. The
+resulting cloned object will have a primitive field containing the
+numerical value of the literal. Note that the at-brace syntax `@(...,
+...)` is also a numerical literal, which results in a complex number
+whose real part is listed first and whose imaginary part is listed
+second.
 
-A string literal will result in a clone of the string object, which is
-the initial value of the global `String` slot. The string object has a
-primitive field containing the empty string. The resulting cloned
-object will have a primitive field containing the string value
-enclosed in the literal. This applies both to raw strings and ordinary
-strings, but DSL strings are treated differently, as detailed [TODO:
-This].
+A string literal will result in a clone of the string object. The
+resulting cloned object will have a primitive field containing the
+string value enclosed in the literal. This applies both to raw strings
+and ordinary strings, but DSL strings are treated differently, as
+detailed [TODO: This].
 
 A symbol literal that begins with a single-quote (`'`) or a
 quote-paren (`'(`) will result in a clone of the symbol object. The
-symbol object is the initial value of the global `Symbol` slot. The
-symbol object has a primitive field containing the empty symbol. The
 resulting cloned object will have a primitive field containing the
 symbol value enclosed in the literal. In the quote-paren case, the
 enclosing parentheses are not included in the symbol's name. In either
@@ -75,7 +116,3 @@ the literals `'~abc` and `~abc` evaluate to symbols with the same name
 uninterned).
 
 /////
-
-[TODO: We refer to the global version as *the* method object and a
-subobject as *a* method object. This is confusing; we need better
-terminology for these literals.]
