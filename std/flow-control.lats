@@ -35,7 +35,8 @@ global if := {
       Object clone tap {
         self else := {
           falseCase := #'$1.
-          ; We'd like ifThenElse# to use the global symbol table's true value, not the True variable.
+          ; TODO We'd like ifThenElse# to use the global symbol table's true value,
+          ; not the True variable.
           meta sys ifThenElse#:
             True,
             truthy,
