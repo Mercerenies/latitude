@@ -22,8 +22,8 @@ Object invokeSpecial := {
   Kernel invokeOnSpecial: #'self, #'$1, #'$2.
 }.
 Object tap := {
-  self invoke #'$1 call.
-  self.
+  #'self invoke #'$1 call.
+  #'self.
 }.
 
 ;; The $whereAmI variable
