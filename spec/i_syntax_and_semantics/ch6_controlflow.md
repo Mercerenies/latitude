@@ -259,3 +259,7 @@ However, the following will result in undefined behavior.
         "I may or may not print." println.
       }, { "I also may or may not print" println. }.
     }.
+
+Note also that in the case of a hard kill, before and after methods
+are not executed. In this case, the stack is simply ignored and the VM
+exits immediately.

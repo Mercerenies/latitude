@@ -88,3 +88,4 @@ scope object.
      +-- meta sigil
 
  * [Object](object.md)
+ * [Kernel](kernel.md)
