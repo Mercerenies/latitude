@@ -102,6 +102,7 @@ global localize := {
 ; `takes` implies that the method in question takes these arguments. It is designed to be read in English,
 ; as it is usually the first line of a method (possibly the second, after a `localize`).
 global takes := {
+  ; ///// Prohibitively slow (use random.lat as benchmark)
   args := ArgList clone fillWith: dynamic parent.
   target := dynamic parent $lexical.
   $1 clone zip! (args) map! {
