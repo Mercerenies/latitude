@@ -1,4 +1,13 @@
 
+global Iterator ::= Object clone.
+Iterator iterator := { self. }.
+Iterator end? := True.
+Iterator next := { }.
+Iterator element := Nil.
+Iterator element= := {
+  err ReadOnlyError clone tap { self message := "Immutable iterator". } throw.
+}.
+
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
 ;; for example the `size` method. The iterator returned by `iterator` must support the following:
@@ -247,35 +256,50 @@ Collection minimum := {
   self visit { minimize #'$1. }.
   current.
 }.
-Collection <> := {
-  Chain ::= Object clone.
-  Chain iterator := {
+
+global Chain ::= Object clone.
+Chain first := Nil.
+Chain second := Nil.
+Chain iterator := {
+  ChainIterator make: self first, self second.
+}.
+
+global ChainIterator ::= Iterator clone.
+ChainIterator nilThing := Nil.
+ChainIterator iter := Nil.
+ChainIterator secondHalf := Nil.
+ChainIterator element := { self iter element. }.
+ChainIterator element= := { self iter element=. }.
+ChainIterator next := {
+  localize.
+  hasSecondHalf := this secondHalf is (this nilThing) not.
+  this iter next.
+  (this iter end?) and (hasSecondHalf) ifTrue {
+    this iter := this secondHalf iterator.
+    this secondHalf := this nilThing.
+  }.
+}.
+ChainIterator end? := { self iter end?. }.
+ChainIterator make := {
+  self clone tap {
     ; We must construct a "NilThing" to act like
     ; Nil since Nil is a valid element in a chain
-    NilThing ::= Nil clone.
-    ChainIterator ::= Object clone.
-    ChainIterator iter := parent self iterator.
-    ChainIterator secondHalf := parent dynamic $1.
-    ChainIterator element := { self iter element. }.
-    ChainIterator element= := { self iter element=. }.
-    ChainIterator next := {
-      localize.
-      hasSecondHalf := this secondHalf is (NilThing) not.
-      this iter next.
-      (this iter end?) and (hasSecondHalf) ifTrue {
-        this iter := this secondHalf iterator.
-        this secondHalf := NilThing.
-      }.
+    localize.
+    this nilThing := Nil clone.
+    this iter := parent dynamic $1 iterator.
+    this secondHalf := parent dynamic $2.
+    this end? ifTrue {
+      this iter := this secondHalf iterator.
+      this secondHalf := this nilThing.
     }.
-    ChainIterator end? := { self iter end?. }.
-    (ChainIterator end?) ifTrue {
-      ChainIterator iter := ChainIterator secondHalf iterator.
-      ChainIterator secondHalf := NilThing.
-    }.
-    ChainIterator.
   }.
-  Collection inject: Chain.
-  Chain.
+}.
+
+Collection <> := {
+  Chain clone tap {
+    self first := parent self.
+    self second := parent dynamic $1.
+  }.
 }.
 
 ;; Utility functions
@@ -283,11 +307,27 @@ Collection sum := { self foldl: 0, '+ toProc. }.
 Collection product := { self foldl: 1, '* toProc. }.
 Collection append := { self foldl: "", '++ toProc. }.
 
+;; Collection Methods for Array
+global ArrayIterator ::= Iterator clone.
+ArrayIterator index := 0.
+ArrayIterator array := Nil.
+ArrayIterator next := { self index := self index + 1. }.
+ArrayIterator end? := { (self index) >= (self array size). }.
+ArrayIterator element := { self array nth (self index). }.
+ArrayIterator element= := { self array nth (self index) = #'$1. }.
+Array iterator := {
+  ArrayIterator clone tap {
+    self index := 0.
+    self array := parent self.
+  }.
+}.
+
 Collection inject: Array.
+Collection inject: Chain.
 
 ;; Nil is an iterator over an empty collection
 Nil iterator := {
-  NilIterator ::= Object clone.
+  NilIterator ::= Iterator clone.
   NilIterator end? := True.
   NilIterator.
 }.

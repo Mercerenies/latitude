@@ -55,22 +55,28 @@ ArgList unshift := {
       parent self enclosingScope $1 := temp.
     }.
 }.
+
+global ArgIterator ::= Iterator clone.
+ArgIterator array := Nil.
+ArgIterator index := 1.
+ArgIterator next := {
+  self index := self index + 1.
+}.
+ArgIterator end? := {
+  self array enclosingScope slot? (("$" ++ (self index)) intern) not.
+}.
+ArgIterator element := {
+  self array enclosingScope slot (("$" ++ (self index)) intern).
+}.
+ArgIterator element= := {
+  self array enclosingScope slot (("$" ++ (self index)) intern) = #'$1.
+}.
+
 ArgList iterator := {
-  ArgIterator ::= Object clone.
-  ArgIterator iterator := { self. }.
-  ArgIterator array := self.
-  ArgIterator index := 1.
-  ArgIterator next := { self index := self index + 1. }.
-  ArgIterator end? := {
-    (self array enclosingScope slot? (("$" ++ (self index)) intern)) not.
+  ArgIterator clone tap {
+    self array := parent self.
+    self index := 1.
   }.
-  ArgIterator element := {
-    self array enclosingScope slot (("$" ++ (self index)) intern).
-  }.
-  ArgIterator element= := {
-    self array enclosingScope slot (("$" ++ (self index)) intern) = #'$1.
-  }.
-  ArgIterator.
 }.
 ArgList dropIn := {
   target := dynamic parent.

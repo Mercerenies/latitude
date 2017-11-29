@@ -144,19 +144,6 @@ Array < := {
   }.
 }.
 
-;; Collection Methods
-Array iterator := {
-  ArrayIterator ::= Object clone.
-  ArrayIterator iterator := { self. }.
-  ArrayIterator index := 0.
-  ArrayIterator array := self.
-  ArrayIterator next := { self index := self index + 1. }.
-  ArrayIterator end? := { (self index) >= (self array size). }.
-  ArrayIterator element := { self array nth: self index. }.
-  ArrayIterator element= := { self array nth=: self index, #'$1. }.
-  ArrayIterator.
-}.
-
 ;; This is a fix for a problem with `map` from `Collection`
 Array clone := {
   procd := self invoke: (Object slot 'clone).

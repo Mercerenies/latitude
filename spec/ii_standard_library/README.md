@@ -32,6 +32,7 @@ scope object.
      +-- Boolean
      |    +-- False
      |    +-- True
+     +-- Chain
      +-- Conditional
      +-- Cons
      +-- Exception
@@ -55,6 +56,11 @@ scope object.
      |    |    +-- err TypeError
      +-- FileHeader
      +-- FilePath
+     +-- Iterator
+     |    +-- ArgIterator
+     |    +-- ArrayIterator
+     |    +-- ChainIterator
+     |    +-- NilIterator
      +-- Kernel
      +-- Kernel GC
      +-- Kernel Parents
