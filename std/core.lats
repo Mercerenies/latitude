@@ -235,6 +235,7 @@ global pairScopes := {
 }.
 
 ;; Equality and Comparability
+; TODO Consider moving the comparison operators to a mixin
 Object === := { Kernel eq: #'self, #'$1. }.
 Object == := { (self) === ($1). }.
 Object > := { ($1) < (self). }.
