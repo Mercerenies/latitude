@@ -22,6 +22,10 @@ startup.
 
 This method returns a clone of the calling object.
 
+Equivalent `Kernel` call:
+
+    Kernel cloneObject: Object.
+
 ### `Object is (target).`
 
 Returns whether the calling object contains the target object in its

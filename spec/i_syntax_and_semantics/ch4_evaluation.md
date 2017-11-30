@@ -20,6 +20,11 @@ Scope objects should always be traditional objects. The consequences
 are undefined if a scope object is made to be part of an inheritance
 hierarchy that does not contain `Object`.
 
+A lexical and dynamic scope are said to be paired if the lexical scope
+contains a slot called `dynamic` whose value is the dynamic scope, and
+the dynamic scope has a slot called `$lexical` whose value is the
+lexical scope.
+
 At the top-level, there is a global scope object. This global scope
 object has a `global` slot that contains itself.
 
