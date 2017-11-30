@@ -82,7 +82,7 @@ bool Object::hasAnyProtection(Symbolic key) const {
 void Object::addProtection(Symbolic key, protection_t p) {
     auto iter = slots.find(key);
     if (iter == slots.end())
-        slots.emplace(key, Slot(nullptr, p));
+        slots.emplace(key, Slot(nullptr, p)); // <- Issue #16 null pointer is introduced here
     else
         iter->second.addProtection(p);
 }
