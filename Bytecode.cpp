@@ -413,11 +413,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             else
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
+            auto lex = state.lex.top(); // TODO Possible empty stack error?
             state.lex.push( clone(closure.getPtr()) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
                 state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
                 state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
@@ -509,11 +511,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             else
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
+            auto lex = state.lex.top(); // TODO Possible empty stack error?
             state.lex.push( clone(closure.getPtr()) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
                 state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
                 state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
