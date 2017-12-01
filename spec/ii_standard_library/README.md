@@ -29,6 +29,7 @@ scope object.
     Object
      +-- ArgList
      +-- Array
+     +-- ArrayBuilder
      +-- Boolean
      |    +-- False
      |    +-- True
@@ -65,6 +66,7 @@ scope object.
      +-- Kernel GC
      +-- Kernel Parents
      +-- Kernel Slots
+     +-- MethodBuilder
      +-- Mixin
      |    +-- Collection
      +-- Module

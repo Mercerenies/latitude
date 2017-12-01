@@ -155,39 +155,47 @@ Array clone := {
 
 ;; Array Syntax
 ;; TODO Performance improvements?
+
+global ArrayBuilder ::= Object clone.
+ArrayBuilder array := Nil.
+ArrayBuilder next := { self array pushBack: #'$1. }.
+ArrayBuilder finish := { self array. }.
+
 meta brackets := {
-  ArrayBuilder ::= Object clone.
-  ArrayBuilder array := Array clone.
-  ArrayBuilder next := { self array pushBack: #'$1. }.
-  ArrayBuilder finish := { self array. }.
-  ArrayBuilder.
+  ArrayBuilder clone tap {
+    self array := Array clone.
+  }.
 }.
 
 ;; Statement List Syntax
+
+global MethodBuilder ::= Object clone.
+MethodBuilder array := Nil.
+MethodBuilder next := {
+  self array pushBack: proc #'$1.
+}.
+MethodBuilder finish := {
+  spec := {
+    args := $*.
+    result := Nil.
+    here statements visit {
+      procd := parent self invoke: $1 slot 'call.
+      args dropIn.
+      parent result := procd call.
+    }.
+    result.
+  }.
+  #'spec parent := SpecialMethod.
+  #'spec statements := self array.
+  #'spec.
+}.
+
 global SpecialMethod ::= Method clone.
 SpecialMethod statements := [].
 meta statements := {
-  MethodBuilder ::= Object clone.
-  MethodBuilder array := Array clone.
-  MethodBuilder next := {
-    self array pushBack: proc #'$1.
+  MethodBuilder clone tap {
+    self array := Array clone.
   }.
-  MethodBuilder finish := {
-    spec := {
-      args := $*.
-      result := Nil.
-      here statements visit {
-        procd := parent self invoke: $1 slot 'call.
-        args dropIn.
-        parent result := procd call.
-      }.
-      result.
-    }.
-    #'spec parent := SpecialMethod.
-    #'spec statements := self array.
-    #'spec.
-  }.
-  MethodBuilder.
 }.
 
 ;; Return the script
