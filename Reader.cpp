@@ -488,12 +488,13 @@ void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYMN, Symbols::get()["brackets"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
     // Call the `brackets` function properly
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
@@ -687,12 +688,13 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
+    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYMN, Symbols::get()["statements"].index)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
     // Call the `statements` function properly
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);

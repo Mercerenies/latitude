@@ -156,7 +156,7 @@ Array clone := {
 ;; Array Syntax
 ;; TODO Performance improvements?
 meta brackets := {
-  ArrayBuilder ::= self Object clone.
+  ArrayBuilder ::= Object clone.
   ArrayBuilder array := Array clone.
   ArrayBuilder next := { self array pushBack: #'$1. }.
   ArrayBuilder finish := { self array. }.
@@ -164,10 +164,10 @@ meta brackets := {
 }.
 
 ;; Statement List Syntax
-SpecialMethod ::= Method clone.
+global SpecialMethod ::= Method clone.
 SpecialMethod statements := [].
 meta statements := {
-  MethodBuilder ::= self Object clone.
+  MethodBuilder ::= Object clone.
   MethodBuilder array := Array clone.
   MethodBuilder next := {
     self array pushBack: proc #'$1.
