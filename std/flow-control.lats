@@ -5,6 +5,10 @@ Cont toString := "Cont".
 global callCC := {
   meta sys callCC#: Cont clone, #'$1.
 }.
+global escapable := {
+  cont := $1.
+  caller return := { cont call. }.
+}.
 
 ;; Booleans
 Object toBool := True.
