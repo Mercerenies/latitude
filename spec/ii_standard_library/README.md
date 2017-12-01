@@ -75,6 +75,7 @@ scope object.
      |    +-- Cached
      |    +-- Cont
      |    +-- Method
+     |    |    +-- SpecialMethod
      +-- Process
      +-- StackFrame
      +-- Stream

@@ -11,10 +11,18 @@ is used as the lexical meta object, care must be taken that the
 methods still behave according to this specification, as many
 preconditions are not checked when the VM invokes meta methods.
 
+Further, all of the slots listed here should either be directly
+defined on a given meta object or directly defined on one of its
+parents. Implementations are free to ignore `missing` when making meta
+calls, for efficiency reasons, so the behavior is undefined if a
+particular slot on `meta` is intended to be accessed through
+`missing`.
+
 ## Simple Slots
 
     meta toString := "meta".
     meta sigil := Object clone.
+    meta lang := Object clone.
 
 ## Methods
 
@@ -53,6 +61,10 @@ slots `x` and `X`, which parse the argument as hexadecimal; `o` and
 [TODO: Document exactly what this does.]
 
 ### `meta statements.`
+
+[TODO: Document exactly what this does.]
+
+### `meta hashParen.`
 
 [TODO: Document exactly what this does.]
 
