@@ -6,6 +6,15 @@
 
 #define DEBUG_INSTR 0
 
+/*
+ * 1. Add `caller` to `lexical`.
+ * 2. Change standard library to not jump between scopes.
+ * 3. Cut out `$lexical` and `dynamic`.
+ * 4. Update docs before merging
+ *
+ * Also, `scope` and `$scope` aren't really necessary
+ */
+
 using namespace std;
 
 Thunk::Thunk(Method code)
