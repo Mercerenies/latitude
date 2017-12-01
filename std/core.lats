@@ -338,7 +338,7 @@ Kernel Parents above := {
   orgn := self origin (#'$1, #'$2).
   #'orgn parent slot #'$2.
 }.
-Kernel Parents hierarchy := {
+Kernel Parents hierarchy := { ; TODO meta brackets?
   arr := Array clone.
   curr := #'$1.
   while {
