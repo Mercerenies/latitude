@@ -82,7 +82,7 @@ ID        {SNORMAL}{NORMAL}*
     return INTEGER;
 }
 
-[-+]?0[A-Za-z][0-9A-Fa-f]+ {
+[-+]?0[A-Za-z][0-9A-Za-z]+ {
     char* arr = calloc(strlen(yytext) + 1, sizeof(char));
     strcpy(arr, yytext);
     yylval.sval = arr;
