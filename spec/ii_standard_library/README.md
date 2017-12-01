@@ -89,3 +89,4 @@ scope object.
 
  * [Object](object.md)
  * [Kernel](kernel.md)
+ * [meta](meta.md)
