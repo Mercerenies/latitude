@@ -125,8 +125,7 @@ String replaceAll := {
   }.
   while { index = curr find: substr, index. }
     do {
-      result := mthd.
-      parent curr := curr replace: substr, index, result.
+      parent curr := curr replace: substr, index, #'mthd.
       index = (index) + (substr size).
     }.
   curr.
