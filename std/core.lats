@@ -204,16 +204,11 @@ global caller := global.
 global lexical := global.
 global $dynamic := global.
 global scopeOf := {
-  s := self.
-  if ($1 asText substringBytes (0, 1) == "$")
-    then { s dynamic. }
-    else { s lexical. }.
-}.
-global $scopeOf := {
-  s := self.
-  if ($1 asText substringBytes (0, 1) == "$")
-    then { s $dynamic. }
-    else { s $lexical. }.
+  lex := $1.
+  dyn := $2.
+  if ($3 asText substringBytes (0, 1) == "$")
+    then { dyn. }
+    else { lex. }.
 }.
 Object me := { self. }.
 global do := { $1. }.
@@ -387,7 +382,7 @@ String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
 String byteCount := { meta sys stringLength#: self. }.
 Symbol assign= := {
   name := self.
-  curr := dynamic parent $scopeOf (self).
+  curr := scopeOf (lexical caller, dynamic parent, self).
   rhs := #'$1.
   sym := self asText ++ "=" intern.
   curr slot (sym) = { curr slot (name) = rhs ($1). }.
