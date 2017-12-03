@@ -8,10 +8,11 @@
 
 /*
  * X 1. Add `caller` to `lexical`.
- *   2. Change standard library to not jump between scopes.
- *   3. Cut out `$lexical` and `dynamic`.
- *   4. Eliminate `pairScopes`.
- *   5. Update docs before merging.
+ * X 2. Change standard library to not jump between scopes.
+ * X 3. Cut out `$lexical` and `dynamic`.
+ * X 4. Eliminate `pairScopes`.
+ *   5. Ref counting.
+ *   6. Update docs before merging.
  *
  * Also, `scope` and `$scope` aren't really necessary
  */
@@ -431,15 +432,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
-                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
                 state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
-                                            Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
+                                            Symbols::get()["$dynamic"]);
             }
             state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"],
-                                        Symbols::get()["lexical"], Symbols::get()["dynamic"]);
+                                        Symbols::get()["lexical"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
@@ -529,15 +528,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
-                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
                 state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
-                                            Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
+                                            Symbols::get()["$dynamic"]);
             }
             state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"],
-                                        Symbols::get()["lexical"], Symbols::get()["dynamic"]);
+                                        Symbols::get()["lexical"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
