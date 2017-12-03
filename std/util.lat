@@ -31,8 +31,9 @@ Latchkey make := {
 Lockbox store := { self slot ($1 tag) = $2. }.
 Lockbox fits := { self slot? ($1 tag). }.
 Lockbox retrieve := {
-  if { parent self fits: parent dynamic $1. }
-    then { parent self slot: parent dynamic $1 tag. }
+  key := $1.
+  if { parent self fits: key. }
+    then { parent self slot: key tag. }
     else { Nil. }.
 }.
 Lockbox toString := "Lockbox".
@@ -60,7 +61,8 @@ Generator call := {
 }.
 Generator map := {
   localize.
-  procd := proc { parent dynamic slot '$1 call. }.
+  func0 := #'$1.
+  procd := proc { func0 call. }.
   {
     this visit { $yield: procd call ($1). }.
   } generator.
@@ -126,13 +128,14 @@ callAmb := {
   ambFunc := proc {
     takes '[cases].
     callCC {
-      escape := { parent dynamic $1 call. }.
+      escapable.
       oldHandler := ambObject slot 'nextHandler.
       cases visit {
         takes '[curr].
         callCC {
-          ambObject nextHandler := { parent dynamic $1 call. }.
-          escape: curr.
+          nextExit := #'$1.
+          ambObject nextHandler := { nextExit call. }.
+          return: curr.
         }.
       }.
       oldHandler.

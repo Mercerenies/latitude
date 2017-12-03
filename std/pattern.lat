@@ -35,7 +35,8 @@ NoMatch call := {}.
 
 ; ~m 'name - A wildcard that matches anything and binds it to 'name
 meta sigil m := {
-  Wildcard clone tap { self symbol := parent dynamic $1. }.
+  symbol := $1.
+  Wildcard clone tap { self symbol := symbol. }.
 }.
 
 ; ... - A wildcard that matches potentially multiple list elements and ignores them
@@ -72,9 +73,7 @@ Array =~ := {
   localize.
   takes '[rhs].
   callCC {
-    return := {
-      parent dynamic $1 call.
-    }.
+    escapable.
     (Collection member? (rhs)) ifFalse {
       return: NoMatch clone.
     }.
@@ -112,8 +111,9 @@ Array =~ := {
     sequenceResult := {
       takes '[procd].
       newResult {
+        rest := $1.
         proc {
-          parent dynamic $1 call.
+          rest call.
           procd callback.
         }.
       }.
@@ -148,7 +148,7 @@ Cons =~ := {
   localize.
   takes '[rhs].
   callCC {
-    return := { parent dynamic $1 call. }.
+    escapable.
     (rhs is: Cons) ifFalse: { return: NoMatch clone. }.
     carPart := (this car) =~ (rhs car).
     cdrPart := (this cdr) =~ (rhs cdr).
@@ -179,10 +179,11 @@ case := {
             then {
               Object clone tap {
                 self do := {
+                  result := #'$1.
                   finished call:
-                    if (#'$1 is (Method))
-                      then { match call (parent dynamic slot '$1). }
-                      else #'$1.
+                    if (#'result is (Method))
+                      then { match call (#'result). }
+                      else #'result.
                 }.
               }.
             } else {
@@ -191,7 +192,7 @@ case := {
               }.
             }.
         }.
-        procd := dynamic invokeSpecial:
+        procd := $dynamic invokeSpecial: ; TODO Why is this on dynamic?
           #'block,
           {
             $1 when := { whenProc call. }.

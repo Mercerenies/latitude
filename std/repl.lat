@@ -40,7 +40,7 @@ REPL print := {
 REPL loop := {
   localize.
   $whereAmI := this.
-  self $scope := dynamic clone.
+  self $scope := $dynamic clone.
   (self scope) pairScopes (self $scope).
   loop {
     {
