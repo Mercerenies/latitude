@@ -12,7 +12,7 @@ String find := {
   }.
   byteResult := self findBytes: substr, byteIndex.
   callCC {
-    return := { parent dynamic $1 call. }.
+    escapable.
     byteResult nil? ifTrue {
       return: Nil.
     }.
@@ -118,13 +118,15 @@ String replaceAll := {
   'negativeIndex assign = { $1. }.
   index := { (curr size) - (negativeIndex). }.
   index= := {
-    $1 ifTrue {
-      negativeIndex = (curr size) - (parent dynamic $1).
+    index := $1.
+    index ifTrue {
+      negativeIndex = (curr size) - (index).
     }.
   }.
   while { index = curr find: substr, index. }
     do {
-      parent curr := curr replace: substr, index, #'mthd.
+      result := mthd.
+      parent curr := curr replace: substr, index, result.
       index = (index) + (substr size).
     }.
   curr.

@@ -255,21 +255,21 @@ Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
 
 ;; Kernel invocations
 Kernel invokeOn := {
+  obj := #'$1.
+  mthd := #'$2.
   procd := Proc clone.
   procd call := {
-    meta sys invoke#:
-      parent dynamic slot '$1,
-      parent dynamic slot '$2.
+    meta sys invoke#: #'obj, #'mthd.
   }.
   procd.
 }.
 Kernel invokeOnSpecial := {
+  obj := #'$1.
+  mthd := #'$2.
+  mod := #'$3.
   procd := Proc clone.
   procd call := {
-    meta sys doWithCallback#:
-      parent dynamic slot '$1,
-      parent dynamic slot '$2,
-      parent dynamic slot '$3.
+    meta sys doWithCallback#: #'obj, #'mthd, #'mod.
   }.
   procd.
 }.
@@ -291,11 +291,13 @@ Kernel GC untrace := { self traced := False. }.
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.
 Kernel env= := {
-  if { parent dynamic $2 nil?. }
+  name := $1.
+  value := #'$2.
+  if { #'value nil?. }
     then {
-      meta sys envUnset#: parent dynamic $1.
+      meta sys envUnset#: name.
     } else {
-      meta sys envSet#: parent dynamic $1, parent dynamic $2.
+      meta sys envSet#: name, value.
     }.
 }.
 
@@ -309,8 +311,10 @@ Kernel Slots get := { Kernel invokeOn (#'$1, self hold) call. }.
 Kernel Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
 Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
 Kernel Slots has? := {
+  obj := #'$1.
+  symbol := #'$2.
   {
-    Kernel Slots hold: parent dynamic hold '$1, parent dynamic hold '$2.
+    Kernel Slots hold: #'obj, #'symb.
     True.
   } catch:
     err SlotError,
@@ -382,7 +386,7 @@ String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
 String byteCount := { meta sys stringLength#: self. }.
 Symbol assign= := {
   name := self.
-  curr := scopeOf (lexical caller, dynamic parent, self).
+  curr := scopeOf (lexical caller, $dynamic parent, self).
   rhs := #'$1.
   sym := self asText ++ "=" intern.
   curr slot (sym) = { curr slot (name) = rhs ($1). }.

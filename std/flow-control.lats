@@ -86,7 +86,8 @@ global while := {
     self do := {
       stmt := #'$1.
       callCC {
-        $break := { parent dynamic $1 call. }.
+        escapable.
+        $break := #'return.
         loop {
           if (cond)
             then { stmt. }
@@ -159,7 +160,7 @@ global cond := {
           }.
         }.
     }.
-    procd := dynamic invokeSpecial:
+    procd := $dynamic invokeSpecial:
       #'block,
       {
         $1 when := { whenProc call. }.

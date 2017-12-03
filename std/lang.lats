@@ -9,7 +9,7 @@ meta hashParen := {
     parent index := index + 1.
   }.
   callCC {
-    return := { parent dynamic $1 call. }.
+    escapable.
     while { (index) <= (str size). }
       do {
         str0 := str substring: 0, index.
