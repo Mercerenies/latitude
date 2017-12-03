@@ -5,8 +5,9 @@ Object is := { meta sys instanceOf#: #'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, #'$2. }.
 Object slot? := {
+  target := $1.
   {
-    (parent slot 'self) slot: parent dynamic $1.
+    (parent slot 'self) slot: target.
     True.
   } catch:
     err SlotError,
@@ -66,7 +67,8 @@ Method resolve := {
   }.
 }.
 Method catch := {
-  #'self resolve: { $1 is: parent dynamic $1. }, #'$2.
+  target := $1.
+  #'self resolve: { $1 is (target). }, #'$2.
 }.
 Method catchAll := { #'self catch: Exception, #'$1. }.
 Method default := { #'self catch: Exception, #'$1. }.
@@ -98,8 +100,9 @@ Proc toString := "Proc".
 Method == := { (self) == ($1). }. ; Evaluate the method and then try again
 Method < := { (self) < ($1). }. ; Evaluate the method and then try again
 Proc <| := {
+  rhs := #'$1.
   proc {
-    r := (parent dynamic slot '$1) call.
+    r := #'rhs call.
     (parent slot 'self) call: r.
   }.
 }.
@@ -159,8 +162,9 @@ Stream close := { meta sys streamClose#: self. }.
 Stream open := { meta sys streamFileOpen#: self clone, $1, $2, $3. }.
 Stream closeAfter := {
   stream := self.
+  method := #'$1.
   {
-    stream invoke (parent dynamic slot '$1) call.
+    stream invoke (#'method) call.
   } protect {
     stream close.
   }.
@@ -198,8 +202,6 @@ global scope := { self. }.
 global $scope := { self. }.
 global caller := global.
 global lexical := global.
-global dynamic := global.
-global $lexical := global.
 global $dynamic := global.
 global scopeOf := {
   s := self.
