@@ -227,15 +227,6 @@ global toString := {
     then "global"
     else "#<Scope>".
 }.
-; NOTE: pairScopes can only be called on custom-made scopes.
-;       Attempting to re-pair implicitly created scopes will
-;       trigger a protection error.
-global pairScopes := {
-  self lexical := self.
-  self dynamic := $1.
-  $1 $lexical := self.
-  $1 $dynamic := $1.
-}.
 
 ;; Equality and Comparability
 ; TODO Consider moving the comparison operators to a mixin

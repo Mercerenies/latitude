@@ -41,7 +41,6 @@ REPL loop := {
   localize.
   $whereAmI := this.
   self $scope := $dynamic clone.
-  (self scope) pairScopes (self $scope).
   loop {
     {
       { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue {
