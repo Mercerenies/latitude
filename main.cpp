@@ -9,12 +9,15 @@ extern "C" {
 #include "Symbol.hpp"
 #include "Bytecode.hpp"
 #include "REPL.hpp"
+#include "Args.hpp"
 #include <iostream>
 #include <cstring>
 
-using namespace std;
-
 int main(int argc, char** argv) {
+
+    std::cout << "Latitude ALPHA" << std::endl;
+
+    /* CmdArgs args = */ parseArgs(argc, argv);
 
     IntState state = intState();
     ReadOnlyState reader = readOnlyState();
