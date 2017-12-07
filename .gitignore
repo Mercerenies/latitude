@@ -26,6 +26,7 @@
 *.exe
 *.out
 *.app
+latitude
 
 # Emacs backup files
 *~

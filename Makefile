@@ -7,7 +7,7 @@ endif
 CCFLAGS=-c -Wall
 CXXFLAGS=-I $(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=-I $(BOOST) -Wall -std=gnu++1y
-LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y
+LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o latitude
 FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o
 
 all: Project
