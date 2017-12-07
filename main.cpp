@@ -17,12 +17,38 @@ int main(int argc, char** argv) {
 
     std::cout << "Latitude ALPHA" << std::endl;
 
-    /* CmdArgs args = */ parseArgs(argc, argv);
+    CmdArgs args = parseArgs(argc, argv);
 
-    IntState state = intState();
-    ReadOnlyState reader = readOnlyState();
-    ObjectPtr global = spawnObjects(state, reader);
-    runREPL(global, state, reader);
+    switch (args.output) {
+    case OutputMode::NONE: {
+        // Do nothing here
+        break;
+    }
+    case OutputMode::VERSION: {
+        // This will print an actual version number once the language has been
+        // formally released. For now, it's a placeholder string.
+        std::cout << "Latitude [Development Version]" << std::endl;
+        break;
+    }
+    case OutputMode::HELP: {
+        outputHelp();
+        break;
+    }
+    }
+
+    switch (args.run) {
+    case RunMode::REPL: {
+        IntState state = intState();
+        ReadOnlyState reader = readOnlyState();
+        ObjectPtr global = spawnObjects(state, reader);
+        runREPL(global, state, reader);
+        break;
+    }
+    case RunMode::EXIT: {
+        // Do nothing and exit
+        break;
+    }
+    }
 
     return 0;
 }
