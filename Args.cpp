@@ -32,5 +32,7 @@ CmdArgs parseArgs(int& argc, char**& argv) {
 }
 
 void outputHelp() {
-    std::cout << "<help text>" << std::endl;
+    std::cout << "Usage: latitude [args...]" << std::endl;
+    std::cout << "  --help     Show this message and exit" << std::endl;
+    std::cout << "  --version  Print the current version and exit" << std::endl;
 }
