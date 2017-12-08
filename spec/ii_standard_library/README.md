@@ -27,6 +27,7 @@ scope object.
 
     &LoadedModules
     Object
+     +-- $argv
      +-- ArgList
      +-- Array
      +-- ArrayBuilder
