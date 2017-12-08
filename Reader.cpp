@@ -247,6 +247,8 @@ void saveToFile(ofstream& file, TranslationUnitPtr unit) {
     }
 }
 
+///// Load from file
+
 void compileFile(string fname, string fname1, IntState& state) {
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
