@@ -1,0 +1,18 @@
+
+meta sys kernelLoad0#: "std/latitude.lats", global.
+
+{
+  $whereAmI := $argv $0.
+  Kernel evalFile: $argv $0, global clone.
+} resolve:
+  True,
+  {
+    exception := $1.
+    stderr putln: "***** EXCEPTION *****".
+    stderr putln: exception pretty.
+    {
+      exception slot? 'printStackTrace.
+    } ifTrue {
+      exception printStackTrace.
+    }.
+  }.
