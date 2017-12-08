@@ -8,7 +8,7 @@ CmdArgs parseArgs(int& argc, char**& argv) {
     int j = 1;
     CmdArgs result;
 
-    result.run = RunMode::REPL;
+    result.run = RunMode::DEFAULT;
     result.output = OutputMode::NONE;
 
     for (int i = 1; i < len; i++) {

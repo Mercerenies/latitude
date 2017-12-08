@@ -8,6 +8,7 @@ extern "C" {
 #include "GC.hpp"
 #include "Symbol.hpp"
 #include "Bytecode.hpp"
+#include "Pathname.hpp"
 #include "REPL.hpp"
 #include "Args.hpp"
 #include <iostream>
@@ -37,11 +38,23 @@ int main(int argc, char** argv) {
     }
 
     switch (args.run) {
-    case RunMode::REPL: {
+    case RunMode::DEFAULT: {
         IntState state = intState();
         ReadOnlyState reader = readOnlyState();
         ObjectPtr global = spawnObjects(state, reader);
-        runREPL(global, state, reader);
+        if (argc > 1) {
+            ObjectPtr lex = clone(global);
+            ObjectPtr dyn = clone(global);
+            std::string pathname = stripFilename(getExecutablePathname());
+            readFile(argv[1], {lex, dyn}, state);
+            readFile(pathname + "std/latitude.lats", {lex, dyn}, state);
+            // TODO cmd args
+            // TODO the garbage collector won't run in this case
+            while (!isIdling(state))
+                doOneStep(state, reader);
+        } else {
+            runREPL(global, state, reader);
+        }
         break;
     }
     case RunMode::EXIT: {
