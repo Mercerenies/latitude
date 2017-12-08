@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     case RunMode::DEFAULT: {
         IntState state = intState();
         ReadOnlyState reader = readOnlyState();
-        ObjectPtr global = spawnObjects(state, reader);
+        ObjectPtr global = spawnObjects(state, reader, argc, argv);
         if (argc > 1) {
             ObjectPtr lex = clone(global);
             ObjectPtr dyn = clone(global);

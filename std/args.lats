@@ -89,6 +89,9 @@ ArgList dropIn := {
 
 Collection inject: ArgList.
 
+;; argv
+$argv toString := "$argv".
+
 ; It's very easy to lose track of a `self` in nested method calls, and calling `parent` repeatedly
 ; can be annoying, so the `localize` method will bind `this` to `self` in the calling scope. `this`
 ; will not rebind lexically until that scope exits.

@@ -5,7 +5,7 @@
 #include "Proto.hpp"
 #include "Bytecode.hpp"
 
-ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader);
+ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** argv);
 
 void throwError(IntState& state, std::string name, std::string msg);
 void throwError(IntState& state, std::string name);

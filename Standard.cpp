@@ -2211,7 +2211,16 @@ void spawnSystemCallsNew(ObjectPtr global,
 
 }
 
-ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
+void bindArgv(ObjectPtr argv_, ObjectPtr string, int argc, char** argv) {
+    for (int i = 1; i < argc; i++) {
+        std::string name = "$" + to_string(i - 1);
+        ObjectPtr curr = clone(string);
+        curr->prim(argv[i]);
+        argv_->put(Symbols::get()[name], curr);
+    }
+}
+
+ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** argv) {
 
     ObjectPtr object(GC::get().allocate());
     ObjectPtr meta(clone(object));
@@ -2245,6 +2254,8 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
     ObjectPtr boolean(clone(object));
     ObjectPtr true_(clone(boolean));
     ObjectPtr false_(clone(boolean));
+
+    ObjectPtr argv_(clone(object));
 
     // Global calls for basic types
     global->put(Symbols::get()["Object"], object);
@@ -2298,6 +2309,10 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
     stdout_->prim(outStream());
     stdin_->prim(inStream());
     stderr_->prim(errStream());
+
+    // argv
+    global->put(Symbols::get()["$argv"], argv_);
+    bindArgv(argv_, string, argc, argv);
 
     // Spawn the literal objects table
     reader.lit[Lit::NIL   ] = nil;
