@@ -31,6 +31,10 @@ latitude
 # Emacs backup files
 *~
 
+# Compiled Latitude files
+*.latsc
+*.latc
+
 # Misc.
 etc/*
 doc/*

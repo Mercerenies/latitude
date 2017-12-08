@@ -272,7 +272,7 @@ public:
     /// Returns the nth method in the translation unit. <em>No bounds
     /// checking is performed.</em> It is the caller's responsibility
     /// to ensure that the argument to this method is between 0 and
-    /// methodCount(), inclusive.
+    /// methodCount().
     ///
     /// \param index the index of the method
     /// \return the method itself

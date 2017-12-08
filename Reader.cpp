@@ -175,7 +175,7 @@ void eval(IntState& state, string str) {
     }
 }
 
-void readFile(string fname, Scope defScope, IntState& state) {
+void readFileSource(string fname, Scope defScope, IntState& state) {
 #ifdef DEBUG_LOADS
     cout << "Loading " << fname << "..." << endl;
 #endif
@@ -220,6 +220,77 @@ void readFile(string fname, Scope defScope, IntState& state) {
     } catch (ios_base::failure err) {
         throwError(state, "IOError", err.what());
     }
+}
+
+void saveInstrs(ofstream& file, const InstrSeq& seq) {
+    SerialInstrSeq compiled;
+    for (const auto& instr : seq) {
+        appendInstruction(instr.instr, compiled);
+        for (const auto& arg : instr.args) {
+            appendRegisterArg(arg, compiled);
+        }
+    }
+    unsigned long length = compiled.size();
+    for (int i = 0; i < 8; i++) {
+        file << (unsigned char)(length % 256);
+        length >>= 8;
+    }
+    for (const unsigned char& ch : compiled) {
+        file << ch;
+    }
+}
+
+void saveToFile(ofstream& file, TranslationUnitPtr unit) {
+    saveInstrs(file, unit->instructions());
+    for (int i = 0; i < unit->methodCount(); i++) {
+        saveInstrs(file, unit->method(i));
+    }
+}
+
+void compileFile(string fname, string fname1, IntState& state) {
+#ifdef DEBUG_LOADS
+    cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
+#endif
+    ifstream file;
+    file.exceptions(ifstream::failbit | ifstream::badbit);
+    try {
+        file.open(fname);
+        BOOST_SCOPE_EXIT(&file) {
+            file.close();
+        } BOOST_SCOPE_EXIT_END;
+        stringstream str;
+        while ((file >> str.rdbuf()).good());
+        try {
+            auto stmts = parse(str.str());
+            for (auto& stmt : stmts)
+                stmt->propogateFileName(fname);
+            list< shared_ptr<Stmt> > stmts1;
+            for (unique_ptr<Stmt>& stmt : stmts)
+                stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
+            TranslationUnitPtr unit = make_shared<TranslationUnit>();
+            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(unit->instructions());
+            for (auto& stmt : stmts1) {
+                stmt->translate(*unit, unit->instructions());
+            }
+            (makeAssemblerLine(Instr::RET)).appendOnto(unit->instructions());
+            ofstream file1;
+            file1.open(fname1);
+            BOOST_SCOPE_EXIT(&file1) {
+                file1.close();
+            } BOOST_SCOPE_EXIT_END;
+            saveToFile(file1, unit);
+        } catch (std::string parseException) {
+            throwError(state, "ParseError", parseException);
+        }
+    } catch (ios_base::failure err) {
+        throwError(state, "IOError", err.what());
+    }
+}
+
+void readFile(string fname, Scope defScope, IntState& state) {
+    // Soon, this will attempt to read a compiled file first.
+    // compileFile(fname, fname + "c", state);
+    readFileSource(fname, defScope, state);
 }
 
 Stmt::Stmt(int line_no)
