@@ -19,7 +19,7 @@ extern "C" {
 #include <boost/scope_exit.hpp>
 #include <boost/blank.hpp>
 
-//#define DEBUG_LOADS
+// #define DEBUG_LOADS
 
 using namespace std;
 
@@ -247,7 +247,71 @@ void saveToFile(ofstream& file, TranslationUnitPtr unit) {
     }
 }
 
-///// Load from file
+unsigned long loadAsNumber(ifstream& file) {
+    unsigned long result = 0UL;
+    unsigned char curr[8];
+    for (int i = 0; i < 8; i++) {
+        if (file.eof())
+            return 0;
+        curr[i] = file.get();
+    }
+    for (int i = 7; i >= 0; i--) {
+        result <<= 8;
+        result += (unsigned long)curr[i];
+    }
+    return result;
+}
+
+SerialInstrSeq loadSeq(ifstream& file, unsigned long length) {
+    SerialInstrSeq result;
+    for (unsigned long i = 0; i < length; i++) {
+        unsigned char ch;
+        ch = file.get();
+        result.push_back(ch);
+    }
+    return result;
+}
+
+void parseSeq(InstrSeq& seqOut, SerialInstrSeq& seqIn) {
+    // Note: Destroys the sequence as it reads it
+    while (!seqIn.empty()) {
+        Instr instr = popInstr(seqIn);
+        Instruction instruction { instr, {} };
+        for (const auto& arg : getAsmArguments(instr)) {
+            switch (arg) {
+            case AsmType::LONG:
+                instruction.args.push_back(popLong(seqIn));
+                break;
+            case AsmType::STRING:
+                instruction.args.push_back(popString(seqIn));
+                break;
+            case AsmType::REG:
+                instruction.args.push_back(popReg(seqIn));
+                break;
+            case AsmType::ASM:
+                instruction.args.push_back(popFunction(seqIn));
+                break;
+            }
+        }
+        seqOut.push_back(instruction);
+    }
+}
+
+TranslationUnitPtr loadFromFile(ifstream& file) {
+    TranslationUnitPtr result = make_shared<TranslationUnit>();
+    unsigned long length = loadAsNumber(file);
+    SerialInstrSeq seq = loadSeq(file, length);
+    parseSeq(result->instructions(), seq);
+    while (true) {
+        unsigned long mlength = loadAsNumber(file);
+        if (file.eof())
+            break;
+        SerialInstrSeq mseq = loadSeq(file, mlength);
+        auto curr = result->pushMethod(InstrSeq());
+        parseSeq(result->method(curr.index), mseq);
+    }
+    return result;
+}
 
 void compileFile(string fname, string fname1, IntState& state) {
 #ifdef DEBUG_LOADS
@@ -289,10 +353,45 @@ void compileFile(string fname, string fname1, IntState& state) {
     }
 }
 
+void readFileComp(string fname, Scope defScope, IntState& state) {
+#ifdef DEBUG_LOADS
+    cout << "Loading (compiled) " << fname << "..." << endl;
+#endif
+    ifstream file;
+    file.exceptions(ifstream::badbit);
+    try {
+        file.open(fname);
+        BOOST_SCOPE_EXIT(&file) {
+            file.close();
+        } BOOST_SCOPE_EXIT_END;
+        try {
+            TranslationUnitPtr unit = loadFromFile(file);
+            state.lex.push(defScope.lex);
+            if (!state.dyn.empty()) {
+                state.dyn.push( clone(state.dyn.top()) );
+                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
+                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
+                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
+            }
+            state.lex.top()->put(Symbols::get()["self"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
+            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
+            state.stack = pushNode(state.stack, state.cont);
+            state.cont = CodeSeek(unit->instructions());
+            state.trns.push(unit);
+        } catch (std::string parseException) {
+            throwError(state, "ParseError", parseException);
+        }
+    } catch (ios_base::failure err) {
+        throwError(state, "IOError", err.what());
+    }
+}
+
 void readFile(string fname, Scope defScope, IntState& state) {
     // Soon, this will attempt to read a compiled file first.
     // compileFile(fname, fname + "c", state);
     readFileSource(fname, defScope, state);
+    // readFileComp(fname + "c", defScope, state);
 }
 
 Stmt::Stmt(int line_no)
@@ -345,7 +444,7 @@ void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
 
     // "Evaluate" the name to lookup (may incur `missing`)
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
@@ -401,7 +500,7 @@ void StmtEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
 
     // Put the name in the symbol field
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
 
     // Put the value
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
@@ -451,7 +550,7 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Give the object an appropriate closure
     (makeAssemblerLine(Instr::GETL, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["closure"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(seq);
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(seq);
 
@@ -559,11 +658,11 @@ void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["brackets"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "brackets")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
     // Call the `brackets` function properly
@@ -581,7 +680,7 @@ void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
         // Grab `next` and call it
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::SYMN, Symbols::get()["next"].index)).appendOnto(seq);
+        (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
         (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -591,7 +690,7 @@ void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Now call finish
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["finish"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -617,10 +716,10 @@ void StmtSigil::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the `sigil` object
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["sigil"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "sigil")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
 
@@ -660,11 +759,11 @@ void StmtHashParen::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the `hashParen` object
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["hashParen"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "hashParen")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
 
@@ -690,16 +789,15 @@ void StmtZeroDispatch::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the `radix` object
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["radix"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "radix")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
 
     string contents = text;
     Symbolic prefix = Symbols::get()[ this->prefix == '\0' ? "" : string(1, this->prefix) ];
-    Symbolic symbol = Symbols::get()[ string(1, this->symbol) ];
 
     InstrSeq seq0 = garnishSeq(contents);
     seq.insert(seq.end(), seq0.begin(), seq0.end());
@@ -709,7 +807,7 @@ void StmtZeroDispatch::translate(TranslationUnit& unit, InstrSeq& seq) {
     seq.insert(seq.end(), seq1.begin(), seq1.end());
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
 
-    (makeAssemblerLine(Instr::SYMN, symbol.index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, string(1, this->symbol))).appendOnto(seq);
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
@@ -751,7 +849,7 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
         (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(result);
         // Give the object an appropriate closure
         (makeAssemblerLine(Instr::GETL, Reg::PTR)).appendOnto(result);
-        (makeAssemblerLine(Instr::SYMN, Symbols::get()["closure"].index)).appendOnto(result);
+        (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(result);
         (makeAssemblerLine(Instr::SETF)).appendOnto(result);
         (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(result);
         return result;
@@ -759,11 +857,11 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["statements"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "statements")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
     // Call the `statements` function properly
@@ -785,7 +883,7 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
         // Grab `next` and call it
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::SYMN, Symbols::get()["next"].index)).appendOnto(seq);
+        (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
         (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -795,7 +893,7 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Now call finish
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["finish"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -857,7 +955,7 @@ void StmtDoubleEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
 
     // Put the name in the symbol field
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
 
     // Put the value
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
@@ -873,7 +971,7 @@ void StmtDoubleEqual::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Call the `::` method
     (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()["::"].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, "::")).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
     (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
@@ -907,7 +1005,7 @@ void StmtHeld::translate(TranslationUnit& unit, InstrSeq& seq) {
     }
 
     // "Evaluate" the name to lookup (may incur `missing`)
-    (makeAssemblerLine(Instr::SYMN, Symbols::get()[functionName].index)).appendOnto(seq);
+    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 

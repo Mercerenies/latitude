@@ -4,7 +4,7 @@
 #include "Standard.hpp"
 #include "Assembler.hpp"
 
-#define DEBUG_INSTR 0
+//#define DEBUG_INSTR 2
 
 using namespace std;
 
@@ -109,7 +109,7 @@ long popLong(SerialInstrSeq& state) {
     return sign * value;
 }
 
-string popString(SerialInstrSeq& state) {
+string popString(SerialInstrSeq& state) { // TODO Null-safety here (null characters will confuse it)
     string str;
     unsigned char ch;
     while ((ch = popChar(state)) != 0)
@@ -953,7 +953,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     case Instr::SYMN: {
         long val = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
-        cout << "SYMN " << val << endl;
+        cout << "SYMN " << val << " (" << Symbols::get()[Symbolic{val}] << ")" << endl;
 #endif
         state.sym = { val };
     }
