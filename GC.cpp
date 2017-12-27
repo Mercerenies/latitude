@@ -23,6 +23,11 @@ ObjectPtr GC::allocate() {
     return ptr;
 }
 
+void GC::free(ObjectPtr obj) {
+    alloc.erase(obj);
+    Allocator::get().free(obj);
+}
+
 template <typename Container>
 void addToFrontier(const Container& visited, Container& frontier, ObjectPtr val) {
     if (visited.find(val) == visited.end()) {
@@ -160,8 +165,7 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
     std::cout << "<<Set to delete " << result.size() << " objects>>" << std::endl;
 #endif
     for (ObjectPtr res : result) {
-        alloc.erase(res);
-        Allocator::get().free(res);
+        this->free(res);
     }
 #if GC_PRINT > 0
     std::cout << "<<EXIT GC>>" << std::endl;
