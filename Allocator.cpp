@@ -27,6 +27,7 @@ ObjectPtr Allocator::allocate() {
                     carray.used++;
                     entry.in_use = true;
                     entry.index = index;
+                    entry.ref_count = 0;
                     entry.object = Object();
                     return &entry.object;
                 }
