@@ -16,7 +16,7 @@ extern "C" {
 
 int main(int argc, char** argv) {
 
-    std::cout << "Latitude ALPHA" << std::endl;
+    std::cout << "Latitude [Development Version]" << std::endl;
 
     CmdArgs args = parseArgs(argc, argv);
 
