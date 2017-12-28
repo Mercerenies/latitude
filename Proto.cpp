@@ -22,7 +22,7 @@ void ObjectPtr::down() {
         assert(ptr->ref_count > 0);
         ptr->ref_count--;
         if (ptr->ref_count == 0) {
-            //std::cout << "<FREE " << impl << ">" << std::endl; ///// runs but does not collect outside of GC
+            std::cout << "<FREE " << impl << ">" << std::endl; ///// runs but does not collect outside of GC
             GC::get().free(impl);
         }
     }
@@ -50,12 +50,14 @@ ObjectPtr::~ObjectPtr() {
 }
 
 ObjectPtr& ObjectPtr::operator=(const ObjectPtr& ptr) {
+    down();
     impl = ptr.impl;
     up();
     return *this;
 }
 
 ObjectPtr& ObjectPtr::operator=(ObjectPtr&& ptr) {
+    down();
     impl = ptr.impl;
     ptr.impl = nullptr;
     // Created and destroyed a reference; leave it alone
