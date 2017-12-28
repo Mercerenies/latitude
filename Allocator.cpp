@@ -41,8 +41,8 @@ ObjectPtr Allocator::allocate() {
     //return new Object();
 }
 
-void Allocator::free(ObjectPtr obj) {
-    ObjectEntry* entry = reinterpret_cast<ObjectEntry*>(obj.get());
+void Allocator::free(Object* obj) {
+    ObjectEntry* entry = reinterpret_cast<ObjectEntry*>(obj);
     CountedArray& carray = vec[entry->index];
     entry->in_use = false;
     carray.used--;

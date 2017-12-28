@@ -19,22 +19,22 @@ ObjectPtr GC::allocate() {
 #if GC_PRINT > 2
     std::cout << "<<Allocating " << ptr << ">>" << std::endl;
 #endif
-    alloc.insert(ptr);
+    alloc.insert(ptr.get());
     return ptr;
 }
 
-void GC::free(ObjectPtr obj) {
+void GC::free(Object* obj) {
     alloc.erase(obj);
     Allocator::get().free(obj);
 }
 
 template <typename Container>
 void addToFrontier(const Container& visited, Container& frontier, ObjectPtr val) {
-    if (visited.find(val) == visited.end()) {
+    if (visited.find(val.get()) == visited.end()) {
 #if GC_PRINT > 1
         std::cout << "<<Inserting " << val << ">>" << std::endl;
 #endif
-        frontier.insert(val);
+        frontier.insert(val.get());
 #if GC_PRINT > 2
         std::cout << "<<Inserted " << val << ">>" << std::endl;
 #endif
@@ -128,10 +128,10 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<ENTER GC>>" << std::endl;
 #endif
-    std::set<ObjectPtr> visited;
-    std::set<ObjectPtr> frontier;
-    for (auto elem : globals)
-        frontier.insert(elem);
+    std::set<Object*> visited;
+    std::set<Object*> frontier;
+    for (const auto& elem : globals)
+        frontier.insert(elem.get());
     while (!frontier.empty()) {
         auto curr = *(frontier.begin());
         auto stream(outStream());
@@ -164,8 +164,8 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<Set to delete " << result.size() << " objects>>" << std::endl;
 #endif
-    for (ObjectPtr res : result) {
-        this->free(res);
+    for (const ObjectPtr& res : result) {
+        this->free(res.get());
     }
 #if GC_PRINT > 0
     std::cout << "<<EXIT GC>>" << std::endl;

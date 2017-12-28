@@ -66,7 +66,7 @@ public:
     /// \returns the allocator instance
     static Allocator& get() noexcept;
     ObjectPtr allocate();
-    void free(ObjectPtr);
+    void free(Object*);
     void DEBUG();
 };
 

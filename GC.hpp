@@ -17,7 +17,7 @@
 class GC {
 private:
     static GC instance;
-    std::set<ObjectPtr> alloc;
+    std::set<Object*> alloc;
     GC() = default;
 public:
 
@@ -35,7 +35,7 @@ public:
     /// that the object has been freed.
     ///
     /// \param obj the object to free
-    void free(ObjectPtr obj);
+    void free(Object* obj);
 
     /// Cleans up objects. Any object references maintained by C++ or
     /// by the embedded code should be passed in as arguments, as the
