@@ -198,5 +198,3 @@ object with two arguments. The first argument is the constructed
 string. The second argument is the symbol `+` or `-`, if one of the
 two signs was provided or the symbol with the empty name if no sign
 was provided.
-
-/////

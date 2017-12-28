@@ -52,5 +52,5 @@ void Allocator::free(Object* obj) {
     CountedArray& carray = vec[entry->index];
     entry->in_use = false;
     entry->object = Object(); // TODO This is probably slowing the GC down; can we make it more efficient?
-    carray.used--; ///// Not crashing anymore but only running during GC so not doing its job
+    carray.used--;
 }

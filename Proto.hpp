@@ -22,8 +22,6 @@
 
 /// \cond
 
-///// Make instruction sequences more "constant" for efficiency
-
 // Yes, this is probably horrible from a design standpoint, but I needed some
 // way to resolve the circular dependencies.
 class Stmt; // From Reader.hpp
