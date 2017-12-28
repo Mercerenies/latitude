@@ -46,22 +46,12 @@ Method resolve := {
   mthd := #'self.
   cond := #'$1.
   catcher := #'$2.
-  jump := Nil.
-  'jump assign = { $1. }.
   callCC {
     outer := $1.
-    callCC {
-      inner := $1.
-      result := callCC {
-        jump = $1.
-        inner call: Nil.
-      }.
-      outer call: (catcher: result).
-    }.
     { mthd. } handle {
       exc := $1.
       cond (exc) ifTrue {
-        jump call: exc.
+        outer call: (catcher: exc).
       }.
     }.
   }.
