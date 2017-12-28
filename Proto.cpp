@@ -4,9 +4,26 @@
 #include "Standard.hpp"
 #include "Garnish.hpp"
 #include "Macro.hpp"
+#include "Allocator.hpp"
 #include <tuple>
 
 using namespace std;
+
+void ObjectPtr::up() {
+    if (impl != nullptr) {
+        ObjectEntry* ptr = reinterpret_cast<ObjectEntry*>(impl);
+        ptr->ref_count++;
+    }
+}
+
+void ObjectPtr::down() {
+    if (impl != nullptr) {
+        ObjectEntry* ptr = reinterpret_cast<ObjectEntry*>(impl);
+        assert(ptr->ref_count > 0);
+        ptr->ref_count--;
+        // TODO Free if zero
+    }
+}
 
 ObjectPtr::ObjectPtr() : impl(nullptr) {}
 

@@ -42,6 +42,8 @@ using LStmt = std::list< std::shared_ptr<Stmt> >;
 class ObjectPtr {
 private:
     Object* impl;
+    void up();
+    void down();
 public:
     ObjectPtr();
     ObjectPtr(Object* ptr); // TODO Make this explicit if it's not too much trouble
