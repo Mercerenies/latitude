@@ -11,7 +11,7 @@
  * X 2. Change standard library to not jump between scopes.
  * X 3. Cut out `$lexical` and `dynamic`.
  * X 4. Eliminate `pairScopes`.
- *   5. Ref counting.
+ * X 5. Ref counting.
  *   6. Update docs before merging.
  *
  * Also, `scope` and `$scope` aren't really necessary
