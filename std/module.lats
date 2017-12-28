@@ -4,17 +4,17 @@ Module ::= global clone.
 Module header := Nil.
 Module import := {
   localize.
-  target := dynamic parent $lexical.
+  target := lexical caller.
   $1 visit {
-    target slot ($1) =
-      {
-        this slot (parent dynamic $1) me.
-      }.
+    name := $1.
+    target slot ($1) = {
+      this slot (name) me.
+    }.
   }.
 }.
 Module importAll := {
   localize.
-  target := dynamic parent $lexical.
+  target := lexical caller.
   target parent := target parent clone.
   target := target parent.
   name := this header moduleName intern.

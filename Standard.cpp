@@ -2315,16 +2315,16 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     bindArgv(argv_, string, argc, argv);
 
     // Spawn the literal objects table
-    reader.lit[Lit::NIL   ] = nil;
-    reader.lit[Lit::FALSE ] = false_;
-    reader.lit[Lit::TRUE  ] = true_;
-    reader.lit[Lit::BOOL  ] = boolean;
-    reader.lit[Lit::STRING] = string;
-    reader.lit[Lit::NUMBER] = number;
-    reader.lit[Lit::SYMBOL] = symbol;
-    reader.lit[Lit::METHOD] = method;
-    reader.lit[Lit::SFRAME] = stackFrame;
-    reader.lit[Lit::FHEAD ] = fileHeader;
+    reader.lit.emplace(Lit::NIL   , nil       );
+    reader.lit.emplace(Lit::FALSE , false_    );
+    reader.lit.emplace(Lit::TRUE  , true_     );
+    reader.lit.emplace(Lit::BOOL  , boolean   );
+    reader.lit.emplace(Lit::STRING, string    );
+    reader.lit.emplace(Lit::NUMBER, number    );
+    reader.lit.emplace(Lit::SYMBOL, symbol    );
+    reader.lit.emplace(Lit::METHOD, method    );
+    reader.lit.emplace(Lit::SFRAME, stackFrame);
+    reader.lit.emplace(Lit::FHEAD , fileHeader);
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);

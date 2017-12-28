@@ -201,16 +201,16 @@ void readFileSource(string fname, Scope defScope, IntState& state) {
                 stmt->translate(*unit, unit->instructions());
             }
             (makeAssemblerLine(Instr::RET)).appendOnto(unit->instructions());
+            auto lex = state.lex.top(); // TODO Possible empty stack error?
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
-                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
             state.lex.top()->put(Symbols::get()["self"], state.lex.top());
             state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["caller"], lex);
             state.stack = pushNode(state.stack, state.cont);
             state.cont = CodeSeek(unit->instructions());
             state.trns.push(unit);

@@ -15,7 +15,7 @@ REPL quitter := {
     Kernel kill.
   }.
   jump.
-}.
+} me. ; TODO There is definitely a continuation cycle in here; can we eliminate it?
 REPL quit := { self quitter call: Nil. }.
 REPL scope := global clone.
 REPL $scope := Nil. ; To be assigned in-loop
@@ -40,8 +40,7 @@ REPL print := {
 REPL loop := {
   localize.
   $whereAmI := this.
-  self $scope := dynamic clone.
-  (self scope) pairScopes (self $scope).
+  self $scope := $dynamic clone.
   loop {
     {
       { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue {

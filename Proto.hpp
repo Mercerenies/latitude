@@ -38,8 +38,28 @@ class Object;
 /// A list of statements.
 using LStmt = std::list< std::shared_ptr<Stmt> >;
 
-/// A (raw) pointer to an Object.
-using ObjectPtr = Object*;
+/// A pointer to an Object.
+class ObjectPtr {
+private:
+    Object* impl;
+    void up();
+    void down();
+public:
+    ObjectPtr();
+    ObjectPtr(nullptr_t);
+    explicit ObjectPtr(Object* ptr);
+    ObjectPtr(const ObjectPtr& ptr);
+    ObjectPtr(ObjectPtr&& ptr);
+    ~ObjectPtr();
+    ObjectPtr& operator=(const ObjectPtr& ptr);
+    ObjectPtr& operator=(ObjectPtr&& ptr);
+    Object& operator*() const;
+    Object* operator->() const;
+    Object* get() const;
+    bool operator==(const ObjectPtr& ptr) const;
+    bool operator!=(const ObjectPtr& ptr) const;
+    bool operator<(const ObjectPtr& ptr) const; // TODO Make this a separate class for std::set
+};
 
 /// \brief A primitive field, which can be either empty or an element
 /// of any number of types.

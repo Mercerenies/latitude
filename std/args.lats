@@ -9,7 +9,7 @@ ArgList clone := {
   }.
 }.
 ArgList fill := {
-  self enclosingScope := dynamic parent.
+  self enclosingScope := $dynamic parent.
   self.
 }.
 ArgList fillWith := {
@@ -79,7 +79,7 @@ ArgList iterator := {
   }.
 }.
 ArgList dropIn := {
-  target := dynamic parent.
+  target := $dynamic parent.
   index := 1.
   self visit {
     target slot (("$" ++ (index)) intern) = #'$1.
@@ -95,9 +95,9 @@ $argv toString := "$argv".
 ; It's very easy to lose track of a `self` in nested method calls, and calling `parent` repeatedly
 ; can be annoying, so the `localize` method will bind `this` to `self` in the calling scope. `this`
 ; will not rebind lexically until that scope exits.
-global this := { dynamic parent $lexical self. }.
+global this := { caller self. }.
 global localize := {
-  dynamic parent $lexical this := dynamic parent $lexical slot 'self.
+  caller this := caller slot 'self.
 }.
 
 ; Likewise, the dynamic argument behavior occasonally gets in the way, so this is provided to rebind
@@ -106,8 +106,8 @@ global localize := {
 ; as it is usually the first line of a method (possibly the second, after a `localize`).
 global takes := {
   ; ///// Prohibitively slow (use random.lat as benchmark)
-  args := ArgList clone fillWith: dynamic parent.
-  target := dynamic parent $lexical.
+  args := ArgList clone fillWith: $dynamic parent.
+  target := caller.
   $1 clone zip! (args) map! {
     target slot ($1 car) = $1 cdr.
     $1 car.

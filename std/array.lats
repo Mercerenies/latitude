@@ -69,20 +69,25 @@ Array popBack := {
     }.
 }.
 Array nth := {
+  arr := self.
+  index := $1.
   pos := if ($1 < 0)
-    then { (parent self upperBound) + (parent dynamic $1). }
-    else { (parent self lowerBound) + (parent dynamic $1). }.
+    then { (arr upperBound) + (index). }
+    else { (arr lowerBound) + (index). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self slot: (parent self mapping: pos) ordinal. }.
+    else { arr slot: (parent self mapping: pos) ordinal. }.
 }.
 Array nth= := {
+  arr := self.
+  index := $1.
+  value := #'$2.
   pos := if ($1 < 0)
-    then { (parent self upperBound) + (parent dynamic $1). }
-    else { (parent self lowerBound) + (parent dynamic $1). }.
+    then { (arr upperBound) + (index). }
+    else { (arr lowerBound) + (index). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self slot ((parent self mapping: pos) ordinal) = parent dynamic slot '$2. }.
+    else { arr slot ((parent self mapping: pos) ordinal) = #'value. }.
 }.
 Array size := { (self upperBound) - (self lowerBound). }.
 Array join := {
@@ -116,9 +121,10 @@ Array joinText := {
 Array concat := {
   arr := Array clone.
   self visit {
-    if ($1 is (Array))
-      then { parent dynamic $1 visit { arr pushBack: #'$1. }. }
-      else { arr pushBack: parent dynamic slot '$1. }.
+    arg := #'$1.
+    if (#'arg is (Array))
+      then { #'arg visit { arr pushBack: #'$1. }. }
+      else { arr pushBack: #'arg. }.
   }.
   arr.
 }.
@@ -134,7 +140,7 @@ Array < := {
   localize.
   takes '[arr].
   callCC {
-    return := { parent dynamic $1 call. }.
+    escapable.
     (arr is: Array) ifFalse { return: False. }.
     (this zip: arr) visit {
       (($1 car) < ($1 cdr)) ifTrue: { return: True. }.
