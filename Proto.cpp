@@ -12,6 +12,25 @@ ObjectPtr::ObjectPtr() : impl(nullptr) {}
 
 ObjectPtr::ObjectPtr(Object* ptr) : impl(ptr) {}
 
+ObjectPtr::ObjectPtr(const ObjectPtr& ptr) : impl(ptr.impl) {}
+
+ObjectPtr::ObjectPtr(ObjectPtr&& ptr) : impl(ptr.impl) {
+    ptr.impl = nullptr;
+}
+
+ObjectPtr::~ObjectPtr() {}
+
+ObjectPtr& ObjectPtr::operator=(const ObjectPtr& ptr) {
+    impl = ptr.impl;
+    return *this;
+}
+
+ObjectPtr& ObjectPtr::operator=(ObjectPtr&& ptr) {
+    impl = ptr.impl;
+    ptr.impl = nullptr;
+    return *this;
+}
+
 Object& ObjectPtr::operator*() const {
     return *impl;
 }

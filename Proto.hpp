@@ -45,11 +45,11 @@ private:
 public:
     ObjectPtr();
     ObjectPtr(Object* ptr); // TODO Make this explicit if it's not too much trouble
-    ObjectPtr(const ObjectPtr&) = default;
-    ObjectPtr(ObjectPtr&&) = default;
-    ~ObjectPtr() = default;
-    ObjectPtr& operator=(const ObjectPtr&) = default;
-    ObjectPtr& operator=(ObjectPtr&&) = default;
+    ObjectPtr(const ObjectPtr& ptr);
+    ObjectPtr(ObjectPtr&& ptr);
+    ~ObjectPtr();
+    ObjectPtr& operator=(const ObjectPtr& ptr);
+    ObjectPtr& operator=(ObjectPtr&& ptr);
     Object& operator*() const;
     Object* operator->() const;
     Object* get() const;
