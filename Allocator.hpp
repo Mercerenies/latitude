@@ -61,6 +61,8 @@ private:
     Allocator();
 public:
 
+    ~Allocator();
+
     /// Retrieves the singleton allocator.
     ///
     /// \returns the allocator instance

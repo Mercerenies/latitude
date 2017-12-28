@@ -29,6 +29,14 @@ void GC::free(Object* obj) {
     }
 }
 
+void GC::freeAll() {
+    auto curr = alloc.begin();
+    while (curr != alloc.end()) {
+        free(*curr);
+        curr = alloc.begin();
+    }
+}
+
 template <typename Container>
 void addToFrontier(const Container& visited, Container& frontier, Object* val) {
     if (visited.find(val) == visited.end()) {

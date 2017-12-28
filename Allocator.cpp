@@ -1,4 +1,6 @@
+
 #include "Allocator.hpp"
+#include "GC.hpp"
 #include "Proto.hpp"
 
 constexpr size_t START_CAP = 10;
@@ -11,6 +13,10 @@ Allocator Allocator::instance = Allocator();
 
 Allocator::Allocator() : vec() {
     vec.reserve(START_CAP);
+}
+
+Allocator::~Allocator() {
+    GC::get().freeAll();
 }
 
 Allocator& Allocator::get() noexcept {

@@ -37,6 +37,11 @@ public:
     /// \param obj the object to free
     void free(Object* obj);
 
+    /// Frees every object in the garbage collector's allocated
+    /// set. This method is primarily useful for graceful termination
+    /// at the end of execution.
+    void freeAll();
+
     /// Cleans up objects. Any object references maintained by C++ or
     /// by the embedded code should be passed in as arguments, as the
     /// algorithm will assume anything that is unreachable from the
