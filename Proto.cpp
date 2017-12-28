@@ -21,7 +21,10 @@ void ObjectPtr::down() {
         ObjectEntry* ptr = reinterpret_cast<ObjectEntry*>(impl);
         assert(ptr->ref_count > 0);
         ptr->ref_count--;
-        // TODO Free if zero
+        if (ptr->ref_count == 0) {
+            //std::cout << "<FREE " << impl << ">" << std::endl; /////
+            GC::get().free(impl);
+        }
     }
 }
 
@@ -29,24 +32,33 @@ ObjectPtr::ObjectPtr() : impl(nullptr) {}
 
 ObjectPtr::ObjectPtr(nullptr_t) : ObjectPtr() {}
 
-ObjectPtr::ObjectPtr(Object* ptr) : impl(ptr) {}
+ObjectPtr::ObjectPtr(Object* ptr) : impl(ptr) {
+    up();
+}
 
-ObjectPtr::ObjectPtr(const ObjectPtr& ptr) : impl(ptr.impl) {}
+ObjectPtr::ObjectPtr(const ObjectPtr& ptr) : impl(ptr.impl) {
+    up();
+}
 
 ObjectPtr::ObjectPtr(ObjectPtr&& ptr) : impl(ptr.impl) {
     ptr.impl = nullptr;
+    // Created and destroyed a reference; leave it alone
 }
 
-ObjectPtr::~ObjectPtr() {}
+ObjectPtr::~ObjectPtr() {
+    down();
+}
 
 ObjectPtr& ObjectPtr::operator=(const ObjectPtr& ptr) {
     impl = ptr.impl;
+    up();
     return *this;
 }
 
 ObjectPtr& ObjectPtr::operator=(ObjectPtr&& ptr) {
     impl = ptr.impl;
     ptr.impl = nullptr;
+    // Created and destroyed a reference; leave it alone
     return *this;
 }
 

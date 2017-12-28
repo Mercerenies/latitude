@@ -24,8 +24,9 @@ ObjectPtr GC::allocate() {
 }
 
 void GC::free(Object* obj) {
-    alloc.erase(obj);
-    Allocator::get().free(obj);
+    if (alloc.erase(obj) > 0) {
+        Allocator::get().free(obj);
+    }
 }
 
 template <typename Container>

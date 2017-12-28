@@ -45,5 +45,6 @@ void Allocator::free(Object* obj) {
     ObjectEntry* entry = reinterpret_cast<ObjectEntry*>(obj);
     CountedArray& carray = vec[entry->index];
     entry->in_use = false;
-    carray.used--;
+    entry->object = Object(); // TODO This is probably slowing the GC down; can we make it more efficient?
+    carray.used--; ///// Not crashing anymore but only running during GC so not doing its job
 }

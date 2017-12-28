@@ -49,7 +49,7 @@ public:
     long garbageCollect(std::vector<Object*> globals);
 
     /// This is a convenience function which calls
-    /// #garbageCollect(std::vector<ObjectPtr>) with all of the arguments from
+    /// #garbageCollect(std::vector<Object*>) with all of the arguments from
     /// the various registers in the VM.
     ///
     /// \param state the interpreter state
@@ -63,7 +63,7 @@ public:
     /// \param begin the begin iterator
     /// \param end the end iterator
     /// \return the number of objects freed
-    /// \see garbageCollect(std::vector<ObjectPtr>)
+    /// \see garbageCollect(std::vector<Object*>)
     template <typename InputIterator>
     long garbageCollect(InputIterator begin, InputIterator end);
 
