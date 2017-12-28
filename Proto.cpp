@@ -22,7 +22,7 @@ void ObjectPtr::down() {
         assert(ptr->ref_count > 0);
         ptr->ref_count--;
         if (ptr->ref_count == 0) {
-            //std::cout << "<FREE " << impl << ">" << std::endl; /////
+            //std::cout << "<FREE " << impl << ">" << std::endl; ///// runs but does not collect outside of GC
             GC::get().free(impl);
         }
     }
