@@ -1290,7 +1290,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "YLD " << val << " " << (long)reg << endl;
 #endif
         auto obj = reader.lit.at(val);
-        if (obj) {
+        if (obj != nullptr) {
             switch (reg) {
             case Reg::PTR:
                 state.ptr = obj;
@@ -1317,7 +1317,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "YLDC " << val << " " << (long)reg << endl;
 #endif
         auto obj = reader.lit.at(val);
-        if (obj) {
+        if (obj != nullptr) {
             obj = clone(obj);
             switch (reg) {
             case Reg::PTR:

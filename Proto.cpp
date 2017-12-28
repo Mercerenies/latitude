@@ -8,6 +8,34 @@
 
 using namespace std;
 
+ObjectPtr::ObjectPtr() : impl(nullptr) {}
+
+ObjectPtr::ObjectPtr(Object* ptr) : impl(ptr) {}
+
+Object& ObjectPtr::operator*() const {
+    return *impl;
+}
+
+Object* ObjectPtr::operator->() const {
+    return impl;
+}
+
+Object* ObjectPtr::get() const {
+    return impl;
+}
+
+bool ObjectPtr::operator==(const ObjectPtr& ptr) const {
+    return this->impl == ptr.impl;
+}
+
+bool ObjectPtr::operator!=(const ObjectPtr& ptr) const {
+    return this->impl != ptr.impl;
+}
+
+bool ObjectPtr::operator<(const ObjectPtr& ptr) const {
+    return this->impl < ptr.impl;
+}
+
 Slot::Slot() noexcept : Slot(nullptr, false) {}
 
 Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, NO_PROTECTION) {}
