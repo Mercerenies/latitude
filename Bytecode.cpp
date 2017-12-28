@@ -14,7 +14,7 @@
  * X 5. Ref counting.
  *   6. Update docs before merging.
  *
- * Also, `scope` and `$scope` aren't really necessary
+ * X *. Also, `scope` and `$scope` aren't really necessary
  */
 
 using namespace std;
