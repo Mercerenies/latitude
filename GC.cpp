@@ -29,12 +29,12 @@ void GC::free(Object* obj) {
 }
 
 template <typename Container>
-void addToFrontier(const Container& visited, Container& frontier, ObjectPtr val) {
-    if (visited.find(val.get()) == visited.end()) {
+void addToFrontier(const Container& visited, Container& frontier, Object* val) {
+    if (visited.find(val) == visited.end()) {
 #if GC_PRINT > 1
         std::cout << "<<Inserting " << val << ">>" << std::endl;
 #endif
-        frontier.insert(val.get());
+        frontier.insert(val);
 #if GC_PRINT > 2
         std::cout << "<<Inserted " << val << ">>" << std::endl;
 #endif
@@ -42,13 +42,13 @@ void addToFrontier(const Container& visited, Container& frontier, ObjectPtr val)
 }
 
 template <typename Container>
-void addSlotsToFrontier(const Container& visited, Container& frontier, ObjectPtr curr) {
+void addSlotsToFrontier(const Container& visited, Container& frontier, Object* curr) {
     for (auto key : curr->directKeys()) {
 #if GC_PRINT > 1
         std::cout << "<<Key " << Symbols::get()[key] << ">>" << std::endl;
 #endif
         auto val = (*curr)[key].getPtr();
-        addToFrontier(visited, frontier, val);
+        addToFrontier(visited, frontier, val.get());
     }
 #if GC_PRINT > 1
     std::cout << "<<End keys>>" << std::endl;
@@ -60,7 +60,7 @@ void addStackToFrontier(const Container& visited, Container& frontier, stack<Obj
     if (!stack.empty()) {
         auto fst = stack.top();
         stack.pop();
-        addToFrontier(visited, frontier, fst);
+        addToFrontier(visited, frontier, fst.get());
         addStackToFrontier(visited, frontier, stack);
         stack.push(fst);
     }
@@ -92,19 +92,19 @@ void addWindToFrontier(const Container& visited, Container& frontier, stack<Wind
 template <typename Container, typename T>
 void addMapToFrontier(const Container& visited, Container& frontier, map<T, ObjectPtr>& map) {
     for (auto& value : map)
-        addToFrontier(visited, frontier, value.second);
+        addToFrontier(visited, frontier, value.second.get());
 }
 
 template <typename Container>
 void addContinuationToFrontier(const Container& visited, Container& frontier, IntState& state) {
-    addToFrontier     (visited, frontier, state.ptr );
-    addToFrontier     (visited, frontier, state.slf );
-    addToFrontier     (visited, frontier, state.ret );
-    addStackToFrontier(visited, frontier, state.lex );
-    addStackToFrontier(visited, frontier, state.dyn );
-    addStackToFrontier(visited, frontier, state.arg );
-    addStackToFrontier(visited, frontier, state.sto );
-    addStackToFrontier(visited, frontier, state.hand);
+    addToFrontier     (visited, frontier, state.ptr .get());
+    addToFrontier     (visited, frontier, state.slf .get());
+    addToFrontier     (visited, frontier, state.ret .get());
+    addStackToFrontier(visited, frontier, state.lex       );
+    addStackToFrontier(visited, frontier, state.dyn       );
+    addStackToFrontier(visited, frontier, state.arg       );
+    addStackToFrontier(visited, frontier, state.sto       );
+    addStackToFrontier(visited, frontier, state.hand      );
 }
 
 template <typename Container>
@@ -113,7 +113,7 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, Re
 }
 
 template <typename Container>
-void addContinuationToFrontier(const Container& visited, Container& frontier, ObjectPtr curr) {
+void addContinuationToFrontier(const Container& visited, Container& frontier, Object* curr) {
     auto state0 = boost::get<StatePtr>(&curr->prim());
     if (state0) {
         auto state = *state0;
@@ -124,14 +124,14 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, Ob
     }
 }
 
-long GC::garbageCollect(std::vector<ObjectPtr> globals) {
+long GC::garbageCollect(std::vector<Object*> globals) {
 #if GC_PRINT > 0
     std::cout << "<<ENTER GC>>" << std::endl;
 #endif
     std::set<Object*> visited;
     std::set<Object*> frontier;
     for (const auto& elem : globals)
-        frontier.insert(elem.get());
+        frontier.insert(elem);
     while (!frontier.empty()) {
         auto curr = *(frontier.begin());
         auto stream(outStream());
@@ -156,7 +156,7 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<Done gathering>>" << std::endl;
 #endif
-    std::set<ObjectPtr> result;
+    std::set<Object*> result;
     std::set_difference(alloc.begin(), alloc.end(),
                         visited.begin(), visited.end(),
                         inserter(result, result.begin()));
@@ -164,8 +164,8 @@ long GC::garbageCollect(std::vector<ObjectPtr> globals) {
 #if GC_PRINT > 0
     std::cout << "<<Set to delete " << result.size() << " objects>>" << std::endl;
 #endif
-    for (const ObjectPtr& res : result) {
-        this->free(res.get());
+    for (Object* res : result) {
+        this->free(res);
     }
 #if GC_PRINT > 0
     std::cout << "<<EXIT GC>>" << std::endl;
@@ -177,12 +177,12 @@ long GC::garbageCollect(IntState& state, ReadOnlyState& reader) {
     // This little type is necessary to make the templated function addContinuationToFrontier
     // think that vectors are set-like.
     struct VectorProxy {
-        vector<ObjectPtr> value;
-        void insert(ObjectPtr val) {
+        vector<Object*> value;
+        void insert(Object* val) {
             value.push_back(val);
         }
-        auto find(ObjectPtr val) const -> decltype(value.begin()) {
-            return ::find_if(value.begin(), value.end(), [&val](ObjectPtr val1){
+        auto find(Object* val) const -> decltype(value.begin()) {
+            return ::find_if(value.begin(), value.end(), [&val](Object* val1){
                     return val == val1;
                 });
         }

@@ -27,6 +27,8 @@ void ObjectPtr::down() {
 
 ObjectPtr::ObjectPtr() : impl(nullptr) {}
 
+ObjectPtr::ObjectPtr(nullptr_t) : ObjectPtr() {}
+
 ObjectPtr::ObjectPtr(Object* ptr) : impl(ptr) {}
 
 ObjectPtr::ObjectPtr(const ObjectPtr& ptr) : impl(ptr.impl) {}

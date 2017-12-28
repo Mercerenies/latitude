@@ -46,7 +46,8 @@ private:
     void down();
 public:
     ObjectPtr();
-    ObjectPtr(Object* ptr); // TODO Make this explicit if it's not too much trouble
+    ObjectPtr(nullptr_t);
+    explicit ObjectPtr(Object* ptr);
     ObjectPtr(const ObjectPtr& ptr);
     ObjectPtr(ObjectPtr&& ptr);
     ~ObjectPtr();

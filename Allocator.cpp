@@ -29,7 +29,7 @@ ObjectPtr Allocator::allocate() {
                     entry.index = index;
                     entry.ref_count = 0;
                     entry.object = Object();
-                    return &entry.object;
+                    return ObjectPtr(&entry.object);
                 }
             }
         }

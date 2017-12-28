@@ -46,7 +46,7 @@ public:
     ///
     /// \param globals the global variables accessible to the program
     /// \return the number of objects freed
-    long garbageCollect(std::vector<ObjectPtr> globals);
+    long garbageCollect(std::vector<Object*> globals);
 
     /// This is a convenience function which calls
     /// #garbageCollect(std::vector<ObjectPtr>) with all of the arguments from
@@ -73,7 +73,7 @@ public:
 
 template <typename InputIterator>
 long GC::garbageCollect(InputIterator begin, InputIterator end) {
-    std::vector<ObjectPtr> globals;
+    std::vector<Object*> globals;
     globals.insert(globals.end(), begin, end);
     return GC::garbageCollect(globals);
 }
