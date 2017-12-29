@@ -42,16 +42,16 @@ ArgList unshift := {
   if (self size == 0)
     then { Nil. }
     else {
-      first := parent self enclosingScope $1.
+      first := parent self enclosingScope slot '$1.
       arglist := parent self.
       size := parent self size.
       temp := Nil.
       parent self map! {
-        temp1 := temp.
-        parent temp := $1.
-        temp1.
+        temp1 := #'temp.
+        parent temp := #'$1.
+        #'temp1.
       }.
-      parent self enclosingScope $1 := temp.
+      parent self enclosingScope slot '$1 = #'temp.
     }.
 }.
 ArgList unshiftOnto := {
