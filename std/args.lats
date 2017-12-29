@@ -16,7 +16,6 @@ ArgList fillWith := {
   self enclosingScope := $1.
   self.
 }.
-; TODO A version of `unshift` that can insert additional arguments
 ArgList shift := {
   if (self size == 0)
     then { Nil. }
@@ -54,6 +53,10 @@ ArgList unshift := {
       }.
       parent self enclosingScope $1 := temp.
     }.
+}.
+ArgList unshiftOnto := {
+  self enclosingScope slot (("$" ++ (self size + 1)) intern) = #'$1.
+  self unshift.
 }.
 
 global ArgIterator ::= Iterator clone.
