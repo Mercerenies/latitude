@@ -31,24 +31,22 @@ Object falsify := {
 
 ;; Control Statements
 Conditional ::= Object clone.
+Conditional truthy := True.
+Conditional trueCase := {}.
+Conditional falseCase := {}.
+Conditional then := {
+  self trueCase := #'$1.
+  self.
+}.
+Conditional else := {
+  this := self.
+  this falseCase := #'$1.
+  meta sys ifThenElse#: True, this truthy, { this trueCase. }, { this falseCase. }.
+}.
 global if := {
-  truthy := Conditional invoke #'$1 call toBool.
-  Object clone tap {
-    self then := {
-      trueCase := #'$1.
-      Object clone tap {
-        self else := {
-          falseCase := #'$1.
-          ; TODO We'd like ifThenElse# to use the global symbol table's true value,
-          ; not the True variable.
-          meta sys ifThenElse#:
-            True,
-            truthy,
-            { Conditional invoke #'trueCase call. },
-            { Conditional invoke #'falseCase call. }.
-        }.
-      }.
-    }.
+  truthy := #'$1.
+  Conditional clone tap {
+    self truthy := self invoke #'truthy call toBool.
   }.
 }.
 Object ifTrue := {
