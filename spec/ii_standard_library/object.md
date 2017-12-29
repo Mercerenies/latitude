@@ -151,9 +151,8 @@ it should be used for debugging and testing only. This is equivalent to
 
 ### `Object me.`
 
-Returns the caller, calling it with zero arguments if it is a method.
-
-[TODO: Who is the caller when the method gets called?]
+Returns the caller, calling it with zero arguments if it is a
+method. In the latter case, the caller of the method is itself.
 
 ### `Object === (target).`
 

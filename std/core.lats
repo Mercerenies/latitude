@@ -198,7 +198,7 @@ global scopeOf := {
     then { dyn. }
     else { lex. }.
 }.
-Object me := { self. }.
+Object me := { #'self invoke #'self call. }.
 global do := { $1. }.
 global here := {
   if (self slot? 'again)
