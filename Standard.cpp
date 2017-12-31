@@ -524,7 +524,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // kill#.
     sys->put(Symbols::get()["kill#"],
              defineMethod(unit, global, method,
-                          asmCode(makeAssemblerLine(Instr::CPP, 0L))));
+                          asmCode(makeAssemblerLine(Instr::CPP, Table::CPP_TERMINATE))));
 
     // CPP_STREAM_READ ($1 = stream) (constructs and stores the resulting string in %ret, uses %num0 for mode)
     // - 0 - Read a line

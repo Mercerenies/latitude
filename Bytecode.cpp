@@ -669,7 +669,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
                 if (value == nullptr) {
                     // Abandon ship!
-                    InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0));
+                    InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, Table::CPP_TERMINATE));
                     state.stack = pushNode(state.stack, state.cont);
                     state.cont = CodeSeek(term);
                 } else {
@@ -1108,7 +1108,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "* Got handlers: " << handlers.size() << endl;
 #endif
-        InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0L)); // CPP 0 should always be a terminate function
+        InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, Table::CPP_TERMINATE));
         state.stack = pushNode(state.stack, state.cont);
         state.cont = CodeSeek(term);
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::ARG),
