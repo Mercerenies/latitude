@@ -216,4 +216,6 @@ void doOneStep(IntState& state, const ReadOnlyState& reader);
 /// \return whether the interpreter is idling
 bool isIdling(IntState& state);
 
+Method boolMethod(const ReadOnlyState& reader, bool boolean);
+
 #endif // BYTECODE_HPP

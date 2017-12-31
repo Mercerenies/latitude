@@ -62,7 +62,10 @@ namespace Table {
         GTU_HANDLER = 5,
         GTU_CALL_ONE = 6,
         GTU_CALL_ZERO = 7,
-        GTU_MISSING = 8;
+        GTU_MISSING = 8,
+        GTU_TRUE = 9,
+        GTU_FALSE = 10,
+        GTU_NIL = 11;
 
 }
 

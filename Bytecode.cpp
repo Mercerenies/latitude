@@ -1347,3 +1347,7 @@ bool isIdling(IntState& state) {
     return (state.cont.atEnd() && !state.stack);
 }
 
+Method boolMethod(const ReadOnlyState& reader, bool boolean) {
+    int value = boolean ? Table::GTU_TRUE : Table::GTU_FALSE;
+    return Method(reader.gtu, { value });
+}

@@ -126,18 +126,19 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_STREAM_DIR ($1 = argument) (where %num0 specifies the direction; 0 = in, 1 = out)
     // streamIn#: stream.
     // streamOut#: stream.
-    reader.cpp[CPP_STREAM_DIR] = [](IntState& state0) {
+    reader.cpp[CPP_STREAM_DIR] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         if (stream != nullptr) {
             auto stream0 = boost::get<StreamPtr>(&stream->prim());
             if (stream0) {
+                state0.stack = pushNode(state0.stack, state0.cont);
                 switch (state0.num0.asSmallInt()) {
                 case 0:
-                    garnishBegin(state0, (*stream0)->hasIn());
+                    state0.cont = MethodSeek(boolMethod(reader, (*stream0)->hasIn()));
                     break;
                 case 1:
-                    garnishBegin(state0, (*stream0)->hasOut());
+                    state0.cont = MethodSeek(boolMethod(reader, (*stream0)->hasOut()));
                     break;
                 }
             } else {
@@ -2218,6 +2219,18 @@ void spawnSystemCallsNew(ObjectPtr global,
                                            makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                            makeAssemblerLine(Instr::CALL, 1L)));
      assert(temp.index == GTU_MISSING);
+
+     // GTU_TRUE
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::YLD, Lit::TRUE, Reg::RET)));
+     assert(temp.index == GTU_TRUE);
+
+     // GTU_FALSE
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::YLD, Lit::FALSE, Reg::RET)));
+     assert(temp.index == GTU_FALSE);
+
+     // GTU_NIL
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET)));
+     assert(temp.index == GTU_NIL);
 
 }
 
