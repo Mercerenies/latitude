@@ -1250,7 +1250,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         state.trace = pushNode(state.trace, make_tuple(0L, string("")));
         InstrSeq seq = asmCode(makeAssemblerLine(Instr::RET));
         state.stack = pushNode(state.stack, state.cont);
-        state.cont = CodeSeek(seq);
+        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_RETURN }));
     }
         break;
     case Instr::UNTR: {

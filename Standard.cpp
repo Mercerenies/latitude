@@ -2177,6 +2177,9 @@ void spawnSystemCallsNew(ObjectPtr global,
                                     makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                     makeAssemblerLine(Instr::CPP, CPP_LOOP_DO)));
 
+     // GTU_RETURN
+     reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::RET)));
+
 }
 
 void bindArgv(ObjectPtr argv_, ObjectPtr string, int argc, char** argv) {

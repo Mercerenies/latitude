@@ -55,7 +55,8 @@ namespace Table {
         CPP_UNI_CHR = 44;
     constexpr long
         GTU_EMPTY = 0,
-        GTU_LOOP_DO = 1;
+        GTU_LOOP_DO = 1,
+        GTU_RETURN = 2;
 
 }
 
