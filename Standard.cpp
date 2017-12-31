@@ -83,6 +83,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         CPP_LOOP_DO = 42,
         CPP_UNI_ORD = 43,
         CPP_UNI_CHR = 44;
+    static constexpr long // NOTE: GTU method zero is reserved for future use.
+        GTU_LOOP_DO = 1;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -1489,7 +1491,8 @@ void spawnSystemCallsNew(ObjectPtr global,
      // runGC#.
      reader.cpp[CPP_GC_RUN] = [&reader](IntState& state0) {
          // TODO This assumes the reader that's in use is the same as the reader that was created
-         //      with this reader. Remove this unusual dependency somehow
+         //      with this reader. Remove this unusual dependency somehow (this happens in
+         //      some other places here too; search for captures of the form [&reader])
          long result = GC::get().garbageCollect(state0, reader);
          garnishBegin(state0, result);
      };
@@ -2158,13 +2161,9 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // LOOP_DO (takes %ptr, calls it, then does LOOP_DO again)
      // loopDo#: method.
-     reader.cpp[CPP_LOOP_DO] = [](IntState& state0) {
+     reader.cpp[CPP_LOOP_DO] = [&reader](IntState& state0) {
          state0.stack = pushNode(state0.stack, state0.cont);
-         state0.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
-                                        makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                                        makeAssemblerLine(Instr::CALL, 0L),
-                                        makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
-                                        makeAssemblerLine(Instr::CPP, CPP_LOOP_DO)));
+         state0.cont = MethodSeek(Method(reader.gtu, { GTU_LOOP_DO }));
      };
      sys->put(Symbols::get()["loopDo#"],
               defineMethod(unit, global, method,
@@ -2208,6 +2207,18 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::EXPD, Reg::NUM0),
                                    makeAssemblerLine(Instr::THROA, "Number expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_UNI_CHR))));
+
+     // GTU METHODS //
+
+     // These methods MUST be pushed in the correct order or the standard library
+     // code will fail spectacularly.
+
+     // GTU_LOOP_DO
+     reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
+                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                    makeAssemblerLine(Instr::CALL, 0L),
+                                    makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                    makeAssemblerLine(Instr::CPP, CPP_LOOP_DO)));
 
 }
 
