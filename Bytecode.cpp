@@ -1047,10 +1047,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             auto oldWind = state.wind;
             auto newWind = cont->wind;
             state = *cont;
-            state.sto.push(ret);
-            InstrSeq pop = asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO));
-            state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(pop);
+            state.ret = ret;
             resolveThunks(state, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
