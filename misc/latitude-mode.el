@@ -38,10 +38,10 @@
           (1 font-lock-type-face))
         `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*:="
           (1 font-lock-variable-name-face))
-        `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "dynamic" "parent"
+        `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "parent"
                          "here" "again" "self" "invoke" "get" "has?" "put" "slot" "hold" "callCC"
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
-                         "catch" "handle" "load" "eval" "rethrow" "inject" "iterator" "$lexical"
+                         "catch" "handle" "load" "eval" "rethrow" "inject" "iterator"
                          "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
                          "member?" "takes" "localize" "this" "brackets" "origin" "resolve"
                          "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?")
