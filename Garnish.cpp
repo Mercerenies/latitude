@@ -53,3 +53,7 @@ InstrSeq garnishSeq(Symbolic value) {
 ObjectPtr garnishObject(const ReadOnlyState& reader, bool value) {
     return value ? reader.lit.at(Lit::TRUE) : reader.lit.at(Lit::FALSE);
 }
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, boost::blank value) {
+    return reader.lit.at(Lit::NIL);
+}

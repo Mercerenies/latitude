@@ -38,7 +38,7 @@ void clearCurrentLine() noexcept;
  */
 std::list< std::unique_ptr<Stmt> > parse(std::string str);
 
-void eval(IntState& state, std::string str);
+void eval(IntState& state, const ReadOnlyState& reader, std::string str);
 
 void readFileSource(std::string fname, Scope defScope, IntState& state);
 

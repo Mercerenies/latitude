@@ -159,7 +159,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_STREAM_PUT ($1 = stream, $2 = string) (where %num0 specifies whether a newline is added; 0 = no, 1 = yes)
     // streamPuts#: stream, str.
     // streamPutln#: stream, str.
-    reader.cpp[CPP_STREAM_PUT] = [](IntState& state0) {
+    reader.cpp[CPP_STREAM_PUT] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr str = (*dyn)[ Symbols::get()["$2"] ].getPtr();
@@ -176,7 +176,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                         (*stream0)->writeLine(*str0);
                         break;
                     }
-                    garnishBegin(state0, boost::blank());
+                    state0.ret = garnishObject(reader, boost::blank());
                 } else {
                     throwError(state0, "IOError", "Stream not designated for output");
                 }
@@ -560,8 +560,8 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     // CPP_EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
     // eval#: lex, dyn, str.
-    reader.cpp[CPP_EVAL] = [](IntState& state0) {
-        eval(state0, state0.str0);
+    reader.cpp[CPP_EVAL] = [&reader](IntState& state0) {
+        eval(state0, reader, state0.str0);
     };
     sys->put(Symbols::get()["eval#"],
              defineMethod(unit, global, method,

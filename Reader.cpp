@@ -155,7 +155,7 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str) {
     return result;
 }
 
-void eval(IntState& state, string str) {
+void eval(IntState& state, const ReadOnlyState& reader, string str) {
     try {
         auto result = parse(str);
         if (!result.empty()) {
@@ -170,7 +170,7 @@ void eval(IntState& state, string str) {
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } else {
-            garnishBegin(state, boost::blank());
+            state.ret = garnishObject(reader, boost::blank());
         }
     } catch (std::string str) {
         throwError(state, "ParseError", str);
