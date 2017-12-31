@@ -379,7 +379,7 @@ void readFileComp(string fname, Scope defScope, IntState& state) {
             state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(unit->instructions());
+            state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
             throwError(state, "ParseError", parseException);
