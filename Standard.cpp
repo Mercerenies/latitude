@@ -1716,10 +1716,10 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_EXE_PATH (put an appropriate pathname into %ret%, given by the %num0 argument)
      //  * %num0 == 1: Executable pathname
      // exePath#.
-     reader.cpp[CPP_EXE_PATH] = [](IntState& state0) {
+     reader.cpp[CPP_EXE_PATH] = [&reader](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
-             garnishBegin(state0, getExecutablePathname());
+             state0.ret = garnishObject(reader, getExecutablePathname());
              break;
          default:
              throwError(state0, "SystemArgError",
@@ -1736,13 +1736,13 @@ void spawnSystemCallsNew(ObjectPtr global,
      //  * %num0 == 1: Get directory of pathname
      //  * %num0 == 2: Get filename of pathname
      // dirName#: str.
-     reader.cpp[CPP_PATH_OP] = [](IntState& state0) {
+     reader.cpp[CPP_PATH_OP] = [&reader](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
-             garnishBegin(state0, stripFilename(state0.str0));
+             state0.ret = garnishObject(reader, stripFilename(state0.str0));
          break;
          case 2:
-             garnishBegin(state0, stripDirname(state0.str0));
+             state0.ret = garnishObject(reader, stripDirname(state0.str0));
              break;
          default:
              throwError(state0, "SystemArgError",
