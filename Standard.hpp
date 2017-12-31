@@ -65,7 +65,9 @@ namespace Table {
         GTU_MISSING = 8,
         GTU_TRUE = 9,
         GTU_FALSE = 10,
-        GTU_NIL = 11;
+        GTU_NIL = 11,
+        GTU_ERROR_MESSAGE = 12,
+        GTU_ERROR = 13;
 
 }
 

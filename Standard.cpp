@@ -2148,6 +2148,41 @@ void spawnSystemCallsNew(ObjectPtr global,
      temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET)));
      assert(temp.index == GTU_NIL);
 
+     // GTU_ERROR_MESSAGE
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                           makeAssemblerLine(Instr::YLD, Lit::ERR, Reg::SLF),
+                                           makeAssemblerLine(Instr::RTRV),
+                                           makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                           makeAssemblerLine(Instr::CLONE),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                           makeAssemblerLine(Instr::SYMN, Symbols::get()["message"].index),
+                                           makeAssemblerLine(Instr::SETF),
+                                           makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::LOCRT),
+                                           makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::SYMN, Symbols::get()["stack"].index),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                           makeAssemblerLine(Instr::SETF),
+                                           makeAssemblerLine(Instr::THROW)));
+     assert(temp.index == GTU_ERROR_MESSAGE);
+
+     // GTU_ERROR
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
+                                           makeAssemblerLine(Instr::YLD, Lit::ERR, Reg::SLF),
+                                           makeAssemblerLine(Instr::RTRV),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                           makeAssemblerLine(Instr::CLONE),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                           makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::LOCRT),
+                                           makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::SYMN, Symbols::get()["stack"].index),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                           makeAssemblerLine(Instr::SETF),
+                                           makeAssemblerLine(Instr::THROW)));
+     assert(temp.index == GTU_ERROR);
+
 }
 
 void bindArgv(ObjectPtr argv_, ObjectPtr string, int argc, char** argv) {
@@ -2278,40 +2313,13 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name, std::string msg) {
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                                  makeAssemblerLine(Instr::YLD, Lit::ERR, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYM, name),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["message"].index),
-                                  makeAssemblerLine(Instr::SETF),
-                                  makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
-                                  makeAssemblerLine(Instr::LOCRT),
-                                  makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["stack"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                  makeAssemblerLine(Instr::SETF),
-                                  makeAssemblerLine(Instr::THROW)));
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_ERROR_MESSAGE }));
+    state.sym = Symbols::get()[name];
     state.ret = garnishObject(reader, msg);
 }
 
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name) {
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::YLD, Lit::ERR, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYM, name),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::CLONE),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
-                                  makeAssemblerLine(Instr::LOCRT),
-                                  makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["stack"].index),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                  makeAssemblerLine(Instr::SETF),
-                                  makeAssemblerLine(Instr::THROW)));
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_ERROR }));
+    state.sym = Symbols::get()[name];
 }
