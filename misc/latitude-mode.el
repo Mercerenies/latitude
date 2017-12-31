@@ -44,7 +44,8 @@
                          "catch" "handle" "load" "eval" "rethrow" "inject" "iterator"
                          "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
                          "member?" "takes" "localize" "this" "brackets" "origin" "resolve"
-                         "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?")
+                         "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?"
+                         "caller")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
