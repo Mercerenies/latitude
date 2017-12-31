@@ -8,6 +8,7 @@ using namespace std;
 
 Header getFileHeader(std::string filename) {
     Header header;
+    header.fields = 0;
     ifstream file(filename);
     if (!file)
         return header;
