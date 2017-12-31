@@ -2165,20 +2165,25 @@ void spawnSystemCallsNew(ObjectPtr global,
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
-     // code will fail spectacularly.
+     // code will fail spectacularly. The assertions here verify that that is the
+     // case.
+
+     FunctionIndex temp;
 
      // GTU_EMPTY
      reader.gtu->method(0) = asmCode();
 
      // GTU_LOOP_DO
-     reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
-                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
-                                    makeAssemblerLine(Instr::CALL, 0L),
-                                    makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
-                                    makeAssemblerLine(Instr::CPP, CPP_LOOP_DO)));
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                           makeAssemblerLine(Instr::CALL, 0L),
+                                           makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::CPP, CPP_LOOP_DO)));
+     assert(temp.index == GTU_LOOP_DO);
 
      // GTU_RETURN
-     reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::RET)));
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::RET)));
+     assert(temp.index == GTU_RETURN);
 
 }
 
