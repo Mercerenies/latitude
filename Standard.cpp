@@ -1456,39 +1456,16 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_FILE_HEADER (check the %str0 file and put a FileHeader object in %ret)
      // fileHeader#: filename.
-     reader.cpp[CPP_FILE_HEADER] = [](IntState& state0) {
-         InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLDC, Lit::FHEAD, Reg::SLF));
-         InstrSeq mid;
+     reader.cpp[CPP_FILE_HEADER] = [&reader](IntState& state0) {
+         ObjectPtr obj = clone(reader.lit.at(Lit::FHEAD));
          Header header = getFileHeader(state0.str0);
          if (header.fields & (unsigned int)HeaderField::MODULE) {
-             InstrSeq curr = garnishSeq(header.module);
-             InstrSeq pre = asmCode(makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO));
-             InstrSeq post = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["moduleName"].index),
-                                     makeAssemblerLine(Instr::SETF));
-             mid.insert(mid.end(), pre.begin(), pre.end());
-             mid.insert(mid.end(), curr.begin(), curr.end());
-             mid.insert(mid.end(), post.begin(), post.end());
+             obj->put(Symbols::get()["moduleName"], garnishObject(reader, header.module));
          }
          if (header.fields & (unsigned int)HeaderField::PACKAGE) {
-             InstrSeq curr = garnishSeq(header.package);
-             InstrSeq pre = asmCode(makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO));
-             InstrSeq post = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["packageName"].index),
-                                     makeAssemblerLine(Instr::SETF));
-             mid.insert(mid.end(), pre.begin(), pre.end());
-             mid.insert(mid.end(), curr.begin(), curr.end());
-             mid.insert(mid.end(), post.begin(), post.end());
+             obj->put(Symbols::get()["packageName"], garnishObject(reader, header.package));
          }
-         InstrSeq concl = asmCode(makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
-         InstrSeq total;
-         total.insert(total.end(), intro.begin(), intro.end());
-         total.insert(total.end(), mid.begin(), mid.end());
-         total.insert(total.end(), concl.begin(), concl.end());
-         state0.stack = pushNode(state0.stack, state0.cont);
-         state0.cont = CodeSeek(total);
+         state0.ret = obj;
      };
      sys->put(Symbols::get()["fileHeader#"],
               defineMethod(unit, global, method,
