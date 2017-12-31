@@ -88,7 +88,7 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
-    // TERMINATE
+    // CPP_TERMINATE
     reader.cpp[CPP_TERMINATE] = [](IntState& state0) {
         // A last-resort termination of a fiber that malfunctioned; this should ONLY
         // be used as a last resort, as it does not correctly unwind the frames
@@ -96,7 +96,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         hardKill(state0);
     };
 
-    // KERNEL_LOAD ($1 = filename, $2 = global)
+    // CPP_KERNEL_LOAD ($1 = filename, $2 = global)
     //  * Checks %num0 (if 0, then standard load; if 1, then raw load)
     // kernelLoad#: filename, global.
     // kernelLoad0#: filename, global.
@@ -169,7 +169,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                               makeAssemblerLine(Instr::RET),
                                               makeAssemblerLine(Instr::CALL, 0L))));
 
-    // STREAM_DIR ($1 = argument) (where %num0 specifies the direction; 0 = in, 1 = out)
+    // CPP_STREAM_DIR ($1 = argument) (where %num0 specifies the direction; 0 = in, 1 = out)
     // streamIn#: stream.
     // streamOut#: stream.
     reader.cpp[CPP_STREAM_DIR] = [](IntState& state0) {
@@ -202,7 +202,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                  asmCode(makeAssemblerLine(Instr::INT, 1L),
                                          makeAssemblerLine(Instr::CPP, CPP_STREAM_DIR))));
 
-    // STREAM_PUT ($1 = stream, $2 = string) (where %num0 specifies whether a newline is added; 0 = no, 1 = yes)
+    // CPP_STREAM_PUT ($1 = stream, $2 = string) (where %num0 specifies whether a newline is added; 0 = no, 1 = yes)
     // streamPuts#: stream, str.
     // streamPutln#: stream, str.
     reader.cpp[CPP_STREAM_PUT] = [](IntState& state0) {
@@ -242,7 +242,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                           asmCode(makeAssemblerLine(Instr::INT, 1L),
                                   makeAssemblerLine(Instr::CPP, CPP_STREAM_PUT))));
 
-    // TO_STRING (where %num0 specifies which register to use)
+    // CPP_TO_STRING (where %num0 specifies which register to use)
     //   0 = %num1
     //   1 = %str0
     //   2 = %sym
@@ -340,7 +340,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                   makeAssemblerLine(Instr::INT, 2L),
                                   makeAssemblerLine(Instr::CPP, CPP_TO_STRING))));
 
-    // GENSYM (if %num0 is 1 then use %str0 as prefix, else if %num0 is 0 use default prefix; store in %sym)
+    // CPP_GENSYM (if %num0 is 1 then use %str0 as prefix, else if %num0 is 0 use default prefix; store in %sym)
     // gensym#: self.
     // gensymOf#: self, prefix.
     reader.cpp[CPP_GENSYM] = [](IntState& state0) {
@@ -525,7 +525,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              defineMethod(unit, global, method,
                           asmCode(makeAssemblerLine(Instr::UNWND))));
 
-    // INSTANCE_OF (check if %slf is an instance of %ptr, put result in %flag)
+    // CPP_INSTANCE_OF (check if %slf is an instance of %ptr, put result in %flag)
     // instanceOf#: obj, anc
     reader.cpp[CPP_INSTANCE_OF] = [](IntState& state0) {
         auto hier = hierarchy(state0.slf);
@@ -572,7 +572,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              defineMethod(unit, global, method,
                           asmCode(makeAssemblerLine(Instr::CPP, 0L))));
 
-    // STREAM_READ ($1 = stream) (constructs and stores the resulting string in %ret, uses %num0 for mode)
+    // CPP_STREAM_READ ($1 = stream) (constructs and stores the resulting string in %ret, uses %num0 for mode)
     // - 0 - Read a line
     // - 1 - Read a single character
     // streamRead#: stream.
@@ -604,7 +604,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                           asmCode(makeAssemblerLine(Instr::INT, 1L),
                                   makeAssemblerLine(Instr::CPP, CPP_STREAM_READ))));
 
-    // EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
+    // CPP_EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
     // eval#: lex, dyn, str.
     reader.cpp[CPP_EVAL] = [](IntState& state0) {
         eval(state0, state0.str0);
@@ -865,7 +865,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                   makeAssemblerLine(Instr::LOAD, Reg::NUM0),
                                   makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-    // SYM_NAME (takes %sym, looks up its name, and outputs a string as %ret)
+    // CPP_SYM_NAME (takes %sym, looks up its name, and outputs a string as %ret)
     // symName#: sym.
     reader.cpp[CPP_SYM_NAME] = [](IntState& state0) {
         std::string name = Symbols::get()[ state0.sym ];
@@ -882,7 +882,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                   makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                   makeAssemblerLine(Instr::CPP, CPP_SYM_NAME))));
 
-    // SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
+    // CPP_SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
     // natSym#: num.
     reader.cpp[CPP_SYM_NUM] = [](IntState& state0) {
         if (state0.num0.asSmallInt() <= 0) {
@@ -942,7 +942,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                        makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                        makeAssemblerLine(Instr::XCALL))));
 
-    // SYM_INTERN (takes %str0, looks it up, and puts the result as a symbol in %ret)
+    // CPP_SYM_INTERN (takes %str0, looks it up, and puts the result as a symbol in %ret)
     // intern#: str.
     reader.cpp[CPP_SYM_INTERN] = [](IntState& state0) {
         Symbolic name = Symbols::get()[ state0.str0 ];
@@ -959,7 +959,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                   makeAssemblerLine(Instr::THROA, "String expected"),
                                   makeAssemblerLine(Instr::CPP, CPP_SYM_INTERN))));
 
-    // SIMPLE_CMP (compares %slf's and %ptr's respective prim fields based on the value of %num0)
+    // CPP_SIMPLE_CMP (compares %slf's and %ptr's respective prim fields based on the value of %num0)
     // - 0 - Compare for equality and put the result in %flag
     // - 1 - Compare for LT and put the result in %flag
     // In any case, if either argument lacks a prim or the prim fields have different types, false
@@ -1022,7 +1022,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                   makeAssemblerLine(Instr::CPP, CPP_SIMPLE_CMP),
                                   makeAssemblerLine(Instr::BOL))));
 
-    // NUM_LEVEL (determine the "level" of %num0 and put the result in %ret)
+    // CPP_NUM_LEVEL (determine the "level" of %num0 and put the result in %ret)
     // numLevel#: num.
     reader.cpp[CPP_NUM_LEVEL] = [](IntState& state0) {
         garnishBegin(state0, state0.num0.hierarchyLevel());
@@ -1046,7 +1046,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              defineMethod(unit, global, method,
                           asmCode(makeAssemblerLine(Instr::LOCRT))));
 
-    // ORIGIN (find the origin of %sym in %slf, store resulting object in %ret, throw SlotError otherwise
+    // CPP_ORIGIN (find the origin of %sym in %slf, store resulting object in %ret, throw SlotError otherwise
     // origin#: self, sym.
     reader.cpp[CPP_ORIGIN] = [](IntState& state0) {
         list<ObjectPtr> parents;
@@ -1084,7 +1084,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                   makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                   makeAssemblerLine(Instr::CPP, CPP_ORIGIN))));
 
-    // PROCESS_TASK - Do something with %slf and possibly other registers, based on %num0
+    // CPP_PROCESS_TASK - Do something with %slf and possibly other registers, based on %num0
     // - 0 - Create (%slf should be `Process`, %str0 should be the command, and %ret will be a new clone)
     // - 1 - Exec (%prcs should be the process, no return value)
     // - 2 - OutStream (%prcs should be the process, %ptr a stream object)
@@ -1259,7 +1259,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::INT, 1L),
                                    makeAssemblerLine(Instr::CPP, CPP_PROCESS_TASK))));
 
-     // OBJECT_KEYS (takes an object in %slf and outputs an array-like construct using `meta brackets`
+     // CPP_OBJECT_KEYS (takes an object in %slf and outputs an array-like construct using `meta brackets`
      //              which contains all of the slot names of %slf)
      // objectKeys#: obj.
      reader.cpp[CPP_OBJECT_KEYS] = [](IntState& state0) {
@@ -1303,7 +1303,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                    makeAssemblerLine(Instr::CPP, CPP_OBJECT_KEYS))));
 
-     // FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
+     // CPP_FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
      // streamFileOpen#: strm, fname, access, mode.
      reader.cpp[CPP_FILE_DOOPEN] = [](IntState& state0) {
          ObjectPtr dyn = state0.dyn.top();
@@ -1353,7 +1353,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_FILE_DOOPEN),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // FILE_DOCLOSE (takes %strm and closes it)
+     // CPP_FILE_DOCLOSE (takes %strm and closes it)
      // streamClose#: strm.
      reader.cpp[CPP_FILE_DOCLOSE] = [](IntState& state0) {
          state0.strm->close();
@@ -1370,7 +1370,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                            makeAssemblerLine(Instr::CPP, CPP_FILE_DOCLOSE),
                                            makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // FILE_EOF (takes %strm and outputs whether it's at eof into %flag)
+     // CPP_FILE_EOF (takes %strm and outputs whether it's at eof into %flag)
      // streamEof#: strm.
      reader.cpp[CPP_FILE_EOF] = [](IntState& state0) {
          state0.flag = state0.strm->isEof();
@@ -1387,7 +1387,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_FILE_EOF),
                                    makeAssemblerLine(Instr::BOL))));
 
-     // STRING_LENGTH (outputs length of %str0 into %ret)
+     // CPP_STRING_LENGTH (outputs length of %str0 into %ret)
      // stringLength#: str.
      reader.cpp[CPP_STRING_LENGTH] = [](IntState& state0) {
          // TODO Possible loss of precision from size_t to signed long?
@@ -1404,7 +1404,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_STRING_LENGTH))));
 
-     // STRING_SUB (outputs substring of %str0 from %num0 to %num1 into %ret)
+     // CPP_STRING_SUB (outputs substring of %str0 from %num0 to %num1 into %ret)
      // stringSubstring#: str, beg, end.
      reader.cpp[CPP_STRING_SUB] = [](IntState& state0) {
          long start1 = state0.num0.asSmallInt();
@@ -1452,7 +1452,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_STRING_SUB))));
 
-     // STRING_FIND (find first occurence of %str1 in %str0 starting at %num0 index, storing
+     // CPP_STRING_FIND (find first occurence of %str1 in %str0 starting at %num0 index, storing
      //              new index or Nil in %ret)
      // stringFindFirst#: str, substr, pos.
      reader.cpp[CPP_STRING_FIND] = [](IntState& state0) {
@@ -1487,7 +1487,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_STRING_FIND))));
 
-     // GC_RUN (run the garbage collector and store the number of objects deleted at %ret)
+     // CPP_GC_RUN (run the garbage collector and store the number of objects deleted at %ret)
      // runGC#.
      reader.cpp[CPP_GC_RUN] = [&reader](IntState& state0) {
          // TODO This assumes the reader that's in use is the same as the reader that was created
@@ -1500,7 +1500,7 @@ void spawnSystemCallsNew(ObjectPtr global,
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::CPP, CPP_GC_RUN))));
 
-     // FILE_HEADER (check the %str0 file and put a FileHeader object in %ret)
+     // CPP_FILE_HEADER (check the %str0 file and put a FileHeader object in %ret)
      // fileHeader#: filename.
      reader.cpp[CPP_FILE_HEADER] = [](IntState& state0) {
          InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLDC, Lit::FHEAD, Reg::SLF));
@@ -1547,8 +1547,8 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_FILE_HEADER))));
 
-     // STR_ORD (check the %str0 register and put the ASCII value in %ret, empty string returns 0)
-     // STR_CHR (check the %num0 register and put the character in %ret)
+     // CPP_STR_ORD (check the %str0 register and put the ASCII value in %ret, empty string returns 0)
+     // CPP_STR_CHR (check the %num0 register and put the character in %ret)
      // strOrd#: str.
      // strChr#: num.
      reader.cpp[CPP_STR_ORD] = [](IntState& state0) {
@@ -1581,7 +1581,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "Number expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_STR_CHR))));
 
-     // GC_TOTAL (get the total number of allocated objects from the garbage collector and store it in %ret)
+     // CPP_GC_TOTAL (get the total number of allocated objects from the garbage collector and store it in %ret)
      // totalGC#.
      reader.cpp[CPP_GC_TOTAL] = [](IntState& state0) {
          // TODO Possible loss of precision
@@ -1591,7 +1591,7 @@ void spawnSystemCallsNew(ObjectPtr global,
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::CPP, CPP_GC_TOTAL))));
 
-     // TIME_SPAWN (put all the information about the current system time in the %ptr object, using %num0 to
+     // CPP_TIME_SPAWN (put all the information about the current system time in the %ptr object, using %num0 to
      //             determine whether local time (1) or global time (2))
      // timeSpawnLocal#: obj.
      // timeSpawnGlobal#: obj.
@@ -1693,7 +1693,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_TIME_SPAWN),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // ENV_GET (retrieve the environment variable matching the name in %str0 and store the result in %ret)
+     // CPP_ENV_GET (retrieve the environment variable matching the name in %str0 and store the result in %ret)
      // envGet#: str.
      reader.cpp[CPP_ENV_GET] = [](IntState& state0) {
          boost::optional<std::string> value = getEnv(state0.str0);
@@ -1713,7 +1713,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_ENV_GET))));
 
-     // ENV_SET (assign the environment variable with name %str0 to value %str1 (or unset it, if %num0 is nonzero)
+     // CPP_ENV_SET (assign the environment variable with name %str0 to value %str1 (or unset it, if %num0 is nonzero)
      // envSet#: name, value.
      // envUnset#: name.
      reader.cpp[CPP_ENV_SET] = [](IntState& state0) {
@@ -1759,7 +1759,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::INT, 1),
                                    makeAssemblerLine(Instr::CPP, CPP_ENV_SET))));
 
-     // EXE_PATH (put an appropriate pathname into %ret%, given by the %num0 argument)
+     // CPP_EXE_PATH (put an appropriate pathname into %ret%, given by the %num0 argument)
      //  * %num0 == 1: Executable pathname
      // exePath#.
      reader.cpp[CPP_EXE_PATH] = [](IntState& state0) {
@@ -1778,7 +1778,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                            asmCode(makeAssemblerLine(Instr::INT, 1),
                                    makeAssemblerLine(Instr::CPP, CPP_EXE_PATH))));
 
-     // PATH_OP (put an appropriate pathname into %ret%, given by the %num0 argument and %str0 input)
+     // CPP_PATH_OP (put an appropriate pathname into %ret%, given by the %num0 argument and %str0 input)
      //  * %num0 == 1: Get directory of pathname
      //  * %num0 == 2: Get filename of pathname
      // dirName#: str.
@@ -1819,7 +1819,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::INT, 2),
                                    makeAssemblerLine(Instr::CPP, CPP_PATH_OP))));
 
-     // FILE_EXISTS (check the pathname in %str0 for existence, storing result in %flag)
+     // CPP_FILE_EXISTS (check the pathname in %str0 for existence, storing result in %flag)
      // fileExists#: fname.
      reader.cpp[CPP_FILE_EXISTS] = [](IntState& state0) {
          std::ifstream f(state0.str0.c_str());
@@ -1838,7 +1838,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_FILE_EXISTS),
                                    makeAssemblerLine(Instr::BOL))));
 
-     // TRIG_OP (perform the operation indicated in %num0 on the value in %num1, storing result in %num1)
+     // CPP_TRIG_OP (perform the operation indicated in %num0 on the value in %num1, storing result in %num1)
      // numTrig#: num, op.
      reader.cpp[CPP_TRIG_OP] = [](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
@@ -1916,7 +1916,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // MATH_FLOOR (floor the value in %num0, storing result in %num0)
+     // CPP_MATH_FLOOR (floor the value in %num0, storing result in %num0)
      // numFloor#: num.
      reader.cpp[CPP_MATH_FLOOR] = [](IntState& state0) {
          state0.num0 = state0.num0.floor();
@@ -1937,7 +1937,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM0),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // NUM_CONST (store something in %num1, based on the value of %num0, sets %err0 if non-applicable)
+     // CPP_NUM_CONST (store something in %num1, based on the value of %num0, sets %err0 if non-applicable)
      // numNan#: number.
      // numInfinity#: number.
      // numNegInfinity#: number.
@@ -2025,7 +2025,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // PROT_VAR (protect the variable named %sym in the object %slf)
+     // CPP_PROT_VAR (protect the variable named %sym in the object %slf)
      // protectVar#: obj, var.
      reader.cpp[CPP_PROT_VAR] = [](IntState& state0) {
          state0.slf->addProtection(state0.sym, PROTECT_ASSIGN | PROTECT_DELETE);
@@ -2047,7 +2047,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_PROT_VAR),
                                    makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET))));
 
-     // PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
+     // CPP_PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
      // protectIs#: obj, var.
      reader.cpp[CPP_PROT_IS] = [](IntState& state0) {
          garnishBegin(state0, state0.slf->hasAnyProtection(state0.sym));
@@ -2068,7 +2068,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                    makeAssemblerLine(Instr::CPP, CPP_PROT_IS))));
 
-     // STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)
+     // CPP_STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)
      // stringNext#: str, num.
      reader.cpp[CPP_STR_NEXT] = [](IntState& state0) {
          auto result = nextCharPos(state0.str0, state0.num0.asSmallInt());
@@ -2096,7 +2096,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_STR_NEXT))));
 
-     // COMPLEX (take %num0 as real part, %num1 as imaginary part, and produce complex number in %num0)
+     // CPP_COMPLEX (take %num0 as real part, %num1 as imaginary part, and produce complex number in %num0)
      // complexNumber#: number, re, im.
      reader.cpp[CPP_COMPLEX] = [](IntState& state0) {
          state0.num0 = complex_number(state0.num0, state0.num1);
@@ -2145,7 +2145,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::DEL),
                                    makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET))));
 
-     // PRIM_METHOD (takes %slf and puts whether or not it has a method prim in %flag)
+     // CPP_PRIM_METHOD (takes %slf and puts whether or not it has a method prim in %flag)
      // primIsMethod#: obj.
      reader.cpp[CPP_PRIM_METHOD] = [](IntState& state0) {
          state0.flag = variantIsType<Method>(state0.slf->prim());
@@ -2159,7 +2159,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_PRIM_METHOD),
                                    makeAssemblerLine(Instr::BOL))));
 
-     // LOOP_DO (takes %ptr, calls it, then does LOOP_DO again)
+     // CPP_LOOP_DO (takes %ptr, calls it, then does LOOP_DO again)
      // loopDo#: method.
      reader.cpp[CPP_LOOP_DO] = [&reader](IntState& state0) {
          state0.stack = pushNode(state0.stack, state0.cont);
@@ -2173,8 +2173,8 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                    makeAssemblerLine(Instr::CPP, CPP_LOOP_DO))));
 
-     // UNI_ORD (check the %str0 register and put the code point in %ret, empty string returns 0)
-     // UNI_CHR (check the %num0 register and put the character in %ret)
+     // CPP_UNI_ORD (check the %str0 register and put the code point in %ret, empty string returns 0)
+     // CPP_UNI_CHR (check the %num0 register and put the character in %ret)
      // uniOrd#: str.
      // uniChr#: num.
      reader.cpp[CPP_UNI_ORD] = [](IntState& state0) {
