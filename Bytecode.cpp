@@ -59,7 +59,7 @@ void hardKill(IntState& state) {
     state.stack = NodePtr<SeekHolder>();
 }
 
-void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
+void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
     deque<WindPtr> exits;
     deque<WindPtr> enters;
     while (oldWind) {
@@ -77,7 +77,7 @@ void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> n
         enters.pop_front();
     }
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = CodeSeek();
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );
@@ -1031,7 +1031,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             auto oldWind = state.wind;
             auto newWind = cont->wind;
             state = *cont;
-            resolveThunks(state, oldWind, newWind);
+            resolveThunks(state, reader, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
@@ -1053,7 +1053,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             InstrSeq pop = asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO));
             state.stack = pushNode(state.stack, state.cont);
             state.cont = CodeSeek(pop);
-            resolveThunks(state, oldWind, newWind);
+            resolveThunks(state, reader, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;

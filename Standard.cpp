@@ -2167,6 +2167,9 @@ void spawnSystemCallsNew(ObjectPtr global,
      // These methods MUST be pushed in the correct order or the standard library
      // code will fail spectacularly.
 
+     // GTU_EMPTY
+     reader.gtu->method(0) = asmCode();
+
      // GTU_LOOP_DO
      reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
                                     makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
