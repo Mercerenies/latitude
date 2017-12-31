@@ -36,7 +36,7 @@
               "'" "[" <literallist> "]" |
               "#" "\"" <text> "\"" "#" |
               "#" "(" <text> ")" |
-              "0" <letter> { <alphanum> } |
+              [ "-" | "+" ] "0" <letter> { <alphanum> } |
               "@" "{" <linelist> "}" |
               "@" "(" <number> "," <number> ")" |
               "#'" <text>
@@ -52,4 +52,5 @@
               <number> |
               "'" "(" <text> ")" |
               "[" <literallist> "]" |
+              "#" "\"" <text> "\"" "#" |
               <name>

@@ -11,8 +11,6 @@ using namespace std;
 
 class UnixProcess;
 
-// TODO Perhaps add a flush function to force flushing of output and bypass buffering
-//      (Would have to do this in Stream.hpp as well)
 class FilePtrStream : public Stream {
 private:
     int fd;

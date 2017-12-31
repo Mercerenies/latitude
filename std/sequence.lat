@@ -6,8 +6,9 @@ Sequence := Object clone.
 Sequence toString := { "#<Sequence " ++ (self list pretty) ++ ">". }.
 Sequence list := Nil.
 Sequence fromArray := {
+  arr := $1.
   self clone tap {
-    self list := parent dynamic $1 foldr:
+    self list := arr foldr:
       Nil,
       {
         cc := Cons clone.
@@ -42,11 +43,12 @@ Sequence tail := {
 Sequence lazy := {
   cons0 := self list.
   seq := LazySequence clone.
-  lazyCons := { cache := memo { lazyCons: parent dynamic $1 cdr. }.
+  lazyCons := { cons1 := $1.
+                cache := memo { lazyCons: cons1 cdr. }.
                 if ($1 nil?)
                   then { Nil. }
                   else { cc := Cons clone.
-                         cc car := parent dynamic $1 car.
+                         cc car := cons1 car.
                          cc cdr := { cache call. }.
                          cc. }. }.
   seq list := lazyCons: cons0.
@@ -66,8 +68,9 @@ LazySequence toString := {
 }.
 LazySequence list := Nil.
 LazySequence map! := {
+  func0 := #'$1.
   func := {
-    parent dynamic slot '$1 call.
+    #'func0 call.
   }.
   recurse := {
     curr := $1.
@@ -82,8 +85,9 @@ LazySequence map! := {
   self list := recurse: self list.
 }.
 LazySequence visit := {
+  func0 := #'$1.
   func := {
-    (parent dynamic slot '$1) call.
+    #'func0 call.
   }.
   recurse := {
     curr := $1.
@@ -98,8 +102,9 @@ LazySequence visit := {
   recurse: self list.
 }.
 LazySequence foldr := {
+  func0 := #'$2.
   func := {
-    (parent dynamic slot '$2) call.
+    #'func0 call.
   }.
   init := #'$1.
   recurse := {

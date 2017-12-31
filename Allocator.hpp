@@ -25,6 +25,8 @@ struct ObjectEntry {
     bool in_use;
     /// The index of the entry's bucket in the Allocator.
     unsigned int index;
+    /// The reference counter for the specific entry.
+    unsigned int ref_count;
 };
 
 /// \brief A CountedArray keeps a count of the number of elements
@@ -59,12 +61,14 @@ private:
     Allocator();
 public:
 
+    ~Allocator();
+
     /// Retrieves the singleton allocator.
     ///
     /// \returns the allocator instance
     static Allocator& get() noexcept;
     ObjectPtr allocate();
-    void free(ObjectPtr);
+    void free(Object*);
     void DEBUG();
 };
 

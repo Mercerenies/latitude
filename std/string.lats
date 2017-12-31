@@ -2,10 +2,31 @@
 ; While the basic string functionality is defined in core.lat, this file defines more sophisticated
 ; methods on strings.
 
-; TODO We changed some of the functions to work using Unicode bytes but not all of them.
-;      `find` and `replace` and company need to decide which indexing system they're using.
-
-String find := { meta sys stringFindFirst#: self, $1, $2. }.
+String findBytes := { meta sys stringFindFirst#: self, $1, $2. }.
+String find := {
+  localize.
+  takes '[substr, index].
+  byteIndex := 0.
+  index times {
+    parent byteIndex := meta sys stringNext#: this, byteIndex.
+  }.
+  byteResult := self findBytes: substr, byteIndex.
+  callCC {
+    escapable.
+    byteResult nil? ifTrue {
+      return: Nil.
+    }.
+    result := 0.
+    count := 0.
+    loop {
+      (result) >= (byteResult) ifTrue {
+        return: count.
+      }.
+      parent result := meta sys stringNext#: this, result.
+      parent count := count + 1.
+    }.
+  }.
+}.
 String findFirst := { self find: $1, 0. }.
 String findAll := {
   localize.
@@ -17,6 +38,7 @@ String findAll := {
   matches.
 }.
 
+String bytes? := False.
 String bytes := {
   localize.
   this clone tap {
@@ -31,6 +53,8 @@ String bytes := {
         }.
       }.
     }.
+    self find := self slot 'findBytes.
+    self bytes? := True.
   }.
 }.
 
@@ -94,8 +118,9 @@ String replaceAll := {
   'negativeIndex assign = { $1. }.
   index := { (curr size) - (negativeIndex). }.
   index= := {
-    $1 ifTrue {
-      negativeIndex = (curr size) - (parent dynamic $1).
+    index := $1.
+    index ifTrue {
+      negativeIndex = (curr size) - (index).
     }.
   }.
   while { index = curr find: substr, index. }
@@ -123,17 +148,29 @@ String padRight := {
   newStr.
 }.
 
+String asciiOrd := {
+  self == "" ifTrue {
+    err ArgError clone tap { self message := "`asciiOrd` on empty string". } throw.
+  }.
+  meta sys strOrd#: self.
+}.
 String ord := {
   self == "" ifTrue {
     err ArgError clone tap { self message := "`ord` on empty string". } throw.
   }.
-  meta sys strOrd#: self.
+  meta sys uniOrd#: self.
 }.
-Number chr := {
+Number asciiChr := {
   (self < 0) or (self > 255) ifTrue {
-    err ArgError clone tap { self message := "`chr` arg out of bounds". } throw.
+    err ArgError clone tap { self message := "`asciiChr` arg out of bounds". } throw.
   }.
   meta sys strChr#: self.
+}.
+Number chr := {
+  (self < 0) or (self > 1114111) ifTrue {
+    err ArgError clone tap { self message := "`chr` arg out of bounds". } throw.
+  }.
+  meta sys uniChr#: self.
 }.
 
 String iterator := {
@@ -162,6 +199,7 @@ String map := {
   self visit {
     parent str := str ++ (mthd: $1).
   }.
+  self bytes? ifTrue { parent str := str bytes. }.
   str.
 }.
 Collection inject: String.

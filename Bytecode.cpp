@@ -4,9 +4,7 @@
 #include "Standard.hpp"
 #include "Assembler.hpp"
 
-// TODO Make some standard test cases that can be run as a module
-
-#define DEBUG_INSTR 0
+//#define DEBUG_INSTR 2
 
 using namespace std;
 
@@ -113,7 +111,7 @@ long popLong(SerialInstrSeq& state) {
     return sign * value;
 }
 
-string popString(SerialInstrSeq& state) {
+string popString(SerialInstrSeq& state) { // TODO Null-safety here (null characters will confuse it)
     string str;
     unsigned char ch;
     while ((ch = popChar(state)) != 0)
@@ -417,21 +415,21 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             else
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
+            auto lex = state.lex.top(); // TODO Possible empty stack error?
             state.lex.push( clone(closure.getPtr()) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
-                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
                 state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
-                                            Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
+                                            Symbols::get()["$dynamic"]);
             }
             state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"],
-                                        Symbols::get()["lexical"], Symbols::get()["dynamic"]);
+                                        Symbols::get()["lexical"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
@@ -513,21 +511,21 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             else
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
+            auto lex = state.lex.top(); // TODO Possible empty stack error?
             state.lex.push( clone(closure.getPtr()) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
-                state.lex.top()->put(Symbols::get()["dynamic"], state.dyn.top());
-                state.dyn.top()->put(Symbols::get()["$lexical"], state.lex.top());
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
                 state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
-                                            Symbols::get()["$lexical"], Symbols::get()["$dynamic"]);
+                                            Symbols::get()["$dynamic"]);
             }
             state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"],
-                                        Symbols::get()["lexical"], Symbols::get()["dynamic"]);
+                                        Symbols::get()["lexical"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
@@ -957,7 +955,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     case Instr::SYMN: {
         long val = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
-        cout << "SYMN " << val << endl;
+        cout << "SYMN " << val << " (" << Symbols::get()[Symbolic{val}] << ")" << endl;
 #endif
         state.sym = { val };
     }
@@ -1283,7 +1281,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "YLD " << val << " " << (long)reg << endl;
 #endif
         auto obj = reader.lit.at(val);
-        if (obj) {
+        if (obj != nullptr) {
             switch (reg) {
             case Reg::PTR:
                 state.ptr = obj;
@@ -1310,7 +1308,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "YLDC " << val << " " << (long)reg << endl;
 #endif
         auto obj = reader.lit.at(val);
-        if (obj) {
+        if (obj != nullptr) {
             obj = clone(obj);
             switch (reg) {
             case Reg::PTR:

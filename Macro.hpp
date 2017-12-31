@@ -10,6 +10,12 @@
 #include <boost/mpl/find.hpp>
 #include "Reader.hpp"
 
+/// \file
+///
+/// \brief Miscellaneous template macros that make common tasks more convenient.
+
+/// \cond
+
 template <typename ForwardIterator, typename... Ts>
 void _bindArguments(ForwardIterator& begin, ForwardIterator& end, Ts&... args);
 
@@ -25,12 +31,17 @@ void _bindArguments(ForwardIterator& begin, ForwardIterator& end, T& arg, Ts&...
 template <typename ForwardIterator>
 void _bindArguments(ForwardIterator& begin, ForwardIterator& end) {}
 
-/*
- * Takes a forward iterable structure and a number of arguments by reference.
- * Binds the arguments to each element of the structure, unless the size does not
- * match, in which case nothing is changed and false is returned. Otherwise,
- * the arguments are bound and true is returned.
- */
+/// \endcond
+
+/// Takes a forward iterable structure and a number of arguments by
+/// reference.  Binds the arguments to each element of the structure,
+/// unless the size does not match, in which case nothing is changed
+/// and false is returned. Otherwise, the arguments are bound and true
+/// is returned.
+///
+/// \param lst a forward-iterable structure
+/// \param args the arguments to bind
+/// \return whether or not the arguments were successfully bound
 template <typename Iterable, typename... Ts>
 bool bindArguments(const Iterable& lst, Ts&... args) {
     auto begin = lst.begin();
@@ -43,13 +54,16 @@ bool bindArguments(const Iterable& lst, Ts&... args) {
 }
 
 /*
- * Performs a function call given a set of arguments. All of the arguments should be (assignable to) ObjectPtr.
+ * Performs a function call given a set of arguments. All of the
+ * arguments should be (assignable to) ObjectPtr.
  *
 template <typename... Ts>
 ObjectPtr doCallWithArgs(Scope scope, ObjectPtr self, ObjectPtr mthd, Ts... args) {
     return doCall(scope, self, mthd, std::list<ObjectPtr> { args... });
 }
 */
+
+/// \cond
 
 template <typename T>
 struct _VariantVisitor {
@@ -59,6 +73,16 @@ struct _VariantVisitor {
     }
 };
 
+/// \endcond
+
+/// This utility function checks whether the variant contains a value
+/// of the given type. The given type must be one of the variant's
+/// possible types or a compile-time error will be raised.
+///
+/// \tparam T the type to check
+/// \tparam Ss the variant types
+/// \param variant the variant value
+/// \return whether or not the variant contains a value of the given type
 template <typename T, typename... Ss>
 bool variantIsType(const boost::variant<Ss...>& variant) {
     typedef boost::mpl::vector<Ss...> pack_t;

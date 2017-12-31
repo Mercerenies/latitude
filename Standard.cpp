@@ -7,6 +7,7 @@
 #include "GC.hpp"
 #include "Environment.hpp"
 #include "Pathname.hpp"
+#include "Unicode.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -14,15 +15,6 @@
 #include <boost/optional.hpp>
 
 using namespace std;
-
-// TODO Some syntax sugar for pattern matching key-value pairs
-//    (So we can do a `capture3` which returns three values)
-//    (Or maybe a "variable bomb" method which introduces variables into the local scope)
-
-// TODO Something about the fact that system calls cause Latitude to "double report" stack frames
-//  std/core.lat: 180
-//  std/core.lat: 180
-// Where one of these is technically a system call that isn't in core.lat
 
 ObjectPtr defineMethod(TranslationUnitPtr unit, ObjectPtr global, ObjectPtr method, InstrSeq&& code) {
     ObjectPtr obj = clone(method);
@@ -87,7 +79,10 @@ void spawnSystemCallsNew(ObjectPtr global,
         PROT_IS = 38,
         STR_NEXT = 39,
         COMPLEX = 40,
-        PRIM_METHOD = 41;
+        PRIM_METHOD = 41,
+        LOOP_DO = 42,
+        UNI_ORD = 43,
+        UNI_CHR = 44;
 
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
@@ -2027,11 +2022,6 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // TODO At some point, let's expose the complexities of the
-     // protection API to the user. Currently, all we do is let them
-     // apply every protection at once and check whether any are
-     // applied at all.
-
      // PROT_VAR (protect the variable named %sym in the object %slf)
      // protectVar#: obj, var.
      reader.cpp[PROT_VAR] = [](IntState& state0) {
@@ -2078,33 +2068,9 @@ void spawnSystemCallsNew(ObjectPtr global,
      // STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)
      // stringNext#: str, num.
      reader.cpp[STR_NEXT] = [](IntState& state0) {
-         // Based on the algorithm at http://stackoverflow.com/a/4063258/2288659
-         bool valid = true;
-         auto i = state0.num0.asSmallInt();
-         auto full_len = state0.str0.length();
-         unsigned char c = static_cast<unsigned char>(state0.str0[i]);
-         unsigned long n = 0;
-         if ((c & 0x80) == 0x00)
-             n = 1;
-         else if ((c & 0xE0) == 0xC0)
-             n = 2;
-         else if ((c & 0xF0) == 0xE0)
-             n = 3;
-         else if ((c & 0xF8) == 0xF0)
-             n = 4;
-         else
-             valid = false;
-         if (n + i > full_len)
-             valid = false;
-         if (valid) {
-             for (unsigned long j = i + 1; j < i + n; j++) {
-                 unsigned char c1 = static_cast<unsigned char>(state0.str0[j]);
-                 if ((c1 & 0xC0) != 0x80)
-                     valid = false;
-             }
-         }
-         if (valid)
-             garnishBegin(state0, static_cast<signed long>(i + n));
+         auto result = nextCharPos(state0.str0, state0.num0.asSmallInt());
+         if (result)
+             garnishBegin(state0, *result);
          else
              garnishBegin(state0, boost::blank());
      };
@@ -2190,9 +2156,71 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, PRIM_METHOD),
                                    makeAssemblerLine(Instr::BOL))));
 
+     // LOOP_DO (takes %ptr, calls it, then does LOOP_DO again)
+     // loopDo#: method.
+     reader.cpp[LOOP_DO] = [](IntState& state0) {
+         state0.stack = pushNode(state0.stack, state0.cont);
+         state0.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO),
+                                        makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF),
+                                        makeAssemblerLine(Instr::CALL, 0L),
+                                        makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                        makeAssemblerLine(Instr::CPP, LOOP_DO)));
+     };
+     sys->put(Symbols::get()["loopDo#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::CPP, LOOP_DO))));
+
+     // UNI_ORD (check the %str0 register and put the code point in %ret, empty string returns 0)
+     // UNI_CHR (check the %num0 register and put the character in %ret)
+     // uniOrd#: str.
+     // uniChr#: num.
+     reader.cpp[UNI_ORD] = [](IntState& state0) {
+         auto ch = charAt(state0.str0, 0L);
+         if (ch)
+             garnishBegin(state0, uniOrd(*ch));
+         else
+             garnishBegin(state0, 0L);
+     };
+     reader.cpp[UNI_CHR] = [](IntState& state0) {
+         garnishBegin(state0, static_cast<std::string>(UniChar(state0.num0.asSmallInt())));
+     };
+     sys->put(Symbols::get()["uniOrd#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::CPP, UNI_ORD))));
+     sys->put(Symbols::get()["uniChr#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::CPP, UNI_CHR))));
+
 }
 
-ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
+void bindArgv(ObjectPtr argv_, ObjectPtr string, int argc, char** argv) {
+    for (int i = 1; i < argc; i++) {
+        std::string name = "$" + to_string(i - 1);
+        ObjectPtr curr = clone(string);
+        curr->prim(argv[i]);
+        argv_->put(Symbols::get()[name], curr);
+    }
+}
+
+ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** argv) {
 
     ObjectPtr object(GC::get().allocate());
     ObjectPtr meta(clone(object));
@@ -2226,6 +2254,8 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
     ObjectPtr boolean(clone(object));
     ObjectPtr true_(clone(boolean));
     ObjectPtr false_(clone(boolean));
+
+    ObjectPtr argv_(clone(object));
 
     // Global calls for basic types
     global->put(Symbols::get()["Object"], object);
@@ -2280,17 +2310,21 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader) {
     stdin_->prim(inStream());
     stderr_->prim(errStream());
 
+    // argv
+    global->put(Symbols::get()["$argv"], argv_);
+    bindArgv(argv_, string, argc, argv);
+
     // Spawn the literal objects table
-    reader.lit[Lit::NIL   ] = nil;
-    reader.lit[Lit::FALSE ] = false_;
-    reader.lit[Lit::TRUE  ] = true_;
-    reader.lit[Lit::BOOL  ] = boolean;
-    reader.lit[Lit::STRING] = string;
-    reader.lit[Lit::NUMBER] = number;
-    reader.lit[Lit::SYMBOL] = symbol;
-    reader.lit[Lit::METHOD] = method;
-    reader.lit[Lit::SFRAME] = stackFrame;
-    reader.lit[Lit::FHEAD ] = fileHeader;
+    reader.lit.emplace(Lit::NIL   , nil       );
+    reader.lit.emplace(Lit::FALSE , false_    );
+    reader.lit.emplace(Lit::TRUE  , true_     );
+    reader.lit.emplace(Lit::BOOL  , boolean   );
+    reader.lit.emplace(Lit::STRING, string    );
+    reader.lit.emplace(Lit::NUMBER, number    );
+    reader.lit.emplace(Lit::SYMBOL, symbol    );
+    reader.lit.emplace(Lit::METHOD, method    );
+    reader.lit.emplace(Lit::SFRAME, stackFrame);
+    reader.lit.emplace(Lit::FHEAD , fileHeader);
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);

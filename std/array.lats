@@ -69,20 +69,25 @@ Array popBack := {
     }.
 }.
 Array nth := {
+  arr := self.
+  index := $1.
   pos := if ($1 < 0)
-    then { (parent self upperBound) + (parent dynamic $1). }
-    else { (parent self lowerBound) + (parent dynamic $1). }.
+    then { (arr upperBound) + (index). }
+    else { (arr lowerBound) + (index). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self slot: (parent self mapping: pos) ordinal. }.
+    else { arr slot: (parent self mapping: pos) ordinal. }.
 }.
 Array nth= := {
+  arr := self.
+  index := $1.
+  value := #'$2.
   pos := if ($1 < 0)
-    then { (parent self upperBound) + (parent dynamic $1). }
-    else { (parent self lowerBound) + (parent dynamic $1). }.
+    then { (arr upperBound) + (index). }
+    else { (arr lowerBound) + (index). }.
   if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
     then { err BoundsError clone throw. }
-    else { parent self slot ((parent self mapping: pos) ordinal) = parent dynamic slot '$2. }.
+    else { arr slot ((parent self mapping: pos) ordinal) = #'value. }.
 }.
 Array size := { (self upperBound) - (self lowerBound). }.
 Array join := {
@@ -116,9 +121,10 @@ Array joinText := {
 Array concat := {
   arr := Array clone.
   self visit {
-    if ($1 is (Array))
-      then { parent dynamic $1 visit { arr pushBack: #'$1. }. }
-      else { arr pushBack: parent dynamic slot '$1. }.
+    arg := #'$1.
+    if (#'arg is (Array))
+      then { #'arg visit { arr pushBack: #'$1. }. }
+      else { arr pushBack: #'arg. }.
   }.
   arr.
 }.
@@ -134,7 +140,7 @@ Array < := {
   localize.
   takes '[arr].
   callCC {
-    return := { parent dynamic $1 call. }.
+    escapable.
     (arr is: Array) ifFalse { return: False. }.
     (this zip: arr) visit {
       (($1 car) < ($1 cdr)) ifTrue: { return: True. }.
@@ -142,19 +148,6 @@ Array < := {
     }.
     (this size) < (arr size).
   }.
-}.
-
-;; Collection Methods
-Array iterator := {
-  ArrayIterator ::= Object clone.
-  ArrayIterator iterator := { self. }.
-  ArrayIterator index := 0.
-  ArrayIterator array := self.
-  ArrayIterator next := { self index := self index + 1. }.
-  ArrayIterator end? := { (self index) >= (self array size). }.
-  ArrayIterator element := { self array nth: self index. }.
-  ArrayIterator element= := { self array nth=: self index, #'$1. }.
-  ArrayIterator.
 }.
 
 ;; This is a fix for a problem with `map` from `Collection`
@@ -167,39 +160,48 @@ Array clone := {
 }.
 
 ;; Array Syntax
+;; TODO Performance improvements?
+
+global ArrayBuilder ::= Object clone.
+ArrayBuilder array := Nil.
+ArrayBuilder next := { self array pushBack: #'$1. }.
+ArrayBuilder finish := { self array. }.
+
 meta brackets := {
-  ArrayBuilder ::= self Object clone.
-  ArrayBuilder array := Array clone.
-  ArrayBuilder next := { self array pushBack: #'$1. }.
-  ArrayBuilder finish := { self array. }.
-  ArrayBuilder.
+  ArrayBuilder clone tap {
+    self array := Array clone.
+  }.
 }.
 
 ;; Statement List Syntax
-SpecialMethod ::= Method clone.
+
+global MethodBuilder ::= Object clone.
+MethodBuilder array := Nil.
+MethodBuilder next := {
+  self array pushBack: proc #'$1.
+}.
+MethodBuilder finish := {
+  spec := {
+    args := $*.
+    result := Nil.
+    here statements visit {
+      procd := parent self invoke: $1 slot 'call.
+      args dropIn.
+      parent result := procd call.
+    }.
+    result.
+  }.
+  #'spec parent := SpecialMethod.
+  #'spec statements := self array.
+  #'spec.
+}.
+
+global SpecialMethod ::= Method clone.
 SpecialMethod statements := [].
 meta statements := {
-  MethodBuilder ::= self Object clone.
-  MethodBuilder array := Array clone.
-  MethodBuilder next := {
-    self array pushBack: proc #'$1.
+  MethodBuilder clone tap {
+    self array := Array clone.
   }.
-  MethodBuilder finish := {
-    spec := {
-      args := $*.
-      result := Nil.
-      here statements visit {
-        procd := parent self invoke: $1 slot 'call.
-        args dropIn.
-        parent result := procd call.
-      }.
-      result.
-    }.
-    #'spec parent := SpecialMethod.
-    #'spec statements := self array.
-    #'spec.
-  }.
-  MethodBuilder.
 }.
 
 ;; Return the script

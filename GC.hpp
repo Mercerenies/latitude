@@ -17,7 +17,7 @@
 class GC {
 private:
     static GC instance;
-    std::set<ObjectPtr> alloc;
+    std::set<Object*> alloc;
     GC() = default;
 public:
 
@@ -31,6 +31,17 @@ public:
     /// \return a pointer to a new object
     ObjectPtr allocate();
 
+    /// Frees the object and updates the garbage collector to the fact
+    /// that the object has been freed.
+    ///
+    /// \param obj the object to free
+    void free(Object* obj);
+
+    /// Frees every object in the garbage collector's allocated
+    /// set. This method is primarily useful for graceful termination
+    /// at the end of execution.
+    void freeAll();
+
     /// Cleans up objects. Any object references maintained by C++ or
     /// by the embedded code should be passed in as arguments, as the
     /// algorithm will assume anything that is unreachable from the
@@ -40,10 +51,10 @@ public:
     ///
     /// \param globals the global variables accessible to the program
     /// \return the number of objects freed
-    long garbageCollect(std::vector<ObjectPtr> globals);
+    long garbageCollect(std::vector<Object*> globals);
 
     /// This is a convenience function which calls
-    /// #garbageCollect(std::vector<ObjectPtr>) with all of the arguments from
+    /// #garbageCollect(std::vector<Object*>) with all of the arguments from
     /// the various registers in the VM.
     ///
     /// \param state the interpreter state
@@ -57,7 +68,7 @@ public:
     /// \param begin the begin iterator
     /// \param end the end iterator
     /// \return the number of objects freed
-    /// \see garbageCollect(std::vector<ObjectPtr>)
+    /// \see garbageCollect(std::vector<Object*>)
     template <typename InputIterator>
     long garbageCollect(InputIterator begin, InputIterator end);
 
@@ -67,7 +78,7 @@ public:
 
 template <typename InputIterator>
 long GC::garbageCollect(InputIterator begin, InputIterator end) {
-    std::vector<ObjectPtr> globals;
+    std::vector<Object*> globals;
     globals.insert(globals.end(), begin, end);
     return GC::garbageCollect(globals);
 }

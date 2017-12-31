@@ -3,10 +3,18 @@
 #include "Instructions.hpp"
 #include <type_traits>
 #include <tuple>
+#include <vector>
 
 /// \file
 ///
 /// \brief Argument type-checking for assembler-level VM instructions.
+
+enum class AsmType {
+    LONG,
+    STRING,
+    REG,
+    ASM
+};
 
 /// \cond
 
@@ -162,6 +170,34 @@ namespace _V {
     template <>
     struct Necessary<Instr::DEL> { typedef std::tuple<> type; };
 
+    template <typename T>
+    struct ArgToEnum;
+
+    template <>
+    struct ArgToEnum<VLong> { constexpr static AsmType value = AsmType::LONG; };
+    template <>
+    struct ArgToEnum<VString> { constexpr static AsmType value = AsmType::STRING; };
+    template <>
+    struct ArgToEnum<VReg> { constexpr static AsmType value = AsmType::REG; };
+    template <>
+    struct ArgToEnum<VAsm> { constexpr static AsmType value = AsmType::ASM; };
+
+    template <typename T>
+    struct ArgPush;
+
+    template <>
+    struct ArgPush<std::tuple<>> {
+        static void push(std::vector<AsmType>&) {}
+    };
+
+    template <typename T, typename... Ts>
+    struct ArgPush<std::tuple<T, Ts...>> {
+        static void push(std::vector<AsmType>& vec) {
+            vec.push_back(ArgToEnum<T>::value);
+            ArgPush<std::tuple<Ts...>>::push(vec);
+        }
+    };
+
 }
 
 /// \endcond
@@ -262,5 +298,7 @@ InstrSeq asmCode(Ts... args) {
         arg.appendOnto(seq);
     return seq;
 }
+
+std::vector<AsmType> getAsmArguments(Instr instr);
 
 #endif // ASSEMBLER_HPP

@@ -5,6 +5,10 @@ Cont toString := "Cont".
 global callCC := {
   meta sys callCC#: Cont clone, #'$1.
 }.
+global escapable := {
+  cont := $1.
+  caller return := { cont call. }.
+}.
 
 ;; Booleans
 Object toBool := True.
@@ -26,28 +30,33 @@ Object falsify := {
 }.
 
 ;; Control Statements
-; TODO Make `self` for the conditionals well-defined
+Conditional ::= Object clone.
+Conditional truthy := True.
+Conditional trueCase := {}.
+Conditional falseCase := {}.
+Conditional then := {
+  self trueCase := #'$1.
+  self.
+}.
+Conditional else := {
+  this := self.
+  this falseCase := #'$1.
+  meta sys ifThenElse#: True, this truthy, { this trueCase. }, { this falseCase. }.
+}.
 global if := {
-  truthy := $1 toBool.
-  Object clone tap {
-    self then := {
-      trueCase := #'$1.
-      Object clone tap {
-        self else := {
-          falseCase := #'$1.
-          ; We'd like ifThenElse# to use the global symbol table's true value, not the True variable.
-          meta sys ifThenElse#: True, truthy, { trueCase. }, { falseCase. }.
-        }.
-      }.
-    }.
+  truthy := #'$1.
+  Conditional clone tap {
+    self truthy := self invoke #'truthy call toBool.
   }.
 }.
 Object ifTrue := {
-  if (self) then #'$1 else { Nil. }.
+  content := #'$1.
+  if (self) then { Kernel invokeOn (parent slot 'self, #'content) call. } else { Nil. }.
   #'self.
 }.
 Object ifFalse := {
-  if (self) then { Nil. } else #'$1.
+  content := #'$1.
+  if (self) then { Nil. } else { Kernel invokeOn (parent slot 'self, #'content) call. }.
   #'self.
 }.
 Object and := {
@@ -62,10 +71,12 @@ Object not := {
 }.
 
 ;; Loops
+;; TODO Make `self` on these methods well-defined.
 global loop := {
-  restart := callCC { $1. }.
-  $1.
-  restart call: restart.
+  meta sys loopDo#: #'$1.
+; restart := callCC { $1. }.
+; $1.
+; restart call: restart.
 }.
 global while := {
   cond := #'$1.
@@ -73,7 +84,8 @@ global while := {
     self do := {
       stmt := #'$1.
       callCC {
-        $break := { parent dynamic $1 call. }.
+        escapable.
+        $break := #'return.
         loop {
           if (cond)
             then { stmt. }
@@ -146,7 +158,7 @@ global cond := {
           }.
         }.
     }.
-    procd := dynamic invokeSpecial:
+    procd := $dynamic invokeSpecial:
       #'block,
       {
         $1 when := { whenProc call. }.
