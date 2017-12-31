@@ -78,10 +78,13 @@ ObjectPtr garnishObject(const ReadOnlyState& reader, long value);
 /// The parameter type `T` shall be a type for which there is a valid
 /// garnishSeq overload.
 ///
+/// \deprecated Use a `garnishObject` overload whenever possible
+///
 /// \tparam T the parameter type
 /// \param state the interpreter state
 /// \param value the value to garnish
 template <typename T>
+[[deprecated]]
 void garnishBegin(IntState& state, T value) {
     InstrSeq seq = garnishSeq(value);
     state.stack = pushNode(state.stack, state.cont);
