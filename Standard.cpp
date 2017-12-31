@@ -2207,6 +2207,18 @@ void spawnSystemCallsNew(ObjectPtr global,
      temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::CALL, 0L)));
      assert(temp.index == GTU_CALL_ZERO);
 
+     // GTU_MISSING (assumes %slf contains the appropriate caller, %ret the missing method, and %sym the symbol)
+     // TODO Why do we push everything onto %sto? Nothing could corrupt %ret and %slf here...
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                           makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR),
+                                           makeAssemblerLine(Instr::LOAD, Reg::SYM),
+                                           makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG),
+                                           makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::CALL, 1L)));
+     assert(temp.index == GTU_MISSING);
+
 }
 
 void bindArgv(ObjectPtr argv_, ObjectPtr string, int argc, char** argv) {

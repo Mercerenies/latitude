@@ -678,21 +678,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                     state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ZERO }));
                 }
             } else {
-                InstrSeq seq0;
-                // Find the literal object to use for the argument
-                (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR)).appendOnto(seq0);
-                // Clone and put a prim() onto it
-                (makeAssemblerLine(Instr::SYMN, backup.index)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq0);
-                // Call it
-                (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
+                state.sym = backup;
                 state.stack = pushNode(state.stack, state.cont);
-                state.cont = CodeSeek(move(seq0));
+                state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_MISSING }));
             }
         } else {
 #if DEBUG_INSTR > 1

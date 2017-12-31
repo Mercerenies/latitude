@@ -61,7 +61,8 @@ namespace Table {
         GTU_TERMINATE = 4,
         GTU_HANDLER = 5,
         GTU_CALL_ONE = 6,
-        GTU_CALL_ZERO = 7;
+        GTU_CALL_ZERO = 7,
+        GTU_MISSING = 8;
 
 }
 
