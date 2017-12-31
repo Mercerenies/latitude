@@ -1549,7 +1549,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      //             determine whether local time (1) or global time (2))
      // timeSpawnLocal#: obj.
      // timeSpawnGlobal#: obj.
-     reader.cpp[CPP_TIME_SPAWN] = [](IntState& state0) {
+     reader.cpp[CPP_TIME_SPAWN] = [&reader](IntState& state0) {
          time_t raw;
          tm info;
          time(&raw);
@@ -1557,76 +1557,15 @@ void spawnSystemCallsNew(ObjectPtr global,
              info = *localtime(&raw);
          else if (state0.num0.asSmallInt() == 2)
              info = *gmtime(&raw);
-         InstrSeq prologue = asmCode(makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::STO));
-         InstrSeq second = garnishSeq(info.tm_sec);
-         InstrSeq second1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                    makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["second"].index),
-                                    makeAssemblerLine(Instr::SETF));
-         InstrSeq minute = garnishSeq(info.tm_min);
-         InstrSeq minute1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                    makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["minute"].index),
-                                    makeAssemblerLine(Instr::SETF));
-         InstrSeq hour = garnishSeq(info.tm_hour);
-         InstrSeq hour1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                  makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["hour"].index),
-                                  makeAssemblerLine(Instr::SETF));
-         InstrSeq day = garnishSeq(info.tm_mday);
-         InstrSeq day1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                 makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                 makeAssemblerLine(Instr::SYMN, Symbols::get()["day"].index),
-                                 makeAssemblerLine(Instr::SETF));
-         InstrSeq month = garnishSeq(info.tm_mon);
-         InstrSeq month1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                   makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["monthNumber"].index),
-                                   makeAssemblerLine(Instr::SETF));
-         InstrSeq year = garnishSeq(info.tm_year + 1900);
-         InstrSeq year1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                  makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["year"].index),
-                                  makeAssemblerLine(Instr::SETF));
-         InstrSeq weekday = garnishSeq(info.tm_wday);
-         InstrSeq weekday1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["weekdayNumber"].index),
-                                     makeAssemblerLine(Instr::SETF));
-         InstrSeq yearday = garnishSeq(info.tm_yday + 1);
-         InstrSeq yearday1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["yearDay"].index),
-                                     makeAssemblerLine(Instr::SETF));
-         InstrSeq dst = garnishSeq(info.tm_isdst);
-         InstrSeq dst1 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                 makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                 makeAssemblerLine(Instr::SYMN, Symbols::get()["dstNumber"].index),
-                                 makeAssemblerLine(Instr::SETF));
-         InstrSeq epilogue = asmCode(makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO));
-         InstrSeq total;
-         total.insert(total.end(), prologue.begin(), prologue.end());
-         total.insert(total.end(), second.begin(), second.end());
-         total.insert(total.end(), second1.begin(), second1.end());
-         total.insert(total.end(), minute.begin(), minute.end());
-         total.insert(total.end(), minute1.begin(), minute1.end());
-         total.insert(total.end(), hour.begin(), hour.end());
-         total.insert(total.end(), hour1.begin(), hour1.end());
-         total.insert(total.end(), day.begin(), day.end());
-         total.insert(total.end(), day1.begin(), day1.end());
-         total.insert(total.end(), month.begin(), month.end());
-         total.insert(total.end(), month1.begin(), month1.end());
-         total.insert(total.end(), year.begin(), year.end());
-         total.insert(total.end(), year1.begin(), year1.end());
-         total.insert(total.end(), weekday.begin(), weekday.end());
-         total.insert(total.end(), weekday1.begin(), weekday1.end());
-         total.insert(total.end(), yearday.begin(), yearday.end());
-         total.insert(total.end(), yearday1.begin(), yearday1.end());
-         total.insert(total.end(), dst.begin(), dst.end());
-         total.insert(total.end(), dst1.begin(), dst1.end());
-         total.insert(total.end(), epilogue.begin(), epilogue.end());
-         state0.stack = pushNode(state0.stack, state0.cont);
-         state0.cont = CodeSeek(std::move(total));
+         state0.ptr->put(Symbols::get()["second"], garnishObject(reader, info.tm_sec));
+         state0.ptr->put(Symbols::get()["minute"], garnishObject(reader, info.tm_min));
+         state0.ptr->put(Symbols::get()["hour"], garnishObject(reader, info.tm_hour));
+         state0.ptr->put(Symbols::get()["day"], garnishObject(reader, info.tm_mday));
+         state0.ptr->put(Symbols::get()["monthNumber"], garnishObject(reader, info.tm_mon));
+         state0.ptr->put(Symbols::get()["year"], garnishObject(reader, info.tm_year + 1900));
+         state0.ptr->put(Symbols::get()["weekdayNumber"], garnishObject(reader, info.tm_wday));
+         state0.ptr->put(Symbols::get()["yearDay"], garnishObject(reader, info.tm_yday + 1));
+         state0.ptr->put(Symbols::get()["dstNumber"], garnishObject(reader, info.tm_isdst));
      };
      sys->put(Symbols::get()["timeSpawnLocal#"],
               defineMethod(unit, global, method,
