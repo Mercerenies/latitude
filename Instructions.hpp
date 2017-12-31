@@ -41,16 +41,17 @@ enum class Reg : unsigned char {
 /// the read-only `%%lit` register, which contains a table of special
 /// objects.
 namespace Lit {
-    constexpr long NIL    = 0L;
-    constexpr long FALSE  = 1L;
-    constexpr long TRUE   = 2L;
-    constexpr long BOOL   = 3L;
-    constexpr long STRING = 4L;
-    constexpr long NUMBER = 5L;
-    constexpr long SYMBOL = 6L;
-    constexpr long SFRAME = 7L;
-    constexpr long METHOD = 8L;
-    constexpr long FHEAD  = 9L;
+    constexpr long NIL    =  0L;
+    constexpr long FALSE  =  1L;
+    constexpr long TRUE   =  2L;
+    constexpr long BOOL   =  3L;
+    constexpr long STRING =  4L;
+    constexpr long NUMBER =  5L;
+    constexpr long SYMBOL =  6L;
+    constexpr long SFRAME =  7L;
+    constexpr long METHOD =  8L;
+    constexpr long FHEAD  =  9L;
+    constexpr long ERR    = 10L;
 }
 
 /// A function index is fundamentally just an integral value. This

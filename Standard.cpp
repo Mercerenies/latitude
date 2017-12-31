@@ -2173,6 +2173,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 
     ObjectPtr cont(clone(proc));
 
+    ObjectPtr err(clone(object));
     ObjectPtr exception(clone(object));
     ObjectPtr systemError(clone(exception));
 
@@ -2226,6 +2227,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     meta->put(Symbols::get()["meta"], meta);
     object->put(Symbols::get()["meta"], meta);
     meta->put(Symbols::get()["sys"], sys);
+    global->put(Symbols::get()["err"], err);
 
     // Global variables not accessible in meta
     global->put(Symbols::get()["stdin"], stdin_);
@@ -2264,6 +2266,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     reader.lit.emplace(Lit::METHOD, method    );
     reader.lit.emplace(Lit::SFRAME, stackFrame);
     reader.lit.emplace(Lit::FHEAD , fileHeader);
+    reader.lit.emplace(Lit::ERR   , err       );
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);
