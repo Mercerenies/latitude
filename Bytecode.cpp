@@ -1128,7 +1128,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         if (state.err0) {
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek( asmCode( makeAssemblerLine(Instr::THROW) ) );
+            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_THROW }));
         }
     }
         break;

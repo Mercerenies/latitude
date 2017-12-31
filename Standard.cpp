@@ -2185,6 +2185,10 @@ void spawnSystemCallsNew(ObjectPtr global,
      temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::RET)));
      assert(temp.index == GTU_RETURN);
 
+     /// GTU_THROW
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::THROW)));
+     assert(temp.index == GTU_THROW);
+
 }
 
 void bindArgv(ObjectPtr argv_, ObjectPtr string, int argc, char** argv) {
