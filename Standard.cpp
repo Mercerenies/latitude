@@ -2185,9 +2185,27 @@ void spawnSystemCallsNew(ObjectPtr global,
      temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::RET)));
      assert(temp.index == GTU_RETURN);
 
-     /// GTU_THROW
+     // GTU_THROW
      temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::THROW)));
      assert(temp.index == GTU_THROW);
+
+     // GTU_TERMINATE
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::CPP, CPP_TERMINATE)));
+     assert(temp.index == GTU_TERMINATE);
+
+     // GTU_HANDLER
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::ARG),
+                                           makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::CALL, 1L)));
+     assert(temp.index == GTU_HANDLER);
+
+     // GTU_CALL_ONE
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::CALL, 1L)));
+     assert(temp.index == GTU_CALL_ONE);
+
+     // GTU_CALL_ZERO
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::CALL, 0L)));
+     assert(temp.index == GTU_CALL_ZERO);
 
 }
 

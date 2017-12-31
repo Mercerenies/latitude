@@ -669,16 +669,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
                 if (value == nullptr) {
                     // Abandon ship!
-                    InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, Table::CPP_TERMINATE));
                     state.stack = pushNode(state.stack, state.cont);
-                    state.cont = CodeSeek(term);
+                    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_TERMINATE }));
                 } else {
-                    InstrSeq seq0;
                     state.slf = meta;
                     state.ptr = value;
-                    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq0);
                     state.stack = pushNode(state.stack, state.cont);
-                    state.cont = CodeSeek(move(seq0));
+                    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ZERO }));
                 }
             } else {
                 InstrSeq seq0;
@@ -1016,9 +1013,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         } else {
             state.slf->prim( statePtr(state) );
             state.arg.push(state.slf);
-            InstrSeq seq = asmCode( makeAssemblerLine(Instr::CALL, 1L) );
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(seq);
+            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ONE }));
         }
     }
         break;
@@ -1105,17 +1101,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "* Got handlers: " << handlers.size() << endl;
 #endif
-        InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, Table::CPP_TERMINATE));
         state.stack = pushNode(state.stack, state.cont);
-        state.cont = CodeSeek(term);
-        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::ARG),
-                               makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
-                               makeAssemblerLine(Instr::CALL, 1L));
+        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_TERMINATE }));
         for (ObjectPtr handler : handlers) {
             state.arg.push(exc);
             state.sto.push(handler);
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(seq);
+            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_HANDLER }));
         }
     }
         break;

@@ -57,7 +57,11 @@ namespace Table {
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,
         GTU_RETURN = 2,
-        GTU_THROW = 3;
+        GTU_THROW = 3,
+        GTU_TERMINATE = 4,
+        GTU_HANDLER = 5,
+        GTU_CALL_ONE = 6,
+        GTU_CALL_ZERO = 7;
 
 }
 
