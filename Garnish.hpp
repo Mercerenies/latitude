@@ -57,6 +57,8 @@ InstrSeq garnishSeq(long value);
 /// \return a sequence of instructions
 InstrSeq garnishSeq(Symbolic value);
 
+ObjectPtr garnishObject(const ReadOnlyState& reader, bool value);
+
 /// This function adds instructions to the current interpreter state
 /// for producing a value equivalent to its argument. It does so by
 /// taking the current continuation in `%%cont`, pushing it onto

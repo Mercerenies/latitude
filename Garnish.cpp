@@ -49,3 +49,7 @@ InstrSeq garnishSeq(Symbolic value) {
                            makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET));
     return seq;
 }
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, bool value) {
+    return value ? reader.lit.at(Lit::TRUE) : reader.lit.at(Lit::FALSE);
+}

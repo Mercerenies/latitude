@@ -961,7 +961,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "BOL (" << state.flag << ")" << endl;
 #endif
-        garnishBegin(state, state.flag);
+        state.ret = garnishObject(reader, state.flag);
     }
         break;
     case Instr::TEST: {
@@ -1345,9 +1345,4 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
 
 bool isIdling(IntState& state) {
     return (state.cont.atEnd() && !state.stack);
-}
-
-Method boolMethod(const ReadOnlyState& reader, bool boolean) {
-    int value = boolean ? Table::GTU_TRUE : Table::GTU_FALSE;
-    return Method(reader.gtu, { value });
 }

@@ -132,13 +132,12 @@ void spawnSystemCallsNew(ObjectPtr global,
         if (stream != nullptr) {
             auto stream0 = boost::get<StreamPtr>(&stream->prim());
             if (stream0) {
-                state0.stack = pushNode(state0.stack, state0.cont);
                 switch (state0.num0.asSmallInt()) {
                 case 0:
-                    state0.cont = MethodSeek(boolMethod(reader, (*stream0)->hasIn()));
+                    state0.ret = garnishObject(reader, (*stream0)->hasIn());
                     break;
                 case 1:
-                    state0.cont = MethodSeek(boolMethod(reader, (*stream0)->hasOut()));
+                    state0.ret = garnishObject(reader, (*stream0)->hasOut());
                     break;
                 }
             } else {
