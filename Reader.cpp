@@ -173,11 +173,11 @@ void eval(IntState& state, const ReadOnlyState& reader, string str) {
             state.ret = garnishObject(reader, boost::blank());
         }
     } catch (std::string str) {
-        throwError(state, "ParseError", str);
+        throwError(state, reader, "ParseError", str);
     }
 }
 
-void readFileSource(string fname, Scope defScope, IntState& state) {
+void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Loading " << fname << "..." << endl;
 #endif
@@ -219,10 +219,10 @@ void readFileSource(string fname, Scope defScope, IntState& state) {
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
-            throwError(state, "ParseError", parseException);
+            throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
-        throwError(state, "IOError", err.what());
+        throwError(state, reader, "IOError", err.what());
     }
 }
 
@@ -317,7 +317,7 @@ TranslationUnitPtr loadFromFile(ifstream& file) {
     return result;
 }
 
-void compileFile(string fname, string fname1, IntState& state) {
+void compileFile(string fname, string fname1, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
 #endif
@@ -350,14 +350,14 @@ void compileFile(string fname, string fname1, IntState& state) {
             } BOOST_SCOPE_EXIT_END;
             saveToFile(file1, unit);
         } catch (std::string parseException) {
-            throwError(state, "ParseError", parseException);
+            throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
-        throwError(state, "IOError", err.what());
+        throwError(state, reader, "IOError", err.what());
     }
 }
 
-void readFileComp(string fname, Scope defScope, IntState& state) {
+void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Loading (compiled) " << fname << "..." << endl;
 #endif
@@ -382,18 +382,18 @@ void readFileComp(string fname, Scope defScope, IntState& state) {
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
-            throwError(state, "ParseError", parseException);
+            throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
-        throwError(state, "IOError", err.what());
+        throwError(state, reader, "IOError", err.what());
     }
 }
 
-void readFile(string fname, Scope defScope, IntState& state) {
+void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
     // Soon, this will attempt to read a compiled file first.
-    // compileFile(fname, fname + "c", state);
-    readFileSource(fname, defScope, state);
-    // readFileComp(fname + "c", defScope, state);
+    // compileFile(fname, fname + "c", state, reader);
+    readFileSource(fname, defScope, state, reader);
+    // readFileComp(fname + "c", defScope, state, reader);
 }
 
 Stmt::Stmt(int line_no)

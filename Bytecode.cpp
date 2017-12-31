@@ -881,7 +881,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         if (state.slf == nullptr)
             state.err0 = true;
         else if (state.slf->isProtected(state.sym, PROTECT_ASSIGN))
-            throwError(state, "ProtectedError");
+            throwError(state, reader, "ProtectedError");
         else
             state.slf->put(state.sym, state.ptr);
     }
@@ -1161,7 +1161,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
         if (state.err0)
-            throwError(state, "TypeError", msg);
+            throwError(state, reader, "TypeError", msg);
     }
         break;
     case Instr::LOCFN: {
@@ -1312,7 +1312,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         if (state.slf == nullptr) {
             state.err0 = true;
         } else if (state.slf->isProtected(state.sym, PROTECT_DELETE)) {
-            throwError(state, "ProtectedError", "Delete-protected variable");
+            throwError(state, reader, "ProtectedError", "Delete-protected variable");
         } else {
             state.slf->remove(state.sym);
         }

@@ -71,7 +71,7 @@ namespace Table {
 
 ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** argv);
 
-void throwError(IntState& state, std::string name, std::string msg);
-void throwError(IntState& state, std::string name);
+void throwError(IntState& state, const ReadOnlyState& reader, std::string name, std::string msg);
+void throwError(IntState& state, const ReadOnlyState& reader, std::string name);
 
 #endif // STANDARD_HPP

@@ -54,7 +54,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     //  * Checks %num0 (if 0, then standard load; if 1, then raw load)
     // kernelLoad#: filename, global.
     // kernelLoad0#: filename, global.
-    reader.cpp[CPP_KERNEL_LOAD] = [](IntState& state0) {
+    reader.cpp[CPP_KERNEL_LOAD] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr str = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         ObjectPtr global = (*dyn)[ Symbols::get()["$2"] ].getPtr();
@@ -64,12 +64,12 @@ void spawnSystemCallsNew(ObjectPtr global,
                 string str1 = *str0;
                 if (state0.num0.asSmallInt() == 1)
                     str1 = stripFilename(getExecutablePathname()) + str1;
-                readFile(str1, { global, global }, state0);
+                readFile(str1, { global, global }, state0, reader);
             } else {
-                throwError(state0, "TypeError", "String expected");
+                throwError(state0, reader, "TypeError", "String expected");
             }
         } else {
-            throwError(state0, "SystemArgError", "Wrong number of arguments");
+            throwError(state0, reader, "SystemArgError", "Wrong number of arguments");
         }
     };
     sys->put(Symbols::get()["kernelLoad#"],
@@ -141,10 +141,10 @@ void spawnSystemCallsNew(ObjectPtr global,
                     break;
                 }
             } else {
-                throwError(state0, "TypeError", "Stream expected");
+                throwError(state0, reader, "TypeError", "Stream expected");
             }
         } else {
-            throwError(state0, "SystemArgError", "Wrong number of arguments");
+            throwError(state0, reader, "SystemArgError", "Wrong number of arguments");
         }
     };
     sys->put(Symbols::get()["streamIn#"],
@@ -178,13 +178,13 @@ void spawnSystemCallsNew(ObjectPtr global,
                     }
                     state0.ret = garnishObject(reader, boost::blank());
                 } else {
-                    throwError(state0, "IOError", "Stream not designated for output");
+                    throwError(state0, reader, "IOError", "Stream not designated for output");
                 }
             } else {
-                throwError(state0, "SystemArgError", "Invalid argument to output function");
+                throwError(state0, reader, "SystemArgError", "Invalid argument to output function");
             }
         } else {
-            throwError(state0, "SystemArgError", "Wrong number of arguments");
+            throwError(state0, reader, "SystemArgError", "Wrong number of arguments");
         }
     };
     sys->put(Symbols::get()["streamPuts#"],
@@ -542,10 +542,10 @@ void spawnSystemCallsNew(ObjectPtr global,
                     else
                         state0.ret = garnishObject(reader, (*stream0)->readText(1));
                 } else {
-                    throwError(state0, "IOError", "Stream not designated for output");
+                    throwError(state0, reader, "IOError", "Stream not designated for output");
                 }
             } else {
-                throwError(state0, "TypeError", "Stream expected");
+                throwError(state0, reader, "TypeError", "Stream expected");
             }
         }
     };
@@ -840,7 +840,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // natSym#: num.
     reader.cpp[CPP_SYM_NUM] = [&reader](IntState& state0) {
         if (state0.num0.asSmallInt() <= 0) {
-            throwError(state0, "TypeError", "Cannot produce symbols from non-positive numbers");
+            throwError(state0, reader, "TypeError", "Cannot produce symbols from non-positive numbers");
         } else {
             Symbolic sym = Symbols::natural((int)state0.num0.asSmallInt());
             state0.ret = garnishObject(reader, sym);
@@ -1002,7 +1002,7 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     // CPP_ORIGIN (find the origin of %sym in %slf, store resulting object in %ret, throw SlotError otherwise
     // origin#: self, sym.
-    reader.cpp[CPP_ORIGIN] = [](IntState& state0) {
+    reader.cpp[CPP_ORIGIN] = [&reader](IntState& state0) {
         list<ObjectPtr> parents;
         ObjectPtr curr = state0.slf;
         Symbolic name = state0.sym;
@@ -1017,7 +1017,7 @@ void spawnSystemCallsNew(ObjectPtr global,
             curr = (*curr)[ Symbols::get()["parent"] ].getPtr();
         }
         if (value == nullptr) {
-            throwError(state0, "SlotError", "Cannot find origin of nonexistent slot");
+            throwError(state0, reader, "SlotError", "Cannot find origin of nonexistent slot");
         } else {
             state0.ret = value;
         }
@@ -1060,7 +1060,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         case 0: {
             ProcessPtr proc = makeProcess(state0.str0);
             if (!proc)
-                throwError(state0, "NotSupportedError",
+                throwError(state0, reader, "NotSupportedError",
                            "Asynchronous processes not supported on this system");
             state0.ret = clone(state0.slf);
             state0.ret->prim(proc);
@@ -1069,7 +1069,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         case 1: {
             bool status = state0.prcs->run();
             if (!status)
-                throwError(state0, "IOError",
+                throwError(state0, reader, "IOError",
                            "Could not start process");
             break;
         }
@@ -1259,7 +1259,7 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
      // streamFileOpen#: strm, fname, access, mode.
-     reader.cpp[CPP_FILE_DOOPEN] = [](IntState& state0) {
+     reader.cpp[CPP_FILE_DOOPEN] = [&reader](IntState& state0) {
          ObjectPtr dyn = state0.dyn.top();
          ObjectPtr access = (*dyn)[ Symbols::get()["$3"] ].getPtr();
          ObjectPtr mode = (*dyn)[ Symbols::get()["$4"] ].getPtr();
@@ -1275,18 +1275,18 @@ void spawnSystemCallsNew(ObjectPtr global,
              else if (access1 == "write")
                  access2 = FileAccess::WRITE;
              else
-                 throwError(state0, "SystemArgError",
+                 throwError(state0, reader, "SystemArgError",
                             "Invalid access specifier when opening file");
              if (mode1 == "text")
                  mode2 = FileMode::TEXT;
              else if (mode1 == "binary")
                  mode2 = FileMode::BINARY;
              else
-                 throwError(state0, "SystemArgError",
+                 throwError(state0, reader, "SystemArgError",
                             "Invalid mode specifier when opening file");
              state0.ptr->prim( StreamPtr(new FileStream(state0.str0, access2, mode2)) );
          } else {
-             throwError(state0, "TypeError",
+             throwError(state0, reader, "TypeError",
                         "Symbol expected");
          }
      };
@@ -1680,7 +1680,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          if (success)
              state0.ret = garnishObject(reader, boost::blank());
          else
-             throwError(state0, "NotSupportedError",
+             throwError(state0, reader, "NotSupportedError",
                         "Mutable environment variables not supported on this system");
      };
      sys->put(Symbols::get()["envSet#"],
@@ -1722,7 +1722,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              state0.ret = garnishObject(reader, getExecutablePathname());
              break;
          default:
-             throwError(state0, "SystemArgError",
+             throwError(state0, reader, "SystemArgError",
                         "Invalid numerical argument to EXE_PATH");
              break;
          }
@@ -1745,7 +1745,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              state0.ret = garnishObject(reader, stripDirname(state0.str0));
              break;
          default:
-             throwError(state0, "SystemArgError",
+             throwError(state0, reader, "SystemArgError",
                         "Invalid numerical argument to PATH_OP");
              break;
          }
@@ -1794,7 +1794,7 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_TRIG_OP (perform the operation indicated in %num0 on the value in %num1, storing result in %num1)
      // numTrig#: num, op.
-     reader.cpp[CPP_TRIG_OP] = [](IntState& state0) {
+     reader.cpp[CPP_TRIG_OP] = [&reader](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 0: // Sin
              state0.num1 = state0.num1.sin();
@@ -1841,7 +1841,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              state0.num1 = state0.num1.log();
              break;
          default:
-             throwError(state0, "SystemArgError",
+             throwError(state0, reader, "SystemArgError",
                         "Invalid numerical argument to TRIG_OP");
              break;
          }
@@ -2003,8 +2003,8 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
      // protectIs#: obj, var.
-     reader.cpp[CPP_PROT_IS] = [](IntState& state0) {
-         garnishBegin(state0, state0.slf->hasAnyProtection(state0.sym));
+     reader.cpp[CPP_PROT_IS] = [&reader](IntState& state0) {
+         state0.ret = garnishObject(reader, state0.slf->hasAnyProtection(state0.sym));
      };
      sys->put(Symbols::get()["protectIs#"],
               defineMethod(unit, global, method,
@@ -2024,12 +2024,12 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)
      // stringNext#: str, num.
-     reader.cpp[CPP_STR_NEXT] = [](IntState& state0) {
+     reader.cpp[CPP_STR_NEXT] = [&reader](IntState& state0) {
          auto result = nextCharPos(state0.str0, state0.num0.asSmallInt());
          if (result)
-             garnishBegin(state0, *result);
+             state0.ret = garnishObject(reader, *result);
          else
-             garnishBegin(state0, boost::blank());
+             state0.ret = garnishObject(reader, boost::blank());
      };
      sys->put(Symbols::get()["stringNext#"],
               defineMethod(unit, global, method,
@@ -2131,15 +2131,16 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_UNI_CHR (check the %num0 register and put the character in %ret)
      // uniOrd#: str.
      // uniChr#: num.
-     reader.cpp[CPP_UNI_ORD] = [](IntState& state0) {
+     reader.cpp[CPP_UNI_ORD] = [&reader](IntState& state0) {
          auto ch = charAt(state0.str0, 0L);
          if (ch)
-             garnishBegin(state0, uniOrd(*ch));
+             state0.ret = garnishObject(reader, uniOrd(*ch));
          else
-             garnishBegin(state0, 0L);
+             state0.ret = garnishObject(reader, 0L);
      };
-     reader.cpp[CPP_UNI_CHR] = [](IntState& state0) {
-         garnishBegin(state0, static_cast<std::string>(UniChar(state0.num0.asSmallInt())));
+     reader.cpp[CPP_UNI_CHR] = [&reader](IntState& state0) {
+         state0.ret = garnishObject(reader,
+                                    static_cast<std::string>(UniChar(state0.num0.asSmallInt())));
      };
      sys->put(Symbols::get()["uniOrd#"],
               defineMethod(unit, global, method,
@@ -2356,7 +2357,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     return global;
 }
 
-void throwError(IntState& state, std::string name, std::string msg) {
+void throwError(IntState& state, const ReadOnlyState& reader, std::string name, std::string msg) {
     state.stack = pushNode(state.stack, state.cont);
     state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                   makeAssemblerLine(Instr::GETL, Reg::SLF),
@@ -2378,10 +2379,10 @@ void throwError(IntState& state, std::string name, std::string msg) {
                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                   makeAssemblerLine(Instr::SETF),
                                   makeAssemblerLine(Instr::THROW)));
-    garnishBegin(state, msg);
+    state.ret = garnishObject(reader, msg);
 }
 
-void throwError(IntState& state, std::string name) {
+void throwError(IntState& state, const ReadOnlyState& reader, std::string name) {
     state.stack = pushNode(state.stack, state.cont);
     state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["err"].index),
