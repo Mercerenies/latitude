@@ -2279,11 +2279,8 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name, std::string msg) {
     state.stack = pushNode(state.stack, state.cont);
     state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                                  makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["err"].index),
-                                  makeAssemblerLine(Instr::RTRV),
+                                  makeAssemblerLine(Instr::YLD, Lit::ERR, Reg::SLF),
                                   makeAssemblerLine(Instr::SYM, name),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                   makeAssemblerLine(Instr::RTRV),
                                   makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -2304,10 +2301,8 @@ void throwError(IntState& state, const ReadOnlyState& reader, std::string name, 
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name) {
     state.stack = pushNode(state.stack, state.cont);
     state.cont = CodeSeek(asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["err"].index),
-                                  makeAssemblerLine(Instr::RTRV),
+                                  makeAssemblerLine(Instr::YLD, Lit::ERR, Reg::SLF),
                                   makeAssemblerLine(Instr::SYM, name),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                   makeAssemblerLine(Instr::RTRV),
                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                   makeAssemblerLine(Instr::CLONE),
