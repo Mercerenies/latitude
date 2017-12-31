@@ -57,3 +57,25 @@ ObjectPtr garnishObject(const ReadOnlyState& reader, bool value) {
 ObjectPtr garnishObject(const ReadOnlyState& reader, boost::blank value) {
     return reader.lit.at(Lit::NIL);
 }
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, std::string value) {
+    ObjectPtr obj = clone(reader.lit.at(Lit::STRING));
+    obj->prim(value);
+    return obj;
+}
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, Symbolic value) {
+    ObjectPtr obj = clone(reader.lit.at(Lit::SYMBOL));
+    obj->prim(value);
+    return obj;
+}
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, int value) {
+    return garnishObject(reader, (long)value);
+}
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, long value) {
+    ObjectPtr obj = clone(reader.lit.at(Lit::NUMBER));
+    obj->prim(Number(value));
+    return obj;
+}

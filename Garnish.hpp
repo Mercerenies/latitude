@@ -61,6 +61,14 @@ ObjectPtr garnishObject(const ReadOnlyState& reader, bool value);
 
 ObjectPtr garnishObject(const ReadOnlyState& reader, boost::blank value);
 
+ObjectPtr garnishObject(const ReadOnlyState& reader, std::string value);
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, Symbolic value);
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, int value);
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, long value);
+
 /// This function adds instructions to the current interpreter state
 /// for producing a value equivalent to its argument. It does so by
 /// taking the current continuation in `%%cont`, pushing it onto

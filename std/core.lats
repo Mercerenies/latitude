@@ -278,7 +278,7 @@ Kernel GC untrace := { self traced := False. }.
 
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.
-Kernel env= := {
+Kernel env= := { ; TODO Should we return the string?
   name := $1.
   value := #'$2.
   if { #'value nil?. }

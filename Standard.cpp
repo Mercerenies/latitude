@@ -203,7 +203,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // numToString#: num
     // strToString#: str
     // symToString#: sym
-    reader.cpp[CPP_TO_STRING] = [](IntState& state0) {
+    reader.cpp[CPP_TO_STRING] = [&reader](IntState& state0) {
         ostringstream oss;
         switch (state0.num0.asSmallInt()) {
         case 0:
@@ -258,7 +258,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         }
             break;
         }
-        garnishBegin(state0, oss.str());
+        state0.ret = garnishObject(reader, oss.str());
     };
     sys->put(Symbols::get()["numToString#"],
              defineMethod(unit, global, method,
@@ -530,7 +530,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // - 0 - Read a line
     // - 1 - Read a single character
     // streamRead#: stream.
-    reader.cpp[CPP_STREAM_READ] = [](IntState& state0) {
+    reader.cpp[CPP_STREAM_READ] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
         if (stream != NULL) {
@@ -538,9 +538,9 @@ void spawnSystemCallsNew(ObjectPtr global,
             if (stream0) {
                 if ((*stream0)->hasIn()) {
                     if (state0.num0.asSmallInt() == 0)
-                        garnishBegin(state0, (*stream0)->readLine());
+                        state0.ret = garnishObject(reader, (*stream0)->readLine());
                     else
-                        garnishBegin(state0, (*stream0)->readText(1));
+                        state0.ret = garnishObject(reader, (*stream0)->readText(1));
                 } else {
                     throwError(state0, "IOError", "Stream not designated for output");
                 }
@@ -821,9 +821,9 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     // CPP_SYM_NAME (takes %sym, looks up its name, and outputs a string as %ret)
     // symName#: sym.
-    reader.cpp[CPP_SYM_NAME] = [](IntState& state0) {
+    reader.cpp[CPP_SYM_NAME] = [&reader](IntState& state0) {
         std::string name = Symbols::get()[ state0.sym ];
-        garnishBegin(state0, name);
+        state0.ret = garnishObject(reader, name);
     };
     sys->put(Symbols::get()["symName#"],
              defineMethod(unit, global, method,
@@ -838,12 +838,12 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     // CPP_SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
     // natSym#: num.
-    reader.cpp[CPP_SYM_NUM] = [](IntState& state0) {
+    reader.cpp[CPP_SYM_NUM] = [&reader](IntState& state0) {
         if (state0.num0.asSmallInt() <= 0) {
             throwError(state0, "TypeError", "Cannot produce symbols from non-positive numbers");
         } else {
             Symbolic sym = Symbols::natural((int)state0.num0.asSmallInt());
-            garnishBegin(state0, sym);
+            state0.ret = garnishObject(reader, sym);
         }
     };
     sys->put(Symbols::get()["natSym#"],
@@ -898,9 +898,9 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     // CPP_SYM_INTERN (takes %str0, looks it up, and puts the result as a symbol in %ret)
     // intern#: str.
-    reader.cpp[CPP_SYM_INTERN] = [](IntState& state0) {
+    reader.cpp[CPP_SYM_INTERN] = [&reader](IntState& state0) {
         Symbolic name = Symbols::get()[ state0.str0 ];
-        garnishBegin(state0, name);
+        state0.ret = garnishObject(reader, name);
     };
     sys->put(Symbols::get()["intern#"],
              defineMethod(unit, global, method,
@@ -978,8 +978,8 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     // CPP_NUM_LEVEL (determine the "level" of %num0 and put the result in %ret)
     // numLevel#: num.
-    reader.cpp[CPP_NUM_LEVEL] = [](IntState& state0) {
-        garnishBegin(state0, state0.num0.hierarchyLevel());
+    reader.cpp[CPP_NUM_LEVEL] = [&reader](IntState& state0) {
+        state0.ret = garnishObject(reader, state0.num0.hierarchyLevel());
     };
     sys->put(Symbols::get()["numLevel#"],
              defineMethod(unit, global, method,
@@ -1055,7 +1055,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // processRunning#: prc.
     // processExitCode#: prc.
     // processExec#: prc.
-    reader.cpp[CPP_PROCESS_TASK] = [](IntState& state0) {
+    reader.cpp[CPP_PROCESS_TASK] = [&reader](IntState& state0) {
         switch (state0.num0.asSmallInt()) {
         case 0: {
             ProcessPtr proc = makeProcess(state0.str0);
@@ -1086,15 +1086,15 @@ void spawnSystemCallsNew(ObjectPtr global,
             break;
         }
         case 5: {
-            garnishBegin(state0, state0.prcs->isRunning());
+            state0.ret = garnishObject(reader, state0.prcs->isRunning());
             break;
         }
         case 6: {
-            garnishBegin(state0, state0.prcs->getExitCode());
+            state0.ret = garnishObject(reader, state0.prcs->getExitCode());
             break;
         }
         case 7: {
-            garnishBegin(state0, state0.prcs->isDone());
+            state0.ret = garnishObject(reader, state0.prcs->isDone());
             break;
         }
         }
@@ -1343,9 +1343,9 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_STRING_LENGTH (outputs length of %str0 into %ret)
      // stringLength#: str.
-     reader.cpp[CPP_STRING_LENGTH] = [](IntState& state0) {
+     reader.cpp[CPP_STRING_LENGTH] = [&reader](IntState& state0) {
          // TODO Possible loss of precision from size_t to signed long?
-         garnishBegin(state0, (long)state0.str0.length());
+         state0.ret = garnishObject(reader, (long)state0.str0.length());
      };
      sys->put(Symbols::get()["stringLength#"],
               defineMethod(unit, global, method,
@@ -1360,7 +1360,7 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_STRING_SUB (outputs substring of %str0 from %num0 to %num1 into %ret)
      // stringSubstring#: str, beg, end.
-     reader.cpp[CPP_STRING_SUB] = [](IntState& state0) {
+     reader.cpp[CPP_STRING_SUB] = [&reader](IntState& state0) {
          long start1 = state0.num0.asSmallInt();
          long end1 = state0.num1.asSmallInt();
          long size = state0.str0.length();
@@ -1379,7 +1379,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          long len = end1 - start1;
          if (len < 0)
              len = 0;
-         garnishBegin(state0, state0.str0.substr(start1, len));
+         state0.ret = garnishObject(reader, state0.str0.substr(start1, len));
      };
      sys->put(Symbols::get()["stringSubstring#"],
               defineMethod(unit, global, method,
@@ -1409,12 +1409,12 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_STRING_FIND (find first occurence of %str1 in %str0 starting at %num0 index, storing
      //              new index or Nil in %ret)
      // stringFindFirst#: str, substr, pos.
-     reader.cpp[CPP_STRING_FIND] = [](IntState& state0) {
+     reader.cpp[CPP_STRING_FIND] = [&reader](IntState& state0) {
          auto pos = state0.str0.find(state0.str1, state0.num0.asSmallInt());
          if (pos == string::npos)
-             garnishBegin(state0, boost::blank());
+             state0.ret = garnishObject(reader, boost::blank());
          else
-             garnishBegin(state0, (long)pos);
+             state0.ret = garnishObject(reader, (long)pos);
      };
      sys->put(Symbols::get()["stringFindFirst#"],
               defineMethod(unit, global, method,
@@ -1448,7 +1448,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          //      with this reader. Remove this unusual dependency somehow (this happens in
          //      some other places here too; search for captures of the form [&reader])
          long result = GC::get().garbageCollect(state0, reader);
-         garnishBegin(state0, result);
+         state0.ret = garnishObject(reader, result);
      };
      sys->put(Symbols::get()["runGC#"],
               defineMethod(unit, global, method,
@@ -1505,14 +1505,14 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_STR_CHR (check the %num0 register and put the character in %ret)
      // strOrd#: str.
      // strChr#: num.
-     reader.cpp[CPP_STR_ORD] = [](IntState& state0) {
+     reader.cpp[CPP_STR_ORD] = [&reader](IntState& state0) {
          if (state0.str0 == "")
-             garnishBegin(state0, 0);
+             state0.ret = garnishObject(reader, 0);
          else
-             garnishBegin(state0, (int)state0.str0[0]);
+             state0.ret = garnishObject(reader, (int)state0.str0[0]);
      };
-     reader.cpp[CPP_STR_CHR] = [](IntState& state0) {
-         garnishBegin(state0, string(1, (char)state0.num0.asSmallInt()));
+     reader.cpp[CPP_STR_CHR] = [&reader](IntState& state0) {
+         state0.ret = garnishObject(reader, string(1, (char)state0.num0.asSmallInt()));
      };
      sys->put(Symbols::get()["strOrd#"],
               defineMethod(unit, global, method,
@@ -1537,9 +1537,9 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_GC_TOTAL (get the total number of allocated objects from the garbage collector and store it in %ret)
      // totalGC#.
-     reader.cpp[CPP_GC_TOTAL] = [](IntState& state0) {
+     reader.cpp[CPP_GC_TOTAL] = [&reader](IntState& state0) {
          // TODO Possible loss of precision
-         garnishBegin(state0, (long)GC::get().getTotal());
+         state0.ret = garnishObject(reader, (long)GC::get().getTotal());
      };
      sys->put(Symbols::get()["totalGC#"],
               defineMethod(unit, global, method,
@@ -1649,12 +1649,12 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_ENV_GET (retrieve the environment variable matching the name in %str0 and store the result in %ret)
      // envGet#: str.
-     reader.cpp[CPP_ENV_GET] = [](IntState& state0) {
+     reader.cpp[CPP_ENV_GET] = [&reader](IntState& state0) {
          boost::optional<std::string> value = getEnv(state0.str0);
          if (value)
-             garnishBegin(state0, *value);
+             state0.ret = garnishObject(reader, *value);
          else
-             garnishBegin(state0, boost::blank());
+             state0.ret = garnishObject(reader, boost::blank());
      };
      sys->put(Symbols::get()["envGet#"],
               defineMethod(unit, global, method,
@@ -1670,7 +1670,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_ENV_SET (assign the environment variable with name %str0 to value %str1 (or unset it, if %num0 is nonzero)
      // envSet#: name, value.
      // envUnset#: name.
-     reader.cpp[CPP_ENV_SET] = [](IntState& state0) {
+     reader.cpp[CPP_ENV_SET] = [&reader](IntState& state0) {
          bool success = false;
          if (state0.num0.asSmallInt() != 0) {
              success = unsetEnv(state0.str0);
@@ -1678,7 +1678,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              success = setEnv(state0.str0, state0.str1);
          }
          if (success)
-             garnishBegin(state0, boost::blank());
+             state0.ret = garnishObject(reader, boost::blank());
          else
              throwError(state0, "NotSupportedError",
                         "Mutable environment variables not supported on this system");
