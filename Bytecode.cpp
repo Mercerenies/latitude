@@ -54,8 +54,8 @@ ReadOnlyState readOnlyState() {
     return reader;
 }
 
-void hardKill(IntState& state) {
-    state.cont.killSelf();
+void hardKill(IntState& state, const ReadOnlyState& reader) {
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
     state.stack = NodePtr<SeekHolder>();
 }
 

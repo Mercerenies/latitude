@@ -43,11 +43,11 @@ void spawnSystemCallsNew(ObjectPtr global,
     TranslationUnitPtr unit = make_shared<TranslationUnit>();
 
     // CPP_TERMINATE
-    reader.cpp[CPP_TERMINATE] = [](IntState& state0) {
+    reader.cpp[CPP_TERMINATE] = [&reader](IntState& state0) {
         // A last-resort termination of a fiber that malfunctioned; this should ONLY
         // be used as a last resort, as it does not correctly unwind the frames
         // before aborting
-        hardKill(state0);
+        hardKill(state0, reader);
     };
 
     // CPP_KERNEL_LOAD ($1 = filename, $2 = global)
