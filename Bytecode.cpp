@@ -1184,40 +1184,38 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "LOCRT" << endl;
 #endif
-        InstrSeq total;
         auto stck = state.trace;
-        while (stck) {
-            long line;
-            string file;
-            auto elem = stck->get();
-            tie(line, file) = elem;
-            stck = popNode(stck);
-
-            InstrSeq step0 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                     makeAssemblerLine(Instr::CLONE),
-                                     makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
-            InstrSeq step1 = garnishSeq(line);
-            InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["line"].index),
-                                     makeAssemblerLine(Instr::SETF));
-            InstrSeq step3 = garnishSeq(file);
-            InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["file"].index),
-                                     makeAssemblerLine(Instr::SETF),
-                                     makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
-            total.insert(total.begin(), step4.begin(), step4.end());
-            total.insert(total.begin(), step3.begin(), step3.end());
-            total.insert(total.begin(), step2.begin(), step2.end());
-            total.insert(total.begin(), step1.begin(), step1.end());
-            total.insert(total.begin(), step0.begin(), step0.end());
-
+        if (stck) {
+            ObjectPtr sframe = reader.lit.at(Lit::SFRAME);
+            ObjectPtr frame = nullptr;
+            ObjectPtr top = nullptr;
+            while (stck) {
+                ObjectPtr temp;
+                long line;
+                string file;
+                auto elem = stck->get();
+                tie(line, file) = elem;
+                temp = clone(sframe);
+                if (frame == nullptr) {
+                    top = temp;
+                } else {
+                    frame->put(Symbols::get()["parent"], temp);
+                }
+                frame = temp;
+                frame->put(Symbols::get()["line"], garnishObject(reader, line));
+                frame->put(Symbols::get()["file"], garnishObject(reader, file));
+                stck = popNode(stck);
+            }
+            assert(top != nullptr); // Should always be non-null since the loop must run once
+            state.ret = top;
+        } else {
+            // The %trace stack was empty; this should not happen...
+            // Honestly, this should probably be an assert failure,
+            // but %trace is so weird right now that I'm hesitant to
+            // rely on it.
+            state.ret = reader.lit.at(Lit::NIL);
+            // TODO This *should* be an assertion failure, once %trace is reliable
         }
-        InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLD, Lit::SFRAME, Reg::RET));
-        total.insert(total.begin(), intro.begin(), intro.end());
-        state.stack = pushNode(state.stack, state.cont);
-        state.cont = CodeSeek(move(total));
     }
         break;
     case Instr::NRET: {
