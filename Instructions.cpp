@@ -3,16 +3,6 @@
 #include <utility>
 #include <memory>
 
-/*
- * CodeSeek checklist
- * X CPP_OBJECT_KEYS
- * X CPP_FILE_HEADER
- * X CPP_TIME_SPAWN
- * X throwError (x2)
- * X Garnish.hpp
- * X LOCRT
- */
-
 using namespace std;
 
 Instruction::Instruction(Instr i, const std::vector<RegisterArg> v)
