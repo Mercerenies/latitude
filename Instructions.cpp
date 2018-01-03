@@ -5,11 +5,11 @@
 
 /*
  * CodeSeek checklist
- *   CPP_OBJECT_KEYS
+ * X CPP_OBJECT_KEYS
  * X CPP_FILE_HEADER
  * X CPP_TIME_SPAWN
  * X throwError (x2)
- * O Garnish.hpp
+ * X Garnish.hpp
  * X LOCRT
  */
 
