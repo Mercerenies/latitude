@@ -571,8 +571,6 @@ public:
     /// \copydoc InstrSeek::atEnd()
     bool atEnd();
 
-    /// \copydoc InstrSeek::killSelf()
-    void killSelf();
 };
 
 template <typename T>
