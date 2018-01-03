@@ -312,23 +312,6 @@ FunctionIndex InstrSeek::readFunction(int n) {
     return boost::get<FunctionIndex>(instructions()[position()].args[n]);
 }
 
-CodeSeek::CodeSeek()
-    : seq(make_shared<InstrSeq>()) {}
-
-CodeSeek::CodeSeek(const InstrSeq& seq)
-    : seq(make_shared<InstrSeq>(seq)) {}
-
-CodeSeek::CodeSeek(InstrSeq&& seq)
-    : seq(make_shared<InstrSeq>(forward<InstrSeq>(seq))) {}
-
-unique_ptr<InstrSeek> CodeSeek::copy() {
-    return unique_ptr<InstrSeek>(new CodeSeek(*this));
-}
-
-InstrSeq& CodeSeek::instructions() {
-    return *seq;
-}
-
 MethodSeek::MethodSeek(Method m)
     : method(m) {}
 

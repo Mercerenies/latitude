@@ -435,42 +435,6 @@ public:
 
 };
 
-/// A CodeSeek is an InstrSeek that keeps a direct pointer to its
-/// sequence of instructions. It is used for evaluating top-level
-/// code, performing eval statements, and injecting raw assembly
-/// instructions into a sequence.
-class CodeSeek : public InstrSeek {
-private:
-    std::shared_ptr<InstrSeq> seq;
-public:
-
-    /// Default-constructs a CodeSeek containing no
-    /// code. Specifically, the resulting CodeSeek will contain an
-    /// empty instruction sequence.
-    CodeSeek();
-
-    /// Constructs a CodeSeek by copying the argument.
-    ///
-    /// \param seq the instruction sequence
-    CodeSeek(const InstrSeq& seq);
-
-    /// Constructs a CodeSeek by moving the argument.
-    ///
-    /// \param seq the instruction sequence
-    CodeSeek(InstrSeq&& seq);
-
-    /// Destructs the CodeSeek.
-    virtual ~CodeSeek() = default;
-
-    /// Returns a semantically identical copy of the CodeSeek.
-    ///
-    /// \return a new copy
-    virtual std::unique_ptr<InstrSeek> copy();
-
-    virtual InstrSeq& instructions();
-
-};
-
 /// For efficiency reasons, it is undesirable to store methods
 /// directly. Therefore, a MethodSeek instance stores a sequence of
 /// instructions, not directly, but by reference to a translation
