@@ -56,7 +56,7 @@ ReadOnlyState readOnlyState() {
 
 void hardKill(IntState& state, const ReadOnlyState& reader) {
     state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
-    state.stack = NodePtr<SeekHolder>();
+    state.stack = NodePtr<MethodSeek>();
 }
 
 void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
@@ -81,12 +81,12 @@ void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );
-        state.stack = pushNode(state.stack, SeekHolder(MethodSeek(ptr->after.code)));
+        state.stack = pushNode(state.stack, MethodSeek(ptr->after.code));
     }
     for (WindPtr ptr : enters) {
         state.lex.push( clone(ptr->before.lex) );
         state.dyn.push( clone(ptr->before.dyn) );
-        state.stack = pushNode(state.stack, SeekHolder(MethodSeek(ptr->before.code)));
+        state.stack = pushNode(state.stack, MethodSeek(ptr->before.code));
     }
 }
 

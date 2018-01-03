@@ -465,6 +465,4 @@ public:
 
 };
 
-using SeekHolder = MethodSeek;
-
 #endif // INSTRUCTIONS_HPP

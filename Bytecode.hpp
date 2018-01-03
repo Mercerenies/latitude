@@ -38,8 +38,8 @@ using BacktraceFrame = std::tuple<long, std::string>;
 struct IntState {
     ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
-    SeekHolder cont;
-    NodePtr<SeekHolder> stack;
+    MethodSeek cont;
+    NodePtr<MethodSeek> stack;
     bool err0, err1;
     Symbolic sym;
     Number num0, num1;
