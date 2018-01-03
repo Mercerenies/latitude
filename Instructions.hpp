@@ -444,6 +444,10 @@ private:
     Method method;
 public:
 
+    /// Constructs a nullary MethodSeek object. It is not safe to
+    /// access the fields of a nullary MethodSeek object.
+    MethodSeek();
+
     /// Constructs a MethodSeek which points to the specified method.
     ///
     /// \param m a method

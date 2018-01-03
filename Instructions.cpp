@@ -312,6 +312,9 @@ FunctionIndex InstrSeek::readFunction(int n) {
     return boost::get<FunctionIndex>(instructions()[position()].args[n]);
 }
 
+MethodSeek::MethodSeek()
+    : method(nullptr, { 0 }) {}
+
 MethodSeek::MethodSeek(Method m)
     : method(m) {}
 
