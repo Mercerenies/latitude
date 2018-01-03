@@ -10,7 +10,7 @@
  * X CPP_TIME_SPAWN
  * X throwError (x2)
  * O Garnish.hpp
- *   LOCRT
+ * X LOCRT
  */
 
 using namespace std;
