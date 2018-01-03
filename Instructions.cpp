@@ -352,16 +352,16 @@ InstrSeq& MethodSeek::instructions() {
 }
 
 SeekHolder::SeekHolder()
-    : internal(unique_ptr<InstrSeek>(new CodeSeek())) {}
+    : internal(nullptr) {}
 
 // Copy the unique_ptr and its contents when a SeekHolder is copied
 SeekHolder::SeekHolder(const SeekHolder& other)
-    : internal(unique_ptr<InstrSeek>(other.internal->copy()))
-    , instr(&internal->instructions()) {}
+    : internal(other.internal ? unique_ptr<InstrSeek>(other.internal->copy()) : nullptr) // Band-aid solution
+    , instr(other.internal ? &internal->instructions() : nullptr) {} // Band-aid solution
 
 SeekHolder& SeekHolder::operator=(const SeekHolder& other) {
-    internal = unique_ptr<InstrSeek>(other.internal->copy());
-    instr = &internal->instructions();
+    internal = other.internal ? unique_ptr<InstrSeek>(other.internal->copy()) : nullptr; // Band-aid solution
+    instr = other.internal ? &internal->instructions() : nullptr; // Band-aid solution
     return *this;
 }
 

@@ -512,7 +512,7 @@ public:
 
     /// Constructs a SeekHolder to an empty code sequence. This is \em
     /// not a null instance; it is a SeekHolder which contains a
-    /// no-op.
+    /// no-op. (TODO These docs are now inaccurate)
     SeekHolder();
 
     /// Given an instance of InstrSeek or a subclass thereof, this
