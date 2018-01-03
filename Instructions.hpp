@@ -344,33 +344,26 @@ public:
 
 };
 
+// TODO Update docs here ...
+
 /// An InstrSeek instance stores, in some appropriate and efficient
 /// way, an InstrSeq instance and provides access to it.
-class InstrSeek {
+class MethodSeek {
 private:
     unsigned long pos;
     bool _size_set;
     unsigned long _size;
+    Method method;
 public:
 
-    /// Default-constructs an InstrSeek.
-    InstrSeek();
+    /// Constructs a nullary MethodSeek object. It is not safe to
+    /// access the fields of a nullary MethodSeek object.
+    MethodSeek();
 
-    /// Destructs an InstrSeek.
-    virtual ~InstrSeek() = default;
-
-    /// An InstrSeek subclass must be copyable in a unified way. This
-    /// copy function should return a new instance of the same class
-    /// as the original.
+    /// Constructs a MethodSeek which points to the specified method.
     ///
-    /// \return a new copy of the instance
-    virtual std::unique_ptr<InstrSeek> copy() = 0;
-
-    /// An InstrSeek must provide a way to get access to the
-    /// underlying instruction sequence.
-    ///
-    /// \return the underlying instruction sequence
-    virtual InstrSeq& instructions() = 0;
+    /// \param m a method
+    MethodSeek(Method m);
 
     /// Returns the position of the InstrSeek object within the
     /// InstrSeq data.
@@ -433,35 +426,12 @@ public:
     /// \return the function argument
     FunctionIndex readFunction(int n);
 
-};
-
-/// For efficiency reasons, it is undesirable to store methods
-/// directly. Therefore, a MethodSeek instance stores a sequence of
-/// instructions, not directly, but by reference to a translation
-/// unit.
-class MethodSeek : public InstrSeek {
-private:
-    Method method;
-public:
-
-    /// Constructs a nullary MethodSeek object. It is not safe to
-    /// access the fields of a nullary MethodSeek object.
-    MethodSeek();
-
-    /// Constructs a MethodSeek which points to the specified method.
-    ///
-    /// \param m a method
-    MethodSeek(Method m);
-
-    /// Destructs a MethodSeek.
-    virtual ~MethodSeek() = default;
-
     /// Returns a new MethodSeek pointing to the same method.
     ///
     /// \return a new copy
-    virtual std::unique_ptr<InstrSeek> copy();
+    std::unique_ptr<MethodSeek> copy();
 
-    virtual InstrSeq& instructions();
+    InstrSeq& instructions();
 
 };
 

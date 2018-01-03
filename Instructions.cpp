@@ -266,13 +266,18 @@ FunctionIndex Method::index() {
 
 // -1L will become the maximum unsigned long value
 // TODO I can't believe I'm considering this corner case, but what if the number of instructions is exactly equal to std::numeric_limits<unsigned long>::max()
-InstrSeek::InstrSeek() : pos(-1L), _size_set(false), _size(0L) {}
 
-unsigned long InstrSeek::position() {
+MethodSeek::MethodSeek()
+    : MethodSeek(Method(nullptr, { 0 })) {}
+
+MethodSeek::MethodSeek(Method m)
+    : pos(-1L), _size_set(false), _size(0L), method(m) {}
+
+unsigned long MethodSeek::position() {
     return pos;
 }
 
-void InstrSeek::advancePosition(unsigned long val) {
+void MethodSeek::advancePosition(unsigned long val) {
     pos += val;
     if (pos < 0)
         pos = 0;
@@ -280,7 +285,7 @@ void InstrSeek::advancePosition(unsigned long val) {
         pos = size();
 }
 
-unsigned long InstrSeek::size() {
+unsigned long MethodSeek::size() {
     if (!_size_set) {
         _size_set = true;
         _size = instructions().size();
@@ -288,38 +293,32 @@ unsigned long InstrSeek::size() {
     return _size;
 }
 
-bool InstrSeek::atEnd() {
+bool MethodSeek::atEnd() {
     return size() == position();
 }
 
-long InstrSeek::readLong(int n) {
+long MethodSeek::readLong(int n) {
     return boost::get<long>(instructions()[position()].args[n]);
 }
 
-string InstrSeek::readString(int n) {
+string MethodSeek::readString(int n) {
     return boost::get<string>(instructions()[position()].args[n]);
 }
 
-Reg InstrSeek::readReg(int n) {
+Reg MethodSeek::readReg(int n) {
     return boost::get<Reg>(instructions()[position()].args[n]);
 }
 
-Instr InstrSeek::readInstr() {
+Instr MethodSeek::readInstr() {
     return instructions()[position()].instr;
 }
 
-FunctionIndex InstrSeek::readFunction(int n) {
+FunctionIndex MethodSeek::readFunction(int n) {
     return boost::get<FunctionIndex>(instructions()[position()].args[n]);
 }
 
-MethodSeek::MethodSeek()
-    : method(nullptr, { 0 }) {}
-
-MethodSeek::MethodSeek(Method m)
-    : method(m) {}
-
-unique_ptr<InstrSeek> MethodSeek::copy() {
-    auto other = unique_ptr<InstrSeek>(new MethodSeek(*this));
+unique_ptr<MethodSeek> MethodSeek::copy() {
+    auto other = unique_ptr<MethodSeek>(new MethodSeek(*this));
     return other;
 }
 
