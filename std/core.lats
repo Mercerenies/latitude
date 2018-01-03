@@ -232,7 +232,13 @@ Kernel executablePath := { meta sys exePath#. }.
 Kernel protect := { meta sys protectVar#: #'$1, $2. }. ; TODO Protection functions should be in `Kernel Slots`.
 Kernel protected? := { meta sys protectIs#: #'$1, $2. }.
 Kernel evaluating? := { meta sys primIsMethod#: #'$1. }.
-Kernel keys := { meta sys objectKeys#: #'$1. }.
+Kernel keys := {
+  arr := meta brackets.
+  meta sys objectKeys#: #'$1, {
+    arr next ($1).
+  }.
+  arr finish.
+}.
 Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
 ; (The load function is defined in the main latitude.lat file)
 

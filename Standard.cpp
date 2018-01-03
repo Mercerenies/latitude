@@ -1213,45 +1213,27 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::INT, 1L),
                                    makeAssemblerLine(Instr::CPP, CPP_PROCESS_TASK))));
 
-     // CPP_OBJECT_KEYS (takes an object in %slf and outputs an array-like construct using `meta brackets`
-     //              which contains all of the slot names of %slf)
+     // CPP_OBJECT_KEYS (takes an object in %slf and a method on %sto and calls the method
+     //                  for each key in the object)
      // objectKeys#: obj.
-     reader.cpp[CPP_OBJECT_KEYS] = [](IntState& state0) {
+     reader.cpp[CPP_OBJECT_KEYS] = [&reader](IntState& state0) {
          set<Symbolic> allKeys = keys(state0.slf);
-         InstrSeq total = asmCode(makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["meta"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                  makeAssemblerLine(Instr::SYMN, Symbols::get()["brackets"].index),
-                                  makeAssemblerLine(Instr::RTRV),
-                                  makeAssemblerLine(Instr::GETL, Reg::SLF),
-                                  makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                  makeAssemblerLine(Instr::CALL, 0L),
-                                  makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
-         for (Symbolic sym : allKeys) {
-             InstrSeq seq = garnishSeq(sym);
-             (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
-             (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-             (makeAssemblerLine(Instr::SYMN, Symbols::get()["next"].index)).appendOnto(seq);
-             (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-             (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-             (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-             (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
-             total.insert(total.end(), seq.begin(), seq.end());
-         }
-         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(total);
-         (makeAssemblerLine(Instr::SYMN, Symbols::get()["finish"].index)).appendOnto(total);
-         (makeAssemblerLine(Instr::RTRV)).appendOnto(total);
-         (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(total);
-         (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(total);
-         (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(total);
-         (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(total);
          state0.stack = pushNode(state0.stack, state0.cont);
-         state0.cont = CodeSeek(total);
+         state0.cont = MethodSeek(Method(reader.gtu, { GTU_KEY_TERM }));
+         for (auto& key : allKeys) {
+             ObjectPtr obj = clone(reader.lit.at(Lit::SYMBOL));
+             obj->prim(key);
+             state0.arg.push(obj);
+             state0.stack = pushNode(state0.stack, state0.cont);
+             state0.cont = MethodSeek(Method(reader.gtu, { GTU_KEYS }));
+         }
      };
      sys->put(Symbols::get()["objectKeys#"],
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
                                    makeAssemblerLine(Instr::RTRV),
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -2182,6 +2164,15 @@ void spawnSystemCallsNew(ObjectPtr global,
                                            makeAssemblerLine(Instr::SETF),
                                            makeAssemblerLine(Instr::THROW)));
      assert(temp.index == GTU_ERROR);
+
+     // GTU_KEYS
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PEEK, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::CALL, 1L)));
+     assert(temp.index == GTU_KEYS);
+
+     // GTU_KEY_TERM
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO)));
+     assert(temp.index == GTU_KEY_TERM);
 
 }
 
