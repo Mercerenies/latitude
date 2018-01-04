@@ -344,10 +344,10 @@ public:
 
 };
 
-// TODO Update docs here ...
-
-/// An InstrSeek instance stores, in some appropriate and efficient
-/// way, an InstrSeq instance and provides access to it.
+/// For efficiency reasons, it is undesirable to store methods
+/// directly. Therefore, a MethodSeek instance stores a sequence of
+/// instructions, not directly, but by reference to a translation
+/// unit.
 class MethodSeek {
 private:
     unsigned long pos;
@@ -365,13 +365,13 @@ public:
     /// \param m a method
     MethodSeek(Method m);
 
-    /// Returns the position of the InstrSeek object within the
+    /// Returns the position of the MethodSeek object within the
     /// InstrSeq data.
     ///
     /// \return the position
     unsigned long position();
 
-    /// Advances the InstrSeek's position by an integer amount, which
+    /// Advances the MethodSeek's position by an integer amount, which
     /// must be positive.
     ///
     /// \param val the number by which to advance the position
