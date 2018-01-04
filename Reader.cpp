@@ -155,27 +155,29 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str) {
     return result;
 }
 
-void eval(IntState& state, string str) {
+void eval(IntState& state, const ReadOnlyState& reader, string str) {
     try {
         auto result = parse(str);
         if (!result.empty()) {
             TranslationUnitPtr unit = make_shared<TranslationUnit>();
+            InstrSeq toplevel;
             for (auto& stmt : result) {
-                stmt->translate(*unit, unit->instructions());
+                stmt->translate(*unit, toplevel);
             }
-            (makeAssemblerLine(Instr::UNTR)).appendOnto(unit->instructions());
+            (makeAssemblerLine(Instr::UNTR)).appendOnto(toplevel);
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(unit->instructions());
+            unit->instructions() = toplevel;
+            state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } else {
-            garnishBegin(state, boost::blank());
+            state.ret = garnishObject(reader, boost::blank());
         }
     } catch (std::string str) {
-        throwError(state, "ParseError", str);
+        throwError(state, reader, "ParseError", str);
     }
 }
 
-void readFileSource(string fname, Scope defScope, IntState& state) {
+void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Loading " << fname << "..." << endl;
 #endif
@@ -196,11 +198,12 @@ void readFileSource(string fname, Scope defScope, IntState& state) {
             for (unique_ptr<Stmt>& stmt : stmts)
                 stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
             TranslationUnitPtr unit = make_shared<TranslationUnit>();
-            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(unit->instructions());
+            InstrSeq toplevel;
+            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(toplevel);
             for (auto& stmt : stmts1) {
-                stmt->translate(*unit, unit->instructions());
+                stmt->translate(*unit, toplevel);
             }
-            (makeAssemblerLine(Instr::RET)).appendOnto(unit->instructions());
+            (makeAssemblerLine(Instr::RET)).appendOnto(toplevel);
             auto lex = state.lex.top(); // TODO Possible empty stack error?
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
@@ -212,13 +215,14 @@ void readFileSource(string fname, Scope defScope, IntState& state) {
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(unit->instructions());
+            unit->instructions() = toplevel;
+            state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
-            throwError(state, "ParseError", parseException);
+            throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
-        throwError(state, "IOError", err.what());
+        throwError(state, reader, "IOError", err.what());
     }
 }
 
@@ -313,7 +317,7 @@ TranslationUnitPtr loadFromFile(ifstream& file) {
     return result;
 }
 
-void compileFile(string fname, string fname1, IntState& state) {
+void compileFile(string fname, string fname1, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
 #endif
@@ -346,14 +350,14 @@ void compileFile(string fname, string fname1, IntState& state) {
             } BOOST_SCOPE_EXIT_END;
             saveToFile(file1, unit);
         } catch (std::string parseException) {
-            throwError(state, "ParseError", parseException);
+            throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
-        throwError(state, "IOError", err.what());
+        throwError(state, reader, "IOError", err.what());
     }
 }
 
-void readFileComp(string fname, Scope defScope, IntState& state) {
+void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Loading (compiled) " << fname << "..." << endl;
 #endif
@@ -375,21 +379,21 @@ void readFileComp(string fname, Scope defScope, IntState& state) {
             state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(unit->instructions());
+            state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
-            throwError(state, "ParseError", parseException);
+            throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
-        throwError(state, "IOError", err.what());
+        throwError(state, reader, "IOError", err.what());
     }
 }
 
-void readFile(string fname, Scope defScope, IntState& state) {
+void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
     // Soon, this will attempt to read a compiled file first.
-    // compileFile(fname, fname + "c", state);
-    readFileSource(fname, defScope, state);
-    // readFileComp(fname + "c", defScope, state);
+    // compileFile(fname, fname + "c", state, reader);
+    readFileSource(fname, defScope, state, reader);
+    // readFileComp(fname + "c", defScope, state, reader);
 }
 
 Stmt::Stmt(int line_no)

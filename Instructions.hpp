@@ -32,7 +32,7 @@ enum class Reg : unsigned char {
     CONT = 0x08, STACK = 0x09, ERR0 = 0x0A, ERR1 = 0x0B, SYM = 0x0C, NUM0 = 0x0D,
     NUM1 = 0x0E, STR0 = 0x0F, STR1 = 0x10, MTHD = 0x11, CPP = 0x12, STRM = 0x13,
     PRCS = 0x14, MTHDZ = 0x15, FLAG = 0x16, WIND = 0x17, HAND = 0x18, LINE = 0x19,
-    FILE = 0x1A, TRACE = 0x1B, TRNS = 0x1C, LIT = 0x1D
+    FILE = 0x1A, TRACE = 0x1B, TRNS = 0x1C, LIT = 0x1D, GTU = 0x1E
 };
 
 /// \brief A namespace containing `%%lit` table references.
@@ -41,16 +41,17 @@ enum class Reg : unsigned char {
 /// the read-only `%%lit` register, which contains a table of special
 /// objects.
 namespace Lit {
-    constexpr long NIL    = 0L;
-    constexpr long FALSE  = 1L;
-    constexpr long TRUE   = 2L;
-    constexpr long BOOL   = 3L;
-    constexpr long STRING = 4L;
-    constexpr long NUMBER = 5L;
-    constexpr long SYMBOL = 6L;
-    constexpr long SFRAME = 7L;
-    constexpr long METHOD = 8L;
-    constexpr long FHEAD  = 9L;
+    constexpr long NIL    =  0L;
+    constexpr long FALSE  =  1L;
+    constexpr long TRUE   =  2L;
+    constexpr long BOOL   =  3L;
+    constexpr long STRING =  4L;
+    constexpr long NUMBER =  5L;
+    constexpr long SYMBOL =  6L;
+    constexpr long SFRAME =  7L;
+    constexpr long METHOD =  8L;
+    constexpr long FHEAD  =  9L;
+    constexpr long ERR    = 10L;
 }
 
 /// A function index is fundamentally just an integral value. This
@@ -252,7 +253,6 @@ public:
 /// methods.
 class TranslationUnit {
 private:
-    InstrSeq seq;
     std::vector<InstrSeq> methods;
 public:
 
@@ -344,41 +344,33 @@ public:
 
 };
 
-/// An InstrSeek instance stores, in some appropriate and efficient
-/// way, an InstrSeq instance and provides access to it.
-class InstrSeek {
+/// For efficiency reasons, it is undesirable to store methods
+/// directly. Therefore, a MethodSeek instance stores a sequence of
+/// instructions, not directly, but by reference to a translation
+/// unit.
+class MethodSeek {
 private:
     unsigned long pos;
-    bool _size_set;
     unsigned long _size;
+    Method method;
 public:
 
-    /// Default-constructs an InstrSeek.
-    InstrSeek();
+    /// Constructs a nullary MethodSeek object. It is not safe to
+    /// access the fields of a nullary MethodSeek object.
+    MethodSeek();
 
-    /// Destructs an InstrSeek.
-    virtual ~InstrSeek() = default;
-
-    /// An InstrSeek subclass must be copyable in a unified way. This
-    /// copy function should return a new instance of the same class
-    /// as the original.
+    /// Constructs a MethodSeek which points to the specified method.
     ///
-    /// \return a new copy of the instance
-    virtual std::unique_ptr<InstrSeek> copy() = 0;
+    /// \param m a method
+    MethodSeek(Method m);
 
-    /// An InstrSeek must provide a way to get access to the
-    /// underlying instruction sequence.
-    ///
-    /// \return the underlying instruction sequence
-    virtual InstrSeq& instructions() = 0;
-
-    /// Returns the position of the InstrSeek object within the
+    /// Returns the position of the MethodSeek object within the
     /// InstrSeq data.
     ///
     /// \return the position
     unsigned long position();
 
-    /// Advances the InstrSeek's position by an integer amount, which
+    /// Advances the MethodSeek's position by an integer amount, which
     /// must be positive.
     ///
     /// \param val the number by which to advance the position
@@ -433,158 +425,8 @@ public:
     /// \return the function argument
     FunctionIndex readFunction(int n);
 
-};
-
-/// A CodeSeek is an InstrSeek that keeps a direct pointer to its
-/// sequence of instructions. It is used for evaluating top-level
-/// code, performing eval statements, and injecting raw assembly
-/// instructions into a sequence.
-class CodeSeek : public InstrSeek {
-private:
-    std::shared_ptr<InstrSeq> seq;
-public:
-
-    /// Default-constructs a CodeSeek containing no
-    /// code. Specifically, the resulting CodeSeek will contain an
-    /// empty instruction sequence.
-    CodeSeek();
-
-    /// Constructs a CodeSeek by copying the argument.
-    ///
-    /// \param seq the instruction sequence
-    CodeSeek(const InstrSeq& seq);
-
-    /// Constructs a CodeSeek by moving the argument.
-    ///
-    /// \param seq the instruction sequence
-    CodeSeek(InstrSeq&& seq);
-
-    /// Destructs the CodeSeek.
-    virtual ~CodeSeek() = default;
-
-    /// Returns a semantically identical copy of the CodeSeek.
-    ///
-    /// \return a new copy
-    virtual std::unique_ptr<InstrSeek> copy();
-
-    virtual InstrSeq& instructions();
-
-};
-
-/// For efficiency reasons, it is undesirable to store methods
-/// directly. Therefore, a MethodSeek instance stores a sequence of
-/// instructions, not directly, but by reference to a translation
-/// unit.
-class MethodSeek : public InstrSeek {
-private:
-    Method method;
-public:
-
-    /// Constructs a MethodSeek which points to the specified method.
-    ///
-    /// \param m a method
-    MethodSeek(Method m);
-
-    /// Destructs a MethodSeek.
-    virtual ~MethodSeek() = default;
-
-    /// Returns a new MethodSeek pointing to the same method.
-    ///
-    /// \return a new copy
-    virtual std::unique_ptr<InstrSeek> copy();
-
-    virtual InstrSeq& instructions();
-
-};
-
-/// A SeekHolder stores a virtual pointer to an InstrSeek object and
-/// then caches its underlying InstrSeq instance for efficiency. For
-/// all intents and purposes, it behaves identically to its contained
-/// pointer but with the performance benefits of bypassing the vtable
-/// lookup most of the time.
-class SeekHolder {
-private:
-    std::unique_ptr<InstrSeek> internal;
-    // Treat this as a reference; it should not be freed
-    // and belongs to the internal variable above.
-    InstrSeq* instr;
-public:
-
-    /// Constructs a SeekHolder to an empty code sequence. This is \em
-    /// not a null instance; it is a SeekHolder which contains a
-    /// no-op.
-    SeekHolder();
-
-    /// Given an instance of InstrSeek or a subclass thereof, this
-    /// constructor returns a SeekHolder which contains a copy of the
-    /// argument.
-    ///
-    /// \param other the seek object to copy
-    template <typename T>
-    SeekHolder(const T& other);
-
-    /// Copy-constructs a SeekHolder. This constructor also copies the
-    /// internal InstrSeek instance.
-    ///
-    /// \param other the original holder
-    SeekHolder(const SeekHolder& other);
-
-    /// Assigns a copy of the argument, which must be an instance of
-    /// InstrSeek or a subclass thereof, so that the internal pointer
-    /// of this SeekHolder points to the new copy.
-    ///
-    /// \param other the argument to assign
-    /// \return the current instance
-    template <typename T>
-    SeekHolder& operator=(const T& other);
-
-    /// Copy-assigns a SeekHolder, copying the internals as well.
-    ///
-    /// \param other the argument to assign
-    /// \return the current instance
-    SeekHolder& operator=(const SeekHolder& other);
-
-    /// \copydoc InstrSeek::instructions()
     InstrSeq& instructions();
 
-    /// \copydoc InstrSeek::position()
-    unsigned long position();
-
-    /// \copydoc InstrSeek::advancePosition()
-    void advancePosition(unsigned long val);
-
-    /// \copydoc InstrSeek::readLong()
-    long readLong(int n);
-
-    /// \copydoc InstrSeek::readString()
-    std::string readString(int n);
-
-    /// \copydoc InstrSeek::readReg()
-    Reg readReg(int n);
-
-    /// \copydoc InstrSeek::readInstr()
-    Instr readInstr();
-
-    /// \copydoc InstrSeek::readFunction()
-    FunctionIndex readFunction(int n);
-
-    /// \copydoc InstrSeek::atEnd()
-    bool atEnd();
-
-    /// \copydoc InstrSeek::killSelf()
-    void killSelf();
 };
-
-template <typename T>
-SeekHolder::SeekHolder(const T& other)
-    : internal(std::unique_ptr<InstrSeek>(new T(other)))
-    , instr(&internal->instructions()) {}
-
-template <typename T>
-SeekHolder& SeekHolder::operator=(const T& other) {
-    internal = std::unique_ptr<InstrSeek>(new T(other));
-    instr = &internal->instructions();
-    return *this;
-}
 
 #endif // INSTRUCTIONS_HPP

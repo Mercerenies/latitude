@@ -208,13 +208,17 @@ void AssemblerLine::appendOntoSerial(SerialInstrSeq& seq) const {
 }
 
 TranslationUnit::TranslationUnit()
-    : seq(), methods() {}
+    : methods() {
+    methods.emplace_back();
+}
 
 TranslationUnit::TranslationUnit(const InstrSeq& seq)
-    : seq(seq), methods() {}
+    : methods() {
+    methods.emplace_back(seq);
+}
 
 InstrSeq& TranslationUnit::instructions() {
-    return seq;
+    return methods[0];
 }
 
 InstrSeq& TranslationUnit::method(int index) {
@@ -262,13 +266,18 @@ FunctionIndex Method::index() {
 
 // -1L will become the maximum unsigned long value
 // TODO I can't believe I'm considering this corner case, but what if the number of instructions is exactly equal to std::numeric_limits<unsigned long>::max()
-InstrSeek::InstrSeek() : pos(-1L), _size_set(false), _size(0L) {}
 
-unsigned long InstrSeek::position() {
+MethodSeek::MethodSeek()
+    : pos(-1L), _size(0L), method(Method(nullptr, { 0 })) {}
+
+MethodSeek::MethodSeek(Method m)
+    : pos(-1L), _size(m.instructions().size()), method(m) {}
+
+unsigned long MethodSeek::position() {
     return pos;
 }
 
-void InstrSeek::advancePosition(unsigned long val) {
+void MethodSeek::advancePosition(unsigned long val) {
     pos += val;
     if (pos < 0)
         pos = 0;
@@ -276,117 +285,34 @@ void InstrSeek::advancePosition(unsigned long val) {
         pos = size();
 }
 
-unsigned long InstrSeek::size() {
-    if (!_size_set) {
-        _size_set = true;
-        _size = instructions().size();
-    }
+unsigned long MethodSeek::size() {
     return _size;
 }
 
-bool InstrSeek::atEnd() {
+bool MethodSeek::atEnd() {
     return size() == position();
 }
 
-long InstrSeek::readLong(int n) {
+long MethodSeek::readLong(int n) {
     return boost::get<long>(instructions()[position()].args[n]);
 }
 
-string InstrSeek::readString(int n) {
+string MethodSeek::readString(int n) {
     return boost::get<string>(instructions()[position()].args[n]);
 }
 
-Reg InstrSeek::readReg(int n) {
+Reg MethodSeek::readReg(int n) {
     return boost::get<Reg>(instructions()[position()].args[n]);
 }
 
-Instr InstrSeek::readInstr() {
+Instr MethodSeek::readInstr() {
     return instructions()[position()].instr;
 }
 
-FunctionIndex InstrSeek::readFunction(int n) {
+FunctionIndex MethodSeek::readFunction(int n) {
     return boost::get<FunctionIndex>(instructions()[position()].args[n]);
-}
-
-CodeSeek::CodeSeek()
-    : seq(make_shared<InstrSeq>()) {}
-
-CodeSeek::CodeSeek(const InstrSeq& seq)
-    : seq(make_shared<InstrSeq>(seq)) {}
-
-CodeSeek::CodeSeek(InstrSeq&& seq)
-    : seq(make_shared<InstrSeq>(forward<InstrSeq>(seq))) {}
-
-unique_ptr<InstrSeek> CodeSeek::copy() {
-    return unique_ptr<InstrSeek>(new CodeSeek(*this));
-}
-
-InstrSeq& CodeSeek::instructions() {
-    return *seq;
-}
-
-MethodSeek::MethodSeek(Method m)
-    : method(m) {}
-
-unique_ptr<InstrSeek> MethodSeek::copy() {
-    auto other = unique_ptr<InstrSeek>(new MethodSeek(*this));
-    return other;
 }
 
 InstrSeq& MethodSeek::instructions() {
     return method.instructions();
-}
-
-SeekHolder::SeekHolder()
-    : internal(unique_ptr<InstrSeek>(new CodeSeek())) {}
-
-// Copy the unique_ptr and its contents when a SeekHolder is copied
-SeekHolder::SeekHolder(const SeekHolder& other)
-    : internal(unique_ptr<InstrSeek>(other.internal->copy()))
-    , instr(&internal->instructions()) {}
-
-SeekHolder& SeekHolder::operator=(const SeekHolder& other) {
-    internal = unique_ptr<InstrSeek>(other.internal->copy());
-    instr = &internal->instructions();
-    return *this;
-}
-
-InstrSeq& SeekHolder::instructions() {
-    return *instr;
-}
-
-unsigned long SeekHolder::position() {
-    return internal->position();
-}
-
-void SeekHolder::advancePosition(unsigned long arg) {
-    internal->advancePosition(arg);
-}
-
-long SeekHolder::readLong(int n) {
-    return boost::get<long>(instructions()[position()].args[n]);
-}
-
-string SeekHolder::readString(int n) {
-    return boost::get<string>(instructions()[position()].args[n]);
-}
-
-Reg SeekHolder::readReg(int n) {
-    return boost::get<Reg>(instructions()[position()].args[n]);
-}
-
-Instr SeekHolder::readInstr() {
-    return instructions()[position()].instr;
-}
-
-FunctionIndex SeekHolder::readFunction(int n) {
-    return boost::get<FunctionIndex>(instructions()[position()].args[n]);
-}
-
-bool SeekHolder::atEnd() {
-    return internal->atEnd();
-}
-
-void SeekHolder::killSelf() {
-    internal = unique_ptr<InstrSeek>(new CodeSeek());
 }

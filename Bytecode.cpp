@@ -49,15 +49,17 @@ StatePtr statePtr(IntState&& state) {
 }
 
 ReadOnlyState readOnlyState() {
-    return ReadOnlyState();
+    ReadOnlyState reader;
+    reader.gtu = make_shared<TranslationUnit>();
+    return reader;
 }
 
-void hardKill(IntState& state) {
-    state.cont.killSelf();
-    state.stack = NodePtr<SeekHolder>();
+void hardKill(IntState& state, const ReadOnlyState& reader) {
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
+    state.stack = NodePtr<MethodSeek>();
 }
 
-void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
+void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
     deque<WindPtr> exits;
     deque<WindPtr> enters;
     while (oldWind) {
@@ -75,16 +77,16 @@ void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> n
         enters.pop_front();
     }
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = CodeSeek();
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );
-        state.stack = pushNode(state.stack, SeekHolder(MethodSeek(ptr->after.code)));
+        state.stack = pushNode(state.stack, MethodSeek(ptr->after.code));
     }
     for (WindPtr ptr : enters) {
         state.lex.push( clone(ptr->before.lex) );
         state.dyn.push( clone(ptr->before.dyn) );
-        state.stack = pushNode(state.stack, SeekHolder(MethodSeek(ptr->before.code)));
+        state.stack = pushNode(state.stack, MethodSeek(ptr->before.code));
     }
 }
 
@@ -667,33 +669,18 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
                 if (value == nullptr) {
                     // Abandon ship!
-                    InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0));
                     state.stack = pushNode(state.stack, state.cont);
-                    state.cont = CodeSeek(term);
+                    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_TERMINATE }));
                 } else {
-                    InstrSeq seq0;
                     state.slf = meta;
                     state.ptr = value;
-                    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq0);
                     state.stack = pushNode(state.stack, state.cont);
-                    state.cont = CodeSeek(move(seq0));
+                    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ZERO }));
                 }
             } else {
-                InstrSeq seq0;
-                // Find the literal object to use for the argument
-                (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR)).appendOnto(seq0);
-                // Clone and put a prim() onto it
-                (makeAssemblerLine(Instr::SYMN, backup.index)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq0);
-                // Call it
-                (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq0);
-                (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq0);
+                state.sym = backup;
                 state.stack = pushNode(state.stack, state.cont);
-                state.cont = CodeSeek(move(seq0));
+                state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_MISSING }));
             }
         } else {
 #if DEBUG_INSTR > 1
@@ -894,7 +881,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         if (state.slf == nullptr)
             state.err0 = true;
         else if (state.slf->isProtected(state.sym, PROTECT_ASSIGN))
-            throwError(state, "ProtectedError");
+            throwError(state, reader, "ProtectedError");
         else
             state.slf->put(state.sym, state.ptr);
     }
@@ -974,7 +961,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "BOL (" << state.flag << ")" << endl;
 #endif
-        garnishBegin(state, state.flag);
+        state.ret = garnishObject(reader, state.flag);
     }
         break;
     case Instr::TEST: {
@@ -1014,9 +1001,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         } else {
             state.slf->prim( statePtr(state) );
             state.arg.push(state.slf);
-            InstrSeq seq = asmCode( makeAssemblerLine(Instr::CALL, 1L) );
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(seq);
+            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ONE }));
         }
     }
         break;
@@ -1029,7 +1015,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             auto oldWind = state.wind;
             auto newWind = cont->wind;
             state = *cont;
-            resolveThunks(state, oldWind, newWind);
+            resolveThunks(state, reader, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
@@ -1048,7 +1034,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             auto newWind = cont->wind;
             state = *cont;
             state.ret = ret;
-            resolveThunks(state, oldWind, newWind);
+            resolveThunks(state, reader, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
@@ -1103,17 +1089,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "* Got handlers: " << handlers.size() << endl;
 #endif
-        InstrSeq term = asmCode(makeAssemblerLine(Instr::CPP, 0L)); // CPP 0 should always be a terminate function
         state.stack = pushNode(state.stack, state.cont);
-        state.cont = CodeSeek(term);
-        InstrSeq seq = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::ARG),
-                               makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
-                               makeAssemblerLine(Instr::CALL, 1L));
+        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_TERMINATE }));
         for (ObjectPtr handler : handlers) {
             state.arg.push(exc);
             state.sto.push(handler);
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek(seq);
+            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_HANDLER }));
         }
     }
         break;
@@ -1123,7 +1105,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         if (state.err0) {
             state.stack = pushNode(state.stack, state.cont);
-            state.cont = CodeSeek( asmCode( makeAssemblerLine(Instr::THROW) ) );
+            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_THROW }));
         }
     }
         break;
@@ -1179,7 +1161,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
         if (state.err0)
-            throwError(state, "TypeError", msg);
+            throwError(state, reader, "TypeError", msg);
     }
         break;
     case Instr::LOCFN: {
@@ -1202,40 +1184,38 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "LOCRT" << endl;
 #endif
-        InstrSeq total;
         auto stck = state.trace;
-        while (stck) {
-            long line;
-            string file;
-            auto elem = stck->get();
-            tie(line, file) = elem;
-            stck = popNode(stck);
-
-            InstrSeq step0 = asmCode(makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                     makeAssemblerLine(Instr::CLONE),
-                                     makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO));
-            InstrSeq step1 = garnishSeq(line);
-            InstrSeq step2 = asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["line"].index),
-                                     makeAssemblerLine(Instr::SETF));
-            InstrSeq step3 = garnishSeq(file);
-            InstrSeq step4 = asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                     makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
-                                     makeAssemblerLine(Instr::SYMN, Symbols::get()["file"].index),
-                                     makeAssemblerLine(Instr::SETF),
-                                     makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET));
-            total.insert(total.begin(), step4.begin(), step4.end());
-            total.insert(total.begin(), step3.begin(), step3.end());
-            total.insert(total.begin(), step2.begin(), step2.end());
-            total.insert(total.begin(), step1.begin(), step1.end());
-            total.insert(total.begin(), step0.begin(), step0.end());
-
+        if (stck) {
+            ObjectPtr sframe = reader.lit.at(Lit::SFRAME);
+            ObjectPtr frame = nullptr;
+            ObjectPtr top = nullptr;
+            while (stck) {
+                ObjectPtr temp;
+                long line;
+                string file;
+                auto elem = stck->get();
+                tie(line, file) = elem;
+                temp = clone(sframe);
+                if (frame == nullptr) {
+                    top = temp;
+                } else {
+                    frame->put(Symbols::get()["parent"], temp);
+                }
+                frame = temp;
+                frame->put(Symbols::get()["line"], garnishObject(reader, line));
+                frame->put(Symbols::get()["file"], garnishObject(reader, file));
+                stck = popNode(stck);
+            }
+            assert(top != nullptr); // Should always be non-null since the loop must run once
+            state.ret = top;
+        } else {
+            // The %trace stack was empty; this should not happen...
+            // Honestly, this should probably be an assert failure,
+            // but %trace is so weird right now that I'm hesitant to
+            // rely on it.
+            state.ret = reader.lit.at(Lit::NIL);
+            // TODO This *should* be an assertion failure, once %trace is reliable
         }
-        InstrSeq intro = asmCode(makeAssemblerLine(Instr::YLD, Lit::SFRAME, Reg::RET));
-        total.insert(total.begin(), intro.begin(), intro.end());
-        state.stack = pushNode(state.stack, state.cont);
-        state.cont = CodeSeek(move(total));
     }
         break;
     case Instr::NRET: {
@@ -1243,9 +1223,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "NRET" << endl;
 #endif
         state.trace = pushNode(state.trace, make_tuple(0L, string("")));
-        InstrSeq seq = asmCode(makeAssemblerLine(Instr::RET));
         state.stack = pushNode(state.stack, state.cont);
-        state.cont = CodeSeek(seq);
+        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_RETURN }));
     }
         break;
     case Instr::UNTR: {
@@ -1331,7 +1310,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         if (state.slf == nullptr) {
             state.err0 = true;
         } else if (state.slf->isProtected(state.sym, PROTECT_DELETE)) {
-            throwError(state, "ProtectedError", "Delete-protected variable");
+            throwError(state, reader, "ProtectedError", "Delete-protected variable");
         } else {
             state.slf->remove(state.sym);
         }
@@ -1365,4 +1344,3 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
 bool isIdling(IntState& state) {
     return (state.cont.atEnd() && !state.stack);
 }
-

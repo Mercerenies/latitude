@@ -38,8 +38,8 @@ using BacktraceFrame = std::tuple<long, std::string>;
 struct IntState {
     ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
-    SeekHolder cont;
-    NodePtr<SeekHolder> stack;
+    MethodSeek cont;
+    NodePtr<MethodSeek> stack;
     bool err0, err1;
     Symbolic sym;
     Number num0, num1;
@@ -63,6 +63,7 @@ struct IntState {
 struct ReadOnlyState {
     std::map<long, CppFunction> cpp;
     std::map<long, ObjectPtr> lit;
+    TranslationUnitPtr gtu;
 };
 
 /// A thunk contains a method and dynamic and lexical scoping
@@ -125,7 +126,8 @@ ReadOnlyState readOnlyState();
 /// state which is guaranteed to be idling (according to #isIdling).
 ///
 /// \param state the interpreter state
-void hardKill(IntState& state);
+/// \param reader the read-only portion of the interpreter state
+void hardKill(IntState& state, const ReadOnlyState& reader);
 
 /// This function, which is called during continuation jumps, compares
 /// two wind frame stacks. Once it finds the first element that the
@@ -137,7 +139,7 @@ void hardKill(IntState& state);
 /// \param state the interpreter state
 /// \param oldWind the wind stack that the continuation is jumping \e from
 /// \param newWind the wind stack that the continuation is jumping \e to
-void resolveThunks(IntState& state, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
+void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
 
 /// Given a serial instruction sequence, pops a single character off
 /// the front and returns it.

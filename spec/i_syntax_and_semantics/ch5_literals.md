@@ -62,6 +62,10 @@ from global scope.
    primitive field and does *not* contain a method in its primitive
    field. This is to prevent the method object from accidentally
    evaluating, resulting in confusing and undesired results.
+ * The error container object, denoted `err` in the global scope,
+   contains the different kinds of built-in exceptions available in
+   Latitude. It is used when the virtual machine needs to throw an
+   exception as a result of an error in a built-in function.
  * The stack frame object and file header object are used,
    respectively, in reporting stack traces and in loading source code
    files. These are accessible using the respective global names

@@ -10,7 +10,7 @@ Exception stack := Nil.
 Exception printStackTrace := { self stack dump. }.
 
 ;; Error object
-global err ::= Object clone.
+err toString := "err".
 err Exception := Exception.
 err SystemError := SystemError.
 
