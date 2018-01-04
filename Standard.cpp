@@ -8,6 +8,7 @@
 #include "Environment.hpp"
 #include "Pathname.hpp"
 #include "Unicode.hpp"
+#include "Platform.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -2060,6 +2061,34 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::EXPD, Reg::NUM0),
                                    makeAssemblerLine(Instr::THROA, "Number expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_UNI_CHR))));
+
+     // CPP_OSINFO (store info about the OS in %ptr)
+     // osInfo#: obj.
+     reader.cpp[CPP_OSINFO] = [&reader](IntState& state0) {
+         Symbolic sym = Symbols::get()[""];
+         switch (systemOS) {
+         case OS::WINDOWS:
+             sym = Symbols::get()["windows"];
+             break;
+         case OS::POSIX:
+             sym = Symbols::get()["posix"];
+             break;
+         case OS::UNKNOWN:
+             sym = Symbols::get()["unknown"];
+             break;
+         }
+         ObjectPtr symbolObj = clone(reader.lit.at(Lit::SYMBOL));
+         symbolObj->prim(sym);
+         state0.ptr->put(Symbols::get()["class"], symbolObj);
+     };
+     sys->put(Symbols::get()["osInfo#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   // No need to move back, since %ptr == %ret now
+                                   makeAssemblerLine(Instr::CPP, CPP_OSINFO))));
 
      // GTU METHODS //
 
