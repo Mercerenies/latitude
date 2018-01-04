@@ -268,10 +268,10 @@ FunctionIndex Method::index() {
 // TODO I can't believe I'm considering this corner case, but what if the number of instructions is exactly equal to std::numeric_limits<unsigned long>::max()
 
 MethodSeek::MethodSeek()
-    : MethodSeek(Method(nullptr, { 0 })) {}
+    : pos(-1L), _size(0L), method(Method(nullptr, { 0 })) {}
 
 MethodSeek::MethodSeek(Method m)
-    : pos(-1L), _size_set(false), _size(0L), method(m) {}
+    : pos(-1L), _size(m.instructions().size()), method(m) {}
 
 unsigned long MethodSeek::position() {
     return pos;
@@ -286,10 +286,6 @@ void MethodSeek::advancePosition(unsigned long val) {
 }
 
 unsigned long MethodSeek::size() {
-    if (!_size_set) {
-        _size_set = true;
-        _size = instructions().size();
-    }
     return _size;
 }
 

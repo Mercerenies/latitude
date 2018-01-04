@@ -351,7 +351,6 @@ public:
 class MethodSeek {
 private:
     unsigned long pos;
-    bool _size_set;
     unsigned long _size;
     Method method;
 public:
