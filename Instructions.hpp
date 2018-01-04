@@ -426,11 +426,6 @@ public:
     /// \return the function argument
     FunctionIndex readFunction(int n);
 
-    /// Returns a new MethodSeek pointing to the same method.
-    ///
-    /// \return a new copy
-    std::unique_ptr<MethodSeek> copy();
-
     InstrSeq& instructions();
 
 };

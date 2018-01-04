@@ -317,11 +317,6 @@ FunctionIndex MethodSeek::readFunction(int n) {
     return boost::get<FunctionIndex>(instructions()[position()].args[n]);
 }
 
-unique_ptr<MethodSeek> MethodSeek::copy() {
-    auto other = unique_ptr<MethodSeek>(new MethodSeek(*this));
-    return other;
-}
-
 InstrSeq& MethodSeek::instructions() {
     return method.instructions();
 }
