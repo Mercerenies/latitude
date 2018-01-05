@@ -17,42 +17,42 @@ ArgList fillWith := {
   self.
 }.
 ArgList shift := {
-  if (self size == 0)
-    then { Nil. }
-    else {
-      first := parent self enclosingScope slot '$1.
-      arglist := parent self.
-      size := parent self size.
-      temp := #'first.
-      index := 2.
-      'index assign = { $1. }.
-      parent self map! {
-        if ((index) > (size))
-          then { #'first. }
-          else {
-            result := arglist enclosingScope slot ((("$") ++ (index)) intern).
-            index = index + 1.
-            #'result.
-          }.
+  if (self size == 0) then {
+    Nil.
+  } else {
+    first := parent self enclosingScope slot '$1.
+    arglist := parent self.
+    size := parent self size.
+    temp := #'first.
+    index := 2.
+    'index assign = { $1. }.
+    parent self map! {
+      if ((index) > (size)) then {
+        #'first.
+      } else {
+        result := arglist enclosingScope slot ((("$") ++ (index)) intern).
+        index = index + 1.
+        #'result.
       }.
-      #'first.
     }.
+    #'first.
+  }.
 }.
 ArgList unshift := {
-  if (self size == 0)
-    then { Nil. }
-    else {
-      first := parent self enclosingScope slot '$1.
-      arglist := parent self.
-      size := parent self size.
-      temp := Nil.
-      parent self map! {
-        temp1 := #'temp.
-        parent temp := #'$1.
-        #'temp1.
-      }.
-      parent self enclosingScope slot '$1 = #'temp.
+  if (self size == 0) then {
+    Nil.
+  } else {
+    first := parent self enclosingScope slot '$1.
+    arglist := parent self.
+    size := parent self size.
+    temp := Nil.
+    parent self map! {
+      temp1 := #'temp.
+      parent temp := #'$1.
+      #'temp1.
     }.
+    parent self enclosingScope slot '$1 = #'temp.
+  }.
 }.
 ArgList unshiftOnto := {
   self enclosingScope slot (("$" ++ (self size + 1)) intern) = #'$1.

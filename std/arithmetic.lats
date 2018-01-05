@@ -11,12 +11,11 @@ Number / := { meta sys numDiv#: self, $1. }.
 Number mod := {
   curr := self.
   arg := $1.
-  if ({ curr isComplex?. } or { arg isComplex?. })
-    then {
-      err TypeError clone tap { self message := "Cannot modulo complex numbers". } throw.
-    } else {
-      meta sys numMod#: curr, arg.
-    }.
+  if ({ curr isComplex?. } or { arg isComplex?. }) then {
+    err TypeError clone tap { self message := "Cannot modulo complex numbers". } throw.
+  } else {
+    meta sys numMod#: curr, arg.
+  }.
 }.
 Number ^ := { meta sys numPow#: self, $1. }.
 
@@ -24,12 +23,11 @@ global - := { 0 - ($1). }.
 global / := { 1 / ($1). }.
 
 Number floor := {
-  if { parent self isComplex?. }
-    then {
-      err TypeError clone tap { self message := "Cannot round complex numbers". } throw.
-    } else {
-      meta sys numFloor#: parent self.
-    }.
+  if { parent self isComplex?. } then {
+    err TypeError clone tap { self message := "Cannot round complex numbers". } throw.
+  } else {
+    meta sys numFloor#: parent self.
+  }.
 }.
 Number round := { (self + 0.5) floor. }.
 Number ceil := { - (- (self) floor). }.
@@ -38,43 +36,39 @@ Number ceil := { - (- (self) floor). }.
 Number bitAnd := {
   curr := self.
   arg := $1.
-  if ({ curr isInteger?. } and { arg isInteger?. })
-    then {
-      meta sys numAnd#: curr, arg.
-    } else {
-      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
-    }.
+  if ({ curr isInteger?. } and { arg isInteger?. }) then {
+    meta sys numAnd#: curr, arg.
+  } else {
+    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+  }.
 }.
 Number bitOr := {
   curr := self.
   arg := $1.
-  if ({ curr isInteger?. } and { arg isInteger?. })
-    then {
-      meta sys numIor#: curr, arg.
-    } else {
-      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
-    }.
+  if ({ curr isInteger?. } and { arg isInteger?. }) then {
+    meta sys numIor#: curr, arg.
+  } else {
+    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+  }.
 }.
 Number bitXor := {
   curr := self.
   arg := $1.
-  if ({ curr isInteger?. } and { arg isInteger?. })
-    then {
-      meta sys numEor#: curr, arg.
-    } else {
-      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
-    }.
+  if ({ curr isInteger?. } and { arg isInteger?. }) then {
+    meta sys numEor#: curr, arg.
+  } else {
+    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+  }.
 }.
 Number bitNot := { self bitXor -1. }.
 Number bitShift := {
   curr := self.
   arg := $1.
-  if ({ curr isInteger?. } and { arg isInteger?. })
-    then {
-      (curr) * (2 ^ (arg)) floor.
-    } else {
-      err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
-    }.
+  if ({ curr isInteger?. } and { arg isInteger?. }) then {
+    (curr) * (2 ^ (arg)) floor.
+  } else {
+    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+  }.
 }.
 
 ;; Trigonometry
@@ -141,12 +135,15 @@ String radix := {
   convert := {
     takes '[n].
     cond {
-      when { (n >= ("0" ord)) and (n <= ("9" ord)). }
-        do { n - ("0" ord). }.
-      when { (n >= ("a" ord)) and (n <= ("z" ord)). }
-        do { n - ("a" ord) + 10. }.
-      when { (n >= ("A" ord)) and (n <= ("Z" ord)). }
-        do { n - ("A" ord) + 10. }.
+      when { (n >= ("0" ord)) and (n <= ("9" ord)). } do {
+        n - ("0" ord).
+      }.
+      when { (n >= ("a" ord)) and (n <= ("z" ord)). } do {
+        n - ("a" ord) + 10.
+      }.
+      when { (n >= ("A" ord)) and (n <= ("Z" ord)). } do {
+        n - ("A" ord) + 10.
+      }.
       else {
         err InputError clone tap {
           self message := "Text is not a number".
@@ -174,10 +171,12 @@ modifiedRadix := {
   takes '[str, rad, parm].
   result := str radix: rad.
   cond {
-    when (parm == '-)
-      do { - (result). }.
-    when ((parm == '+) or (parm == '()))
-      do { result. }.
+    when (parm == '-) do {
+      - (result).
+    }.
+    when ((parm == '+) or (parm == '())) do {
+      result.
+    }.
     else {
       err ArgError clone tap {
         self message := "Sign does not make sense".
