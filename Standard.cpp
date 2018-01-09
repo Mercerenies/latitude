@@ -1612,7 +1612,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      //  * %num0 == 1: Executable pathname
      //  & %num0 == 2: Current working directory
      // exePath#.
-     // pwdPath#.
+     // cwdPath#.
      reader.cpp[CPP_EXE_PATH] = [&reader](IntState& state0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
@@ -1631,7 +1631,7 @@ void spawnSystemCallsNew(ObjectPtr global,
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::INT, 1),
                                    makeAssemblerLine(Instr::CPP, CPP_EXE_PATH))));
-     sys->put(Symbols::get()["pwdPath#"],
+     sys->put(Symbols::get()["cwdPath#"],
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::INT, 2),
                                    makeAssemblerLine(Instr::CPP, CPP_EXE_PATH))));
