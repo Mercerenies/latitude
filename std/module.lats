@@ -55,7 +55,8 @@ ModuleLoader clone := {
 }.
 ModuleLoader loadPath := do {
   exec := FilePath directory (Kernel executablePath) ++ "std/".
-  [exec].
+  cwd := Kernel cwd ++ "/".
+  [exec, cwd].
 }.
 ModuleLoader resolveImport := {
   takes '[imp].
