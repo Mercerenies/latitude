@@ -41,7 +41,7 @@ Conditional then := {
 Conditional else := {
   this := self.
   this falseCase := #'$1.
-  meta sys ifThenElse#: True, this truthy, { this trueCase. }, { this falseCase. }.
+  meta sys ifThenElse#: this truthy, { this trueCase. }, { this falseCase. }.
 }.
 Conditional if := {
   truthy := #'$1.
