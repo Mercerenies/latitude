@@ -5,7 +5,9 @@ Iterator end? := True.
 Iterator next := { }.
 Iterator element := Nil.
 Iterator element= := {
-  err ReadOnlyError clone tap { self message := "Immutable iterator". } throw.
+  err ReadOnlyError clone tap {
+    self message := "Immutable iterator".
+  } throw.
 }.
 
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
@@ -22,29 +24,27 @@ Iterator element= := {
 ;; *  `clone` - Iterators must be cloneable at any intermediate point in their iteration
 ;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
 global Collection ::= Mixin clone.
-Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any, notall, notany,
-                          detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
-                          minimum, <>, sum, product, append].
+Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any, notall,
+                          notany, detect, countIf, count, find, containsIf, contains, zip, zip!,
+                          take, maximum, minimum, <>, sum, product, append].
 Collection map! := {
   func0 := #'$1.
   func := { #'func0 call. }.
   iter := self iterator.
-  while { iter end? not. }
-    do {
-      iter element=: (func: iter element).
-      iter next.
-    }.
+  while { iter end? not. } do {
+    iter element=: (func: iter element).
+    iter next.
+  }.
   self.
 }.
 Collection visit := {
   func0 := #'$1.
   func := { #'func0 call. }.
   iter := self iterator.
-  while { iter end? not. }
-    do {
-      func: iter element.
-      iter next.
-    }.
+  while { iter end? not. } do {
+    func: iter element.
+    iter next.
+  }.
   self.
 }.
 Collection map := {
@@ -145,9 +145,11 @@ Collection countIf := {
   func0 := #'$1.
   func := proc { #'func0 call. }.
   self foldl: 0, {
-    if (func call #'$2)
-      then (#'$1 + 1)
-      else (#'$1).
+    if (func call #'$2) then {
+      #'$1 + 1.
+    } else {
+      #'$1
+    }.
   }.
 }.
 Collection count := {
@@ -182,25 +184,24 @@ Collection zip := {
   iter0 := self iterator.
   iter1 := $1 iterator.
   arr := Array clone.
-  while { (iter0 end? not) and (iter1 end? not). }
-    do {
-      arr pushBack: (cons: iter0 element, iter1 element).
-      iter0 next.
-      iter1 next.
-    }.
+  while { (iter0 end? not) and (iter1 end? not). } do {
+    arr pushBack: (cons: iter0 element, iter1 element).
+    iter0 next.
+    iter1 next.
+  }.
   arr.
 }.
 Collection zip! := {
   iter1 := $1 iterator.
   self map! {
     curr := $1.
-    if (iter1 end?)
-      then { cons: curr, Nil. }
-      else {
-        (cons: curr, iter1 element) tap {
-          iter1 next.
-        }.
+    if (iter1 end?) then {
+      cons: curr, Nil.
+    } else {
+      (cons: curr, iter1 element) tap {
+        iter1 next.
       }.
+    }.
   }.
 }.
 Collection take := {
@@ -213,13 +214,12 @@ Collection take := {
     escapable.
     parent self visit {
       curr := #'$1.
-      if (remaining > 0)
-        then {
-          arr pushBack: #'curr.
-          decrement.
-        } else {
-          return: Nil.
-        }.
+      if (remaining > 0) then {
+        arr pushBack: #'curr.
+        decrement.
+      } else {
+        return: Nil.
+      }.
     }.
   }.
   arr.
