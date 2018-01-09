@@ -96,7 +96,7 @@ Array =~ := {
           }.
       }.
       (rhs size) - (after).
-    }
+    }.
     currIndex := 0.
     currIter := rhs iterator.
     iterNext := {
