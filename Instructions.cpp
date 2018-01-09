@@ -267,6 +267,8 @@ FunctionIndex Method::index() {
 // -1L will become the maximum unsigned long value
 // TODO I can't believe I'm considering this corner case, but what if the number of instructions is exactly equal to std::numeric_limits<unsigned long>::max()
 
+// TODO Consider trying to get this and Method to be POD (w/ trivial default constructors)
+
 MethodSeek::MethodSeek()
     : pos(-1L), _size(0L), method(Method(nullptr, { 0 })) {}
 
