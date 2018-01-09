@@ -4,7 +4,7 @@ Object clone := { Kernel cloneObject: #'self. }.
 Object is := { meta sys instanceOf#: #'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, #'$2. }.
-Object slot? := {
+Object slot? := { ; TODO This should delegate to a Kernel function
   target := $1.
   {
     (parent slot 'self) slot: target.
@@ -309,7 +309,7 @@ Kernel Slots has? := {
   obj := #'$1.
   symbol := #'$2.
   {
-    Kernel Slots hold: #'obj, #'symb.
+    Kernel Slots hold: #'obj, #'symbol.
     True.
   } catch:
     err SlotError,
