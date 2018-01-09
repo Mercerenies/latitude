@@ -168,7 +168,7 @@ Stream dump := {
   obj := #'$1.
   streamObj println: #'obj.
   Kernel keys #'obj visit {
-    p := if (Kernel protected? (#'obj, $1)) then "! " else "  ".
+    p := if (Kernel Slots protected? (#'obj, $1)) then "! " else "  ".
     streamObj putln: p ++ ($1 asText) ++ ": " ++ ((Kernel Slots hold: #'obj, $1) toString).
   }.
   Nil.
@@ -229,8 +229,6 @@ Kernel eval := { meta sys eval#: $1, $2, $3. }.
 Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
 Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
-Kernel protect := { meta sys protectVar#: #'$1, $2. }. ; TODO Protection functions should be in `Kernel Slots`.
-Kernel protected? := { meta sys protectIs#: #'$1, $2. }.
 Kernel evaluating? := { meta sys primIsMethod#: #'$1. }.
 Kernel keys := {
   arr := meta brackets.
@@ -304,6 +302,8 @@ Kernel Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
 Kernel Slots get := { Kernel invokeOn (#'$1, self hold) call. }.
 Kernel Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
 Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
+Kernel Slots protect := { meta sys protectVar#: #'$1, $2. }.
+Kernel Slots protected? := { meta sys protectIs#: #'$1, $2. }.
 Kernel Slots has? := {
   obj := #'$1.
   symbol := #'$2.
