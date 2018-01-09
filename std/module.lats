@@ -48,15 +48,34 @@ global &LoadedModules := Object clone tap {
 
 global ModuleLoader ::= Object clone.
 ModuleLoader &loaded := &LoadedModules.
-ModuleLoader clone := { self invoke (Object slot 'clone) call tap { self &loaded := Kernel cloneObject: self &loaded. }. }.
+ModuleLoader clone := {
+  self invoke (Object slot 'clone) call tap {
+    self &loaded := Kernel cloneObject: self &loaded.
+  }.
+}.
+ModuleLoader loadPath := do {
+  exec := FilePath directory (Kernel executablePath) ++ "std/".
+  [exec].
+}.
 ModuleLoader resolveImport := {
   takes '[imp].
-  if (imp is (String))
-    then { imp. }
-    else {
-      builtin := FilePath directory: Kernel executablePath.
-      (builtin) ++ "std/" ++ (imp asText) ++ ".lat".
+  localize.
+  if (imp is (String)) then {
+    imp.
+  } else {
+    callCC {
+      escapable.
+      this loadPath visit {
+        curr := $1 ++ (imp asText) ++ ".lat".
+        Stream exists? (curr) ifTrue {
+          return: curr.
+        }.
+      }.
+      err ModuleError clone tap {
+        self message := "Cannot find module " ++ (imp).
+      } throw.
     }.
+  }.
 }.
 
 global $moduleLoader := ModuleLoader clone.
