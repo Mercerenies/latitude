@@ -1880,8 +1880,10 @@ void spawnSystemCallsNew(ObjectPtr global,
 
      // CPP_PROT_VAR (protect the variable named %sym in the object %slf)
      // protectVar#: obj, var.
-     reader.cpp[CPP_PROT_VAR] = [](IntState& state0) {
-         state0.slf->addProtection(state0.sym, PROTECT_ASSIGN | PROTECT_DELETE);
+     reader.cpp[CPP_PROT_VAR] = [&reader](IntState& state0) {
+         bool result = state0.slf->addProtection(state0.sym, PROTECT_ASSIGN | PROTECT_DELETE);
+         if (!result) // TODO If we could set objectInstance and slotName here, that would be great.
+             throwError(state0, reader, "SlotError", "Could not protect nonexistent slot");
      };
      sys->put(Symbols::get()["protectVar#"],
               defineMethod(unit, global, method,

@@ -159,12 +159,12 @@ bool Object::hasAnyProtection(Symbolic key) const {
     return (*this)[key].hasAnyProtection();
 }
 
-void Object::addProtection(Symbolic key, protection_t p) {
+bool Object::addProtection(Symbolic key, protection_t p) {
     auto iter = slots.find(key);
     if (iter == slots.end())
-        slots.emplace(key, Slot(nullptr, p)); // <- Issue #16 null pointer is introduced here
-    else
-        iter->second.addProtection(p);
+        return false;
+    iter->second.addProtection(p);
+    return true;
 }
 
 void Object::protectAll(protection_t) {}

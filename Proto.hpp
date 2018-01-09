@@ -219,7 +219,8 @@ public:
     ///
     /// \param key the key for the slot
     /// \param p the protection bitmask to add
-    void addProtection(Symbolic key, protection_t p);
+    /// \return false if the slot did not exist, true otherwise
+    bool addProtection(Symbolic key, protection_t p);
 
     /// Adds protection to all of the given slots.
     ///
