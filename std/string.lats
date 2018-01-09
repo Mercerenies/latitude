@@ -62,7 +62,12 @@ String substring := {
   takes '[i, j].
   'i assign = { $1. }.
   'j assign = { $1. }.
-  i1 := 0.
+  size := ~l { parent self length. }.
+  (i < 0) ifTrue { i = (i) + (size). }.
+  (j < 0) ifTrue { j = (j) + (size). }.
+  (i < 0) ifTrue { i = 0. }.
+  (j < 0) ifTrue { j = 0. }.
+  i1 := self byteCount.
   j1 := self byteCount.
   'i1 assign = { $1. }.
   'j1 assign = { $1. }.
