@@ -30,7 +30,7 @@ Object falsify := {
 }.
 
 ;; Control Statements
-Conditional ::= Object clone.
+global Conditional ::= Object clone.
 Conditional truthy := True.
 Conditional trueCase := {}.
 Conditional falseCase := {}.
