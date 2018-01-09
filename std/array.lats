@@ -5,11 +5,15 @@ Cons pretty := {
   chain := {
     curr := $1.
     cond {
-      when (curr cdr nil?)
-        do { curr car toString. }.
-      when (curr cdr is (Cons))
-        do { (curr car toString) ++ " " ++ (chain: curr cdr). }.
-      else { (curr car toString) ++ " . " ++ (curr cdr toString). }.
+      when (curr cdr nil?) do {
+        curr car toString.
+      }.
+      when (curr cdr is (Cons)) do {
+        (curr car toString) ++ " " ++ (chain: curr cdr).
+      }.
+      else {
+        (curr car toString) ++ " . " ++ (curr cdr toString).
+      }.
     }.
   }.
   "(" ++ (chain: self) ++ ")".
@@ -35,9 +39,11 @@ Array lowerBound := 0.
 Array upperBound := 0.
 Array mapping := {
   var := $1.
-  if { var >= 0. }
-    then { (var * 2) + 1. }
-    else { var * -2. }.
+  if { var >= 0. } then {
+    (var * 2) + 1.
+  } else {
+    var * -2.
+  }.
 }.
 Array empty? := { (self lowerBound) >= (self upperBound). }.
 Array pushFront := {
@@ -53,82 +59,98 @@ Array pushBack := {
   #'value.
 }.
 Array popFront := {
-  if (self empty?)
-    then { err BoundsError clone throw. }
-    else {
-      parent self lowerBound := parent self lowerBound + 1.
-      parent self slot: (parent self mapping: (parent self lowerBound - 1)) ordinal.
-    }.
+  if (self empty?) then {
+    err BoundsError clone throw.
+  } else {
+    parent self lowerBound := parent self lowerBound + 1.
+    parent self slot: (parent self mapping: (parent self lowerBound - 1)) ordinal.
+  }.
 }.
 Array popBack := {
-  if (self empty?)
-    then { err BoundsError clone throw. }
-    else {
-      parent self upperBound := parent self upperBound - 1.
-      parent self slot: (parent self mapping: parent self upperBound) ordinal.
-    }.
+  if (self empty?) then {
+    err BoundsError clone throw.
+  } else {
+    parent self upperBound := parent self upperBound - 1.
+    parent self slot: (parent self mapping: parent self upperBound) ordinal.
+  }.
 }.
 Array nth := {
   arr := self.
   index := $1.
-  pos := if ($1 < 0)
-    then { (arr upperBound) + (index). }
-    else { (arr lowerBound) + (index). }.
-  if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
-    then { err BoundsError clone throw. }
-    else { arr slot: (parent self mapping: pos) ordinal. }.
+  pos := if ($1 < 0) then {
+    (arr upperBound) + (index).
+  } else {
+    (arr lowerBound) + (index).
+  }.
+  if ((pos < (self lowerBound)) or (pos >= (self upperBound))) then {
+    err BoundsError clone throw.
+  } else {
+    arr slot: (parent self mapping: pos) ordinal.
+  }.
 }.
 Array nth= := {
   arr := self.
   index := $1.
   value := #'$2.
-  pos := if ($1 < 0)
-    then { (arr upperBound) + (index). }
-    else { (arr lowerBound) + (index). }.
-  if ((pos < (self lowerBound)) or (pos >= (self upperBound)))
-    then { err BoundsError clone throw. }
-    else { arr slot ((parent self mapping: pos) ordinal) = #'value. }.
+  pos := if ($1 < 0) then {
+    (arr upperBound) + (index).
+  } else {
+    (arr lowerBound) + (index).
+  }.
+  if ((pos < (self lowerBound)) or (pos >= (self upperBound))) then {
+    err BoundsError clone throw.
+  } else {
+    arr slot ((parent self mapping: pos) ordinal) = #'value.
+  }.
 }.
-Array size := { (self upperBound) - (self lowerBound). }.
+Array size := {
+  (self upperBound) - (self lowerBound).
+}.
 Array join := {
   index := 1.
   size := self size.
   delim := #'$1.
-  str := if (self empty?)
-    then { "". }
-    else { (parent self nth: 0) toString. }.
-  while { (index) < (size). }
-    do {
-      parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
-      parent index := index + 1.
-    }.
+  str := if (self empty?) then {
+    "".
+  } else {
+    (parent self nth: 0) toString.
+  }.
+  while { (index) < (size). } do {
+    parent str := (str) ++ ((delim) ++ ((parent self nth: index) toString)).
+    parent index := index + 1.
+  }.
   str.
 }.
 Array joinText := {
   index := 1.
   size := self size.
   delim := #'$1.
-  str := if (self empty?)
-    then { "". }
-    else { (parent self nth: 0) pretty. }.
-  while { (index) < (size). }
-    do {
-      parent str := (str) ++ ((delim) ++ ((parent self nth: index) pretty)).
-      parent index := index + 1.
-    }.
+  str := if (self empty?) then {
+    "".
+  } else {
+    (parent self nth: 0) pretty.
+  }.
+  while { (index) < (size). } do {
+    parent str := (str) ++ ((delim) ++ ((parent self nth: index) pretty)).
+    parent index := index + 1.
+  }.
   str.
 }.
 Array concat := {
   arr := Array clone.
   self visit {
     arg := #'$1.
-    if (#'arg is (Array))
-      then { #'arg visit { arr pushBack: #'$1. }. }
-      else { arr pushBack: #'arg. }.
+    if (#'arg is (Array)) then {
+      #'arg visit { arr pushBack: #'$1. }.
+    } else {
+      arr pushBack: #'arg.
+    }.
   }.
   arr.
 }.
-Array toString := { "[" ++ (self join ", ") ++ "]". }.
+Array toString := {
+  "[" ++ (self join ", ") ++ "]".
+}.
 Array == := {
   localize.
   takes '[arr].
@@ -141,7 +163,7 @@ Array < := {
   takes '[arr].
   callCC {
     escapable.
-    (arr is: Array) ifFalse { return: False. }.
+    (arr is: Array) ifFalse { return: False. }. ; TODO Should this be an exception?
     (this zip: arr) visit {
       (($1 car) < ($1 cdr)) ifTrue: { return: True. }.
       (($1 car) > ($1 cdr)) ifTrue: { return: False. }.
