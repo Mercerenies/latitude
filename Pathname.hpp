@@ -15,6 +15,15 @@
 /// \return the path name
 std::string getExecutablePathname();
 
+/// Returns the current working directory, usually the same as the one
+/// returned by the `pwd` command.
+///
+/// Note: This function is only defined if the operating system is
+/// recognized.
+///
+/// \return the directory path
+std::string getWorkingDirectory();
+
 /// Returns the directory of the argument, which should be an absolute
 /// path.
 ///

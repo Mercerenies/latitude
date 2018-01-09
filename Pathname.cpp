@@ -18,6 +18,15 @@ std::string getExecutablePathname() {
     return result;
 }
 
+std::string getWorkingDirectory() {
+    constexpr int SIZE = 512;
+    char buffer[SIZE];
+    memset(buffer, 0, SIZE * sizeof(char));
+    getcwd(buffer, SIZE);
+    std::string result(buffer);
+    return result;
+}
+
 std::string stripFilename(std::string path) {
     constexpr int SIZE = 512;
     char buffer[SIZE];
@@ -49,6 +58,15 @@ std::string getExecutablePathname() {
     constexpr int SIZE = 512;
     char buffer[SIZE];
     GetModuleFileName(NULL, buffer, SIZE);
+    std::string result(buffer);
+    std::replace(result.begin(), result.end(), '\\', '/'); // Use forward slashes in pathnames, for consistency
+    return result;
+}
+
+std::string getWorkingDirectory() {
+    constexpr int SIZE = 512;
+    char buffer[SIZE];
+    GetCurrentDirectory(SIZE, buffer);
     std::string result(buffer);
     std::replace(result.begin(), result.end(), '\\', '/'); // Use forward slashes in pathnames, for consistency
     return result;

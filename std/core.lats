@@ -229,6 +229,7 @@ Kernel eval := { meta sys eval#: $1, $2, $3. }.
 Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
 Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
+Kernel pwd := { meta sys pwdPath#. }.
 Kernel evaluating? := { meta sys primIsMethod#: #'$1. }.
 Kernel keys := {
   arr := meta brackets.
