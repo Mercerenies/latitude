@@ -539,7 +539,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                     else
                         state0.ret = garnishObject(reader, (*stream0)->readText(1));
                 } else {
-                    throwError(state0, reader, "IOError", "Stream not designated for output");
+                    throwError(state0, reader, "IOError", "Stream not designated for input");
                 }
             } else {
                 throwError(state0, reader, "TypeError", "Stream expected");
