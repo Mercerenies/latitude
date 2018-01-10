@@ -43,6 +43,7 @@
          curr_buffer_size = 0;
      }
      int id_classify(char* arr) {
+         // TODO We would like to support Unicode in operator names at some point...
          for (int i = 0; arr[i] != 0; i++) {
              if (strchr(ops, arr[i]) == NULL)
                return STDNAME;
