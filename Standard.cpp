@@ -2097,6 +2097,48 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    // No need to move back, since %ptr == %ret now
                                    makeAssemblerLine(Instr::CPP, CPP_OSINFO))));
 
+     // CPP_COMPLPARTS (store into %ret the appropriate part of %num1)
+     //  * %num0 == 1; store real part
+     //  * %num0 == 2; store imag part
+     // realPart#: num.
+     // imagPart#: num.
+     reader.cpp[CPP_COMPLPARTS] = [&reader](IntState& state0) {
+         switch (state0.num0.asSmallInt()) {
+         case 1:
+             state0.ret = garnishObject(reader, state0.num1.realPart());
+             break;
+         case 2:
+             state0.ret = garnishObject(reader, state0.num1.imagPart());
+             break;
+         default:
+             throwError(state0, reader, "SystemArgError",
+                        "Invalid numerical argument to EXE_PATH");
+             break;
+         }
+     };
+     sys->put(Symbols::get()["realPart#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::INT, 1),
+                                   makeAssemblerLine(Instr::CPP, CPP_COMPLPARTS))));
+     sys->put(Symbols::get()["imagPart#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::INT, 2),
+                                   makeAssemblerLine(Instr::CPP, CPP_COMPLPARTS))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
