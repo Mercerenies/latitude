@@ -75,7 +75,11 @@ ObjectPtr garnishObject(const ReadOnlyState& reader, int value) {
 }
 
 ObjectPtr garnishObject(const ReadOnlyState& reader, long value) {
+    return garnishObject(reader, Number(value));
+}
+
+ObjectPtr garnishObject(const ReadOnlyState& reader, Number value) {
     ObjectPtr obj = clone(reader.lit.at(Lit::NUMBER));
-    obj->prim(Number(value));
+    obj->prim(value);
     return obj;
 }

@@ -69,4 +69,6 @@ ObjectPtr garnishObject(const ReadOnlyState& reader, int value);
 
 ObjectPtr garnishObject(const ReadOnlyState& reader, long value);
 
+ObjectPtr garnishObject(const ReadOnlyState& reader, Number value);
+
 #endif // GARNISH_HPP
