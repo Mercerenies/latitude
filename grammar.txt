@@ -1,6 +1,7 @@
 
 <line> ::= <stmt> "."
-<stmt> ::= <chain> <name> <rhs> |
+<stmt> ::= <chain> <stdname> <rhs> |
+           <chain> <opname> <rhs1> |
            <literalish>
 <rhs> ::= <lambda> |
           <shortarglist> |
@@ -10,12 +11,21 @@
           "=" <stmt> |
           <shortarglist> "=" <stmt> |
           "<-" <stmt>
+<rhs1> ::= <name> |
+           <shortarglist> |
+           ":=" <stmt> |
+           "::=" <stmt> |
+           ":" <arglist> |
+           "=" <stmt> |
+           <shortarglist> "=" <stmt> |
+           "<-" <stmt>
 <arglist> ::= <lambda> |
               <arg> <arglist1>
 <arglist1> ::= <lambda> |
                "," <arg> <arglist1>
 <arg> ::= <nonemptychain>
-<nonemptychain> ::= <chain> <name> |
+<nonemptychain> ::= <chain> <stdname> |
+                    <chain> <opname> <name> |
                     <chain> <name> <shortarglist> |
                     <literalish>
 <chain> ::= <nonemptychain> |

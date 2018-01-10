@@ -90,6 +90,7 @@
 %type <exprval> line
 %type <exprval> stmt
 %type <exprval> rhs
+%type <exprval> rhs1
 %type <argval> shortarglist
 %type <argval> arglist
 %type <argval> arglist1
@@ -134,7 +135,14 @@ line:
     stmt '.'
     ;
 stmt:
-    chain name rhs {
+    chain STDNAME rhs {
+        $$ = $3;
+        if ($$ == NULL)
+            $$ = makeExpr();
+        $$->name = $2;
+        $$->lhs = $1;
+    } |
+    chain OPNAME rhs1 {
         $$ = $3;
         if ($$ == NULL)
             $$ = makeExpr();
@@ -145,6 +153,18 @@ stmt:
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
+    shortarglist { $$ = makeExpr(); $$->args = $1; } |
+    CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
+    DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
+    ':' arglist { $$ = makeExpr(); $$->args = $2; } |
+    '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
+    shortarglist '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = $1; $$->isEquality = true; } |
+    BIND stmt { $$ = makeExpr(); $$->rhs = $2; $$->isBind = true; }
+    ;
+rhs1:
+    name { $$ = makeExpr(); $$->args = makeList(); $$->args->car = makeExpr();
+           $$->args->car->name = $1; $$->args->car->lhs = NULL;
+           $$->args->cdr = makeList(); } |
     shortarglist { $$ = makeExpr(); $$->args = $1; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
@@ -165,9 +185,15 @@ arg:
     nonemptychain
     ;
 nonemptychain:
-    chain name { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    chain name shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                              $$->args = $3; } |
+    chain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
+    chain OPNAME name { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                        $$->args = makeList(); $$->args->car = makeExpr();
+                        $$->args->car->name = $3; $$->args->car->lhs = NULL;
+                        $$->args->cdr = makeList(); } |
+    chain STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                                 $$->args = $3; } |
+    chain OPNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                                $$->args = $3; } |
     literalish
     ;
 chain:
