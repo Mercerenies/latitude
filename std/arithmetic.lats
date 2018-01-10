@@ -28,6 +28,18 @@ Number real := {
 Number imag := {
   meta sys imagPart#: self.
 }.
+Number abs := {
+  curr := self.
+  if { curr isComplex?. } then {
+    ((curr real ^ 2) + (curr imag ^ 2)) ^ (1 / 2).
+  } else {
+    if { curr < 0. } then {
+      - (curr).
+    } else {
+      curr.
+    }.
+  }.
+}.
 
 Number floor := {
   if { parent self isComplex?. } then {
