@@ -8,12 +8,15 @@
      #include "Parser.tab.h"
      #ifdef __cplusplus
      #include <cstdlib>
+     #include <cstring>
      #else
      #include <stdlib.h>
+     #include <string.h>
      #endif
      int line_num = 1;
      int comments = 0;
      int hash_parens = 0;
+     const char* ops = "!@#%^*-+/<=>?\\|~";
      char* curr_buffer = NULL;
      int curr_buffer_size = 0;
      int curr_buffer_pos = 0;
@@ -38,6 +41,13 @@
          curr_buffer = NULL;
          curr_buffer_pos = 0;
          curr_buffer_size = 0;
+     }
+     int id_classify(char* arr) {
+         for (int i = 0; arr[i] != 0; i++) {
+             if (strchr(ops, arr[i]) == NULL)
+               return STDNAME;
+         }
+         return OPNAME;
      }
 
      // TODO Should backslashes be allowed in identifiers or should they be "special" characters?
@@ -93,21 +103,21 @@ ID        {SNORMAL}{NORMAL}*
     char* arr = calloc(strlen(yytext) + 1, sizeof(char));
     strcpy(arr, yytext);
     yylval.sval = arr;
-    return NAME;
+    return id_classify(yylval.sval);
 }
 
 \.\.\. { // Ellipsis is a valid identifier name
     char* arr = calloc(4, sizeof(char));
     strcpy(arr, "...");
     yylval.sval = arr;
-    return NAME;
+    return STDNAME;
 }
 
 :: { // Double-colon, like ellipsis, is a valid identifier name
    char* arr = calloc(3, sizeof(char));
    strcpy(arr, "::");
    yylval.sval = arr;
-   return NAME;
+   return STDNAME;
 }
 
 \" { BEGIN(INNER_STRING); clear_buffer(); }

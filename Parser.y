@@ -103,8 +103,10 @@
 %type <argval> literallist1
 %type <exprval> listlit
 %type <dval> doublish
+%type <sval> name
 
-%token <sval> NAME
+%token <sval> STDNAME
+%token <sval> OPNAME
 %token <dval> NUMBER
 %token <ival> INTEGER
 %token <sval> BIGINT
@@ -132,7 +134,7 @@ line:
     stmt '.'
     ;
 stmt:
-    chain NAME rhs {
+    chain name rhs {
         $$ = $3;
         if ($$ == NULL)
             $$ = makeExpr();
@@ -163,8 +165,8 @@ arg:
     nonemptychain
     ;
 nonemptychain:
-    chain NAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    chain NAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+    chain name { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
+    chain name shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                               $$->args = $3; } |
     literalish
     ;
@@ -174,7 +176,7 @@ chain:
     ;
 shortarglist:
     '(' arglist ')' { $$ = $2; } |
-    '(' chain NAME ':' arg ')' { $$ = makeList(); $$->car = makeExpr(); $$->car->args = makeList();
+    '(' chain name ':' arg ')' { $$ = makeList(); $$->car = makeExpr(); $$->car->args = makeList();
                                  $$->car->args->car = $5; $$->car->args->cdr = makeList();
                                  $$->car->name = $3; $$->car->lhs = $2; $$->cdr = makeList(); } |
      literal { $$ = makeList(); $$->car = $1; $$->cdr = makeList(); }
@@ -221,13 +223,16 @@ listlit:
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
-    NAME { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
+    name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
     ;
 doublish:
     NUMBER |
     INTEGER { $$ = (double)$1; } |
     BIGINT { $$ = strtod($1, NULL); }
     ;
+name:
+    STDNAME |
+    OPNAME
 
 %%
 
