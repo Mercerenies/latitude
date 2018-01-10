@@ -261,6 +261,18 @@ public:
     /// \return the result of the computation
     Number floor() const; // TODO Complex numbers?
 
+    /// Returns the real part of the number, or the number itself if
+    /// it is real.
+    ///
+    /// \return the real part
+    Number realPart() const;
+
+    /// Returns the imaginary part of the number, or zero if it is
+    /// real.
+    ///
+    /// \return the imaginary part
+    Number imagPart() const;
+
     /// Returns a string representation of the number. Where possible,
     /// the string is be a valid Latitude string that evaluates to the
     /// number.

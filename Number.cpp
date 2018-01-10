@@ -576,6 +576,19 @@ namespace MagicNumber {
 
     };
 
+    struct DestructuringVisitor : boost::static_visitor< std::tuple<Number, Number> > {
+
+        template <typename U>
+        std::tuple<Number, Number> operator()(const U& first) const {
+            return std::make_tuple(Number(first), Number((Number::smallint)0));
+        }
+
+        std::tuple<Number, Number> operator()(const Number::complex& first) const {
+            return std::make_tuple(Number(first.real()), Number(first.imag()));
+        }
+
+    };
+
 }
 
 Number::Number()
@@ -832,6 +845,14 @@ string Number::asString() const {
     MagicNumber::StringifyVisitor visitor;
     boost::apply_visitor(visitor, *value);
     return visitor.str();
+}
+
+Number Number::realPart() const {
+    return std::get<0>(boost::apply_visitor(MagicNumber::DestructuringVisitor(), *value));
+}
+
+Number Number::imagPart() const {
+    return std::get<1>(boost::apply_visitor(MagicNumber::DestructuringVisitor(), *value));
 }
 
 auto Number::asSmallInt() const

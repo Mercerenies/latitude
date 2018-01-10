@@ -53,7 +53,8 @@ namespace Table {
         CPP_LOOP_DO = 42,
         CPP_UNI_ORD = 43,
         CPP_UNI_CHR = 44,
-        CPP_OSINFO = 45;
+        CPP_OSINFO = 45,
+        CPP_COMPLPARTS = 46;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,
