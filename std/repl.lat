@@ -54,7 +54,7 @@ REPL loop := {
           this maxObjects := this maxObjects * 2.
         }.
       }.
-      this counter := this counter + 1.
+      counter := this counter + 1.
       expr := this read.
       (expr == "") and (this eof?) ifTrue {
         stdout putln "".
@@ -62,6 +62,7 @@ REPL loop := {
       }.
       this lastResult := this eval: expr.
       this print: this slot 'lastResult.
+      this counter := counter.
     } resolve:
       True,
       {
