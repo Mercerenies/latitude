@@ -70,9 +70,9 @@ Collection foldr := {
   accum := id.
   self visit {
     curr := #'$1.
-    parent accum := accum <| (proc {
+    parent accum := accum <| proc {
       func call: #'curr, #'$1.
-    }).
+    }.
   }.
   accum call: $1.
 }.
@@ -320,7 +320,7 @@ global ArrayIterator ::= Iterator clone.
 ArrayIterator index := 0.
 ArrayIterator array := Nil.
 ArrayIterator next := { self index := self index + 1. }.
-ArrayIterator end? := { (self index) >= (self array size). }.
+ArrayIterator end? := { self index >= self array size. }.
 ArrayIterator element := { self array nth (self index). }.
 ArrayIterator element= := { self array nth (self index) = #'$1. }.
 Array iterator := {
