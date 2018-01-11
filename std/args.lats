@@ -3,8 +3,7 @@
 global ArgList ::= Object clone.
 ArgList enclosingScope := global.
 ArgList clone := {
-  procd := self invoke: (Object slot 'clone).
-  procd call tap {
+  self invoke (Object slot 'clone) call tap {
     self enclosingScope := self enclosingScope clone.
   }.
 }.
@@ -109,7 +108,7 @@ global localize := {
 ; as it is usually the first line of a method (possibly the second, after a `localize`).
 global takes := {
   ; TODO Prohibitively slow (use random.lat as benchmark)
-  args := ArgList clone fillWith: $dynamic parent.
+  args := ArgList clone fillWith ($dynamic parent).
   target := caller.
   $1 clone zip! (args) map! {
     target slot ($1 car) = $1 cdr.
