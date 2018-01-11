@@ -383,7 +383,7 @@ Symbol assign= := {
   name := self.
   curr := scopeOf (lexical caller, $dynamic parent, self).
   rhs := #'$1.
-  sym := self asText ++ ("=" intern).
+  sym := (self asText ++ "=") intern.
   curr slot (sym) = { curr slot (name) = rhs ($1). }.
 }.
 
