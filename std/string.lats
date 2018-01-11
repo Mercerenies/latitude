@@ -19,7 +19,7 @@ String find := {
     result := 0.
     count := 0.
     loop {
-      (result) >= (byteResult) ifTrue {
+      ((result) >= (byteResult)) ifTrue {
         return: count.
       }.
       parent result := meta sys stringNext#: this, result.
@@ -154,13 +154,13 @@ String padRight := {
 }.
 
 String asciiOrd := {
-  self == "" ifTrue {
+  (self == "") ifTrue {
     err ArgError clone tap { self message := "`asciiOrd` on empty string". } throw.
   }.
   meta sys strOrd#: self.
 }.
 String ord := {
-  self == "" ifTrue {
+  (self == "") ifTrue {
     err ArgError clone tap { self message := "`ord` on empty string". } throw.
   }.
   meta sys uniOrd#: self.

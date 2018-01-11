@@ -98,7 +98,7 @@ global use := {
   (header packageName) ifFalse {
     err ModuleError clone tap { self message := "Module has no package". } throw.
   }.
-  name := (header packageName) ++ " " ++ (header moduleName) intern.
+  name := ((header packageName) ++ " " ++ (header moduleName)) intern.
   if (Kernel Slots has? ($moduleLoader &loaded, name))
     then { Kernel Slots hold ($moduleLoader &loaded, name). }
     else {

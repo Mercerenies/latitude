@@ -49,7 +49,7 @@ Number floor := {
   }.
 }.
 Number round := { (self + 0.5) floor. }.
-Number ceil := { - (- (self) floor). }.
+Number ceil := { - ((- (self)) floor). }.
 
 ;; Bitwise
 Number bitAnd := {
@@ -84,7 +84,7 @@ Number bitShift := {
   curr := self.
   arg := $1.
   if ({ curr isInteger?. } and { arg isInteger?. }) then {
-    (curr) * (2 ^ (arg)) floor.
+    ((curr) * (2 ^ (arg))) floor.
   } else {
     err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
   }.
@@ -124,7 +124,7 @@ Number log := { meta sys numTrig#: self, 13. }.
 
 ;; Constructing complex numbers
 Number rect := { meta sys complexNumber#: Number clone, $1, $2. }.
-Number polar := { Number ii * ($2) exp * ($1). }.
+Number polar := { (Number ii * ($2)) exp * ($1). }.
 
 ;; Important constants
 Number ee := 1 exp.
@@ -171,7 +171,7 @@ String radix := {
     }.
   }.
   validate := {
-    ($1) >= (rad) ifTrue {
+    (($1) >= (rad)) ifTrue {
       err InputError clone tap {
         self message := "Text is not a number".
       } throw.

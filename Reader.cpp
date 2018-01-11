@@ -19,7 +19,7 @@ extern "C" {
 #include <boost/scope_exit.hpp>
 #include <boost/blank.hpp>
 
-// #define DEBUG_LOADS
+#define DEBUG_LOADS
 
 using namespace std;
 
@@ -219,6 +219,7 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
+            std::cout << parseException << std::endl;
             throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
