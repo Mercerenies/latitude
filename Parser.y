@@ -97,6 +97,8 @@
 %type <exprval> arg
 %type <exprval> chain
 %type <exprval> simplechain
+%type <exprval> verysimplechain
+%type <exprval> verysimplechainl
 %type <exprval> literalish
 %type <exprval> literal
 %type <argval> linelist
@@ -162,9 +164,8 @@ rhs:
     BIND stmt { $$ = makeExpr(); $$->rhs = $2; $$->isBind = true; }
     ;
 rhs1:
-    name { $$ = makeExpr(); $$->args = makeList(); $$->args->car = makeExpr();
-           $$->args->car->name = $1; $$->args->car->lhs = NULL;
-           $$->args->cdr = makeList(); } |
+    verysimplechain { $$ = makeExpr(); $$->args = makeList(); $$->args->car = makeExpr();
+                      $$->args->car = $1; $$->args->cdr = makeList(); } |
     shortarglist { $$ = makeExpr(); $$->args = $1; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
@@ -183,10 +184,9 @@ arglist1:
     ;
 arg:
     simplechain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
-    chain OPNAME name { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                        $$->args = makeList(); $$->args->car = makeExpr();
-                        $$->args->car->name = $3; $$->args->car->lhs = NULL;
-                        $$->args->cdr = makeList(); } |
+    chain OPNAME verysimplechain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                                   $$->args = makeList(); $$->args->car = $3;
+                                   $$->args->cdr = makeList(); } |
     simplechain STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                        $$->args = $3; } |
     chain OPNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
@@ -194,10 +194,9 @@ arg:
     literalish
     ;
 chain:
-    chain OPNAME name { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                        $$->args = makeList(); $$->args->car = makeExpr();
-                        $$->args->car->name = $3; $$->args->car->lhs = NULL;
-                        $$->args->cdr = makeList(); } |
+    chain OPNAME verysimplechain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                                   $$->args = makeList(); $$->args->car = $3;
+                                   $$->args->cdr = makeList(); } |
     chain OPNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                 $$->args = $3; } |
     simplechain
@@ -208,6 +207,15 @@ simplechain:
                                        $$->args = $3; } |
     literalish |
     /* empty */ { $$ = NULL; }
+verysimplechain:
+    verysimplechainl STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
+    verysimplechainl STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                                            $$->args = $3; }
+    ;
+verysimplechainl:
+    verysimplechain |
+    /* empty */ { $$ = NULL; }
+    ;
 shortarglist:
     '(' arglist ')' { $$ = $2; } |
     '(' simplechain STDNAME ':' arg ')' { $$ = makeList(); $$->car = makeExpr();

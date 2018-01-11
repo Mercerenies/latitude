@@ -34,6 +34,10 @@
                   <simplechain> <stdname> <shortarglist> |
                   <literalish> |
                   <lambda>
+<verysimplechain> ::= <verysimplechainl> <stdname> |
+                      <verysimplechainl> <stdname> <shortarglist> |
+<verysimplechainl> ::= <verysimplechain> |
+                       <lambda>
 <shortarglist> ::= "(" <arglist> ")" |
                    "(" <chain> <name> ":" <arg> ")" |
                    <literal>
