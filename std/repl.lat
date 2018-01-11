@@ -31,8 +31,9 @@ REPL eof? := {
   stdin eof?.
 }.
 
+REPL counter := 0.
 REPL read := {
-  stdout puts: "> ".
+  stdout puts: "lat(" ++ self counter ++ ")% ".
   stdin readln.
 }.
 REPL eval := {
@@ -53,6 +54,7 @@ REPL loop := {
           this maxObjects := this maxObjects * 2.
         }.
       }.
+      this counter := this counter + 1.
       expr := this read.
       (expr == "") and (this eof?) ifTrue {
         stdout putln "".
