@@ -19,8 +19,8 @@ Number mod := {
 }.
 Number ^ := { meta sys numPow#: self, $1. }.
 
-global - := { 0 - ($1). }.
-global / := { 1 / ($1). }.
+global - := { 0 - $1. }.
+global / := { 1 / $1. }.
 
 Number real := {
   meta sys realPart#: self.
@@ -34,7 +34,7 @@ Number abs := {
     ((curr real ^ 2) + (curr imag ^ 2)) ^ (1 / 2).
   } else {
     if { curr < 0. } then {
-      - (curr).
+      - curr.
     } else {
       curr.
     }.
@@ -49,7 +49,7 @@ Number floor := {
   }.
 }.
 Number round := { (self + 0.5) floor. }.
-Number ceil := { - ((- (self)) floor). }.
+Number ceil := { - ((- self) floor). }.
 
 ;; Bitwise
 Number bitAnd := {
@@ -84,7 +84,7 @@ Number bitShift := {
   curr := self.
   arg := $1.
   if ({ curr isInteger?. } and { arg isInteger?. }) then {
-    ((curr) * (2 ^ (arg))) floor.
+    (curr * (2 ^ arg)) floor.
   } else {
     err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
   }.
@@ -94,37 +94,37 @@ Number bitShift := {
 Number sin := { meta sys numTrig#: self, 0. }.
 Number cos := { meta sys numTrig#: self, 1. }.
 Number tan := { meta sys numTrig#: self, 2. }.
-Number csc := { / ((self) sin). }.
-Number sec := { / ((self) cos). }.
-Number cot := { / ((self) tan). }.
+Number csc := { / (self sin). }.
+Number sec := { / (self cos). }.
+Number cot := { / (self tan). }.
 
 Number sinh := { meta sys numTrig#: self, 3. }.
 Number cosh := { meta sys numTrig#: self, 4. }.
 Number tanh := { meta sys numTrig#: self, 5. }.
-Number csch := { / ((self) sinh). }.
-Number sech := { / ((self) cosh). }.
-Number coth := { / ((self) tanh). }.
+Number csch := { / (self sinh). }.
+Number sech := { / (self cosh). }.
+Number coth := { / (self tanh). }.
 
 Number asin := { meta sys numTrig#: self, 7. }.
 Number acos := { meta sys numTrig#: self, 8. }.
 Number atan := { meta sys numTrig#: self, 9. }.
-Number acsc := { (/ (self)) asin. }.
-Number asec := { (/ (self)) acos. }.
-Number acot := { (/ (self)) atan. }.
+Number acsc := { (/ self) asin. }.
+Number asec := { (/ self) acos. }.
+Number acot := { (/ self) atan. }.
 
 Number asinh := { meta sys numTrig#: self, 10. }.
 Number acosh := { meta sys numTrig#: self, 11. }.
 Number atanh := { meta sys numTrig#: self, 12. }.
-Number acsch := { (/ (self)) asinh. }.
-Number asech := { (/ (self)) acosh. }.
-Number acoth := { (/ (self)) atanh. }.
+Number acsch := { (/ self) asinh. }.
+Number asech := { (/ self) acosh. }.
+Number acoth := { (/ self) atanh. }.
 
 Number exp := { meta sys numTrig#: self, 6. }.
 Number log := { meta sys numTrig#: self, 13. }.
 
 ;; Constructing complex numbers
 Number rect := { meta sys complexNumber#: Number clone, $1, $2. }.
-Number polar := { (Number ii * ($2)) exp * ($1). }.
+Number polar := { (Number ii * $2) exp * $1. }.
 
 ;; Important constants
 Number ee := 1 exp.
@@ -171,7 +171,7 @@ String radix := {
     }.
   }.
   validate := {
-    (($1) >= (rad)) ifTrue {
+    ($1 >= rad) ifTrue {
       err InputError clone tap {
         self message := "Text is not a number".
       } throw.
@@ -181,7 +181,7 @@ String radix := {
   self visit {
     curr := convert: $1 ord.
     validate: curr.
-    parent num := (num) * (rad) + (curr).
+    parent num := num * rad + curr.
   }.
   num.
 }.

@@ -27,10 +27,10 @@ ArgList shift := {
     index := 2.
     'index assign = { $1. }.
     parent self map! {
-      if ((index) > (size)) then {
+      if (index > size) then {
         #'first.
       } else {
-        result := arglist enclosingScope slot ((("$") ++ (index)) intern).
+        result := arglist enclosingScope slot (("$" ++ index) intern).
         index = index + 1.
         #'result.
       }.
@@ -66,13 +66,13 @@ ArgIterator next := {
   self index := self index + 1.
 }.
 ArgIterator end? := {
-  self array enclosingScope slot? (("$" ++ (self index)) intern) not.
+  self array enclosingScope slot? (("$" ++ self index) intern) not.
 }.
 ArgIterator element := {
-  self array enclosingScope slot (("$" ++ (self index)) intern).
+  self array enclosingScope slot (("$" ++ self index) intern).
 }.
 ArgIterator element= := {
-  self array enclosingScope slot (("$" ++ (self index)) intern) = #'$1.
+  self array enclosingScope slot (("$" ++ self index) intern) = #'$1.
 }.
 
 ArgList iterator := {
@@ -85,7 +85,7 @@ ArgList dropIn := {
   target := $dynamic parent.
   index := 1.
   self visit {
-    target slot (("$" ++ (index)) intern) = #'$1.
+    target slot (("$" ++ index) intern) = #'$1.
     parent index := index + 1.
   }.
 }.
