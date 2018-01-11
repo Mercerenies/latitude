@@ -219,7 +219,9 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
+#ifdef DEBUG_LOADS
             std::cout << parseException << std::endl;
+#endif
             throwError(state, reader, "ParseError", parseException);
         }
     } catch (ios_base::failure err) {
