@@ -56,6 +56,7 @@ Generator clone := {
   }.
 }.
 Generator iterator := { self clone. }.
+Generator state := Nil.
 Generator end? := True.
 Generator element := Nil.
 Generator element= := {
@@ -67,19 +68,29 @@ Generator call := {
   self element.
 }.
 Generator map := {
-  localize.
   func0 := #'$1.
   procd := proc { #'func0 call. }.
-  impl := this.
   {
-    impl visit { $yield: procd call ($1). }.
-  } generator.
+    while { $state end? not. } do {
+      $yield: procd call ($state element).
+      $state next.
+    }.
+  } generatorWith (self iterator) tap {
+    self clone := {
+      old := self.
+      self invoke (Generator slot 'clone) call tap {
+        self state := old state clone.
+      }.
+    }.
+  }.
 }.
-Proc generator := {
+Proc generatorWith := {
+  takes '[state].
   procd := proc { parent slot 'self call. }.
   Generator clone tap {
     self end? := False.
     self element := Nil.
+    self state := state.
     self yieldStmt := Nil.
     self resumeStmt := {
       localize.
@@ -105,6 +116,7 @@ Proc generator := {
               this yieldStmt call: result.
             }.
           }.
+          $2 $state := { this state. }.
         }.
     }.
     self next := {
@@ -118,6 +130,7 @@ Proc generator := {
     self next.
   }.
 }.
+Proc generator := { #'self generatorWith (Nil). }.
 Collection inject: Generator.
 
 ;; McCarthy's 'amb' operator
