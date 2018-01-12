@@ -2139,6 +2139,20 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::INT, 2),
                                    makeAssemblerLine(Instr::CPP, CPP_COMPLPARTS))));
 
+     // CPP_OBJID (store in %ret the identifier of %slf)
+     // objId#: obj.
+     reader.cpp[CPP_OBJID] = [&reader](IntState& state0) {
+         long value = reinterpret_cast<long>(state0.ret.get());
+         state0.ret = garnishObject(reader, Number(value));
+     };
+     sys->put(Symbols::get()["objId#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                   makeAssemblerLine(Instr::CPP, CPP_OBJID))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library

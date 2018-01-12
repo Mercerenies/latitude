@@ -239,6 +239,7 @@ Kernel keys := {
   arr finish.
 }.
 Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
+Kernel id := { meta sys objId#: #'$1. }.
 ; (The load function is defined in the main latitude.lat file)
 
 ; NOTE: The kernel protection methods are provided for users who are making modifications to the
