@@ -42,7 +42,6 @@ Latchkey pretty := { "Key " ++ (self tag pretty). }.
 Latchkey == := { (self tag) == (self tag). }.
 
 ;; Python-style generator functions
-; Note that currently, generators are single-pass.
 ; Example usage:
 ; { $yield 1. $yield 2. } generator toArray.
 ;    ==> [1, 2]
