@@ -48,7 +48,14 @@ Latchkey == := { (self tag) == (self tag). }.
 ;    ==> [1, 2]
 Generator := Proc clone.
 Generator toString := "Generator".
-Generator iterator := { self. }.
+Generator clone := {
+  localize.
+  this invoke (Object slot 'clone) call tap {
+    self end? := this end?.
+    self element := this element.
+  }.
+}.
+Generator iterator := { self clone. }.
 Generator end? := True.
 Generator element := Nil.
 Generator element= := {
@@ -62,9 +69,10 @@ Generator call := {
 Generator map := {
   localize.
   func0 := #'$1.
-  procd := proc { func0 call. }.
+  procd := proc { #'func0 call. }.
+  impl := this.
   {
-    this visit { $yield: procd call ($1). }.
+    impl visit { $yield: procd call ($1). }.
   } generator.
 }.
 Proc generator := {
@@ -76,19 +84,23 @@ Proc generator := {
     self resumeStmt := {
       localize.
       proc {
-        this procStmt call.
+        this := this procStmt call.
         this end? := True.
         this yieldStmt call: Nil.
       }.
     }.
     self procStmt := {
       localize.
+      'this assign = { $1. }.
       procd invokeSpecial:
-        { procd call. },
+        {
+          procd call.
+          this.
+        },
         {
           $2 $yield := {
             takes '[result].
-            parent this := callCC {
+            this = callCC {
               this resumeStmt := $1.
               this yieldStmt call: result.
             }.
@@ -97,14 +109,10 @@ Proc generator := {
     }.
     self next := {
       localize.
-      callCC {
-        outer := $1.
-        this element := callCC {
-          this yieldStmt := $1.
-          this element := this resumeStmt call: this.
-          this end? := True.
-          outer call: Nil.
-        }.
+      this element := callCC {
+        this yieldStmt := $1.
+        this element := this resumeStmt call: this.
+        Nil.
       }.
     }.
     self next.
