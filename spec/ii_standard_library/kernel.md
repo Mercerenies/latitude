@@ -122,6 +122,13 @@ Returns whether the two objects are in fact the same object. This
 method behaves like `===` on `Object` but works on non-traditional
 objects as well.
 
+### Kernel id (object).
+
+Returns a numerical identifier that uniquely represents the given
+object. As long as the object is retained in memory, the identifier
+will be unique to it. Once the object is garbage collected, its
+identifier may be reused.
+
 ### `Kernel invokeOn (object, method).`
 
 This method returns a procedure object. When invoked, the procedure
