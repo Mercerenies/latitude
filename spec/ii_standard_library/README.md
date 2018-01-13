@@ -91,6 +91,7 @@ scope object.
      +-- meta radix
      +-- meta sigil
 
+ * [Booleans and Nil](boolnil.md)
  * [Kernel](kernel.md)
  * [Number](number.md)
  * [Object](object.md)
