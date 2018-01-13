@@ -146,11 +146,11 @@ Number downto := {
   Object clone tap {
     self do := {
       block := #'$1.
-      i := this.
+      i := this floor.
       decr := {
         parent i := i - 1.
       }.
-      while { (i) > (n). } do {
+      while { (i) > (n floor). } do {
         block (i).
         decr.
       }.
