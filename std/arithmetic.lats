@@ -154,6 +154,11 @@ Number isComplex? := { (meta sys numLevel#: self) == 4. }.
 ;; Radixes
 String radix := {
   takes '[rad].
+  rad isInteger? ifFalse {
+    err ArgError clone tap {
+      self message := "Non-integer radix".
+    } throw.
+  }.
   (rad < 2) or (rad > 36) ifTrue {
     err ArgError clone tap {
       self message := "Radix out of bounds".
