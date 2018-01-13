@@ -91,6 +91,7 @@ scope object.
      +-- meta radix
      +-- meta sigil
 
- * [Object](object.md)
  * [Kernel](kernel.md)
+ * [Number](number.md)
+ * [Object](object.md)
  * [meta](meta.md)
