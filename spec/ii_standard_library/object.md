@@ -154,7 +154,7 @@ it should be used for debugging and testing only. This is equivalent to
 Returns the caller, calling it with zero arguments if it is a
 method. In the latter case, the caller of the method is itself.
 
-### `Object === (target).`
+### `Object === target.`
 
 Returns whether the object is exactly the same as the target. This
 method does not call either the caller or the target, even if they are
@@ -164,28 +164,28 @@ Equivalent `Kernel` call:
 
     Kernel eq: Object, target.
 
-### `Object == (target).`
+### `Object == target.`
 
 Returns whether the object is exactly the same as the target. For the
 root object, this method is equivalent to `===`. However, subobjects
 are encouraged to override this method's behavior to provide better
 notions of equality for specific types.
 
-### `Object > (target).`
+### `Object > target.`
 
 This method simply delegates to the call `target < (Object)`.
 
-### `Object >= (target).`
+### `Object >= target.`
 
 This method checks whether the object is greater than the target *or*
 the two are equal (according to `==`).
 
-### `Object <= (target).`
+### `Object <= target.`
 
 This method checks whether the object is less than the target *or* the
 two are equal (according to `==`).
 
-### `Object /= (target).`
+### `Object /= target.`
 
 Returns the Boolean negation of the result of `Object == target`.
 
@@ -225,7 +225,7 @@ string, in which case it will simply return the object. Users are free
 to override `stringify` in subobjects, but the method should always
 return a string.
 
-### `Object ++ (target).`
+### `Object ++ target.`
 
 This method invokes `stringify` on the caller and the target and
 concatenates the resulting strings. As such, it is a convenient way to

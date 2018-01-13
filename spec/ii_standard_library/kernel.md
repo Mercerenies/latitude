@@ -18,7 +18,7 @@ as well.
     Kernel Parents := Object clone.
     Kernel Parents toString := "Parents".
 
-## Methods
+## Static Methods
 
 ### `Kernel kill.`
 
