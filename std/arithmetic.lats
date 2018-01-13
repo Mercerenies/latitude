@@ -6,7 +6,7 @@ Number < := {
   curr := self.
   arg := $1.
   if ({ curr isComplex?. } or { arg isComplex?. }) then {
-    err TypeError clone tap { self message := "Cannot compare complex numbers". } throw.
+    err ArgError clone tap { self message := "Cannot compare complex numbers". } throw.
   } else {
     meta sys primLT#: curr, arg.
   }.
@@ -20,7 +20,7 @@ Number mod := {
   curr := self.
   arg := $1.
   if ({ curr isComplex?. } or { arg isComplex?. }) then {
-    err TypeError clone tap { self message := "Cannot modulo complex numbers". } throw.
+    err ArgError clone tap { self message := "Cannot modulo complex numbers". } throw.
   } else {
     meta sys numMod#: curr, arg.
   }.
@@ -51,7 +51,7 @@ Number abs := {
 
 Number floor := {
   if { parent self isComplex?. } then {
-    err TypeError clone tap { self message := "Cannot round complex numbers". } throw.
+    err ArgError clone tap { self message := "Cannot round complex numbers". } throw.
   } else {
     meta sys numFloor#: parent self.
   }.
@@ -66,7 +66,7 @@ Number bitAnd := {
   if ({ curr isInteger?. } and { arg isInteger?. }) then {
     meta sys numAnd#: curr, arg.
   } else {
-    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    err ArgError clone tap { self message := "Bitwise operation on non-integer". } throw.
   }.
 }.
 Number bitOr := {
@@ -75,7 +75,7 @@ Number bitOr := {
   if ({ curr isInteger?. } and { arg isInteger?. }) then {
     meta sys numIor#: curr, arg.
   } else {
-    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    err ArgError clone tap { self message := "Bitwise operation on non-integer". } throw.
   }.
 }.
 Number bitXor := {
@@ -84,7 +84,7 @@ Number bitXor := {
   if ({ curr isInteger?. } and { arg isInteger?. }) then {
     meta sys numEor#: curr, arg.
   } else {
-    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    err ArgError clone tap { self message := "Bitwise operation on non-integer". } throw.
   }.
 }.
 Number bitNot := { self bitXor -1. }.
@@ -94,7 +94,7 @@ Number bitShift := {
   if ({ curr isInteger?. } and { arg isInteger?. }) then {
     (curr * (2 ^ arg)) floor.
   } else {
-    err TypeError clone tap { self message := "Bitwise operation on non-integer". } throw.
+    err ArgError clone tap { self message := "Bitwise operation on non-integer". } throw.
   }.
 }.
 
