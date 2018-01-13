@@ -166,12 +166,18 @@ String ord := {
   meta sys uniOrd#: self.
 }.
 Number asciiChr := {
-  (self < 0) or (self > 255) ifTrue {
+  self isInteger? ifFalse {
+    err ArgError clone tap { self message := "`asciiChr` arg non-integer". } throw.
+  }.
+  (self < 0) or (self > 127) ifTrue {
     err ArgError clone tap { self message := "`asciiChr` arg out of bounds". } throw.
   }.
   meta sys strChr#: self.
 }.
 Number chr := {
+  self isInteger? ifFalse {
+    err ArgError clone tap { self message := "`chr` arg non-integer". } throw.
+  }.
   (self < 0) or (self > 1114111) ifTrue {
     err ArgError clone tap { self message := "`chr` arg out of bounds". } throw.
   }.
