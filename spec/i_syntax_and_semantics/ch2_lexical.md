@@ -182,7 +182,7 @@ following regular expressions.
 
 The first two forms construct a floating-point number; the third form
 constructs an integer. For more information on the different types of
-numbers, refer to [TODO: This].
+numbers, refer to [Number](../ii_standard_library/number.md).
 
 A `<symbol>` consists of any sequence of non-close-paren characters
 and backslash literals. Any character other than a backslash (`\`) or

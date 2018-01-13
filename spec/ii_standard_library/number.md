@@ -463,5 +463,3 @@ imaginary parts.
 
 This method returns a new complex number with the given magnitude and
 direction.
-
-[TODO The rest of Number.]
