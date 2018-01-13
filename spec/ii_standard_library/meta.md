@@ -1,7 +1,7 @@
 
 # The Meta Object
 
-    meta
+    meta := Object clone.
 
 The meta object is expected to exist on all traditional objects and
 all lexical scope objects. It defines certain special behavior that

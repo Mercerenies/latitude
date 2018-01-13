@@ -1,10 +1,10 @@
 
 # Booleans and the Nil Object
 
-    Boolean
-    True
-    False
-    Nil
+    Boolean := Object clone.
+    True := Boolean clone.
+    False := Boolean clone.
+    Nil := Object clone.
 
 The Boolean object models values which represent truth-hood or
 falsehood. Its two subobjects, the true object and the false object,

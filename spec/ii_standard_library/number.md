@@ -1,7 +1,7 @@
 
 # The Number Object
 
-    Number
+    Number := Object clone.
 
 The number object represents numerical values in Latitude. Numerical
 literals always return subobjects of this object. Internally, numbers

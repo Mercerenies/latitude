@@ -1,7 +1,7 @@
 
 # The Kernel Object
 
-    Kernel
+    Kernel := Object clone.
 
 The kernel object defines several language-level operators and
 reflection functions, as well as replicating some of the behavior in

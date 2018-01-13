@@ -1,7 +1,7 @@
 
 # The Root Object
 
-    Object
+    Object := #<the root object>.
 
 This is the root object from which all traditional objects inherit. It
 is its own parent and is created by the virtual machine during
