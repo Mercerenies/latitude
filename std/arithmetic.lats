@@ -2,7 +2,15 @@
 ;; Arithmetic and Number Types
 Number toString := { meta sys numToString#: self. }.
 Number == := { meta sys primEquals#: self, $1. }.
-Number < := { meta sys primLT#: self, $1. }.
+Number < := {
+  curr := self.
+  arg := $1.
+  if ({ curr isComplex?. } or { arg isComplex?. }) then {
+    err TypeError clone tap { self message := "Cannot compare complex numbers". } throw.
+  } else {
+    meta sys primLT#: curr, arg.
+  }.
+}.
 
 Number + := { meta sys numAdd#: self, $1. }.
 Number - := { meta sys numSub#: self, $1. }.
