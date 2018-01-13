@@ -95,4 +95,5 @@ scope object.
  * [Kernel](kernel.md)
  * [Number](number.md)
  * [Object](object.md)
+ * [String](string.md)
  * [meta](meta.md)
