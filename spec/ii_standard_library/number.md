@@ -41,6 +41,14 @@ exactly representable as an integer.
 
 ## Simple Slots
 
+    Number ee := #<2.718281828...>.
+    Number pi := #<3.141592653...>.
+    Number ii := @(0, 1).
+    Number nan := #<NaN, or Nil if not supported>.
+    Number inf := #<positive infinity, or Nil if not supported>.
+    Number ninf := #<negative infinity, or Nil if not supported>.
+    Number epsilon := #<the machine's floating-point epsilon>.
+
 ## Methods
 
 ### `Number ordinal.`
@@ -412,6 +420,37 @@ undefined.
 
 [TODO: A negative real argument to this should return a complex value
 but currently returns NaN. This needs to be fixed.]
+
+### `Number isBasicInt?.`
+
+Returns whether the value is a fixed-size integer. If the
+implementation does not support fixed-size integers, this method
+always returns false.
+
+### `Number isInteger?.`
+
+Returns whether the value is represented as an integer, either
+fixed-size or arbitrary-size.
+
+### `Number isRational?.`
+
+Returns whether the value is represented as a rational number or a
+narrower numerical type.
+
+### `Number isFloating?.`
+
+Returns whether the value is represented as a floating-point number.
+
+### `Number isReal?.`
+
+Returns whether the value is a real number. A real number is a number
+that is strictly narrower in representation than a complex number.
+
+### `Number isComplex?.`
+
+Returns whether the value is represented as a complex number. This
+includes values with zero imaginary part, such as `@(1, 0)`, but does
+not include values which lack an imaginary part, such as `1`.
 
 ## Static Methods
 
