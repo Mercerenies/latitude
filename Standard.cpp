@@ -836,7 +836,10 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
     // natSym#: num.
     reader.cpp[CPP_SYM_NUM] = [&reader](IntState& state0) {
-        if (state0.num0.asSmallInt() <= 0) {
+        if (state0.num0.hierarchyLevel() > 1) {
+            throwError(state0, reader, "TypeError", "Cannot produce symbols from non-integers");
+        } else if (state0.num0.asSmallInt() <= 0) {
+            // TODO This actually doesn't behave correctly for extremely large integers right now
             throwError(state0, reader, "TypeError", "Cannot produce symbols from non-positive numbers");
         } else {
             Symbolic sym = Symbols::natural((int)state0.num0.asSmallInt());
