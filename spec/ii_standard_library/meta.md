@@ -68,7 +68,7 @@ slots `x` and `X`, which parse the argument as hexadecimal; `o` and
 
 [TODO: Document exactly what this does.]
 
-## Subobject Methods
+## Inner Object Methods
 
 ## `~l (method).`
 

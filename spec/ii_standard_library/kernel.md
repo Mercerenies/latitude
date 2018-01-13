@@ -160,7 +160,7 @@ variable with the given name is unset. If the value is a string, the
 environment variable is set to the given value. This method always
 returns nil.
 
-## Subobject Methods
+## Inner Object Methods
 
 ### `Kernel GC traced.`
 
