@@ -176,8 +176,9 @@ character. [TODO: Is this behavior desired?]
 
 ### `String iterator.`
 
-[TODO: Document this after the iterator has been extracted to
-top-level.]
+Returns a `StringIterator` [TODO: Link] to the string which will
+iterate over each character (or each byte, if the string is a byte
+string).
 
 ### `String map (mthd).`
 
