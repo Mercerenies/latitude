@@ -1,4 +1,4 @@
 
 # Appendix
 
- * [Terms](terms.md)
+ * [Terms and Conventions](terms.md)

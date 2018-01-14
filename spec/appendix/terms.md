@@ -1,5 +1,20 @@
 
-# Terms
+# Terms and Conventions
+
+## Type Errors
+
+Many methods documented here make certain assumptions about their
+arguments. Often, these methods will not explicitly specify the
+behavior if the argument does not satisfy those assumptions. Unless
+otherwise stated, either an `ArgError` or a `TypeError` will be raised
+in these cases.
+
+A `TypeError` will be raised if the argument does not satisfy some
+rigid notion of "type" or does not have the correct object
+hierarchy. An `ArgError` will be raised in any other case. For
+instance, a method that expects an integer will raise a `TypeError` if
+given a symbol but will raise an `ArgError` if given a non-integer
+number.
 
 ## Indexing
 
