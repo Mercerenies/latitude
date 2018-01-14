@@ -8,8 +8,6 @@ always encoded in UTF-8. It is possible for a string to contain
 unassigned Unicode code points but it is an error for a string to
 contain a sequence of bytes that is not valid UTF-8.
 
-## Simple Slots
-
 ## Methods
 
 ### `String intern.`
