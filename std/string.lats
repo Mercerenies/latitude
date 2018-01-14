@@ -186,24 +186,28 @@ Number chr := {
   meta sys uniChr#: self.
 }.
 
+global StringIterator ::= Iterator clone.
+StringIterator index := 0.
+StringIterator string := "".
+StringIterator next := {
+  self index := meta sys stringNext#: self string, self index.
+  self index ifFalse { err UTF8IntegrityError clone throw. }.
+}.
+StringIterator end? := { (self index) >= (self string byteCount). }.
+StringIterator element := {
+  self string substringBytes:
+    self index,
+    (meta sys stringNext#: self string, self index).
+}.
+StringIterator element= := {
+  err ReadOnlyError clone tap { self message := "Strings are immutable". } throw.
+}.
+StringIterator bytes? := { self string bytes?. }.
+
 String iterator := {
-  Object clone tap {
-    self toString := "StringIterator".
+  StringIterator clone tap {
     self index := 0.
     self string := parent self.
-    self next := {
-      self index := meta sys stringNext#: self string, self index.
-      self index ifFalse { err UTF8IntegrityError clone throw. }.
-    }.
-    self end? := { (self index) >= (self string byteCount). }.
-    self element := {
-      self string substringBytes:
-        self index,
-        meta sys stringNext# (self string, self index).
-    }.
-    self element= := {
-      err ReadOnlyError clone tap { self message := "Strings are immutable". } throw.
-    }.
   }.
 }.
 String map := {

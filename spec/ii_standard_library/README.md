@@ -63,6 +63,7 @@ scope object.
      |    +-- ArrayIterator
      |    +-- ChainIterator
      |    +-- NilIterator
+     |    +-- StringIterator
      +-- Kernel
      +-- Kernel GC
      +-- Kernel Parents
