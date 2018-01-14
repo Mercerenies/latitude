@@ -97,4 +97,5 @@ scope object.
  * [Number](number.md)
  * [Object](object.md)
  * [String](string.md)
+ * [Symbol](symbol.md)
  * [meta](meta.md)
