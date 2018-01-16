@@ -38,7 +38,7 @@ Conditional and := {
   arg := #'$1.
   self truthy := meta sys ifThenElse#:
     self truthy,
-    { self invoke #'arg call toBool. },
+    { parent self invoke #'arg call toBool. },
     { False. }.
   self.
 }.
@@ -47,7 +47,7 @@ Conditional or := {
   self truthy := meta sys ifThenElse#:
     self truthy,
     { True. },
-    { self invoke #'arg call toBool. }.
+    { parent self invoke #'arg call toBool. }.
   self.
 }.
 Conditional then := {
