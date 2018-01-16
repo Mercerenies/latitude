@@ -89,18 +89,12 @@ does not exist or does not have a header of the appropriate format, a
 ### `Kernel executablePath.`
 
 This method returns the full pathname of the Latitude executable file,
-including the filename. The directory portion of this pathname
+including the filename.
 
-### `Kernel protect (object, slotName).`
+### `Kernel cwd.`
 
-Adds assignment and delete protection to the given slot on the
-supplied object. If the slot does not exist, [TODO: This is currently
-a bug in the interpreter; correct and fill in the behavior here].
-
-### `Kernel protected? (object, slotName).`
-
-Returns whether the given slot on the supplied object has any
-protections applied to it.
+This method returns the full pathname of the current working directory
+from which the Latitude executable is being run.
 
 ### `Kernel evaluating? (object).`
 
@@ -225,6 +219,17 @@ this method attempts to access the slot using `Kernel Slots hold`. If
 the access is successful, the return value is true. If the access
 attempt throws a `SlotError`, the return value is false. Any other
 exceptions or thrown objects are propogated.
+
+### `Kernel Slots protect (object, slotName).`
+
+Adds assignment and delete protection to the given slot on the
+supplied object. If the slot does not exist, [TODO: This is currently
+a bug in the interpreter; correct and fill in the behavior here].
+
+### `Kernel Slots protected? (object, slotName).`
+
+Returns whether the given slot on the supplied object has any
+protections applied to it.
 
 ### `Kernel Parents origin (object, symbol).`
 
