@@ -344,13 +344,23 @@ global FilePath := Object clone.
 FilePath toString := "FilePath".
 FilePath directory := { meta sys dirName#: $1. }.
 FilePath filename := { meta sys fileName#: $1. }.
-FilePath rawname := { ; TODO Fails if there is no dot in the name
+FilePath rawname := {
   temp := self filename: $1.
-  temp substring: 0, temp findAll "." nth -1.
+  match := temp findAll ".".
+  if (match empty?) then {
+    temp.
+  } else {
+    temp substring: 0, match nth -1.
+  }.
 }.
-FilePath extension := { ; TODO Fails if there is no dot in the name
+FilePath extension := {
   temp := self filename: $1.
-  temp substring: temp findAll "." nth -1 + 1, temp size.
+  match := temp findAll ".".
+  if (match empty?) then {
+    "".
+  } else {
+    temp substring: temp findAll "." nth -1 + 1, temp size.
+  }.
 }.
 
 ;; Symbol functions
