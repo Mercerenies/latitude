@@ -25,6 +25,7 @@ public:
     virtual void out(char);
     virtual void writeLine(std::string);
     virtual bool isEof() const noexcept;
+    virtual void flush();
 };
 
 char Stream::in() {
@@ -76,6 +77,8 @@ bool Stream::isEof() const noexcept {
 
 void Stream::close() {}
 
+void Stream::flush() {}
+
 bool CoutStream::hasOut() const noexcept {
     return true;
 }
@@ -92,6 +95,10 @@ bool CoutStream::isEof() const noexcept {
     return cout.eof();
 }
 
+void CoutStream::flush() {
+    cout.flush();
+}
+
 bool CerrStream::hasOut() const noexcept {
     return true;
 }
@@ -106,6 +113,10 @@ void CerrStream::writeLine(string str) {
 
 bool CerrStream::isEof() const noexcept {
     return cerr.eof();
+}
+
+void CerrStream::flush() {
+    cerr.flush();
 }
 
 bool CinStream::hasIn() const noexcept {
@@ -170,6 +181,10 @@ void FileStream::close() {
     stream = unique_ptr<Stream>(new NullStream());
 }
 
+void FileStream::flush() {
+    stream->flush();
+}
+
 InFileStream::InFileStream(string name, FileMode mode)
     : stream(name, translateMode(mode)) {
     stream.exceptions( ios_base::badbit );
@@ -220,6 +235,10 @@ void OutFileStream::writeLine(string str) {
 
 bool OutFileStream::isEof() const noexcept {
     return stream.eof();
+}
+
+void OutFileStream::flush() {
+    stream.flush();
 }
 
 ios_base::openmode translateMode(FileMode fmode) {

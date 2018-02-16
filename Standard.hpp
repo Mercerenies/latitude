@@ -55,7 +55,8 @@ namespace Table {
         CPP_UNI_CHR = 44,
         CPP_OSINFO = 45,
         CPP_COMPLPARTS = 46,
-        CPP_OBJID = 47;
+        CPP_OBJID = 47,
+        CPP_STREAM_FLUSH = 48;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,

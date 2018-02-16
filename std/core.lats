@@ -160,6 +160,13 @@ Stream closeAfter := {
   }.
 }.
 Stream exists? := { meta sys fileExists#: $1. }.
+Stream flush := {
+  self out? ifFalse {
+    err ArgError clone tap { self message := "Cannot flush non-output stream". } throw.
+  }.
+  meta sys streamFlush#: self.
+  Nil.
+}.
 Stream toString := "Stream".
 
 ; Dumping and Printing Convenience Functions

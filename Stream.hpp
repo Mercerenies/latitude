@@ -33,6 +33,7 @@ public:
     virtual void writeText(std::string);
     virtual bool isEof() const noexcept;
     virtual void close();
+    virtual void flush();
 };
 
 /*
@@ -50,6 +51,7 @@ public:
     virtual void out(char);
     virtual void writeLine(std::string);
     virtual bool isEof() const noexcept;
+    virtual void flush();
 };
 
 /*
@@ -61,6 +63,7 @@ public:
     virtual void out(char);
     virtual void writeLine(std::string);
     virtual bool isEof() const noexcept;
+    virtual void flush();
 };
 
 /*
@@ -91,6 +94,7 @@ public:
     virtual std::string readLine();
     virtual bool isEof() const noexcept;
     virtual void close();
+    virtual void flush();
 };
 
 std::ios_base::openmode translateMode(FileMode);
