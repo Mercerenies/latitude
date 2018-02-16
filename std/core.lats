@@ -176,7 +176,7 @@ Stream dump := {
   streamObj println: #'obj.
   Kernel keys #'obj visit {
     p := if (Kernel Slots protected? (#'obj, $1)) then "! " else "  ".
-    streamObj putln: p ++ ($1 asText) ++ ": " ++ ((Kernel Slots hold: #'obj, $1) toString).
+    streamObj putln: p ++ $1 asText ++ ": " ++ Kernel Slots hold (#'obj, $1) toString.
   }.
   Nil.
 }.
