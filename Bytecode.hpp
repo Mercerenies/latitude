@@ -62,7 +62,7 @@ struct IntState {
 /// initialized, will never change.
 struct ReadOnlyState {
     std::map<long, CppFunction> cpp;
-    std::map<long, ObjectPtr> lit;
+    std::vector<ObjectPtr> lit;
     TranslationUnitPtr gtu;
 };
 

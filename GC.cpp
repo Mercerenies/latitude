@@ -116,9 +116,15 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, In
     addStackToFrontier(visited, frontier, state.hand      );
 }
 
+template <typename Container, typename Container1>
+void addSeqToFrontier(const Container& visited, Container& frontier, Container1& vec) {
+    for (auto& value : vec)
+        addToFrontier(visited, frontier, value.get());
+}
+
 template <typename Container>
 void addContinuationToFrontier(const Container& visited, Container& frontier, ReadOnlyState& state) {
-    addMapToFrontier  (visited, frontier, state.lit );
+    addSeqToFrontier  (visited, frontier, state.lit );
 }
 
 template <typename Container>

@@ -2393,17 +2393,28 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     bindArgv(argv_, string, argc, argv);
 
     // Spawn the literal objects table
-    reader.lit.emplace(Lit::NIL   , nil       );
-    reader.lit.emplace(Lit::FALSE , false_    );
-    reader.lit.emplace(Lit::TRUE  , true_     );
-    reader.lit.emplace(Lit::BOOL  , boolean   );
-    reader.lit.emplace(Lit::STRING, string    );
-    reader.lit.emplace(Lit::NUMBER, number    );
-    reader.lit.emplace(Lit::SYMBOL, symbol    );
-    reader.lit.emplace(Lit::METHOD, method    );
-    reader.lit.emplace(Lit::SFRAME, stackFrame);
-    reader.lit.emplace(Lit::FHEAD , fileHeader);
-    reader.lit.emplace(Lit::ERR   , err       );
+    assert(reader.lit.size() == Lit::NIL   );
+    reader.lit.emplace_back(nil       );
+    assert(reader.lit.size() == Lit::FALSE );
+    reader.lit.emplace_back(false_    );
+    assert(reader.lit.size() == Lit::TRUE  );
+    reader.lit.emplace_back(true_     );
+    assert(reader.lit.size() == Lit::BOOL  );
+    reader.lit.emplace_back(boolean   );
+    assert(reader.lit.size() == Lit::STRING);
+    reader.lit.emplace_back(string    );
+    assert(reader.lit.size() == Lit::NUMBER);
+    reader.lit.emplace_back(number    );
+    assert(reader.lit.size() == Lit::SYMBOL);
+    reader.lit.emplace_back(symbol    );
+    assert(reader.lit.size() == Lit::SFRAME);
+    reader.lit.emplace_back(stackFrame);
+    assert(reader.lit.size() == Lit::METHOD);
+    reader.lit.emplace_back(method    );
+    assert(reader.lit.size() == Lit::FHEAD );
+    reader.lit.emplace_back(fileHeader);
+    assert(reader.lit.size() == Lit::ERR   );
+    reader.lit.emplace_back(err       );
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);
