@@ -61,7 +61,7 @@ struct IntState {
 /// ReadOnlyState instance, which contains registers that, once
 /// initialized, will never change.
 struct ReadOnlyState {
-    std::map<long, CppFunction> cpp;
+    std::map<long, CppFunction> cpp; // TODO Convert to vector
     std::vector<ObjectPtr> lit;
     TranslationUnitPtr gtu;
 };
