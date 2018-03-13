@@ -9,14 +9,13 @@ ArgList clone := {
   }.
 }.
 ArgList fill := {
-  self enclosingScope := dynamic parent.
+  self enclosingScope := $dynamic parent.
   self.
 }.
 ArgList fillWith := {
   self enclosingScope := $1.
   self.
 }.
-; TODO A version of `unshift` that can insert additional arguments
 ArgList shift := {
   if (self size == 0)
     then { Nil. }
@@ -43,37 +42,47 @@ ArgList unshift := {
   if (self size == 0)
     then { Nil. }
     else {
-      first := parent self enclosingScope $1.
+      first := parent self enclosingScope slot '$1.
       arglist := parent self.
       size := parent self size.
       temp := Nil.
       parent self map! {
-        temp1 := temp.
-        parent temp := $1.
-        temp1.
+        temp1 := #'temp.
+        parent temp := #'$1.
+        #'temp1.
       }.
-      parent self enclosingScope $1 := temp.
+      parent self enclosingScope slot '$1 = #'temp.
     }.
 }.
+ArgList unshiftOnto := {
+  self enclosingScope slot (("$" ++ (self size + 1)) intern) = #'$1.
+  self unshift.
+}.
+
+global ArgIterator ::= Iterator clone.
+ArgIterator array := Nil.
+ArgIterator index := 1.
+ArgIterator next := {
+  self index := self index + 1.
+}.
+ArgIterator end? := {
+  self array enclosingScope slot? (("$" ++ (self index)) intern) not.
+}.
+ArgIterator element := {
+  self array enclosingScope slot (("$" ++ (self index)) intern).
+}.
+ArgIterator element= := {
+  self array enclosingScope slot (("$" ++ (self index)) intern) = #'$1.
+}.
+
 ArgList iterator := {
-  ArgIterator ::= Object clone.
-  ArgIterator iterator := { self. }.
-  ArgIterator array := self.
-  ArgIterator index := 1.
-  ArgIterator next := { self index := self index + 1. }.
-  ArgIterator end? := {
-    (self array enclosingScope slot? (("$" ++ (self index)) intern)) not.
+  ArgIterator clone tap {
+    self array := parent self.
+    self index := 1.
   }.
-  ArgIterator element := {
-    self array enclosingScope slot (("$" ++ (self index)) intern).
-  }.
-  ArgIterator element= := {
-    self array enclosingScope slot (("$" ++ (self index)) intern) = #'$1.
-  }.
-  ArgIterator.
 }.
 ArgList dropIn := {
-  target := dynamic parent.
+  target := $dynamic parent.
   index := 1.
   self visit {
     target slot (("$" ++ (index)) intern) = #'$1.
@@ -83,12 +92,15 @@ ArgList dropIn := {
 
 Collection inject: ArgList.
 
+;; argv
+$argv toString := "$argv".
+
 ; It's very easy to lose track of a `self` in nested method calls, and calling `parent` repeatedly
 ; can be annoying, so the `localize` method will bind `this` to `self` in the calling scope. `this`
 ; will not rebind lexically until that scope exits.
-global this := { dynamic parent $lexical self. }.
+global this := { caller self. }.
 global localize := {
-  dynamic parent $lexical this := dynamic parent $lexical slot 'self.
+  caller this := caller slot 'self.
 }.
 
 ; Likewise, the dynamic argument behavior occasonally gets in the way, so this is provided to rebind
@@ -96,8 +108,9 @@ global localize := {
 ; `takes` implies that the method in question takes these arguments. It is designed to be read in English,
 ; as it is usually the first line of a method (possibly the second, after a `localize`).
 global takes := {
-  args := ArgList clone fillWith: dynamic parent.
-  target := dynamic parent $lexical.
+  ; TODO Prohibitively slow (use random.lat as benchmark)
+  args := ArgList clone fillWith: $dynamic parent.
+  target := caller.
   $1 clone zip! (args) map! {
     target slot ($1 car) = $1 cdr.
     $1 car.

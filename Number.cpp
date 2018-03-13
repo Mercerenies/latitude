@@ -442,7 +442,10 @@ namespace MagicNumber {
         }
 
         Number::magic_t operator()(const Number::ratio& value) const {
-            return static_cast<Number::bigint>(numerator(value) / denominator(value));
+            if ((numerator(value) % denominator(value) != 0) && (value < 0))
+                return static_cast<Number::bigint>(numerator(value) / denominator(value) - 1);
+            else
+                return static_cast<Number::bigint>(numerator(value) / denominator(value));
         }
 
         Number::magic_t operator()(const Number::floating& value) const {

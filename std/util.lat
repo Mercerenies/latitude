@@ -31,8 +31,9 @@ Latchkey make := {
 Lockbox store := { self slot ($1 tag) = $2. }.
 Lockbox fits := { self slot? ($1 tag). }.
 Lockbox retrieve := {
-  if { parent self fits: parent dynamic $1. }
-    then { parent self slot: parent dynamic $1 tag. }
+  key := $1.
+  if { parent self fits: key. }
+    then { parent self slot: key tag. }
     else { Nil. }.
 }.
 Lockbox toString := "Lockbox".
@@ -45,8 +46,6 @@ Latchkey == := { (self tag) == (self tag). }.
 ; Example usage:
 ; { $yield 1. $yield 2. } generator toArray.
 ;    ==> [1, 2]
-; TODO Figure out how to make generators clone-able to make them multi-pass
-;      (something bizarre is happening between the continuation jumps when a clone is used)
 Generator := Proc clone.
 Generator toString := "Generator".
 Generator iterator := { self. }.
@@ -62,7 +61,8 @@ Generator call := {
 }.
 Generator map := {
   localize.
-  procd := proc { parent dynamic slot '$1 call. }.
+  func0 := #'$1.
+  procd := proc { func0 call. }.
   {
     this visit { $yield: procd call ($1). }.
   } generator.
@@ -118,7 +118,6 @@ Collection inject: Generator.
 ;           y := amb [2, 4, 6].
 ;           ((x) * (y) == 8) ifFalse: { amb []. }.
 ;           [x, y]. }.
-; TODO This one is a bit sloppy when it's cloned as well; work on that
 AmbError := Exception clone tap { self toString := "AmbError".
                                   self message := "Amb expression failed". }.
 Amb := Object clone.
@@ -129,13 +128,14 @@ callAmb := {
   ambFunc := proc {
     takes '[cases].
     callCC {
-      escape := { parent dynamic $1 call. }.
+      escapable.
       oldHandler := ambObject slot 'nextHandler.
       cases visit {
         takes '[curr].
         callCC {
-          ambObject nextHandler := { parent dynamic $1 call. }.
-          escape: curr.
+          nextExit := #'$1.
+          ambObject nextHandler := { nextExit call. }.
+          return: curr.
         }.
       }.
       oldHandler.

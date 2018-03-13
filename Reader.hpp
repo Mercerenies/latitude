@@ -40,6 +40,10 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str);
 
 void eval(IntState& state, std::string str);
 
+void readFileSource(std::string fname, Scope defScope, IntState& state);
+
+void compileFile(std::string fname, std::string fname1, Scope defScope, IntState& state);
+
 void readFile(std::string fname, Scope defScope, IntState& state);
 
 /*

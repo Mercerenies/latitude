@@ -271,7 +271,7 @@ public:
     /// Returns the nth method in the translation unit. <em>No bounds
     /// checking is performed.</em> It is the caller's responsibility
     /// to ensure that the argument to this method is between 0 and
-    /// methodCount(), inclusive.
+    /// methodCount().
     ///
     /// \param index the index of the method
     /// \return the method itself
@@ -496,6 +496,11 @@ public:
 
 };
 
+/// A SeekHolder stores a virtual pointer to an InstrSeek object and
+/// then caches its underlying InstrSeq instance for efficiency. For
+/// all intents and purposes, it behaves identically to its contained
+/// pointer but with the performance benefits of bypassing the vtable
+/// lookup most of the time.
 class SeekHolder {
 private:
     std::unique_ptr<InstrSeek> internal;
@@ -503,28 +508,75 @@ private:
     // and belongs to the internal variable above.
     InstrSeq* instr;
 public:
+
+    /// Constructs a SeekHolder to an empty code sequence. This is \em
+    /// not a null instance; it is a SeekHolder which contains a
+    /// no-op.
     SeekHolder();
+
+    /// Given an instance of InstrSeek or a subclass thereof, this
+    /// constructor returns a SeekHolder which contains a copy of the
+    /// argument.
+    ///
+    /// \param other the seek object to copy
     template <typename T>
-    SeekHolder(const T&);
-    SeekHolder(const SeekHolder&);
+    SeekHolder(const T& other);
+
+    /// Copy-constructs a SeekHolder. This constructor also copies the
+    /// internal InstrSeek instance.
+    ///
+    /// \param other the original holder
+    SeekHolder(const SeekHolder& other);
+
+    /// Assigns a copy of the argument, which must be an instance of
+    /// InstrSeek or a subclass thereof, so that the internal pointer
+    /// of this SeekHolder points to the new copy.
+    ///
+    /// \param other the argument to assign
+    /// \return the current instance
     template <typename T>
-    SeekHolder& operator=(const T&);
-    SeekHolder& operator=(const SeekHolder&);
+    SeekHolder& operator=(const T& other);
+
+    /// Copy-assigns a SeekHolder, copying the internals as well.
+    ///
+    /// \param other the argument to assign
+    /// \return the current instance
+    SeekHolder& operator=(const SeekHolder& other);
+
+    /// \copydoc InstrSeek::instructions()
     InstrSeq& instructions();
+
+    /// \copydoc InstrSeek::position()
     unsigned long position();
-    void advancePosition(unsigned long);
+
+    /// \copydoc InstrSeek::advancePosition()
+    void advancePosition(unsigned long val);
+
+    /// \copydoc InstrSeek::readLong()
     long readLong(int n);
+
+    /// \copydoc InstrSeek::readString()
     std::string readString(int n);
+
+    /// \copydoc InstrSeek::readReg()
     Reg readReg(int n);
+
+    /// \copydoc InstrSeek::readInstr()
     Instr readInstr();
+
+    /// \copydoc InstrSeek::readFunction()
     FunctionIndex readFunction(int n);
+
+    /// \copydoc InstrSeek::atEnd()
     bool atEnd();
+
+    /// \copydoc InstrSeek::killSelf()
     void killSelf();
 };
 
 template <typename T>
-SeekHolder::SeekHolder(const T& prev)
-    : internal(std::unique_ptr<InstrSeek>(new T(prev)))
+SeekHolder::SeekHolder(const T& other)
+    : internal(std::unique_ptr<InstrSeek>(new T(other)))
     , instr(&internal->instructions()) {}
 
 template <typename T>

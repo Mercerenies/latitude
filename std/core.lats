@@ -5,8 +5,9 @@ Object is := { meta sys instanceOf#: #'self, $1. }.
 Object slot := { meta sys accessSlot#: self, $1. }.
 Object slot= := { meta sys putSlot#: self, $1, #'$2. }.
 Object slot? := {
+  target := $1.
   {
-    (parent slot 'self) slot: parent dynamic $1.
+    (parent slot 'self) slot: target.
     True.
   } catch:
     err SlotError,
@@ -22,8 +23,8 @@ Object invokeSpecial := {
   Kernel invokeOnSpecial: #'self, #'$1, #'$2.
 }.
 Object tap := {
-  self invoke #'$1 call.
-  self.
+  #'self invoke #'$1 call.
+  #'self.
 }.
 
 ;; The $whereAmI variable
@@ -45,28 +46,19 @@ Method resolve := {
   mthd := #'self.
   cond := #'$1.
   catcher := #'$2.
-  jump := Nil.
-  'jump assign = { $1. }.
   callCC {
     outer := $1.
-    callCC {
-      inner := $1.
-      result := callCC {
-        jump = $1.
-        inner call: Nil.
-      }.
-      outer call: (catcher: result).
-    }.
     { mthd. } handle {
       exc := $1.
       cond (exc) ifTrue {
-        jump call: exc.
+        outer call: (catcher: exc).
       }.
     }.
   }.
 }.
 Method catch := {
-  #'self resolve: { $1 is: parent dynamic $1. }, #'$2.
+  target := $1.
+  #'self resolve: { $1 is (target). }, #'$2.
 }.
 Method catchAll := { #'self catch: Exception, #'$1. }.
 Method default := { #'self catch: Exception, #'$1. }.
@@ -98,8 +90,9 @@ Proc toString := "Proc".
 Method == := { (self) == ($1). }. ; Evaluate the method and then try again
 Method < := { (self) < ($1). }. ; Evaluate the method and then try again
 Proc <| := {
+  rhs := #'$1.
   proc {
-    r := (parent dynamic slot '$1) call.
+    r := #'rhs call.
     (parent slot 'self) call: r.
   }.
 }.
@@ -159,8 +152,9 @@ Stream close := { meta sys streamClose#: self. }.
 Stream open := { meta sys streamFileOpen#: self clone, $1, $2, $3. }.
 Stream closeAfter := {
   stream := self.
+  method := #'$1.
   {
-    stream invoke (parent dynamic slot '$1) call.
+    stream invoke (#'method) call.
   } protect {
     stream close.
   }.
@@ -194,25 +188,17 @@ Process exitCode := { meta sys processExitCode#: self. }.
 Process execute := { meta sys processExec#: self. }.
 
 ;; Scope self-reference
-global scope := { self. }.
-global $scope := { self. }.
+global caller := global.
 global lexical := global.
-global dynamic := global.
-global $lexical := global.
 global $dynamic := global.
 global scopeOf := {
-  s := self.
-  if ($1 asText substringBytes (0, 1) == "$")
-    then { s dynamic. }
-    else { s lexical. }.
+  lex := $1.
+  dyn := $2.
+  if ($3 asText substringBytes (0, 1) == "$")
+    then { dyn. }
+    else { lex. }.
 }.
-global $scopeOf := {
-  s := self.
-  if ($1 asText substringBytes (0, 1) == "$")
-    then { s $dynamic. }
-    else { s $lexical. }.
-}.
-Object me := { self. }.
+Object me := { #'self invoke #'self call. }.
 global do := { $1. }.
 global here := {
   if (self slot? 'again)
@@ -224,17 +210,9 @@ global toString := {
     then "global"
     else "#<Scope>".
 }.
-; NOTE: pairScopes can only be called on custom-made scopes.
-;       Attempting to re-pair implicitly created scopes will
-;       trigger a protection error.
-global pairScopes := {
-  self lexical := self.
-  self dynamic := $1.
-  $1 $lexical := self.
-  $1 $dynamic := $1.
-}.
 
 ;; Equality and Comparability
+; TODO Consider moving the comparison operators to a mixin
 Object === := { Kernel eq: #'self, #'$1. }.
 Object == := { (self) === ($1). }.
 Object > := { ($1) < (self). }.
@@ -253,7 +231,7 @@ Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
 Kernel protect := { meta sys protectVar#: #'$1, $2. }. ; TODO Protection functions should be in `Kernel Slots`.
 Kernel protected? := { meta sys protectIs#: #'$1, $2. }.
-Kernel selfEvaluating? := { meta sys primIsMethod#: #'$1. }.
+Kernel evaluating? := { meta sys primIsMethod#: #'$1. }.
 Kernel keys := { meta sys objectKeys#: #'$1. }.
 Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
 ; (The load function is defined in the main latitude.lat file)
@@ -265,21 +243,21 @@ Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
 
 ;; Kernel invocations
 Kernel invokeOn := {
+  obj := #'$1.
+  mthd := #'$2.
   procd := Proc clone.
   procd call := {
-    meta sys invoke#:
-      parent dynamic slot '$1,
-      parent dynamic slot '$2.
+    meta sys invoke#: #'obj, #'mthd.
   }.
   procd.
 }.
 Kernel invokeOnSpecial := {
+  obj := #'$1.
+  mthd := #'$2.
+  mod := #'$3.
   procd := Proc clone.
   procd call := {
-    meta sys doWithCallback#:
-      parent dynamic slot '$1,
-      parent dynamic slot '$2,
-      parent dynamic slot '$3.
+    meta sys doWithCallback#: #'obj, #'mthd, #'mod.
   }.
   procd.
 }.
@@ -301,11 +279,13 @@ Kernel GC untrace := { self traced := False. }.
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.
 Kernel env= := {
-  if { parent dynamic $2 nil?. }
+  name := $1.
+  value := #'$2.
+  if { #'value nil?. }
     then {
-      meta sys envUnset#: parent dynamic $1.
+      meta sys envUnset#: name.
     } else {
-      meta sys envSet#: parent dynamic $1, parent dynamic $2.
+      meta sys envSet#: name, value.
     }.
 }.
 
@@ -317,10 +297,12 @@ Kernel Slots toString := "Slots".
 Kernel Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
 Kernel Slots get := { Kernel invokeOn (#'$1, self hold) call. }.
 Kernel Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
-Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }. ; TODO `parent` should not be deletable
+Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
 Kernel Slots has? := {
+  obj := #'$1.
+  symbol := #'$2.
   {
-    Kernel Slots hold: parent dynamic hold '$1, parent dynamic hold '$2.
+    Kernel Slots hold: #'obj, #'symb.
     True.
   } catch:
     err SlotError,
@@ -337,7 +319,7 @@ Kernel Parents above := {
   orgn := self origin (#'$1, #'$2).
   #'orgn parent slot #'$2.
 }.
-Kernel Parents hierarchy := {
+Kernel Parents hierarchy := { ; TODO meta brackets?
   arr := Array clone.
   curr := #'$1.
   while {
@@ -392,10 +374,18 @@ String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
 String byteCount := { meta sys stringLength#: self. }.
 Symbol assign= := {
   name := self.
-  curr := dynamic parent $scopeOf (self).
+  curr := scopeOf (lexical caller, $dynamic parent, self).
   rhs := #'$1.
   sym := self asText ++ "=" intern.
   curr slot (sym) = { curr slot (name) = rhs ($1). }.
+}.
+
+;; Method cloning
+Method clone := {
+  procd := #'self invoke: (Object slot 'clone).
+  procd call tap {
+    #'self closure := parent slot 'self closure.
+  }.
 }.
 
 ; File headers
