@@ -249,7 +249,7 @@ void saveInstrs(ofstream& file, const InstrSeq& seq) {
 
 void saveToFile(ofstream& file, TranslationUnitPtr unit) {
     saveInstrs(file, unit->instructions());
-    for (int i = 0; i < unit->methodCount(); i++) {
+    for (int i = 1; i < unit->methodCount(); i++) {
         saveInstrs(file, unit->method(i));
     }
 }
@@ -341,16 +341,18 @@ void compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
             for (unique_ptr<Stmt>& stmt : stmts)
                 stmts1.push_back(shared_ptr<Stmt>(move(stmt)));
             TranslationUnitPtr unit = make_shared<TranslationUnit>();
-            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(unit->instructions());
+            InstrSeq toplevel;
+            (makeAssemblerLine(Instr::LOCFN, fname)).appendOnto(toplevel);
             for (auto& stmt : stmts1) {
-                stmt->translate(*unit, unit->instructions());
+                stmt->translate(*unit, toplevel);
             }
-            (makeAssemblerLine(Instr::RET)).appendOnto(unit->instructions());
+            (makeAssemblerLine(Instr::RET)).appendOnto(toplevel);
             ofstream file1;
             file1.open(fname1);
             BOOST_SCOPE_EXIT(&file1) {
                 file1.close();
             } BOOST_SCOPE_EXIT_END;
+            unit->instructions() = toplevel;
             saveToFile(file1, unit);
         } catch (std::string parseException) {
             throwError(state, reader, "ParseError", parseException);
@@ -373,6 +375,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
         } BOOST_SCOPE_EXIT_END;
         try {
             TranslationUnitPtr unit = loadFromFile(file);
+            auto lex = state.lex.top(); // TODO Possible empty stack error?
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
@@ -381,6 +384,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
             state.lex.top()->put(Symbols::get()["self"], state.lex.top());
             state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
+            state.lex.top()->put(Symbols::get()["caller"], lex);
             state.stack = pushNode(state.stack, state.cont);
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
@@ -394,9 +398,9 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
 
 void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
     // Soon, this will attempt to read a compiled file first.
-    // compileFile(fname, fname + "c", state, reader);
-    readFileSource(fname, defScope, state, reader);
-    // readFileComp(fname + "c", defScope, state, reader);
+    // compileFile(fname, fname + "c", state);
+    readFileSource(fname, defScope, state);
+    // readFileComp(fname + "c", defScope, state);
 }
 
 Stmt::Stmt(int line_no)

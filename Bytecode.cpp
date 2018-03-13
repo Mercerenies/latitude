@@ -278,7 +278,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     case Instr::GETL: {
 #if DEBUG_INSTR > 0
         cout << "GETL" << endl;
-        cout << "* " << state.lex.top() << endl;
+//        cout << "* " << state.lex.top() << endl;
 #endif
         Reg dest = state.cont.readReg(0);
         if (state.lex.empty()) {
@@ -305,7 +305,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "GETD" << endl;
 #if DEBUG_INSTR > 1
-        cout << "* " << state.dyn.top() << endl;
+//        cout << "* " << state.dyn.top() << endl;
 #endif
 #endif
         Reg dest = state.cont.readReg(0);
@@ -395,7 +395,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #if DEBUG_INSTR > 1
-        cout << "* Method Properties " << state.ptr << endl;
+//        cout << "* Method Properties " << state.ptr << endl;
 #endif
 #endif
         // (1) Perform a hard check for `closure`
@@ -684,7 +684,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             }
         } else {
 #if DEBUG_INSTR > 1
-            cout << "* Found " << value << endl;
+//            cout << "* Found " << value << endl;
 #if DEBUG_INSTR > 2
             auto stmt = boost::get<Method>(&value->prim());
             cout << "* Method Properties " <<
