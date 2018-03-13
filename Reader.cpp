@@ -398,9 +398,9 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
 
 void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
     // Soon, this will attempt to read a compiled file first.
-    // compileFile(fname, fname + "c", state);
-    readFileSource(fname, defScope, state);
-    // readFileComp(fname + "c", defScope, state);
+    // compileFile(fname, fname + "c", state, reader);
+    readFileSource(fname, defScope, state, reader);
+    // readFileComp(fname + "c", defScope, state, reader);
 }
 
 Stmt::Stmt(int line_no)
