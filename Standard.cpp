@@ -1014,7 +1014,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                 value = curr;
                 break;
             }
-            curr = (*curr)[ Symbols::get()["parent"] ];
+            curr = (*curr)[ Symbols::parent() ];
         }
         if (value == nullptr) {
             throwError(state0, reader, "SlotError", "Cannot find origin of nonexistent slot");
@@ -2357,8 +2357,8 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     global->put(Symbols::get()["FileHeader"], fileHeader);
 
     // Object is its own parent
-    object->put(Symbols::get()["parent"], object);
-    object->addProtection(Symbols::get()["parent"], PROTECT_DELETE);
+    object->put(Symbols::parent(), object);
+    object->addProtection(Symbols::parent(), PROTECT_DELETE);
 
     // Meta linkage
     meta->put(Symbols::get()["meta"], meta);

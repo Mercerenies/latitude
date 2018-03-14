@@ -50,6 +50,10 @@ bool Symbols::requiresEscape(const std::string& str){
     return (str1.begin() != str1.end());
 }
 
+Symbolic Symbols::parent() {
+    return get()["parent"];
+}
+
 Symbolic Symbols::operator[](const std::string& str) {
     if (isUninterned(str)) {
         index_t curr = index++;

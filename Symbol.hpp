@@ -31,6 +31,7 @@ public:
     static Symbols& get() noexcept;
     static bool isUninterned(const std::string& str);
     static bool requiresEscape(const std::string& str);
+    static Symbolic parent();
     Symbolic operator[](const std::string& str);
     std::string operator[](const Symbolic& str);
 };

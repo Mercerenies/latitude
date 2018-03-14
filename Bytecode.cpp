@@ -580,7 +580,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "RTRV (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
-        auto sym = Symbols::get()["parent"];
+        auto sym = Symbols::parent();
         list<ObjectPtr> parents;
         ObjectPtr curr = state.slf;
         Symbolic name = state.sym;
@@ -1199,7 +1199,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 if (frame == nullptr) {
                     top = temp;
                 } else {
-                    frame->put(Symbols::get()["parent"], temp);
+                    frame->put(Symbols::parent(), temp);
                 }
                 frame = temp;
                 frame->put(Symbols::get()["line"], garnishObject(reader, line));

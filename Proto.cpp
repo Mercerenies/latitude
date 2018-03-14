@@ -152,8 +152,8 @@ Prim& Object::prim() noexcept {
 
 ObjectPtr clone(ObjectPtr obj) {
     ObjectPtr ptr(GC::get().allocate());
-    ptr->put(Symbols::get()["parent"], obj);
-    ptr->addProtection(Symbols::get()["parent"], PROTECT_DELETE);
+    ptr->put(Symbols::parent(), obj);
+    ptr->addProtection(Symbols::parent(), PROTECT_DELETE);
     ptr->prim(obj->prim());
     return ptr;
 }
@@ -167,7 +167,7 @@ void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
     auto curr = obj->directKeys();
     for (auto elem : curr)
         result.insert(elem);
-    _keys(parents, result, (*obj)[ Symbols::get()["parent"] ]);
+    _keys(parents, result, (*obj)[ Symbols::parent() ]);
 }
 
 set<Symbolic> keys(ObjectPtr obj) {
@@ -183,7 +183,7 @@ list<ObjectPtr> hierarchy(ObjectPtr obj) {
                 return obj == obj1;
             }) == parents.end()) {
         parents.push_back(obj);
-        obj = (*obj)[ Symbols::get()["parent"] ];
+        obj = (*obj)[ Symbols::parent() ];
     }
     return parents;
 }
