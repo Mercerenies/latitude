@@ -88,40 +88,12 @@ bool ObjectPtr::operator<(const ObjectPtr& ptr) const {
     return this->impl < ptr.impl;
 }
 
-Slot::Slot() noexcept : Slot(nullptr, false) {}
-
 Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, NO_PROTECTION) {}
 
 Slot::Slot(ObjectPtr ptr, protection_t protect) noexcept : obj(ptr), protection(protect) {}
 
-SlotType Slot::getType() const noexcept {
-    if (obj != nullptr)
-        return SlotType::PTR;
-    else
-        return SlotType::INH;
-}
-
-ObjectPtr Slot::getPtr() const {
-    if (getType() == SlotType::PTR)
-        return obj;
-    else
-        return nullptr;
-}
-
-void Slot::putPtr(ObjectPtr ptr) {
-    obj = ptr;
-}
-
-void Slot::addProtection(protection_t p) noexcept {
-    protection |= p;
-}
-
-bool Slot::isProtected(protection_t p) const noexcept {
-    return p == (protection & p);
-}
-
-bool Slot::hasAnyProtection() const noexcept {
-    return (protection != NO_PROTECTION);
+bool Slot::hasObject() const noexcept {
+    return (obj != nullptr);
 }
 
 Slot Object::getSlot(Symbolic key) const {
@@ -133,7 +105,7 @@ Slot Object::getSlot(Symbolic key) const {
 }
 
 ObjectPtr Object::operator [](Symbolic key) const {
-    return this->getSlot(key).getPtr();
+    return this->getSlot(key).obj;
 }
 
 void Object::put(Symbolic key, ObjectPtr ptr) {
@@ -141,7 +113,7 @@ void Object::put(Symbolic key, ObjectPtr ptr) {
     if (iter == slots.end())
         slots[key] = Slot(ptr);
     else
-        iter->second.putPtr(ptr);
+        iter->second.obj = ptr;
 }
 
 void Object::remove(Symbolic key) {
@@ -156,18 +128,19 @@ set<Symbolic> Object::directKeys() const {
 }
 
 bool Object::isProtected(Symbolic key, protection_t p) const {
-    return this->getSlot(key).isProtected(p);
+    protection_t p1 = this->getSlot(key).protection;
+    return p == (p1 & p);
 }
 
 bool Object::hasAnyProtection(Symbolic key) const {
-    return this->getSlot(key).hasAnyProtection();
+    return this->getSlot(key).protection != NO_PROTECTION;
 }
 
 bool Object::addProtection(Symbolic key, protection_t p) {
     auto iter = slots.find(key);
     if (iter == slots.end())
         return false;
-    iter->second.addProtection(p);
+    iter->second.protection |= p;
     return true;
 }
 

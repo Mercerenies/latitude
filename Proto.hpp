@@ -87,14 +87,12 @@ typedef char protection_t;
 /// exist, the type of the slot is INH, which indicates that it may
 /// exist in a parent or that it may not exist at all. If the type is
 /// PTR, the slot contains an object pointer directly.
-class Slot {
-private:
+struct Slot {
     ObjectPtr obj;
     protection_t protection;
-public:
 
     /// Constructs an empty slot with no protection.
-    Slot() noexcept;
+    Slot() = default;
 
     /// Constructs a slot containing an object pointer and no
     /// protection. If the argument is null then an empty slot is
@@ -111,42 +109,10 @@ public:
     /// \param protect the protection bitmask
     Slot(ObjectPtr ptr, protection_t protect) noexcept;
 
-    /// Returns the slot's type. If the type is SlotType::INH then the
-    /// slot is empty (that is, the slot's correct value may be
-    /// "inherited"). If the type is SlotType::PTR then the slot has a
-    /// non-null value (that is, the "pointer" is valid).
+    /// Returns whether the slot contains a non-null object.
     ///
-    /// \return the slot's type
-    SlotType getType() const noexcept;
-
-    /// Returns the slot's object pointer, or null if the slot is
-    /// empty.
-    ///
-    /// \return the pointer
-    ObjectPtr getPtr() const;
-
-    /// Stores an object in the slot. If the argument is null, the
-    /// slot is instead emptied.
-    ///
-    /// \param ptr the object pointer
-    void putPtr(ObjectPtr ptr);
-
-    /// Adds new protection bits to the slot's protection mask.
-    ///
-    /// \param p the bitmask to add
-    void addProtection(protection_t p) noexcept;
-
-    /// Returns whether the object has all of the given protection
-    /// bits set.
-    ///
-    /// \param p the bits to check
-    /// \return whether the bits are set
-    bool isProtected(protection_t p) const noexcept;
-
-    /// Returns whether any of the object's protection bits are set.
-    ///
-    /// \return whether any bits are set
-    bool hasAnyProtection() const noexcept;
+    /// \return true if `obj` is not null
+    bool hasObject() const noexcept;
 
 };
 
@@ -202,22 +168,20 @@ public:
     std::set<Symbolic> directKeys() const;
 
     /// Returns whether the slot with the given name has the given
-    /// protection, as if through Slot::isProtected().
+    /// protection.
     ///
     /// \param key the key
     /// \param p the protection bitmask
     /// \return whether the protection exists
     bool isProtected(Symbolic key, protection_t p) const;
 
-    /// Returns whether the slot has any protection, as if through
-    /// Slot::hasAnyProtection().
+    /// Returns whether the slot has any protection.
     ///
     /// \param key the key for the slot
     /// \return whether any protection exists
     bool hasAnyProtection(Symbolic key) const;
 
-    /// Adds protection to the given slot, as if through
-    /// Slot::addProtection().
+    /// Adds protection to the given slot.
     ///
     /// \param key the key for the slot
     /// \param p the protection bitmask to add

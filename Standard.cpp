@@ -1009,8 +1009,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         ObjectPtr value = nullptr;
         while (find(parents.begin(), parents.end(), curr) == parents.end()) {
             parents.push_back(curr);
-            Slot slot = (*curr)[name];
-            if (slot.getType() == SlotType::PTR) {
+            ObjectPtr slot = (*curr)[name];
+            if (slot != nullptr) {
                 value = curr;
                 break;
             }
