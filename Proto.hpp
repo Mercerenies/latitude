@@ -130,7 +130,8 @@ private:
     std::unordered_map<Symbolic, Slot> slots;
     Prim primitive;
 
-    Slot getSlot(Symbolic key) const;
+    Slot* getSlot(Symbolic key);
+    const Slot* getSlot(Symbolic key) const;
 
 public:
 

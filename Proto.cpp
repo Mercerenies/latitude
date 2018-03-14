@@ -96,24 +96,35 @@ bool Slot::hasObject() const noexcept {
     return (obj != nullptr);
 }
 
-Slot Object::getSlot(Symbolic key) const {
+Slot* Object::getSlot(Symbolic key) {
     auto iter = slots.find(key);
     if (iter == slots.end())
-        return Slot();
+        return nullptr;
     else
-        return iter->second;
+        return &iter->second;
+}
+
+const Slot* Object::getSlot(Symbolic key) const {
+    auto iter = slots.find(key);
+    if (iter == slots.end())
+        return nullptr;
+    else
+        return &iter->second;
 }
 
 ObjectPtr Object::operator [](Symbolic key) const {
-    return this->getSlot(key).obj;
+    const Slot* slot = this->getSlot(key);
+    if (slot == nullptr)
+        return nullptr;
+    return slot->obj;
 }
 
 void Object::put(Symbolic key, ObjectPtr ptr) {
-    auto iter = slots.find(key);
-    if (iter == slots.end())
+    Slot* slot = this->getSlot(key);
+    if (slot == nullptr)
         slots[key] = Slot(ptr);
     else
-        iter->second.obj = ptr;
+        slot->obj = ptr;
 }
 
 void Object::remove(Symbolic key) {
@@ -128,19 +139,22 @@ set<Symbolic> Object::directKeys() const {
 }
 
 bool Object::isProtected(Symbolic key, protection_t p) const {
-    protection_t p1 = this->getSlot(key).protection;
+    const Slot* slot = this->getSlot(key);
+    protection_t p1 = slot ? slot->protection : NO_PROTECTION;
     return p == (p1 & p);
 }
 
 bool Object::hasAnyProtection(Symbolic key) const {
-    return this->getSlot(key).protection != NO_PROTECTION;
+    const Slot* slot = this->getSlot(key);
+    protection_t p1 = slot ? slot->protection : NO_PROTECTION;
+    return p1 != NO_PROTECTION;
 }
 
 bool Object::addProtection(Symbolic key, protection_t p) {
-    auto iter = slots.find(key);
-    if (iter == slots.end())
+    Slot* slot = this->getSlot(key);
+    if (!slot)
         return false;
-    iter->second.protection |= p;
+    slot->protection |= p;
     return true;
 }
 
