@@ -57,8 +57,8 @@ void spawnSystemCallsNew(ObjectPtr global,
     // kernelLoad0#: filename, global.
     reader.cpp[CPP_KERNEL_LOAD] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
-        ObjectPtr str = (*dyn)[ Symbols::get()["$1"] ].getPtr();
-        ObjectPtr global = (*dyn)[ Symbols::get()["$2"] ].getPtr();
+        ObjectPtr str = (*dyn)[ Symbols::get()["$1"] ];
+        ObjectPtr global = (*dyn)[ Symbols::get()["$2"] ];
         if ((str != nullptr) && (global != nullptr)) {
             auto str0 = boost::get<string>(&str->prim());
             if (str0) {
@@ -129,7 +129,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // streamOut#: stream.
     reader.cpp[CPP_STREAM_DIR] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
-        ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
+        ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         if (stream != nullptr) {
             auto stream0 = boost::get<StreamPtr>(&stream->prim());
             if (stream0) {
@@ -162,8 +162,8 @@ void spawnSystemCallsNew(ObjectPtr global,
     // streamPutln#: stream, str.
     reader.cpp[CPP_STREAM_PUT] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
-        ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
-        ObjectPtr str = (*dyn)[ Symbols::get()["$2"] ].getPtr();
+        ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
+        ObjectPtr str = (*dyn)[ Symbols::get()["$2"] ];
         if ((stream != nullptr) && (str != nullptr)) {
             auto stream0 = boost::get<StreamPtr>(&stream->prim());
             auto str0 = boost::get<string>(&str->prim());
@@ -529,7 +529,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // streamRead#: stream.
     reader.cpp[CPP_STREAM_READ] = [&reader](IntState& state0) {
         ObjectPtr dyn = state0.dyn.top();
-        ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ].getPtr();
+        ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         if (stream != NULL) {
             auto stream0 = boost::get<StreamPtr>(&stream->prim());
             if (stream0) {
@@ -1014,7 +1014,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                 value = curr;
                 break;
             }
-            curr = (*curr)[ Symbols::get()["parent"] ].getPtr();
+            curr = (*curr)[ Symbols::get()["parent"] ];
         }
         if (value == nullptr) {
             throwError(state0, reader, "SlotError", "Cannot find origin of nonexistent slot");
@@ -1243,8 +1243,8 @@ void spawnSystemCallsNew(ObjectPtr global,
      // streamFileOpen#: strm, fname, access, mode.
      reader.cpp[CPP_FILE_DOOPEN] = [&reader](IntState& state0) {
          ObjectPtr dyn = state0.dyn.top();
-         ObjectPtr access = (*dyn)[ Symbols::get()["$3"] ].getPtr();
-         ObjectPtr mode = (*dyn)[ Symbols::get()["$4"] ].getPtr();
+         ObjectPtr access = (*dyn)[ Symbols::get()["$3"] ];
+         ObjectPtr mode = (*dyn)[ Symbols::get()["$4"] ];
          auto access0 = boost::get<Symbolic>(&access->prim());
          auto mode0 = boost::get<Symbolic>(&mode->prim());
          if (access0 && mode0) {

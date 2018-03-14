@@ -163,15 +163,17 @@ class Object {
 private:
     std::unordered_map<Symbolic, Slot> slots;
     Prim primitive;
+
+    Slot getSlot(Symbolic key) const;
+
 public:
 
-    /// Returns a copy of the slot with the specified key. If no such
-    /// slot exists, an empty slot is returned but is not stored in
-    /// the object.
+    /// Returns a the object in the specified slot. If no such
+    /// slot exists, the null pointer is returned.
     ///
     /// \param key the key
     /// \return the slot
-    Slot operator [](Symbolic key) const;
+    ObjectPtr operator [](Symbolic key) const;
 
     /// Stores a particular object, which shall be non-null, at the
     /// given key. If no slot at that key exists, one is created with

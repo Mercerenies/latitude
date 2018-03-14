@@ -56,7 +56,7 @@ void addSlotsToFrontier(const Container& visited, Container& frontier, Object* c
 #if GC_PRINT > 1
         std::cout << "<<Key " << Symbols::get()[key] << ">>" << std::endl;
 #endif
-        auto val = (*curr)[key].getPtr();
+        auto val = (*curr)[key];
         addToFrontier(visited, frontier, val.get());
     }
 #if GC_PRINT > 1

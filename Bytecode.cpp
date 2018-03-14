@@ -400,14 +400,14 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr->prim());
-        Slot closure = (*state.ptr)[ Symbols::get()["closure"] ];
+        ObjectPtr closure = (*state.ptr)[ Symbols::get()["closure"] ];
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
-            (closure.getType() == SlotType::PTR) << " " <<
+            (closure != nullptr) << " " <<
             (stmt ? stmt->index().index : -1) << " " <<
             (stmt ? stmt->translationUnit() : nullptr) << endl;
 #endif
-        if ((closure.getType() == SlotType::PTR) && stmt) {
+        if ((closure != nullptr) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
             if (!state.dyn.empty())
@@ -416,7 +416,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
             auto lex = state.lex.top(); // TODO Possible empty stack error?
-            state.lex.push( clone(closure.getPtr()) );
+            state.lex.push( clone(closure) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
@@ -502,8 +502,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&state.ptr->prim());
-        Slot closure = (*state.ptr)[ Symbols::get()["closure"] ];
-        if ((closure.getType() == SlotType::PTR) && stmt) {
+        ObjectPtr closure = (*state.ptr)[ Symbols::get()["closure"] ];
+        if ((closure != nullptr) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
             if (!state.dyn.empty())
@@ -512,7 +512,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
             auto lex = state.lex.top(); // TODO Possible empty stack error?
-            state.lex.push( clone(closure.getPtr()) );
+            state.lex.push( clone(closure) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
@@ -589,12 +589,12 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         // Try to find the value itself
         while (find(parents.begin(), parents.end(), curr) == parents.end()) {
             parents.push_back(curr);
-            Slot slot = (*curr)[name];
-            if (slot.getType() == SlotType::PTR) {
-                value = slot.getPtr();
+            ObjectPtr slot = (*curr)[name];
+            if (slot != nullptr) {
+                value = slot;
                 break;
             }
-            curr = (*curr)[ sym ].getPtr();
+            curr = (*curr)[ sym ];
         }
         if (value == nullptr) {
 #if DEBUG_INSTR > 2
@@ -612,12 +612,12 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             curr = state.slf;
             while (find(parents.begin(), parents.end(), curr) == parents.end()) {
                 parents.push_back(curr);
-                Slot slot = (*curr)[name];
-                if (slot.getType() == SlotType::PTR) {
-                    value = slot.getPtr();
+                ObjectPtr slot = (*curr)[name];
+                if (slot != nullptr) {
+                    value = slot;
                     break;
                 }
-                curr = (*curr)[ sym ].getPtr();
+                curr = (*curr)[ sym ];
             }
             state.ret = value;
 #if DEBUG_INSTR > 1
@@ -635,12 +635,12 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                     curr = state.lex.top();
                     while (find(parents.begin(), parents.end(), curr) == parents.end()) {
                         parents.push_back(curr);
-                        Slot slot = (*curr)[name];
-                        if (slot.getType() == SlotType::PTR) {
-                            value = slot.getPtr();
+                        ObjectPtr slot = (*curr)[name];
+                        if (slot != nullptr) {
+                            value = slot;
                             break;
                         }
-                        curr = (*curr)[ sym ].getPtr();
+                        curr = (*curr)[ sym ];
                     }
                     state.ret = value;
                 }
@@ -652,12 +652,12 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                     name = Symbols::get()["missed"];
                     while (find(parents.begin(), parents.end(), curr) == parents.end()) {
                         parents.push_back(curr);
-                        Slot slot = (*curr)[name];
-                        if (slot.getType() == SlotType::PTR) {
-                            value = slot.getPtr();
+                        ObjectPtr slot = (*curr)[name];
+                        if (slot != nullptr) {
+                            value = slot;
                             break;
                         }
-                        curr = (*curr)[ sym ].getPtr();
+                        curr = (*curr)[ sym ];
                     }
                     state.ret = value;
                 }
@@ -700,9 +700,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "RTRVD (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
-        Slot slot = (*state.slf)[state.sym];
-        if (slot.getType() == SlotType::PTR)
-            state.ret = slot.getPtr();
+        ObjectPtr slot = (*state.slf)[state.sym];
+        if (slot != nullptr)
+            state.ret = slot;
         else
             state.err0 = true;
     }
@@ -1050,9 +1050,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
              after  = boost::get<Method>(&state.ptr->prim());
         if (before && after) {
             WindPtr frame = WindPtr(new WindFrame(Thunk(*before), Thunk(*after)));
-            frame->before.lex = (*state.slf)[ Symbols::get()["closure"] ].getPtr();
+            frame->before.lex = (*state.slf)[ Symbols::get()["closure"] ];
             frame->before.dyn = state.dyn.top();
-            frame->after.lex = (*state.ptr)[ Symbols::get()["closure"] ].getPtr();
+            frame->after.lex = (*state.ptr)[ Symbols::get()["closure"] ];
             frame->after.dyn = state.dyn.top();
             state.wind = pushNode(state.wind, frame);
         } else {

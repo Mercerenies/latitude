@@ -124,12 +124,16 @@ bool Slot::hasAnyProtection() const noexcept {
     return (protection != NO_PROTECTION);
 }
 
-Slot Object::operator [](Symbolic key) const {
+Slot Object::getSlot(Symbolic key) const {
     auto iter = slots.find(key);
     if (iter == slots.end())
         return Slot();
     else
         return iter->second;
+}
+
+ObjectPtr Object::operator [](Symbolic key) const {
+    return this->getSlot(key).getPtr();
 }
 
 void Object::put(Symbolic key, ObjectPtr ptr) {
@@ -152,11 +156,11 @@ set<Symbolic> Object::directKeys() const {
 }
 
 bool Object::isProtected(Symbolic key, protection_t p) const {
-    return (*this)[key].isProtected(p);
+    return this->getSlot(key).isProtected(p);
 }
 
 bool Object::hasAnyProtection(Symbolic key) const {
-    return (*this)[key].hasAnyProtection();
+    return this->getSlot(key).hasAnyProtection();
 }
 
 bool Object::addProtection(Symbolic key, protection_t p) {
@@ -190,7 +194,7 @@ void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
     auto curr = obj->directKeys();
     for (auto elem : curr)
         result.insert(elem);
-    _keys(parents, result, (*obj)[ Symbols::get()["parent"] ].getPtr());
+    _keys(parents, result, (*obj)[ Symbols::get()["parent"] ]);
 }
 
 set<Symbolic> keys(ObjectPtr obj) {
@@ -206,7 +210,7 @@ list<ObjectPtr> hierarchy(ObjectPtr obj) {
                 return obj == obj1;
             }) == parents.end()) {
         parents.push_back(obj);
-        obj = (*obj)[ Symbols::get()["parent"] ].getPtr();
+        obj = (*obj)[ Symbols::get()["parent"] ];
     }
     return parents;
 }
