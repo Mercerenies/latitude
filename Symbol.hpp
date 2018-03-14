@@ -23,7 +23,8 @@ private:
     static Symbols instance;
     bimap_t syms;
     index_t index;
-    Symbols() = default;
+    index_t parentIndex;
+    Symbols();
 public:
     static Symbolic gensym();
     static Symbolic gensym(std::string prefix);

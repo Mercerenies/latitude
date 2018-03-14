@@ -8,6 +8,11 @@ using namespace std;
 Symbols Symbols::instance = Symbols();
 long Symbols::gensymIndex = 100L;
 
+Symbols::Symbols()
+    : syms(), index(0), parentIndex(0) {
+    parentIndex = (*this)["parent"].index;
+}
+
 Symbolic Symbols::gensym() {
     return gensym("G");
 }
@@ -51,7 +56,7 @@ bool Symbols::requiresEscape(const std::string& str){
 }
 
 Symbolic Symbols::parent() {
-    return get()["parent"];
+    return { get().parentIndex };
 }
 
 Symbolic Symbols::operator[](const std::string& str) {
