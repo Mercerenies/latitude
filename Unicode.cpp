@@ -1,5 +1,6 @@
 
 #include "Unicode.hpp"
+#include "pl_Unidata.h"
 
 UniChar::UniChar(long cp)
     : codepoint(cp) {}
@@ -30,6 +31,10 @@ UniChar::operator std::string() {
 
 long UniChar::codePoint() {
     return codepoint;
+}
+
+uni_class_t UniChar::genCat() {
+    return get_class(codepoint);
 }
 
 long uniOrd(UniChar ch) {

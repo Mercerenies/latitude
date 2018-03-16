@@ -44,3 +44,7 @@ lex.yy.c
 lex.yy.h
 *.tab.c
 *.tab.h
+
+# Generated source files
+pl_*.c
+pl_*.h

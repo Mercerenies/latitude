@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o latitude
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o
 
 all: Project
 
@@ -94,7 +94,7 @@ Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
 Allocator.o:	Allocator.cpp Allocator.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp
 	$(CXX) $(CXXFLAGS) Allocator.cpp
 
-Unicode.o:	Unicode.cpp Unicode.hpp
+Unicode.o:	Unicode.cpp Unicode.hpp pl_Unidata.h
 	$(CXX) $(CXXFLAGS) Unicode.cpp
 
 Args.o:	Args.cpp Args.hpp
@@ -102,6 +102,15 @@ Args.o:	Args.cpp Args.hpp
 
 Assembler.o:	Assembler.cpp Assembler.hpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) Assembler.cpp
+
+pl_Unidata.o:	pl_Unidata.c pl_Unidata.h
+	$(CC) $(CCFLAGS) pl_Unidata.c -o pl_Unidata.o
+
+pl_Unidata.c:	unicode_data.pl misc/uni/UnicodeData.txt
+	perl unicode_data.pl source >pl_Unidata.c
+
+pl_Unidata.h:	unicode_data.pl misc/uni/UnicodeData.txt
+	perl unicode_data.pl header >pl_Unidata.h
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
