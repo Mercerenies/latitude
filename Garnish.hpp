@@ -57,18 +57,59 @@ InstrSeq garnishSeq(long value);
 /// \return a sequence of instructions
 InstrSeq garnishSeq(Symbolic value);
 
+/// Returns the Latitude Boolean value True or False, depending on the
+/// value of the argument.
+///
+/// \param reader the read-only state
+/// \param value the Boolean value
+/// \return either True or False, the Latitude objects
 ObjectPtr garnishObject(const ReadOnlyState& reader, bool value);
 
+/// Returns the Latitude special value Nil.
+///
+/// \param reader the read-only state
+/// \param value a placeholder for the "empty" object
+/// \return the Nil object
 ObjectPtr garnishObject(const ReadOnlyState& reader, boost::blank value);
 
+/// Allocates and returns a new Latitude string object representing
+/// the given string.
+///
+/// \param reader the read-only state
+/// \param value the string value
+/// \return a Latitude string object
 ObjectPtr garnishObject(const ReadOnlyState& reader, std::string value);
 
+/// Allocates and returns a new Latitude symbol object representing
+/// the given symbol.
+///
+/// \param reader the read-only state
+/// \param value the symbol value
+/// \return a Latitude symbol object
 ObjectPtr garnishObject(const ReadOnlyState& reader, Symbolic value);
 
+/// Allocates and returns a new Latitude numerical object representing
+/// the given integer.
+///
+/// \param reader the read-only state
+/// \param value the integer value
+/// \return a Latitude number object
 ObjectPtr garnishObject(const ReadOnlyState& reader, int value);
 
+/// Allocates and returns a new Latitude numerical object representing
+/// the given integer.
+///
+/// \param reader the read-only state
+/// \param value the integer value
+/// \return a Latitude number object
 ObjectPtr garnishObject(const ReadOnlyState& reader, long value);
 
+/// Allocates and returns a new Latitude numerical object representing
+/// the given number.
+///
+/// \param reader the read-only state
+/// \param value the number object
+/// \return a Latitude number object
 ObjectPtr garnishObject(const ReadOnlyState& reader, Number value);
 
 #endif // GARNISH_HPP

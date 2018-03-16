@@ -137,6 +137,7 @@ void hardKill(IntState& state, const ReadOnlyState& reader);
 /// the wind frame enter thunks.
 ///
 /// \param state the interpreter state
+/// \param reader the read-only interpreter state
 /// \param oldWind the wind stack that the continuation is jumping \e from
 /// \param newWind the wind stack that the continuation is jumping \e to
 void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);

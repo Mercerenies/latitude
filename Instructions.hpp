@@ -41,17 +41,40 @@ enum class Reg : unsigned char {
 /// the read-only `%%lit` register, which contains a table of special
 /// objects.
 namespace Lit {
+
+    /// \brief The index of the Nil object.
     constexpr long NIL    =  0L;
+
+    /// \brief The index of the False object.
     constexpr long FALSE  =  1L;
+
+    /// \brief The index of the True object.
     constexpr long TRUE   =  2L;
+
+    /// \brief The index of the Boolean object.
     constexpr long BOOL   =  3L;
+
+    /// \brief The index of the String object.
     constexpr long STRING =  4L;
+
+    /// \brief The index of the Number object.
     constexpr long NUMBER =  5L;
+
+    /// \brief The index of the Symbol object.
     constexpr long SYMBOL =  6L;
+
+    /// \brief The index of the StackFrame object.
     constexpr long SFRAME =  7L;
+
+    /// \brief The index of the Method object.
     constexpr long METHOD =  8L;
+
+    /// \brief The index of the FileHeader object.
     constexpr long FHEAD  =  9L;
+
+    /// \brief The index of the err object.
     constexpr long ERR    = 10L;
+
 }
 
 /// A function index is fundamentally just an integral value. This
@@ -194,7 +217,7 @@ void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq);
 /// Appends an opcode to a serialized instruction sequence, as a
 /// sequence of characters.
 ///
-/// \param arg the instruction
+/// \param instr the instruction
 /// \param seq the serialized instruction sequence
 void appendInstruction(const Instr& instr, SerialInstrSeq& seq);
 

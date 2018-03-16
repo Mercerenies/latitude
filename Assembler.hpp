@@ -9,6 +9,9 @@
 ///
 /// \brief Argument type-checking for assembler-level VM instructions.
 
+/// This enum lists the different types of arguments that can be
+/// provided to assembler instructions, in a form accessible at
+/// runtime.
 enum class AsmType {
     LONG,
     STRING,
@@ -299,6 +302,11 @@ InstrSeq asmCode(Ts... args) {
     return seq;
 }
 
+/// Returns a vector containing all of the argument types expected by
+/// the given instruction.
+///
+/// \param instr the instruction
+/// \return a list of arguments
 std::vector<AsmType> getAsmArguments(Instr instr);
 
 #endif // ASSEMBLER_HPP

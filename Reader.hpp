@@ -20,9 +20,17 @@ using PtrToList = std::unique_ptr< List, ExprDeleter >;
 
 class Stmt;
 
+/// \brief A scope consists of a lexical scoping object and a dynamic
+/// scoping object.
 struct Scope {
+
+    /// \brief The lexical scope.
     ObjectPtr lex;
+
+    /// \brief The dynamic scope.
     ObjectPtr dyn;
+
+
 };
 
 extern "C" void setCurrentLine(List* stmt);
