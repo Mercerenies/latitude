@@ -1,12 +1,12 @@
 
 ifndef BOOST
-  #BOOST='D:/boost/boost_1_60_0'
-  BOOST=$(shell readlink -f ~/D/Downloads/boost_1_64_0)
+  #BOOST=-I 'D:/boost/boost_1_60_0'
+  #BOOST=-I $(shell readlink -f ~/D/Downloads/boost_1_66_0)
 endif
 
 CCFLAGS=-c -Wall
-CXXFLAGS=-I $(BOOST) -c -Wall -std=gnu++1y
-LINKFLAGS=-I $(BOOST) -Wall -std=gnu++1y
+CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
+LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o latitude
 FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o
 
