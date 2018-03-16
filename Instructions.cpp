@@ -5,9 +5,6 @@
 
 using namespace std;
 
-Instruction::Instruction(Instr i, const std::vector<RegisterArg> v)
-    : instr(i), args(v) {}
-
 InstructionSet InstructionSet::iset;
 
 InstructionSet& InstructionSet::getInstance() {
@@ -170,12 +167,50 @@ void appendInstruction(const Instr& instr, SerialInstrSeq& seq) {
     seq.push_back((unsigned char)instr);
 }
 
+AssemblerLineArgs::AssemblerLineArgs(const AssemblerLine& inner)
+    : impl(inner) {}
+
+AssemblerLine::const_iterator AssemblerLineArgs::begin() const {
+    return impl.iterBegin();
+}
+
+AssemblerLine::const_iterator AssemblerLineArgs::end() const {
+    return impl.iterEnd();
+}
+
+AssemblerLine::AssemblerLine(Instr code)
+    : command(code), args() {}
+
+Instr AssemblerLine::getCommand() const noexcept {
+    return command;
+}
+
 void AssemblerLine::setCommand(Instr str) {
     command = str;
 }
 
 void AssemblerLine::addRegisterArg(const RegisterArg& arg) {
     args.push_back(arg);
+}
+
+AssemblerLineArgs AssemblerLine::arguments() const {
+    return AssemblerLineArgs(*this);
+}
+
+RegisterArg AssemblerLine::argument(int n) const {
+    return args[n];
+}
+
+RegisterArg AssemblerLine::argumentCount() const {
+    return args.size();
+}
+
+auto AssemblerLine::iterBegin() const -> const_iterator {
+    return args.begin();
+}
+
+auto AssemblerLine::iterEnd() const -> const_iterator {
+    return args.end();
 }
 
 void AssemblerLine::validate() {
@@ -196,7 +231,7 @@ void AssemblerLine::validate() {
 }
 
 void AssemblerLine::appendOnto(InstrSeq& seq) const {
-    seq.emplace_back(command, args);
+    seq.emplace_back(*this);
 }
 
 // We may rename this function to overload with the above function in the future.
@@ -296,23 +331,23 @@ bool MethodSeek::atEnd() {
 }
 
 long MethodSeek::readLong(int n) {
-    return boost::get<long>(instructions()[position()].args[n]);
+    return boost::get<long>(instructions()[position()].argument(n));
 }
 
 string MethodSeek::readString(int n) {
-    return boost::get<string>(instructions()[position()].args[n]);
+    return boost::get<string>(instructions()[position()].argument(n));
 }
 
 Reg MethodSeek::readReg(int n) {
-    return boost::get<Reg>(instructions()[position()].args[n]);
+    return boost::get<Reg>(instructions()[position()].argument(n));
 }
 
 Instr MethodSeek::readInstr() {
-    return instructions()[position()].instr;
+    return instructions()[position()].getCommand();
 }
 
 FunctionIndex MethodSeek::readFunction(int n) {
-    return boost::get<FunctionIndex>(instructions()[position()].args[n]);
+    return boost::get<FunctionIndex>(instructions()[position()].argument(n));
 }
 
 InstrSeq& MethodSeek::instructions() {

@@ -84,29 +84,17 @@ struct FunctionIndex {
     int index;
 };
 
-struct Instruction;
-
 /// A serial instruction sequence is a sequence of characters.
 using SerialInstrSeq = std::deque<unsigned char>;
 
 /// A (non-serial) instruction sequence is a sequence of instructions.
-using InstrSeq = std::deque<Instruction>;
+using InstrSeq = std::deque<AssemblerLine>;
 
 /// \brief An argument to an instruction.
 ///
 /// Arguments to instructions can be references to registers, integer
 /// values, string values, or indices of functions in the VM.
 using RegisterArg = boost::variant<Reg, long, std::string, FunctionIndex>;
-
-/// A single instruction consists of the instruction's opcode,
-/// followed by zero or more arguments.
-struct Instruction {
-    Instr instr;
-    std::vector<RegisterArg> args;
-
-    Instruction(Instr, const std::vector<RegisterArg>);
-
-};
 
 /// The singleton InstructionSet instance manages the collection of
 /// valid instruction opcodes. It is used by makeRuntimeAssemblerLine
@@ -221,8 +209,7 @@ void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq);
 /// \param seq the serialized instruction sequence
 void appendInstruction(const Instr& instr, SerialInstrSeq& seq);
 
-// TODO When we're done, it's possible that AssemblerLine could end up
-// serving the purpose of the Instruction struct as well.
+class AssemblerLineArgs;
 
 /// An AssemblerLine is a single instruction as it is being built
 /// up. Assembler lines consist of a single opcode and zero or more
@@ -233,8 +220,18 @@ private:
     std::vector<RegisterArg> args;
 public:
 
+    using const_iterator = decltype(args)::const_iterator;
+
     /// \brief Constructs an empty assembler line.
     AssemblerLine() = default;
+
+    /// \brief Constructs an assembler line with the given opcode
+    AssemblerLine(Instr code);
+
+    /// \brief Gets the opcode for the assembler line.
+    ///
+    /// \return the opcode
+    Instr getCommand() const noexcept;
 
     /// \brief Sets the opcode for the assembler line.
     ///
@@ -245,6 +242,16 @@ public:
     ///
     /// \param arg the argument
     void addRegisterArg(const RegisterArg& arg);
+
+    AssemblerLineArgs arguments() const;
+
+    RegisterArg argument(int n) const;
+
+    RegisterArg argumentCount() const;
+
+    const_iterator iterBegin() const;
+
+    const_iterator iterEnd() const;
 
     /// \brief Verifies the integrity of the instruction and its arguments.
     ///
@@ -264,6 +271,16 @@ public:
     ///
     /// \param seq the serialized instruction sequence
     void appendOntoSerial(SerialInstrSeq& seq) const;
+
+};
+
+class AssemblerLineArgs {
+private:
+    const AssemblerLine& impl;
+public:
+    AssemblerLineArgs(const AssemblerLine& inner);
+    AssemblerLine::const_iterator begin() const;
+    AssemblerLine::const_iterator end() const;
 };
 
 /// For efficiency reasons, it is undesirable to pass around methods

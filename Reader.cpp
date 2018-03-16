@@ -232,8 +232,8 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
 void saveInstrs(ofstream& file, const InstrSeq& seq) {
     SerialInstrSeq compiled;
     for (const auto& instr : seq) {
-        appendInstruction(instr.instr, compiled);
-        for (const auto& arg : instr.args) {
+        appendInstruction(instr.getCommand(), compiled);
+        for (const auto& arg : instr.arguments()) {
             appendRegisterArg(arg, compiled);
         }
     }
@@ -283,20 +283,20 @@ void parseSeq(InstrSeq& seqOut, SerialInstrSeq& seqIn) {
     // Note: Destroys the sequence as it reads it
     while (!seqIn.empty()) {
         Instr instr = popInstr(seqIn);
-        Instruction instruction { instr, {} };
+        AssemblerLine instruction { instr };
         for (const auto& arg : getAsmArguments(instr)) {
             switch (arg) {
             case AsmType::LONG:
-                instruction.args.push_back(popLong(seqIn));
+                instruction.addRegisterArg(popLong(seqIn));
                 break;
             case AsmType::STRING:
-                instruction.args.push_back(popString(seqIn));
+                instruction.addRegisterArg(popString(seqIn));
                 break;
             case AsmType::REG:
-                instruction.args.push_back(popReg(seqIn));
+                instruction.addRegisterArg(popReg(seqIn));
                 break;
             case AsmType::ASM:
-                instruction.args.push_back(popFunction(seqIn));
+                instruction.addRegisterArg(popFunction(seqIn));
                 break;
             }
         }
