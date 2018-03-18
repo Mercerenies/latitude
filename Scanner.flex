@@ -16,7 +16,7 @@
      int line_num = 1;
      int comments = 0;
      int hash_parens = 0;
-     const char* ops = "!@#%^*-+/<=>?\\|~";
+     const char* ops = "!@#%^&*-+/<=>?\\|~";
      char* curr_buffer = NULL;
      int curr_buffer_size = 0;
      int curr_buffer_pos = 0;
