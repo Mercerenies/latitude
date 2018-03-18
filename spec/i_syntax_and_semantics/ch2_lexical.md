@@ -38,6 +38,9 @@ characters in the Latitude parser: special, semi-special, and normal.
  * Normal characters can appear anywhere in an identifier. Any
    character that is not in any of the above classes is considered
    normal.
+ * The backtick (`U+0060`) and backslash (`U+005C`) are reserved for
+   future extensions to the language and should not be used in
+   identifiers.
 
 ## Identifiers
 
