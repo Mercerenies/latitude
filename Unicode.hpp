@@ -12,7 +12,7 @@ public:
     explicit UniChar(long cp);
     operator std::string();
     long codePoint();
-    uni_class_t genCat(); ///// WTF?
+    uni_class_t genCat();
 };
 
 long uniOrd(UniChar ch);

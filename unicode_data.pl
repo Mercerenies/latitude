@@ -93,8 +93,8 @@ struct block_data_t* get_block(long codepoint) {
         int pivot = (begin + end) / 2;
         if (codepoint < all_block_data[pivot].start) {
             end = pivot;
-        } else if (codepoint > all_block_data[pivot].end) {
-            begin = pivot;
+        } else if (codepoint >= all_block_data[pivot].end) {
+            begin = pivot + 1;
         } else {
             return &all_block_data[pivot];
         }

@@ -1,0 +1,112 @@
+;;* MODULE unicode
+;;* PACKAGE base
+
+use 'enum import '[Enumeration].
+
+Category ::= Enumeration of '[
+    Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pc, Pd,
+    Ps, Pe, Pi, Pf, Po, Sm, Sc, Sk, So, Zs, Zl, Zp, Cc,
+    Cf, Cs, Co, Cn
+].
+
+Category name := { self major ++ ", " ++ self minor. }.
+Category major := Nil.
+Category minor := Nil.
+
+Category Lu major := "Letter".
+Category Lu minor := "uppercase".
+
+Category Ll major := "Letter".
+Category Ll minor := "lowercase".
+
+Category Lt major := "Letter".
+Category Lt minor := "titlecase".
+
+Category Lm major := "Letter".
+Category Lm minor := "modifier".
+
+Category Lo major := "Letter".
+Category Lo minor := "other".
+
+Category Mn major := "Mark".
+Category Mn minor := "nonspacing".
+
+Category Mc major := "Mark".
+Category Mc minor := "spacing combining".
+
+Category Me major := "Mark".
+Category Me minor := "enclosing".
+
+Category Nd major := "Number".
+Category Nd minor := "decimal digit".
+
+Category Nl major := "Number".
+Category Nl minor := "letter".
+
+Category No major := "Number".
+Category No minor := "other".
+
+Category Pc major := "Punctuation".
+Category Pc minor := "connector".
+
+Category Pd major := "Punctuation".
+Category Pd minor := "dash".
+
+Category Ps major := "Punctuation".
+Category Ps minor := "open".
+
+Category Pe major := "Punctuation".
+Category Pe minor := "close".
+
+Category Pi major := "Punctuation".
+Category Pi minor := "initial quote".
+
+Category Pf major := "Punctuation".
+Category Pf minor := "final quote".
+
+Category Po major := "Punctuation".
+Category Po minor := "other".
+
+Category Sm major := "Symbol".
+Category Sm minor := "math".
+
+Category Sc major := "Symbol".
+Category Sc minor := "currency".
+
+Category Sk major := "Symbol".
+Category Sk minor := "modifier".
+
+Category So major := "Symbol".
+Category So minor := "other".
+
+Category Zs major := "Separator".
+Category Zs minor := "space".
+
+Category Zl major := "Separator".
+Category Zl minor := "line".
+
+Category Zp major := "Separator".
+Category Zp minor := "paragraph".
+
+Category Cc major := "Other".
+Category Cc minor := "control".
+
+Category Cf major := "Other".
+Category Cf minor := "format".
+
+Category Cs major := "Other".
+Category Cs minor := "surrogate".
+
+Category Co major := "Other".
+Category Co minor := "private use".
+
+Category Cn major := "Other".
+Category Cn minor := "not assigned".
+
+String category := {
+  (self == "") ifTrue {
+    err ArgError clone tap { self message := "`category` on empty string". } throw.
+  }.
+  cat := meta sys uniCat#: self.
+  Category value (cat).
+}.

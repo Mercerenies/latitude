@@ -2172,6 +2172,26 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "Stream expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_STREAM_FLUSH))));
 
+     // CPP_UNI_CAT (put the category of the string in %str0 into %ret as a number object)
+     // uniCat#: str.
+     reader.cpp[CPP_UNI_CAT] = [&reader](IntState& state0) {
+         auto ch = charAt(state0.str0, 0L);
+         if (ch)
+             state0.ret = garnishObject(reader, static_cast<long>(ch->genCat()));
+         else
+             state0.ret = garnishObject(reader, 0L);
+     };
+     sys->put(Symbols::get()["uniCat#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::CPP, CPP_UNI_CAT))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
