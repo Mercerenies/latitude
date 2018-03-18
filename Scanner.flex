@@ -6,6 +6,7 @@
 
 %{
      #include "Parser.tab.h"
+     #include "Operator.h"
      #ifdef __cplusplus
      #include <cstdlib>
      #include <cstring>
@@ -16,7 +17,6 @@
      int line_num = 1;
      int comments = 0;
      int hash_parens = 0;
-     const char* ops = "!@#%^*-+/<=>?\\|~"; // Expand to Pd, Po, Sm, Sk (all of P*, S*?) /////
      char* curr_buffer = NULL;
      int curr_buffer_size = 0;
      int curr_buffer_pos = 0;
@@ -44,11 +44,7 @@
      }
      int id_classify(char* arr) {
          // TODO We would like to support Unicode in operator names at some point...
-         for (int i = 0; arr[i] != 0; i++) {
-             if (strchr(ops, arr[i]) == NULL)
-               return STDNAME;
-         }
-         return OPNAME;
+         return (is_operator(arr) ? OPNAME : STDNAME);
      }
 
      // TODO Should backslashes be allowed in identifiers or should they be "special" characters?

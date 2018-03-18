@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o latitude
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o
 
 all: Project
 
@@ -46,7 +46,7 @@ Scanner.o:	lex.yy.c lex.yy.h
 Parser.o:	Parser.tab.c
 	$(CXX) $(CXXFLAGS) Parser.tab.c -o Parser.o
 
-lex.yy.c:	Scanner.flex Parser.tab.c
+lex.yy.c:	Scanner.flex Parser.tab.c Operator.h
 	flex Scanner.flex
 
 Parser.tab.c:	Parser.y
@@ -111,6 +111,9 @@ pl_Unidata.c:	unicode_data.pl misc/uni/UnicodeData.txt
 
 pl_Unidata.h:	unicode_data.pl misc/uni/UnicodeData.txt
 	perl unicode_data.pl header >pl_Unidata.h
+
+Operator.o:	Operator.cpp Operator.h Unicode.hpp
+	$(CXX) $(CXXFLAGS) Operator.cpp -o Operator.o
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
