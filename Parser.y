@@ -257,7 +257,8 @@ literal:
     ZERODISPATCH { $$ = makeExpr(); $$->isZeroDispatch = true;
                    $$->name = $1; } |
     HASHQUOTE name { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = makeExpr();
-                     $$->lhs->lhs = NULL; $$->lhs->name = $2; }
+                     $$->lhs->lhs = NULL; $$->lhs->name = $2; } |
+    HASHQUOTE literalish { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = $2; }
     ;
 linelist:
     line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |

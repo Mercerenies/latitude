@@ -46,6 +46,10 @@ PtrToList getCurrentLine() {
 unique_ptr<Stmt> translateStmt(Expr* expr, bool held);
 list< unique_ptr<Stmt> > translateList(List* list, bool held);
 
+// TODO Should #'( ... ) block evaluations of methods within it?
+// i.e.
+//  #'( foo { bar. } ).
+// is the `bar` call blocked? Currently, no. But should it be?
 unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
     int line = expr->line;
     if (expr->isSymbol) {
