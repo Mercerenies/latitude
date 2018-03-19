@@ -44,7 +44,7 @@
      }
      int id_classify(char* arr) {
          // TODO We would like to support Unicode in operator names at some point...
-         return (is_operator(arr) ? OPNAME : STDNAME);
+         return (isOperator(arr) ? OPNAME : STDNAME);
      }
 
      // TODO Should backslashes be allowed in identifiers or should they be "special" characters?

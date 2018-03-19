@@ -7,9 +7,9 @@ extern "C" {
 
 typedef int BOOL;
 
-BOOL is_operator(char* id);
+BOOL isOperator(char* id);
 
-BOOL is_operator_char(long cp);
+BOOL isOperatorChar(long cp);
 
 #ifdef __cplusplus
 }
