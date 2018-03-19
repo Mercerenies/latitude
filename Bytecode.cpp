@@ -278,7 +278,6 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     case Instr::GETL: {
 #if DEBUG_INSTR > 0
         cout << "GETL" << endl;
-//        cout << "* " << state.lex.top() << endl;
 #endif
         Reg dest = state.cont.readReg(0);
         if (state.lex.empty()) {
@@ -304,9 +303,6 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     case Instr::GETD: {
 #if DEBUG_INSTR > 0
         cout << "GETD" << endl;
-#if DEBUG_INSTR > 1
-//        cout << "* " << state.dyn.top() << endl;
-#endif
 #endif
         Reg dest = state.cont.readReg(0);
         if (state.dyn.empty()) {
@@ -394,8 +390,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         long args = state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
-#if DEBUG_INSTR > 1
-//        cout << "* Method Properties " << state.ptr << endl;
+#if DEBUG_INSTR > 2
+        cout << "* Method Properties " << state.ptr << endl;
 #endif
 #endif
         // (1) Perform a hard check for `closure`
@@ -684,7 +680,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             }
         } else {
 #if DEBUG_INSTR > 1
-//            cout << "* Found " << value << endl;
+            cout << "* Found " << value << endl;
 #if DEBUG_INSTR > 2
             auto stmt = boost::get<Method>(&value->prim());
             cout << "* Method Properties " <<
@@ -1086,7 +1082,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             }
         };
         recurse(state.hand);
-#if DEBUG_INSTR > 0
+#if DEBUG_INSTR > 1
         cout << "* Got handlers: " << handlers.size() << endl;
 #endif
         state.stack = pushNode(state.stack, state.cont);
@@ -1323,7 +1319,7 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
     state.cont.advancePosition(1);
     if (state.cont.atEnd()) {
         // Pop off the stack
-#if DEBUG_INSTR > 0
+#if DEBUG_INSTR > 1
         cout << "<><><>" << endl;
 #endif
         if (state.stack) {
@@ -1334,8 +1330,8 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
     } else {
         // Run one command
         Instr instr = state.cont.readInstr();
-#if DEBUG_INSTR > 0
-        cout << (long)instr << endl;
+#if DEBUG_INSTR > 1
+        cout << "<" << (long)instr << ">" << endl;
 #endif
         executeInstr(instr, state, reader);
     }
