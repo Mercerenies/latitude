@@ -8,6 +8,53 @@
 
 using namespace std;
 
+#ifdef PROFILE_INSTR
+
+Profiling Profiling::instance;
+
+Profiling& Profiling::get() noexcept {
+    return instance;
+}
+
+void Profiling::_begin(unsigned char x) {
+    current = x;
+    tick = std::chrono::high_resolution_clock::now();
+}
+
+void Profiling::_end(unsigned char x) {
+    auto now = std::chrono::high_resolution_clock::now();
+    assert(current == x);
+    times[current] += (now - tick);
+    ++counts[current];
+}
+
+void Profiling::etcBegin() {
+    _begin(0);
+}
+
+void Profiling::etcEnd() {
+    _end(0);
+}
+
+void Profiling::instructionBegin(Instr x) {
+    _begin((unsigned char)x);
+}
+
+void Profiling::instructionEnd(Instr x) {
+    _end((unsigned char)x);
+}
+
+void Profiling::dumpData() {
+    std::cout << "Profile data:" << std::endl;
+    std::cout << "ins\tcount\ttime" << std::endl;
+    for (int ch = 0; ch <= 255; ch++) {
+        auto count = std::chrono::duration_cast<std::chrono::nanoseconds>(times[ch]);
+        std::cout << ch << "\t" << counts[ch] << "\t" << count.count() << " ns" << std::endl;
+    }
+}
+
+#endif
+
 Thunk::Thunk(Method code)
     : Thunk(code, nullptr, nullptr) {}
 
@@ -1323,8 +1370,14 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
         cout << "<><><>" << endl;
 #endif
         if (state.stack) {
+#ifdef PROFILE_INSTR
+            Profiling::get().etcBegin();
+#endif
             state.cont = state.stack->get();
             state.stack = popNode(state.stack);
+#ifdef PROFILE_INSTR
+            Profiling::get().etcEnd();
+#endif
             doOneStep(state, reader);
         }
     } else {
@@ -1333,7 +1386,13 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 1
         cout << "<" << (long)instr << ">" << endl;
 #endif
+#ifdef PROFILE_INSTR
+        Profiling::get().instructionBegin(instr);
+#endif
         executeInstr(instr, state, reader);
+#ifdef PROFILE_INSTR
+        Profiling::get().instructionEnd(instr);
+#endif
     }
 }
 

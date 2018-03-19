@@ -63,5 +63,9 @@ int main(int argc, char** argv) {
     }
     }
 
+#ifdef PROFILE_INSTR
+    Profiling::get().dumpData();
+#endif
+
     return 0;
 }

@@ -5,12 +5,15 @@
 #include <vector>
 #include <string>
 #include <stack>
+#include <chrono>
 #include <type_traits>
 #include "Symbol.hpp"
 #include "Number.hpp"
 #include "Proto.hpp"
 #include "Instructions.hpp"
 #include "Stack.hpp"
+
+//#define PROFILE_INSTR
 
 /// \file
 ///
@@ -19,6 +22,29 @@
 struct Thunk;
 struct WindFrame;
 struct IntState;
+
+#ifdef PROFILE_INSTR
+
+class Profiling {
+private:
+    static Profiling instance;
+    std::unordered_map<unsigned char, int> counts;
+    std::unordered_map<unsigned char, std::chrono::duration<double>> times;
+    unsigned char current;
+    std::chrono::time_point<std::chrono::high_resolution_clock> tick;
+    Profiling() = default;
+    void _begin(unsigned char x);
+    void _end(unsigned char x);
+public:
+    static Profiling& get() noexcept;
+    void etcBegin();
+    void etcEnd();
+    void instructionBegin(Instr x);
+    void instructionEnd(Instr x);
+    void dumpData();
+};
+
+#endif // PROFILE_INSTR
 
 /// \brief A CppFunction represents a C++ function that is callable
 /// from within the Latitude VM.
