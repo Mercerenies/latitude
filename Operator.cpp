@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <boost/optional.hpp>
 
-static const char* ops = "!@#%^*-+/<=>?\\|~"; // Expand to Pd, Po, Sm, Sk (all of P*, S*?) /////
-
 BOOL isOperator(char* id) {
     std::string str(id);
     boost::optional<long> pos { 0L };
