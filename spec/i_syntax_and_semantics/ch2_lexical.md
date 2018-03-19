@@ -51,13 +51,16 @@ normal or semi-special.
 There are two types of identifiers: standard identifiers and operator
 identifiers. For the most part, they are equivalent. However, operator
 identifiers will always expect argument lists when called as
-methods. An operator identifier is one that consists only of the
-following characters:
+methods. An operator identifier is one that consists only of operator
+characters. Any identifier which is not an operator identifier is a
+standard identifier.
 
-    ! @ # % ^ * - + / < = > ? \ | ~
-
-Any identifier which is not an operator identifier is a standard
-identifier.
+Operator characters are characters which satisfy all of the following
+properties.
+ 1. The character can appear in Latitude identifiers.
+ 2. The character is a punctuation or symbol character, according to
+    the Unicode general category.
+ 3. The character is not the dollar sign (`U+0024`).
 
 Note that an identifier ending with an equal-sign (`=`) is often
 called an assignment identifier, as there is a special syntax which

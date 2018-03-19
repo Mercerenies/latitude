@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o latitude
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o
 
 all: Project
 
@@ -37,7 +37,7 @@ clean:
 Proto.o:	Proto.cpp Proto.hpp Stream.hpp GC.hpp Symbol.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp Allocator.hpp
 	$(CXX) $(CXXFLAGS) Proto.cpp
 
-Standard.o:	Standard.cpp Standard.hpp Proto.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Environment.hpp Pathname.hpp Stack.hpp Platform.hpp
+Standard.o:	Standard.cpp Standard.hpp Proto.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Environment.hpp Pathname.hpp Stack.hpp Platform.hpp Unicode.hpp pl_Unidata.h
 	$(CXX) $(CXXFLAGS) Standard.cpp
 
 Scanner.o:	lex.yy.c lex.yy.h
@@ -46,7 +46,7 @@ Scanner.o:	lex.yy.c lex.yy.h
 Parser.o:	Parser.tab.c
 	$(CXX) $(CXXFLAGS) Parser.tab.c -o Parser.o
 
-lex.yy.c:	Scanner.flex Parser.tab.c
+lex.yy.c:	Scanner.flex Parser.tab.c Operator.h
 	flex Scanner.flex
 
 Parser.tab.c:	Parser.y
@@ -94,7 +94,7 @@ Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
 Allocator.o:	Allocator.cpp Allocator.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp
 	$(CXX) $(CXXFLAGS) Allocator.cpp
 
-Unicode.o:	Unicode.cpp Unicode.hpp
+Unicode.o:	Unicode.cpp Unicode.hpp pl_Unidata.h
 	$(CXX) $(CXXFLAGS) Unicode.cpp
 
 Args.o:	Args.cpp Args.hpp
@@ -102,6 +102,18 @@ Args.o:	Args.cpp Args.hpp
 
 Assembler.o:	Assembler.cpp Assembler.hpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) Assembler.cpp
+
+pl_Unidata.o:	pl_Unidata.c pl_Unidata.h
+	$(CC) $(CCFLAGS) pl_Unidata.c -o pl_Unidata.o
+
+pl_Unidata.c:	unicode_data.pl misc/uni/UnicodeData.txt
+	perl unicode_data.pl source >pl_Unidata.c
+
+pl_Unidata.h:	unicode_data.pl misc/uni/UnicodeData.txt
+	perl unicode_data.pl header >pl_Unidata.h
+
+Operator.o:	Operator.cpp Operator.h Unicode.hpp pl_Unidata.h
+	$(CXX) $(CXXFLAGS) Operator.cpp -o Operator.o
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
