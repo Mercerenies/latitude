@@ -178,7 +178,7 @@ namespace MagicNumber {
                             Coerce<Number::floating>::act(second));
             auto first0 = Coerce<V>::act(first);
             auto second0 = Coerce<U>::act(second);
-            auto div = Coerce<wide_t>::act(floor((Number::floating)first0 / (Number::floating)second0));
+            auto div = Coerce<wide_t>::act(floor((wide_t)(first0 / second0)));
             wide_t result = first0 - div * second0;
             return Number::magic_t(result);
         }
