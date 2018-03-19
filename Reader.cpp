@@ -43,10 +43,10 @@ PtrToList getCurrentLine() {
     return std::move(currentLine);
 }
 
-unique_ptr<Stmt> translateStmt(Expr* expr);
-list< unique_ptr<Stmt> > translateList(List* list);
+unique_ptr<Stmt> translateStmt(Expr* expr, bool held);
+list< unique_ptr<Stmt> > translateList(List* list, bool held);
 
-unique_ptr<Stmt> translateStmt(Expr* expr) {
+unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
     int line = expr->line;
     if (expr->isSymbol) {
         return unique_ptr<Stmt>(new StmtSymbol(line, expr->name));
@@ -59,13 +59,13 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
     } else if (expr->isBigInt) {
         return unique_ptr<Stmt>(new StmtBigInteger(line, expr->name));
     } else if (expr->isList) {
-        auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
+        auto args = expr->args ? translateList(expr->args, held) : list< unique_ptr<Stmt> >();
         return unique_ptr<Stmt>(new StmtList(line, args));
     } else if (expr->isSigil) {
         // Recall that sigil names are verified to start with a ~ in the parser
         assert(expr->name[0] == '~');
         std::string name = expr->name + 1;
-        return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(expr->rhs)));
+        return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(expr->rhs, held)));
     } else if (expr->isHashParen) {
         return unique_ptr<Stmt>(new StmtHashParen(line, expr->name));
     } else if (expr->isZeroDispatch) {
@@ -75,13 +75,13 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
         else
             return unique_ptr<Stmt>(new StmtZeroDispatch(line, name[2], name[0], name + 3));
     } else if (expr->isMethod) {
-        auto contents0 = translateList(expr->args);
+        auto contents0 = translateList(expr->args, held);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
         transform(contents0.begin(), contents0.end(), contents1.begin(),
                   [](auto& cc) { return move(cc); });
         return unique_ptr<Stmt>(new StmtMethod(line, contents1));
     } else if (expr->isSpecialMethod) {
-        auto contents0 = translateList(expr->args);
+        auto contents0 = translateList(expr->args, held);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
         transform(contents0.begin(), contents0.end(), contents1.begin(),
                   [](auto& cc) { return move(cc); });
@@ -89,43 +89,42 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
     } else if (expr->isComplex) {
         return unique_ptr<Stmt>(new StmtComplex(line, expr->number, expr->number1));
     } else if (expr->equals) {
-        auto rhs = translateStmt(expr->rhs);
+        auto rhs = translateStmt(expr->rhs, held);
         auto func = expr->name;
-        auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
+        auto lhs = expr->lhs ? translateStmt(expr->lhs, held) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtEqual(line, lhs, func, rhs));
     } else if (expr->equals2) {
-        auto rhs = translateStmt(expr->rhs);
+        auto rhs = translateStmt(expr->rhs, held);
         auto func = expr->name;
-        auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
+        auto lhs = expr->lhs ? translateStmt(expr->lhs, held) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtDoubleEqual(line, lhs, func, rhs));
     } else if (expr->isHashQuote) {
-        auto lhs = unique_ptr<Stmt>();
-        return unique_ptr<Stmt>(new StmtHeld(line, lhs, expr->name));
+        return translateStmt(expr->lhs, true);
     } else {
-        auto args = expr->args ? translateList(expr->args) : list< unique_ptr<Stmt> >();
+        auto args = expr->args ? translateList(expr->args, held) : list< unique_ptr<Stmt> >();
         string func;
         if (expr->isBind) {
             func = "<-";
-            args.push_front(translateStmt(expr->rhs));
+            args.push_front(translateStmt(expr->rhs, held));
             args.push_front(unique_ptr<Stmt>(new StmtSymbol(line, expr->name)));
         } else {
             func = expr->name;
             if (expr->isEquality) {
-                args.push_back(translateStmt(expr->rhs));
+                args.push_back(translateStmt(expr->rhs, held));
                 func = func + "=";
             }
         }
-        auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
-        return unique_ptr<Stmt>(new StmtCall(line, lhs, func, args, expr->argsProvided));
+        auto lhs = expr->lhs ? translateStmt(expr->lhs, held) : unique_ptr<Stmt>();
+        return unique_ptr<Stmt>(new StmtCall(line, lhs, func, args, expr->argsProvided || !held));
     }
 }
 
-list< unique_ptr<Stmt> > translateList(List* lst) {
+list< unique_ptr<Stmt> > translateList(List* lst, bool held) {
     if ((lst->car == nullptr) || (lst->cdr == nullptr)) {
         return list< unique_ptr<Stmt> >();
     } else {
-        auto head = translateStmt(lst->car);
-        auto tail = translateList(lst->cdr);
+        auto head = translateStmt(lst->car, held);
+        auto tail = translateList(lst->cdr, held);
         tail.push_front(move(head));
         return tail;
     }
@@ -133,7 +132,7 @@ list< unique_ptr<Stmt> > translateList(List* lst) {
 
 list< unique_ptr<Stmt> > translateCurrentLine() {
     if (currentLine)
-        return translateList( currentLine.get() );
+        return translateList(currentLine.get(), false);
     else
         return list< unique_ptr<Stmt> >();
 }
@@ -433,7 +432,7 @@ void Stmt::propogateFileName(std::string name) {
 }
 
 StmtCall::StmtCall(int line_no, unique_ptr<Stmt>& cls, const string& func, ArgList& arg, bool hasArgs)
-    : Stmt(line_no), className(move(cls)), functionName(func), args(move(arg)), hasArgs(hasArgs) {}
+    : Stmt(line_no), className(move(cls)), functionName(func), args(move(arg)), performCall(hasArgs) {}
 
 void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
 
@@ -449,27 +448,33 @@ void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
         (makeAssemblerLine(Instr::GETL, Reg::RET)).appendOnto(seq);
     }
 
-    // Store the class name object
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+    if (performCall) {
+        // Store the class name object
+        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+    }
 
     // "Evaluate" the name to lookup (may incur `missing`)
     (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
     (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
 
-    // Store the method/slot object
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+    if (performCall) {
 
-    // Evaluate each of the arguments, in order
-    for (auto& arg : args) {
-        arg->translate(unit, seq);
-        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+        // Store the method/slot object
+        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+
+        // Evaluate each of the arguments, in order
+        for (auto& arg : args) {
+            arg->translate(unit, seq);
+            (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+        }
+
+        // Make the call
+        (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
+        (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
+        (makeAssemblerLine(Instr::CALL, (long)args.size())).appendOnto(seq);
+
     }
-
-    // Make the call
-    (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, (long)args.size())).appendOnto(seq);
 
 }
 
@@ -993,35 +998,5 @@ void StmtDoubleEqual::propogateFileName(std::string name) {
         className->propogateFileName(name);
     if (rhs)
         rhs->propogateFileName(name);
-    Stmt::propogateFileName(name);
-}
-
-StmtHeld::StmtHeld(int line_no, unique_ptr<Stmt>& cls, const string& func)
-    : Stmt(line_no), className(move(cls)), functionName(func) {}
-
-void StmtHeld::translate(TranslationUnit& unit, InstrSeq& seq) {
-
-    if (!className)
-        stateLine(seq);
-
-    // Evaluate the class name
-    if (className) {
-        className->translate(unit, seq);
-    } else if ((functionName != "") && (functionName[0] == '$')) {
-        (makeAssemblerLine(Instr::GETD, Reg::RET)).appendOnto(seq);
-    } else {
-        (makeAssemblerLine(Instr::GETL, Reg::RET)).appendOnto(seq);
-    }
-
-    // "Evaluate" the name to lookup (may incur `missing`)
-    (makeAssemblerLine(Instr::SYM, functionName)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-
-}
-
-void StmtHeld::propogateFileName(std::string name) {
-    if (className)
-        className->propogateFileName(name);
     Stmt::propogateFileName(name);
 }

@@ -4,7 +4,7 @@
 #include "Standard.hpp"
 #include "Assembler.hpp"
 
-//#define DEBUG_INSTR 2
+//#define DEBUG_INSTR 1
 
 using namespace std;
 

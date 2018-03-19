@@ -54,7 +54,7 @@
         bool isBind; // Treated like call with a rhs
         bool isComplex; // Check number and number1
         bool equals2; // ::= (`a b ::= c.` desugars to `a b := c. a b :: 'b.`)
-        bool isHashQuote; // Check name
+        bool isHashQuote; // Check lhs
         bool argsProvided;
     };
 
@@ -256,7 +256,8 @@ literal:
     HASHPAREN { $$ = makeExpr(); $$->isHashParen = true; $$->name = $1; } |
     ZERODISPATCH { $$ = makeExpr(); $$->isZeroDispatch = true;
                    $$->name = $1; } |
-    HASHQUOTE { $$ = makeExpr(); $$->isHashQuote = true; $$->name = $1; }
+    HASHQUOTE name { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = makeExpr();
+                     $$->lhs->lhs = NULL; $$->lhs->name = $2; }
     ;
 linelist:
     line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |

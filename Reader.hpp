@@ -83,7 +83,7 @@ private:
     std::unique_ptr<Stmt> className;
     std::string functionName;
     ArgList args;
-    bool hasArgs;
+    bool performCall;
 public:
     StmtCall(int line_no,
              std::unique_ptr<Stmt>& cls,
@@ -267,19 +267,6 @@ public:
     StmtDoubleEqual(int line_no,
                     std::unique_ptr<Stmt>& cls, const std::string& func,
                     std::unique_ptr<Stmt>& asn);
-    virtual void translate(TranslationUnit&, InstrSeq&);
-    virtual void propogateFileName(std::string name);
-};
-
-/*
- * A held object literal.
- */
-class StmtHeld : public Stmt {
-private:
-    std::unique_ptr<Stmt> className;
-    std::string functionName;
-public:
-    StmtHeld(int line_no, std::unique_ptr<Stmt>& cls, const std::string& func);
     virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };
