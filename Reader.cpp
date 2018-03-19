@@ -116,7 +116,7 @@ unique_ptr<Stmt> translateStmt(Expr* expr) {
             }
         }
         auto lhs = expr->lhs ? translateStmt(expr->lhs) : unique_ptr<Stmt>();
-        return unique_ptr<Stmt>(new StmtCall(line, lhs, func, args));
+        return unique_ptr<Stmt>(new StmtCall(line, lhs, func, args, expr->argsProvided));
     }
 }
 
@@ -432,8 +432,8 @@ void Stmt::propogateFileName(std::string name) {
     file_name = name;
 }
 
-StmtCall::StmtCall(int line_no, unique_ptr<Stmt>& cls, const string& func, ArgList& arg)
-    : Stmt(line_no), className(move(cls)), functionName(func), args(move(arg)) {}
+StmtCall::StmtCall(int line_no, unique_ptr<Stmt>& cls, const string& func, ArgList& arg, bool hasArgs)
+    : Stmt(line_no), className(move(cls)), functionName(func), args(move(arg)), hasArgs(hasArgs) {}
 
 void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
 

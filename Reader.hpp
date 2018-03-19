@@ -83,8 +83,13 @@ private:
     std::unique_ptr<Stmt> className;
     std::string functionName;
     ArgList args;
+    bool hasArgs;
 public:
-    StmtCall(int line_no, std::unique_ptr<Stmt>& cls, const std::string& func, ArgList& arg);
+    StmtCall(int line_no,
+             std::unique_ptr<Stmt>& cls,
+             const std::string& func,
+             ArgList& arg,
+             bool hasArgs);
     virtual void translate(TranslationUnit&, InstrSeq&);
     virtual void propogateFileName(std::string name);
 };

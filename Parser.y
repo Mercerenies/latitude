@@ -55,6 +55,7 @@
         bool isComplex; // Check number and number1
         bool equals2; // ::= (`a b ::= c.` desugars to `a b := c. a b :: 'b.`)
         bool isHashQuote; // Check name
+        bool argsProvided;
     };
 
     struct List {
@@ -155,23 +156,24 @@ stmt:
     ;
 rhs:
     /* empty */ { $$ = NULL; } |
-    shortarglist { $$ = makeExpr(); $$->args = $1; } |
+    shortarglist { $$ = makeExpr(); $$->args = $1; $$->argsProvided = true; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
-    ':' arglist { $$ = makeExpr(); $$->args = $2; } |
+    ':' arglist { $$ = makeExpr(); $$->args = $2; $$->argsProvided = true; } |
     '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
-    shortarglist '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = $1; $$->isEquality = true; } |
+    shortarglist '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = $1; $$->isEquality = true; $$->argsProvided = true; } |
     BIND stmt { $$ = makeExpr(); $$->rhs = $2; $$->isBind = true; }
     ;
 rhs1:
     verysimplechain { $$ = makeExpr(); $$->args = makeList(); $$->args->car = makeExpr();
-                      $$->args->car = $1; $$->args->cdr = makeList(); } |
-    shortarglist { $$ = makeExpr(); $$->args = $1; } |
+                      $$->args->car = $1; $$->args->cdr = makeList(); $$->argsProvided = true; } |
+    shortarglist { $$ = makeExpr(); $$->args = $1; $$->argsProvided = true; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
-    ':' arglist { $$ = makeExpr(); $$->args = $2; } |
+    ':' arglist { $$ = makeExpr(); $$->args = $2; $$->argsProvided = true; } |
     '=' stmt { $$ = makeExpr(); $$->rhs = $2; $$->isEquality = true; } |
-    shortarglist '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = $1; $$->isEquality = true; } |
+    shortarglist '=' stmt { $$ = makeExpr(); $$->rhs = $3; $$->args = $1; $$->isEquality = true;
+                            $$->argsProvided = true; } |
     BIND stmt { $$ = makeExpr(); $$->rhs = $2; $$->isBind = true; }
     ;
 arglist:
@@ -186,31 +188,31 @@ arg:
     simplechain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     chain OPNAME verysimplechain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                    $$->args = makeList(); $$->args->car = $3;
-                                   $$->args->cdr = makeList(); } |
+                                   $$->args->cdr = makeList(); $$->argsProvided = true; } |
     simplechain STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                       $$->args = $3; } |
+                                       $$->args = $3; $$->argsProvided = true; } |
     chain OPNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                $$->args = $3; } |
+                                $$->args = $3; $$->argsProvided = true; } |
     literalish
     ;
 chain:
     chain OPNAME verysimplechain { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                    $$->args = makeList(); $$->args->car = $3;
-                                   $$->args->cdr = makeList(); } |
+                                   $$->args->cdr = makeList(); $$->argsProvided = true; } |
     chain OPNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                $$->args = $3; } |
+                                $$->args = $3; $$->argsProvided = true; } |
     simplechain
     ;
 simplechain:
     simplechain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     simplechain STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                       $$->args = $3; } |
+                                       $$->args = $3; $$->argsProvided = true; } |
     literalish |
     /* empty */ { $$ = NULL; }
 verysimplechain:
     verysimplechainl STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     verysimplechainl STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                            $$->args = $3; }
+                                            $$->args = $3; $$->argsProvided = true; }
     ;
 verysimplechainl:
     verysimplechain |
@@ -221,10 +223,12 @@ shortarglist:
     '(' simplechain STDNAME ':' arg ')' { $$ = makeList(); $$->car = makeExpr();
                                           $$->car->args = makeList(); $$->car->args->car = $5;
                                           $$->car->args->cdr = makeList(); $$->car->name = $3;
-                                          $$->car->lhs = $2; $$->cdr = makeList(); } |
+                                          $$->car->lhs = $2; $$->cdr = makeList();
+                                          $$->car->argsProvided = true; } |
     '(' chain OPNAME ':' arg ')' { $$ = makeList(); $$->car = makeExpr(); $$->car->args = makeList();
                                    $$->car->args->car = $5; $$->car->args->cdr = makeList();
-                                   $$->car->name = $3; $$->car->lhs = $2; $$->cdr = makeList(); } |
+                                   $$->car->name = $3; $$->car->lhs = $2; $$->cdr = makeList();
+                                   $$->car->argsProvided = true; } |
      literal { $$ = makeList(); $$->car = $1; $$->cdr = makeList(); }
      ;
 literalish:
@@ -234,8 +238,10 @@ literalish:
     literal
     ;
 literal:
-    '{' linelist '}' { $$ = makeExpr(); $$->isMethod = true; $$->args = $2; } |
-    ATBRACE linelist '}' { $$ = makeExpr(); $$->isSpecialMethod = true; $$->args = $2; } |
+    '{' linelist '}' { $$ = makeExpr(); $$->isMethod = true; $$->args = $2;
+                       $$->argsProvided = true; } |
+    ATBRACE linelist '}' { $$ = makeExpr(); $$->isSpecialMethod = true; $$->args = $2;
+                           $$->argsProvided = true; } |
     ATPAREN doublish ',' doublish ')' { $$ = makeExpr(); $$->number = $2;
                                         $$->number1 = $4; $$->isComplex = true;  } |
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
@@ -243,8 +249,10 @@ literal:
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1; } |
     SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; } |
-    '[' arglist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
-    LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
+    '[' arglist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
+                      $$->argsProvided = true; } |
+    LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
+                              $$->argsProvided = true; } |
     HASHPAREN { $$ = makeExpr(); $$->isHashParen = true; $$->name = $1; } |
     ZERODISPATCH { $$ = makeExpr(); $$->isZeroDispatch = true;
                    $$->name = $1; } |
@@ -268,7 +276,8 @@ listlit:
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
-    '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2; } |
+    '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
+                          $$->argsProvided = true; } |
     name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
     ;
 doublish:
