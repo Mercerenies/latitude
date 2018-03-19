@@ -40,6 +40,8 @@ struct CountedArray {
     size_t used;
     /// The internal array of ObjectEntry instances.
     std::vector<ObjectEntry> array;
+    /// The index of the next position in the array to scan.
+    size_t next;
     /// Constructs a new CountedArray with the correct number of
     /// elements. Every CountedArray in the program will contain a
     /// constant, but unspecified, number of elements.
