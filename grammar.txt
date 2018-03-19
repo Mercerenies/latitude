@@ -57,7 +57,8 @@
               [ "-" | "+" ] "0" <letter> { <alphanum> } |
               "@" "{" <linelist> "}" |
               "@" "(" <number> "," <number> ")" |
-              "#'" <text>
+              "#'" <text> |
+              "#'" <literalish>
 <linelist> ::= <line> <linelist> |
                <lambda>
 <literallist> ::= <listlit> <literallist1> |
