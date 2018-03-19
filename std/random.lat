@@ -73,7 +73,7 @@ MersenneTwister make := {
 }.
 MersenneTwister extract := {
   localize.
-  (this index) >= (this config n) ifTrue {
+  (this index >= this config n) ifTrue {
     this twist.
   }.
   y := this array nth (this index).
@@ -89,13 +89,13 @@ MersenneTwister twist := {
   0 upto (this config n) do {
     takes '[i].
     xlhs := (this array nth (i)) bitAnd (this config upperMask).
-    xrhs := (this array nth (i + 1 mod (this config n))) bitAnd (this config lowerMask).
+    xrhs := (this array nth ((i + 1) mod (this config n))) bitAnd (this config lowerMask).
     x := (xlhs) + (xrhs).
     xa := x bitShift -1.
     { x mod 2 /= 0. } ifTrue {
       parent xa := (xa) bitXor (this config a).
     }.
-    this array nth (i) = this array nth (i + (this config m) mod (this config n)) bitXor (xa).
+    this array nth (i) = this array nth ((i + this config m) mod (this config n)) bitXor (xa).
   }.
   this index := 0.
 }.
