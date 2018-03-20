@@ -113,10 +113,10 @@ pl_Unidata.h:	unicode_data.pl misc/uni/UnicodeData.txt
 	perl unicode_data.pl header >pl_Unidata.h
 
 Operator.o:	Operator.cpp Operator.h Unicode.hpp pl_Unidata.h
-	$(CXX) $(CXXFLAGS) Operator.cpp -o Operator.o
+	$(CXX) $(CXXFLAGS) Operator.cpp
 
 Optimizer.o:	Optimizer.cpp Optimizer.hpp Instructions.hpp Symbol.hpp
-	$(CXX) $(CXXFLAGS) Optimizer.cpp -o Optimizer.o
+	$(CXX) $(CXXFLAGS) Optimizer.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
