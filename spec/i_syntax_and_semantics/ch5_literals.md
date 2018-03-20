@@ -119,9 +119,17 @@ the literals `'~abc` and `~abc` evaluate to symbols with the same name
 (although they will evaluate to different symbols as the names are
 uninterned).
 
-A held value consists of a hash-quote (`#'`) followed by a name. A
-held value is fully retrieved from the current lexical or dynamic
-scope (according to the rules
+A held value consists of a hash-quote (`#'`) followed by a literal
+expression or a name. The expression following the hash-quote is
+evaluated normally, but methods are not called unless passed explicit
+argument lists. So, normally, `-3 abs.` would return the absolute
+value of `-3`, because `abs` is a method which is called. However,
+`#'(-3 abs).` would return the `abs` method itself. To circumvent the
+behavior in a specific case, an explicit argument list can be
+provided, so `#'(-3 abs ()).` would call `abs`.
+
+A held value is fully retrieved from the current
+lexical or dynamic scope (according to the rules
 of [Slot Lookup](ch4_evaluation.md#slot-lookup)). However, the
 returned value is *not* called; it is simply returned as-is. Thus, if
 the object being retrieved is not an evaluating object, the held value

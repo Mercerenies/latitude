@@ -223,8 +223,7 @@ exceptions or thrown objects are propogated.
 ### `Kernel Slots protect (object, slotName).`
 
 Adds assignment and delete protection to the given slot on the
-supplied object. If the slot does not exist, [TODO: This is currently
-a bug in the interpreter; correct and fill in the behavior here].
+supplied object. If the slot does not exist, a `SlotError` is raised.
 
 ### `Kernel Slots protected? (object, slotName).`
 
