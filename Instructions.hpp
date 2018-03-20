@@ -243,6 +243,8 @@ public:
     /// \param arg the argument
     void addRegisterArg(const RegisterArg& arg);
 
+    void clearRegisterArgs();
+
     AssemblerLineArgs arguments() const;
 
     RegisterArg argument(int n) const;

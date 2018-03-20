@@ -193,6 +193,10 @@ void AssemblerLine::addRegisterArg(const RegisterArg& arg) {
     args.push_back(arg);
 }
 
+void AssemblerLine::clearRegisterArgs() {
+    args.clear();
+}
+
 AssemblerLineArgs AssemblerLine::arguments() const {
     return AssemblerLineArgs(*this);
 }
