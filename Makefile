@@ -8,7 +8,7 @@ CCFLAGS=-c -Wall
 CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o latitude
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o Optimizer.o
 
 all: Project
 
@@ -52,7 +52,7 @@ lex.yy.c:	Scanner.flex Parser.tab.c Operator.h
 Parser.tab.c:	Parser.y
 	bison -d Parser.y
 
-Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Stack.hpp
+Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp Process.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Stack.hpp Optimizer.hpp
 	$(CXX) $(CXXFLAGS) Reader.cpp
 
 Stream.o:	Stream.cpp Stream.hpp
@@ -114,6 +114,9 @@ pl_Unidata.h:	unicode_data.pl misc/uni/UnicodeData.txt
 
 Operator.o:	Operator.cpp Operator.h Unicode.hpp pl_Unidata.h
 	$(CXX) $(CXXFLAGS) Operator.cpp -o Operator.o
+
+Optimizer.o:	Optimizer.cpp Optimizer.hpp Instructions.hpp Symbol.hpp
+	$(CXX) $(CXXFLAGS) Optimizer.cpp -o Optimizer.o
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp
 	$(CXX) $(CXXFLAGS) main.cpp

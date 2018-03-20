@@ -10,6 +10,7 @@ extern "C" {
 #include "Garnish.hpp"
 #include "Macro.hpp"
 #include "Assembler.hpp"
+#include "Optimizer.hpp"
 #include <cstdio>
 #include <list>
 #include <memory>
@@ -217,8 +218,9 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
             state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
-            state.stack = pushNode(state.stack, state.cont);
             unit->instructions() = toplevel;
+            optimize::lookupSymbols(unit);
+            state.stack = pushNode(state.stack, state.cont);
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } catch (std::string parseException) {
@@ -388,6 +390,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
             state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
+            optimize::lookupSymbols(unit);
             state.stack = pushNode(state.stack, state.cont);
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
