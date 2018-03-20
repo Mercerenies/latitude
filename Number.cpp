@@ -866,8 +866,7 @@ int Number::hierarchyLevel() const {
     return boost::apply_visitor(MagicNumber::LevelVisitor(), *value);
 }
 
-// TODO This name doesn't fit with the standard we've set
-Number complex_number(const Number& real, const Number& imag) {
+Number complexNumber(const Number& real, const Number& imag) {
     Number curr;
     curr.value = std::make_unique<Number::magic_t>(boost::apply_visitor(MagicNumber::ComplexVisitor(), *real.value, *imag.value));
     return curr;

@@ -1962,7 +1962,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_COMPLEX (take %num0 as real part, %num1 as imaginary part, and produce complex number in %num0)
      // complexNumber#: number, re, im.
      reader.cpp[CPP_COMPLEX] = [](IntState& state0) {
-         state0.num0 = complex_number(state0.num0, state0.num1);
+         state0.num0 = complexNumber(state0.num0, state0.num1);
      };
      sys->put(Symbols::get()["complexNumber#"],
               defineMethod(unit, global, method,

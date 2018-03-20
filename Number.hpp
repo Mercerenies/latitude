@@ -255,11 +255,12 @@ public:
     Number log() const;
 
     /// Returns the floor of the number, truncated toward negative
-    /// infinity. The behavior of this function is not specified for
-    /// complex numbers, but it may be specified at some later point.
+    /// infinity. If the caller is a complex number, the resulting
+    /// value is simply zero, as the greatest integer function is not
+    /// well-defined on complex numbers.
     ///
     /// \return the result of the computation
-    Number floor() const; // TODO Complex numbers?
+    Number floor() const;
 
     /// Returns the real part of the number, or the number itself if
     /// it is real.
@@ -297,7 +298,7 @@ public:
     /// \return the hierarchy level
     int hierarchyLevel() const;
 
-    friend Number complex_number(const Number&, const Number&);
+    friend Number complexNumber(const Number&, const Number&);
 
 };
 
@@ -310,7 +311,7 @@ public:
 /// \param real the real part
 /// \param imag the imaginary part
 /// \return the complex number
-Number complex_number(const Number& real, const Number& imag);
+Number complexNumber(const Number& real, const Number& imag);
 
 /// Returns a floating point number representing NaN, if it exists.
 ///
