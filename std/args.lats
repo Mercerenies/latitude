@@ -102,10 +102,12 @@ global localize := {
   caller this := caller slot 'self.
 }.
 
-; Likewise, the dynamic argument behavior occasonally gets in the way, so this is provided to rebind
-; dynamic arguments to lexical names. It expects a list of symbols (usually a literal list). The name
-; `takes` implies that the method in question takes these arguments. It is designed to be read in English,
-; as it is usually the first line of a method (possibly the second, after a `localize`).
+; Likewise, the dynamic argument behavior occasonally gets in the way,
+; so this is provided to rebind dynamic arguments to lexical names. It
+; expects a list of symbols (usually a literal list). The name `takes`
+; implies that the method in question takes these arguments. It is
+; designed to be read in English, as it is usually the first line of a
+; method (possibly the second, after a `localize`).
 global takes := {
   ; TODO Prohibitively slow (use random.lat as benchmark)
   args := ArgList clone fillWith ($dynamic parent).
