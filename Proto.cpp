@@ -84,8 +84,8 @@ bool ObjectPtr::operator!=(const ObjectPtr& ptr) const {
     return this->impl != ptr.impl;
 }
 
-bool ObjectPtr::operator<(const ObjectPtr& ptr) const {
-    return this->impl < ptr.impl;
+bool PtrCompare::operator()(const ObjectPtr& a, const ObjectPtr& b) {
+    return a.get() < b.get();
 }
 
 Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, NO_PROTECTION) {}

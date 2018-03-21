@@ -56,7 +56,10 @@ public:
     Object* get() const;
     bool operator==(const ObjectPtr& ptr) const;
     bool operator!=(const ObjectPtr& ptr) const;
-    bool operator<(const ObjectPtr& ptr) const; // TODO Make this a separate class for std::set
+};
+
+struct PtrCompare {
+    bool operator()(const ObjectPtr& a, const ObjectPtr& b);
 };
 
 /// \brief A primitive field, which can be either empty or an element
