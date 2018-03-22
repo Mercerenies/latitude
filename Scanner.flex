@@ -46,12 +46,10 @@
          return (isOperator(arr) ? OPNAME : STDNAME);
      }
 
-     // TODO Should backslashes be allowed in identifiers or should they be "special" characters?
-
 %}
 
-NORMAL    [^.,:;()\[\]{}\"\' \t\n\r]
-SNORMAL   [^.,:;()\[\]{}\"\' \t\n\r~0-9#@]
+NORMAL    [^.,:;()\[\]{}\"\' \t\n\r`\\]
+SNORMAL   [^.,:;()\[\]{}\"\' \t\n\r`\\~0-9#@]
 ID        {SNORMAL}{NORMAL}*
 
 %x INNER_STRING

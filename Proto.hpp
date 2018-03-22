@@ -72,21 +72,6 @@ using Prim = boost::variant<boost::blank, Number, std::string,
 /// A Slot is either empty (INH) or has contents (PTR).
 enum class SlotType { PTR, INH };
 
-/// \brief Global constants for protection types. These values are
-/// designed to be used in a bitmask.
-enum {
-    // TODO A completely correct design would use these special
-    // constants internally but expose a class-based API that
-    // overrides the | and & operators, to avoid using the wrong type
-    // accidentally. /////
-    NO_PROTECTION = 0,
-    PROTECT_ASSIGN = 1,
-    PROTECT_DELETE = 2
-};
-
-/// A bitmask containing protection data.
-typedef char protection_t;
-
 /// A slot of an object, which may or may not exist. If it does not
 /// exist, the type of the slot is INH, which indicates that it may
 /// exist in a parent or that it may not exist at all. If the type is
