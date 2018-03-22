@@ -37,8 +37,6 @@ Module importAll := {
 }.
 global Module := Module.
 
-; TODO Can a self-evaluating object be a parent of something else? If so, what does its hierarchy look like?
-
 global &LoadedModules := Object clone tap {
   self parent := self.
   self toString := "&LoadedModules".
@@ -90,6 +88,7 @@ global $moduleLoader := ModuleLoader clone.
 ; TODO Define the module name not globally but in the caller's scope to avoid polluting the global namespace
 global use := {
   takes '[pname].
+  target := lexical caller.
   fname := $moduleLoader resolveImport: pname.
   header := Kernel readHeader: fname.
   (header moduleName) ifFalse {
@@ -108,7 +107,7 @@ global use := {
         Kernel evalFile: fname, mod.
       }.
       Kernel Slots put: $moduleLoader &loaded, name, mod.
-      global slot (header moduleName intern) = mod.
+      target slot (header moduleName intern) = mod.
       mod.
     }.
 }.
