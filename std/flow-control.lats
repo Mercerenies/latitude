@@ -88,18 +88,17 @@ Object not := {
 }.
 
 ;; Loops
-;; TODO Make `self` on these methods well-defined.
 global loop := {
-  meta sys loopDo#: #'$1.
-; restart := callCC { $1. }.
-; $1.
-; restart call: restart.
+  content := #'$1.
+  meta sys loopDo#: { Kernel invokeOn (Conditional, #'content) call. }.
 }.
 global while := {
-  cond := #'$1.
+  cond0 := #'$1.
+  cond := { Kernel invokeOn (Conditional, #'cond0) call. }.
   Object clone tap {
     self do := {
-      stmt := #'$1.
+      stmt0 := #'$1.
+      stmt := { Kernel invokeOn (Conditional, #'stmt0) call. }.
       callCC {
         escapable.
         $break := #'return.
@@ -115,7 +114,8 @@ global while := {
 
 Number times := {
   localize.
-  block := #'$1.
+  block0 := #'$1.
+  block := { Kernel invokeOn (Conditional, #'block0) call. }.
   i := 0.
   incr := {
     parent i := i + 1.
@@ -130,7 +130,8 @@ Number upto := {
   takes '[n].
   Object clone tap {
     self do := {
-      block := #'$1.
+      block0 := #'$1.
+      block := { Kernel invokeOn (Conditional, #'block0) call. }.
       i := this floor.
       incr := { parent i := i + 1. }.
       while { (i) < (n floor). } do {
@@ -145,7 +146,8 @@ Number downto := {
   takes '[n].
   Object clone tap {
     self do := {
-      block := #'$1.
+      block0 := #'$1.
+      block := { Kernel invokeOn (Conditional, #'block0) call. }.
       i := this floor.
       decr := {
         parent i := i - 1.
@@ -164,10 +166,10 @@ global cond := {
   callCC {
     finished := $1.
     whenProc := proc {
-      if ($1)
+      if (Kernel invokeOn (Conditional, #'$1) call)
         then {
           Object clone tap {
-            self do := { finished call: $1. }.
+            self do := { finished call: (Kernel invokeOn (Conditional, #'$1) call). }.
           }.
         } else {
           Object clone tap {
@@ -179,7 +181,10 @@ global cond := {
       #'block,
       {
         $1 when := { whenProc call. }.
-        $1 else := { self when (True) do #'$1. }.
+        $1 else := {
+          body := #'$1.
+          self when (True) do { (Kernel invokeOn (Conditional, #'body) call). }.
+        }.
       }.
     procd call.
     Nil.
