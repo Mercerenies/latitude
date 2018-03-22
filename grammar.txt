@@ -11,7 +11,7 @@
           "=" <stmt> |
           <shortarglist> "=" <stmt> |
           "<-" <stmt>
-<rhs1> ::= <verysimplechain> |
+<rhs1> ::= <verysimplechainl> |
            <shortarglist> |
            ":=" <stmt> |
            "::=" <stmt> |
@@ -24,11 +24,11 @@
 <arglist1> ::= <lambda> |
                "," <arg> <arglist1>
 <arg> ::= <chain> <stdname> |
-          <chain> <opname> <verysimplechain> |
+          <chain> <opname> <verysimplechainl> |
           <simplechain> <stdname> <shortarglist> |
           <chain> <opname> <shortarglist> |
           <literalish>
-<chain> ::= <chain> <opname> <verysimplechain> |
+<chain> ::= <chain> <opname> <verysimplechainl> |
             <simplechain>
 <simplechain> ::= <simplechain> <stdname> |
                   <simplechain> <stdname> <shortarglist> |
