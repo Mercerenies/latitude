@@ -109,7 +109,7 @@ following grammar.
           ":" <arglist> |
           <shortarglist> "=" <stmt> |
           "<-" <stmt>
-<rhs1> ::= <verysimplechain> |
+<rhs1> ::= <verysimplechainl> |
            <shortarglist> |
            ":=" <stmt> |
            "::=" <stmt> |
