@@ -88,9 +88,9 @@ bool PtrCompare::operator()(const ObjectPtr& a, const ObjectPtr& b) {
     return a.get() < b.get();
 }
 
-Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, NO_PROTECTION) {}
+Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, Protection::NO_PROTECTION) {}
 
-Slot::Slot(ObjectPtr ptr, protection_t protect) noexcept : obj(ptr), protection(protect) {}
+Slot::Slot(ObjectPtr ptr, Protection protect) noexcept : obj(ptr), protection(protect) {}
 
 bool Slot::hasObject() const noexcept {
     return (obj != nullptr);
@@ -138,19 +138,19 @@ set<Symbolic> Object::directKeys() const {
     return result;
 }
 
-bool Object::isProtected(Symbolic key, protection_t p) const {
+bool Object::isProtected(Symbolic key, Protection p) const {
     const Slot* slot = this->getSlot(key);
-    protection_t p1 = slot ? slot->protection : NO_PROTECTION;
+    Protection p1 = slot ? slot->protection : Protection::NO_PROTECTION;
     return p == (p1 & p);
 }
 
 bool Object::hasAnyProtection(Symbolic key) const {
     const Slot* slot = this->getSlot(key);
-    protection_t p1 = slot ? slot->protection : NO_PROTECTION;
-    return p1 != NO_PROTECTION;
+    Protection p1 = slot ? slot->protection : Protection::NO_PROTECTION;
+    return p1 != Protection::NO_PROTECTION;
 }
 
-bool Object::addProtection(Symbolic key, protection_t p) {
+bool Object::addProtection(Symbolic key, Protection p) {
     Slot* slot = this->getSlot(key);
     if (!slot)
         return false;
@@ -158,7 +158,7 @@ bool Object::addProtection(Symbolic key, protection_t p) {
     return true;
 }
 
-void Object::protectAll(protection_t) {}
+void Object::protectAll(Protection) {}
 
 Prim& Object::prim() noexcept {
     return primitive;
@@ -167,7 +167,7 @@ Prim& Object::prim() noexcept {
 ObjectPtr clone(ObjectPtr obj) {
     ObjectPtr ptr(GC::get().allocate());
     ptr->put(Symbols::parent(), obj);
-    ptr->addProtection(Symbols::parent(), PROTECT_DELETE);
+    ptr->addProtection(Symbols::parent(), Protection::PROTECT_DELETE);
     ptr->prim(obj->prim());
     return ptr;
 }

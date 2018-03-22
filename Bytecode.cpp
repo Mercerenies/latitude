@@ -467,10 +467,10 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
-                state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+                state.dyn.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                             Symbols::get()["$dynamic"]);
             }
-            state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+            state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"],
                                         Symbols::get()["lexical"]);
             // (5) Push the trace information
@@ -563,10 +563,10 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.lex.top()->put(Symbols::get()["caller"], lex);
             if (!state.dyn.empty()) {
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
-                state.dyn.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+                state.dyn.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                             Symbols::get()["$dynamic"]);
             }
-            state.lex.top()->protectAll(PROTECT_ASSIGN | PROTECT_DELETE,
+            state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"],
                                         Symbols::get()["lexical"]);
             // (5) Push the trace information
@@ -923,7 +923,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         if (state.slf == nullptr)
             state.err0 = true;
-        else if (state.slf->isProtected(state.sym, PROTECT_ASSIGN))
+        else if (state.slf->isProtected(state.sym, Protection::PROTECT_ASSIGN))
             throwError(state, reader, "ProtectedError");
         else
             state.slf->put(state.sym, state.ptr);
@@ -1352,7 +1352,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         if (state.slf == nullptr) {
             state.err0 = true;
-        } else if (state.slf->isProtected(state.sym, PROTECT_DELETE)) {
+        } else if (state.slf->isProtected(state.sym, Protection::PROTECT_DELETE)) {
             throwError(state, reader, "ProtectedError", "Delete-protected variable");
         } else {
             state.slf->remove(state.sym);

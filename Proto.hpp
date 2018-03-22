@@ -6,6 +6,7 @@
 #include "Symbol.hpp"
 #include "Number.hpp"
 #include "Instructions.hpp"
+#include "Protection.hpp"
 #include <list>
 #include <functional>
 #include <memory>
@@ -77,7 +78,7 @@ enum {
     // TODO A completely correct design would use these special
     // constants internally but expose a class-based API that
     // overrides the | and & operators, to avoid using the wrong type
-    // accidentally.
+    // accidentally. /////
     NO_PROTECTION = 0,
     PROTECT_ASSIGN = 1,
     PROTECT_DELETE = 2
@@ -92,7 +93,7 @@ typedef char protection_t;
 /// PTR, the slot contains an object pointer directly.
 struct Slot {
     ObjectPtr obj;
-    protection_t protection;
+    Protection protection;
 
     /// Constructs an empty slot with no protection.
     Slot() = default;
@@ -110,7 +111,7 @@ struct Slot {
     ///
     /// \param ptr the object pointer
     /// \param protect the protection bitmask
-    Slot(ObjectPtr ptr, protection_t protect) noexcept;
+    Slot(ObjectPtr ptr, Protection protect) noexcept;
 
     /// Returns whether the slot contains a non-null object.
     ///
@@ -177,7 +178,7 @@ public:
     /// \param key the key
     /// \param p the protection bitmask
     /// \return whether the protection exists
-    bool isProtected(Symbolic key, protection_t p) const;
+    bool isProtected(Symbolic key, Protection p) const;
 
     /// Returns whether the slot has any protection.
     ///
@@ -190,12 +191,12 @@ public:
     /// \param key the key for the slot
     /// \param p the protection bitmask to add
     /// \return false if the slot did not exist, true otherwise
-    bool addProtection(Symbolic key, protection_t p);
+    bool addProtection(Symbolic key, Protection p);
 
     /// Adds protection to all of the given slots.
     ///
     /// \param p the protection to add
-    void protectAll(protection_t p);
+    void protectAll(Protection p);
 
     /// Adds protection to all of the given slots.
     ///
@@ -203,7 +204,7 @@ public:
     /// \param key the first key
     /// \param keys the remaining keys
     template <typename T, typename... Ts>
-    void protectAll(protection_t p, T key, Ts... keys);
+    void protectAll(Protection p, T key, Ts... keys);
 
     /// Returns a reference to the `prim` field of the object.
     ///
@@ -222,7 +223,7 @@ public:
 };
 
 template <typename T, typename... Ts>
-void Object::protectAll(protection_t p, T key, Ts... keys) {
+void Object::protectAll(Protection p, T key, Ts... keys) {
     addProtection(key, p);
     protectAll(p, keys...);
 }

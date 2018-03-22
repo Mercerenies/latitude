@@ -1927,7 +1927,9 @@ void spawnSystemCallsNew(ObjectPtr global,
      // protectVar#: obj, var.
      assert(reader.cpp.size() == CPP_PROT_VAR);
      reader.cpp.push_back([&reader](IntState& state0) {
-         bool result = state0.slf->addProtection(state0.sym, PROTECT_ASSIGN | PROTECT_DELETE);
+         bool result = state0.slf->addProtection(state0.sym,
+                                                 Protection::PROTECT_ASSIGN |
+                                                 Protection::PROTECT_DELETE);
          if (!result) // TODO If we could set objectInstance and slotName here, that would be great.
              throwError(state0, reader, "SlotError", "Could not protect nonexistent slot");
      });
@@ -2428,7 +2430,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 
     // Object is its own parent
     object->put(Symbols::parent(), object);
-    object->addProtection(Symbols::parent(), PROTECT_DELETE);
+    object->addProtection(Symbols::parent(), Protection::PROTECT_DELETE);
 
     // Meta linkage
     meta->put(Symbols::get()["meta"], meta);
