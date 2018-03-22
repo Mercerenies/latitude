@@ -85,7 +85,6 @@ ModuleLoader resolveImport := {
 
 global $moduleLoader := ModuleLoader clone.
 
-; TODO Define the module name not globally but in the caller's scope to avoid polluting the global namespace
 global use := {
   takes '[pname].
   target := lexical caller.
