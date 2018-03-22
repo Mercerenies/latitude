@@ -6,9 +6,12 @@ private:
     unsigned char internal;
     explicit Protection(unsigned char impl);
 public:
-    static Protection NO_PROTECTION;
-    static Protection PROTECT_ASSIGN;
-    static Protection PROTECT_DELETE;
+    static const Protection NO_PROTECTION;
+    static const Protection PROTECT_ASSIGN;
+    static const Protection PROTECT_DELETE;
+    Protection() = default;
+    Protection& operator&=(Protection other);
+    Protection& operator|=(Protection other);
     friend Protection operator&(Protection a, Protection b);
     friend Protection operator|(Protection a, Protection b);
     friend bool operator==(Protection a, Protection b);

@@ -4,16 +4,26 @@
 Protection::Protection(unsigned char impl)
     : internal(impl) {}
 
-Protection Protection::NO_PROTECTION = Protection(0);
-Protection Protection::PROTECT_ASSIGN = Protection(1);
-Protection Protection::PROTECT_DELETE = Protection(2);
+const Protection Protection::NO_PROTECTION = Protection(0);
+const Protection Protection::PROTECT_ASSIGN = Protection(1);
+const Protection Protection::PROTECT_DELETE = Protection(2);
+
+Protection& Protection::operator&=(Protection other) {
+    internal &= other.internal;
+    return *this;
+}
+
+Protection& Protection::operator|=(Protection other) {
+    internal |= other.internal;
+    return *this;
+}
 
 Protection operator&(Protection a, Protection b) {
-    return Protection(a.internal & b.internal);
+    return a &= b;
 }
 
 Protection operator|(Protection a, Protection b) {
-    return Protection(a.internal | b.internal);
+    return a |= b;
 }
 
 bool operator==(Protection a, Protection b) {
