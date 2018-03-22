@@ -6,16 +6,21 @@ REPL ::= Object clone.
 REPL quitter := {
   jump := Nil.
   setJump := { parent jump := $1. }.
+  inner := Nil.
+  setInner := { parent inner := $1. }.
   callCC {
-    inner := $1.
+    setInner: $1.
     callCC {
       setJump: $1.
       inner call: Nil.
     }.
     Kernel kill.
   }.
-  jump.
-} me. ; TODO There is definitely a continuation cycle in here; can we eliminate it?
+  setInner: Nil.
+  REPL quitter := jump.
+  setJump: Nil.
+  REPL quitter.
+} me.
 REPL quit := { self quitter call: Nil. }.
 REPL scope := global clone.
 REPL $scope := Nil. ; To be assigned in-loop
