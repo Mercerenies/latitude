@@ -167,7 +167,9 @@ Array < := {
   takes '[arr].
   callCC {
     escapable.
-    arr is (Array) ifFalse { return: False. }. ; TODO Should this be an exception?
+    arr is (Array) ifFalse {
+      err TypeError clone tap { self message := "Array expected". } throw.
+    }.
     this zip (arr) visit {
       ($1 car < $1 cdr) ifTrue { return: True. }.
       ($1 car > $1 cdr) ifTrue { return: False. }.
