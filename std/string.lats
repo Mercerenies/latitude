@@ -2,12 +2,13 @@
 ; While the basic string functionality is defined in core.lat, this file defines more sophisticated
 ; methods on strings.
 
-; TODO Negative indexing on find and replace (and co) functions.
-
 String findBytes := { meta sys stringFindFirst#: self, $1, $2. }.
 String find := {
   localize.
   takes '[substr, index].
+  (index < 0) ifTrue {
+    parent index := index + this length.
+  }.
   byteIndex := 0.
   index times {
     parent byteIndex := meta sys stringNext#: this, byteIndex.
