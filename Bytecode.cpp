@@ -458,7 +458,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             else
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
-            auto lex = state.lex.top(); // TODO Possible empty stack error?
+            auto lex = state.lex.top();
             state.lex.push( clone(closure) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
@@ -554,7 +554,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             else
                 state.err0 = true;
             // (3) Push a clone of the closure onto %lex
-            auto lex = state.lex.top(); // TODO Possible empty stack error?
+            auto lex = state.lex.top();
             state.lex.push( clone(closure) );
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);

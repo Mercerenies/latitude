@@ -26,7 +26,7 @@ Symbolic Symbols::gensym(std::string prefix) {
 
 Symbolic Symbols::natural(int n) {
     if (n <= 0)
-        return get()[""]; // TODO Better defaulting behavior here too?
+        return get()[""];
     Symbolic sym;
     sym.index = - n;
     return sym;
@@ -81,7 +81,7 @@ std::string Symbols::operator[](const Symbolic& str) {
         return str0.str();
     }
     if (data.find(str.index) == data.end())
-        return ""; // TODO Is this what we really want?
+        return "";
     return (*data.find(str.index)).second;
 }
 

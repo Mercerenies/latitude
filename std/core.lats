@@ -291,15 +291,15 @@ Kernel GC untrace := { self traced := False. }.
 
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.
-Kernel env= := { ; TODO Should we return the string?
+Kernel env= := {
   name := $1.
-  value := #'$2.
-  if { #'value nil?. }
-    then {
-      meta sys envUnset#: name.
-    } else {
-      meta sys envSet#: name, value.
-    }.
+  value := $2.
+  if { value nil?. } then {
+    meta sys envUnset#: name.
+  } else {
+    meta sys envSet#: name, value.
+  }.
+  value.
 }.
 
 ; TODO Should these Kernel subobjects be put into global scope?
