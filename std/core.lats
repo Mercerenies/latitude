@@ -341,7 +341,7 @@ Kernel Parents hierarchy := { ; TODO meta brackets?
     arr containsIf { Kernel eq: #'$1, #'curr. } not.
   } do {
     arr pushBack #'curr.
-    parent curr := #'curr parent.
+    parent curr := #'(curr parent).
   }.
   arr.
 }.
