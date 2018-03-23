@@ -1347,7 +1347,6 @@ void spawnSystemCallsNew(ObjectPtr global,
      // stringLength#: str.
      assert(reader.cpp.size() == CPP_STRING_LENGTH);
      reader.cpp.push_back([&reader](IntState& state0) {
-         // TODO Possible loss of precision from size_t to signed long?
          state0.ret = garnishObject(reader, (long)state0.str0.length());
      });
      sys->put(Symbols::get()["stringLength#"],
@@ -1525,7 +1524,6 @@ void spawnSystemCallsNew(ObjectPtr global,
      // totalGC#.
      assert(reader.cpp.size() == CPP_GC_TOTAL);
      reader.cpp.push_back([&reader](IntState& state0) {
-         // TODO Possible loss of precision
          state0.ret = garnishObject(reader, (long)GC::get().getTotal());
      });
      sys->put(Symbols::get()["totalGC#"],
@@ -2290,14 +2288,10 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(temp.index == GTU_CALL_ZERO);
 
      // GTU_MISSING (assumes %slf contains the appropriate caller, %ret the missing method, and %sym the symbol)
-     // TODO Why do we push everything onto %sto? Nothing could corrupt %ret and %slf here...
-     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
-                                           makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
-                                           makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR),
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR),
                                            makeAssemblerLine(Instr::LOAD, Reg::SYM),
                                            makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG),
-                                           makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                           makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                            makeAssemblerLine(Instr::CALL, 1L)));
      assert(temp.index == GTU_MISSING);
 
