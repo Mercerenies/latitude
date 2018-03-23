@@ -2,17 +2,9 @@
 ;; Cloning and metaprogramming basics
 Object clone := { Kernel cloneObject: #'self. }.
 Object is := { meta sys instanceOf#: #'self, $1. }.
-Object slot := { meta sys accessSlot#: self, $1. }.
-Object slot= := { meta sys putSlot#: self, $1, #'$2. }.
-Object slot? := { ; TODO This should delegate to a Kernel function
-  target := $1.
-  {
-    (parent slot 'self) slot: target.
-    True.
-  } catch:
-    err SlotError,
-    { False. }.
-}.
+Object slot := { Slots hold (#'self, #'$1). }.
+Object slot= := { Slots put (#'self, #'$1, #'$2). }.
+Object slot? := { Slots has? (#'self, #'$1). }.
 ;; Note that these delegate to `Kernel` functions. The `Kernel`
 ;; versions should be used directly if it is possible that the caller
 ;; is an NTO.
