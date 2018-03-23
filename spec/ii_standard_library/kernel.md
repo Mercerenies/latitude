@@ -106,13 +106,13 @@ indirect parents. This method does not access any of the slots and
 does not take `missing` results into consideration; it only returns
 slots that actually exist in the inheritance hierarchy.
 
-### Kernel eq (object1, object2).
+### `Kernel eq (object1, object2).`
 
 Returns whether the two objects are in fact the same object. This
 method behaves like `===` on `Object` but works on non-traditional
 objects as well.
 
-### Kernel id (object).
+### `Kernel id (object).`
 
 Returns a numerical identifier that uniquely represents the given
 object. As long as the object is retained in memory, the identifier
