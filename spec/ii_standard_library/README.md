@@ -93,6 +93,7 @@ scope object.
      +-- meta sigil
 
  * [Booleans and Nil](boolnil.md)
+ * [FileHeader](fileheader.md)
  * [FilePath](filepath.md)
  * [Iterator and Iterators](iterator.md)
  * [Kernel](kernel.md)
