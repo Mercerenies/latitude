@@ -66,8 +66,6 @@ scope object.
      |    +-- StringIterator
      +-- Kernel
      +-- Kernel GC
-     +-- Kernel Parents
-     +-- Kernel Slots
      +-- MethodBuilder
      +-- Mixin
      |    +-- Collection
@@ -75,12 +73,14 @@ scope object.
      +-- ModuleLoader
      +-- Nil
      +-- Number
+     +-- Parents
      +-- Proc
      |    +-- Cached
      |    +-- Cont
      |    +-- Method
      |    |    +-- SpecialMethod
      +-- Process
+     +-- Slots
      +-- StackFrame
      +-- Stream
      +-- String
@@ -98,6 +98,8 @@ scope object.
  * [Kernel](kernel.md)
  * [Number](number.md)
  * [Object](object.md)
+ * [Parents](parents.md)
+ * [Slots](slots.md)
  * [String](string.md)
  * [Symbol](symbol.md)
  * [meta](meta.md)

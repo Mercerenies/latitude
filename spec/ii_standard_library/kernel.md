@@ -13,10 +13,6 @@ as well.
     Kernel toString := "Kernel".
     Kernel GC := Object clone.
     Kernel GC toString := "GC".
-    Kernel Slots := Object clone.
-    Kernel Slots toString := "Slots".
-    Kernel Parents := Object clone.
-    Kernel Parents toString := "Parents".
 
 ## Static Methods
 
@@ -184,73 +180,3 @@ enabled, this method does nothing.
 Disables tracing for the garbage collector, so that messages will not
 be printed when the garbage collector is invokved. If tracing is
 already disabled, this method does nothing.
-
-### `Kernel Slots hold (object, symbol).`
-
-Returns the value of the given slot on `object`. If the result is a
-method, it is *not* called. Note that this method may result in a call
-to `missing` if the slot is not found through the standard full
-retrieval.
-
-### `Kernel Slots get (object, symbol).`
-
-Returns the value of the given slot on `object`. If the result is a
-method, it is called with `object` as the caller. As such, if `symbol`
-is a literal, this is equivalent to simply invoking the method with no
-arguments using the usual syntax.
-
-### `Kernel Slots put (object, symbol, value).`
-
-Sets the value of the given slot on `object`. If the symbol is a
-literal value, this is equivalent to simply using the colon-equals
-assignment.
-
-### `Kernel Slots delete (object, symbol).`
-
-If a slot with name `symbol` exists on `object` directly, then this
-method deletes that slot. Note that this only removes direct slots and
-does not interfere with slots from a parent class. This method always
-returns the nil object.
-
-### `Kernel Slots has? (object, symbol).`
-
-Returns whether or not the slot exists on the object. Specifically,
-this method attempts to access the slot using `Kernel Slots hold`. If
-the access is successful, the return value is true. If the access
-attempt throws a `SlotError`, the return value is false. Any other
-exceptions or thrown objects are propogated.
-
-### `Kernel Slots protect (object, slotName).`
-
-Adds assignment and delete protection to the given slot on the
-supplied object. If the slot does not exist, a `SlotError` is raised.
-
-### `Kernel Slots protected? (object, slotName).`
-
-Returns whether the given slot on the supplied object has any
-protections applied to it.
-
-### `Kernel Parents origin (object, symbol).`
-
-Locates the object in the argument's inheritance hierarchy where the
-slot with the given name is defined. If the slot was defined directly
-on the argument, the argument object is returned. Otherwise, if it was
-defined on a parent and inherited, then the relevant parent object is
-returned. If the slot does not exist on the object, then a `SlotError`
-is raised. The `missing` method of the object is not used in this
-case, as only slots that actually exist in the hierarchy are checked.
-
-### `Kernel Parents above (object, symbol).`
-
-This method identifies the origin of the given slot on the argument
-object, as though through `Kernel Parents origin`. It then returns the
-value of the slot on the origin's parent. That is, it ignores the
-current value of the slot and attempts to access the inherited
-value. Effectively, this method emulates the `super` construct
-available in other languages. If the slot's value is a method, it is
-returned without calling.
-
-### `Kernel Parents hierarchy (object).`
-
-Returns an array containing, in order, all of the objects in the
-argument's inheritance hierarchy.

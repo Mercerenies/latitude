@@ -175,8 +175,8 @@ Stream dump := {
   obj := #'$1.
   streamObj println: #'obj.
   Kernel keys #'obj visit {
-    p := if (Kernel Slots protected? (#'obj, $1)) then "! " else "  ".
-    streamObj putln: p ++ $1 asText ++ ": " ++ Kernel Slots hold (#'obj, $1) toString.
+    p := if (Slots protected? (#'obj, $1)) then "! " else "  ".
+    streamObj putln: p ++ $1 asText ++ ": " ++ Slots hold (#'obj, $1) toString.
   }.
   Nil.
 }.
@@ -305,19 +305,19 @@ Kernel env= := {
 ; TODO Should these Kernel subobjects be put into global scope?
 
 ;; Kernel slot functions
-Kernel Slots := Object clone.
-Kernel Slots toString := "Slots".
-Kernel Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
-Kernel Slots get := { Kernel invokeOn (#'$1, self hold) call. }.
-Kernel Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
-Kernel Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
-Kernel Slots protect := { meta sys protectVar#: #'$1, $2. }.
-Kernel Slots protected? := { meta sys protectIs#: #'$1, $2. }.
-Kernel Slots has? := {
+global Slots := Object clone.
+Slots toString := "Slots".
+Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
+Slots get := { Kernel invokeOn (#'$1, self hold) call. }.
+Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
+Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
+Slots protect := { meta sys protectVar#: #'$1, $2. }.
+Slots protected? := { meta sys protectIs#: #'$1, $2. }.
+Slots has? := {
   obj := #'$1.
   symbol := #'$2.
   {
-    Kernel Slots hold: #'obj, #'symbol.
+    Slots hold: #'obj, #'symbol.
     True.
   } catch:
     err SlotError,
@@ -325,16 +325,16 @@ Kernel Slots has? := {
 }.
 
 ;; Kernel parenting functions
-Kernel Parents := Object clone.
-Kernel Parents toString := "Parents".
-Kernel Parents origin := {
+global Parents := Object clone.
+Parents toString := "Parents".
+Parents origin := {
   meta sys origin#: #'$1, #'$2.
 }.
-Kernel Parents above := {
+Parents above := {
   orgn := self origin (#'$1, #'$2).
   #'orgn parent slot #'$2.
 }.
-Kernel Parents hierarchy := { ; TODO meta brackets?
+Parents hierarchy := { ; TODO meta brackets?
   arr := Array clone.
   curr := #'$1.
   while {

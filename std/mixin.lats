@@ -26,7 +26,7 @@ Mixin inject := {
 Mixin member? := {
   localize.
   takes '[arg].
-  Kernel Parents hierarchy (#'arg) detect {
+  Parents hierarchy (#'arg) detect {
     takes '[obj].
     { obj slot? 'mixin. } and { (this) === (obj mixin). }.
   } toBool.
