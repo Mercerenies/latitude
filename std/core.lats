@@ -104,7 +104,7 @@ global Cached := Proc clone.
 Cached toString := "Cached".
 Cached value := Nil.
 Cached done? := False.
-Cached procedure := {}.
+Cached procedure := Proc.
 Cached call := {
   if (self done?)
     then { parent self value. }
