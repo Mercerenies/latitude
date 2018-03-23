@@ -294,8 +294,6 @@ Kernel env= := {
   value.
 }.
 
-; TODO Should these Kernel subobjects be put into global scope?
-
 ;; Kernel slot functions
 global Slots := Object clone.
 Slots toString := "Slots".
@@ -326,7 +324,7 @@ Parents above := {
   orgn := self origin (#'$1, #'$2).
   #'orgn parent slot #'$2.
 }.
-Parents hierarchy := { ; TODO meta brackets?
+Parents hierarchy := {
   arr := Array clone.
   curr := #'$1.
   while {
