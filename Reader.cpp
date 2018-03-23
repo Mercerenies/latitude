@@ -557,7 +557,7 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     stateFile(mthd);
     if (contents.empty()) {
         // If the method is empty, it defaults to `meta Nil.`
-        mthd = asmCode(makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET));
+        (makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET)).appendOnto(mthd);
     } else {
         for (auto& val : contents) {
             val->translate(unit, mthd);
@@ -857,11 +857,11 @@ void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
         (makeAssemblerLine(Instr::YLDC, Lit::METHOD, Reg::PTR)).appendOnto(result);
         // Translate the method sequence
         InstrSeq mthd;
-        stateLine(mthd); // TODO These are overwritten if arg is empty (same in StmtMethod)
+        stateLine(mthd);
         stateFile(mthd);
         if (arg.empty()) {
             // If the method is empty, it defaults to `meta Nil.`
-            mthd = asmCode(makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET));
+            (makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET)).appendOnto(mthd);
         } else {
             mthd.insert(mthd.end(), arg.begin(), arg.end());
         }
