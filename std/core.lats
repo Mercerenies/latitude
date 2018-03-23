@@ -425,3 +425,5 @@ global printStackTrace := { self stack parent dump. }.
 
 ;; We would return the script here, but the `slot?` function requires flow_control.lat
 1.
+
+;; TODO println and dump serve a dual purpose. On stream objects, they print the argument. On other objects, they print the caller. This makes the latter use not reliable in general, as they will behave strangely (and raise an exception) if given an argument that *happens* to be a stream object. As such, perhaps we should rename the version defined on Object.
