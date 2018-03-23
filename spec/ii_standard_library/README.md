@@ -93,14 +93,18 @@ scope object.
      +-- meta sigil
 
  * [Booleans and Nil](boolnil.md)
+ * [Cached](cached.md)
+ * [Cont](cont.md)
  * [Exception and Exceptions](exception.md)
  * [FileHeader](fileheader.md)
  * [FilePath](filepath.md)
  * [Iterator and Iterators](iterator.md)
  * [Kernel](kernel.md)
+ * [Method](method.md)
  * [Number](number.md)
  * [Object](object.md)
  * [Parents](parents.md)
+ * [Proc](proc.md)
  * [Slots](slots.md)
  * [String](string.md)
  * [Symbol](symbol.md)
