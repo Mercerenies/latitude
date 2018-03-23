@@ -208,14 +208,16 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
                 stmt->translate(*unit, toplevel);
             }
             (makeAssemblerLine(Instr::RET)).appendOnto(toplevel);
-            auto lex = state.lex.top(); // TODO Possible empty stack error?
+            auto lex = state.lex.top();
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
+            ObjectPtr mthd = clone(reader.lit.at(Lit::METHOD));
+            mthd->prim(Method(unit, { 0 }));
             state.lex.top()->put(Symbols::get()["self"], state.lex.top());
-            state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
+            state.lex.top()->put(Symbols::get()["again"], mthd);
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
             unit->instructions() = toplevel;
@@ -380,14 +382,16 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
         } BOOST_SCOPE_EXIT_END;
         try {
             TranslationUnitPtr unit = loadFromFile(file);
-            auto lex = state.lex.top(); // TODO Possible empty stack error?
+            auto lex = state.lex.top();
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
                 state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
+            ObjectPtr mthd = clone(reader.lit.at(Lit::METHOD));
+            mthd->prim(Method(unit, { 0 }));
             state.lex.top()->put(Symbols::get()["self"], state.lex.top());
-            state.lex.top()->put(Symbols::get()["again"], state.lex.top()); // TODO Does this make sense?
+            state.lex.top()->put(Symbols::get()["again"], mthd);
             state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
             optimize::lookupSymbols(unit);
