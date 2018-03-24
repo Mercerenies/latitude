@@ -231,7 +231,7 @@ This method invokes `stringify` on the caller and the target and
 concatenates the resulting strings. As such, it is a convenient way to
 join together strings and other values in preparation for printing.
 
-    stdout println: "Good morning, " ++ (userName) ++ ". It is " ++ (currentTime) ++ " right now.".
+    stdout println: "Good morning, " ++ userName ++ ". It is " ++ currentTime ++ " right now.".
 
 ### `Object missing (symbol).`
 
