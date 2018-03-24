@@ -1359,6 +1359,22 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
     }
         break;
+    case Instr::ARR: {
+        long val = state.cont.readLong(0);
+#if DEBUG_INSTR > 0
+        cout << "ARR " << val << endl;
+#endif
+        ObjectPtr arr = clone(reader.lit.at(Lit::ARRAY));
+        int j = 1;
+        for (long i = 0; i < val; i++, j += 2) {
+            arr->put(Symbols::natural(j), state.arg.top());
+            state.arg.pop();
+        }
+        arr->put(Symbols::get()["lowerBound"], garnishObject(reader, 0));
+        arr->put(Symbols::get()["upperBound"], garnishObject(reader, val));
+        state.ret = arr;
+    }
+        break;
     }
 }
 
