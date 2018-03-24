@@ -55,7 +55,6 @@
               "#" "\"" <text> "\"" "#" |
               "#" "(" <text> ")" |
               [ "-" | "+" ] "0" <letter> { <alphanum> } |
-              "@" "{" <linelist> "}" |
               "@" "(" <number> "," <number> ")" |
               "#'" <text> |
               "#'" <literalish>

@@ -122,7 +122,6 @@
 %token LISTLIT
 %token CEQUALS
 %token DCEQUALS
-%token ATBRACE
 %token ATPAREN
 %token BIND
 
@@ -240,8 +239,6 @@ literalish:
 literal:
     '{' linelist '}' { $$ = makeExpr(); $$->isMethod = true; $$->args = $2;
                        $$->argsProvided = true; } |
-    ATBRACE linelist '}' { $$ = makeExpr(); $$->isSpecialMethod = true; $$->args = $2;
-                           $$->argsProvided = true; } |
     ATPAREN doublish ',' doublish ')' { $$ = makeExpr(); $$->number = $2;
                                         $$->number1 = $4; $$->isComplex = true;  } |
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |

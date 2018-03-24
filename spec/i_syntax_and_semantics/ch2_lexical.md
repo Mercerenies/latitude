@@ -152,7 +152,6 @@ following grammar.
               "#\"" <rawstring> "\"#" |
               "#(" <dslstring> ")" |
               [ "-" | "+" ] "0" <letter> { <alphanum> } |
-              "@{" <linelist> "}" |
               "@(" <number> "," <number> ")" |
               "#'" <ename>
 <linelist> ::= <line> <linelist> |

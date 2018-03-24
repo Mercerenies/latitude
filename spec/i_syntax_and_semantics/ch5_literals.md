@@ -163,19 +163,6 @@ is equivalent to
 Notice that the `def` symbol does *not* get double quoted but that the
 bare `abc` identifier becomes quoted.
 
-[TODO: The `statements` syntax may also change.]
-
-A statement sequence begins with an at-sign followed by an opening
-brace (`@{`), then any number of period-terminated statements, then a
-closing brace (`}`). A statement sequence is treated similarly to a
-list of methods. Each individual statement is compiled into a separate
-method, and then the `statements` slot on the current lexical meta
-object is called with no arguments. The resulting object is used as an
-array builder in the same way that the list syntax uses an array
-builder. Its `next` slot will be called, once for each statement in
-the sequence, then `finish` will be called and used to determine the
-result.
-
 ## User-Defined Literals
 
 [TODO: The `hashParen` and `radix` stuff may change as well.]

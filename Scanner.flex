@@ -183,7 +183,6 @@ ID        {SNORMAL}{NORMAL}*
 , { return ','; }
 \[ { return '['; }
 \] { return ']'; }
-@\{ { return ATBRACE; }
 @\( { return ATPAREN; }
 
 \;[^\n]* ; // Line comments
