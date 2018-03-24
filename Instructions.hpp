@@ -75,6 +75,9 @@ namespace Lit {
     /// \brief The index of the err object.
     constexpr long ERR    = 10L;
 
+    /// \brief The index of the Array object.
+    constexpr long ARRAY  = 11L;
+
 }
 
 /// A function index is fundamentally just an integral value. This

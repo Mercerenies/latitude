@@ -2481,6 +2481,8 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     reader.lit.emplace_back(fileHeader);
     assert(reader.lit.size() == Lit::ERR   );
     reader.lit.emplace_back(err       );
+    assert(reader.lit.size() == Lit::ARRAY );
+    reader.lit.emplace_back(array_    );
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);

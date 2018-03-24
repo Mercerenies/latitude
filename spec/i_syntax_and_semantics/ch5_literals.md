@@ -66,6 +66,9 @@ from global scope.
    contains the different kinds of built-in exceptions available in
    Latitude. It is used when the virtual machine needs to throw an
    exception as a result of an error in a built-in function.
+ * The array object, denoted `Array` in the global scope, is used to
+   represent arrays in the code. This has no corresponding primitive
+   type, as arrays are implemented using Latitude slots.
  * The stack frame object and file header object are used,
    respectively, in reporting stack traces and in loading source code
    files. These are accessible using the respective global names
