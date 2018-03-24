@@ -679,50 +679,16 @@ StmtList::StmtList(int line_no, ArgList& arg)
 
 void StmtList::translate(TranslationUnit& unit, InstrSeq& seq) {
 
-    //stateLine(seq);
+    stateLine(seq);
 
-    // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "brackets")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-
-    // Call the `brackets` function properly
-    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
-
-    // Add all of the elements
+    // Evaluate each of the arguments, in order
     for (auto& arg : args) {
-
-        // Evaluate the argument
         arg->translate(unit, seq);
         (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
-
-        // Grab `next` and call it
-        (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
-        (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-        (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-        (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
-
     }
 
-    // Now call finish
-    (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
-
-    // Leave %sto the way we found it
-    (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
+    // Make the call
+    (makeAssemblerLine(Instr::ARR, (long)args.size())).appendOnto(seq);
 
 }
 

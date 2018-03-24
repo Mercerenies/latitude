@@ -1365,8 +1365,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "ARR " << val << endl;
 #endif
         ObjectPtr arr = clone(reader.lit.at(Lit::ARRAY));
-        int j = 1;
-        for (long i = 0; i < val; i++, j += 2) {
+        int j = 2 * (int)val - 1;
+        for (long i = 0; i < val; i++, j -= 2) {
             arr->put(Symbols::natural(j), state.arg.top());
             state.arg.pop();
         }
