@@ -143,23 +143,10 @@ syntax will result in a call.
 
 ## Lists
 
-[TODO: The way the list syntax is interpreted may change soon, for
-efficiency reasons.]
-
 The list syntax consists of an opening bracket (`[`), followed by an
 argument list, followed by a closing bracket (`]`). When a list is
-evaluated, the `brackets` slot on the current lexical meta object is
-called with no arguments. The resulting object from this call is used
-as a builder for the list. This object is expected to have at least
-`next` and `finish` slots. The builder object's `next` slot is then
-called successively, once for each argument in the list, with the
-current list element as an argment each time. At the end, the
-builder's `finish` slot is called with no arguments. The result of the
-`finish` call is used as the result of the list expression. It is
-implementation-defined whether the arguments are all evaluated at the
-beginning and then `next` is called or each argument is evaluated
-immediately before the corresponding `next` call, so long as the
-arguments themselves are evaluated in order.
+evaluated, an `Array` object is constructed which contains the results
+of evaluating each syntactic element within the list syntax.
 
 The literal list syntax consists of a single-quote then an opening
 bracket (`'[`), followed by a special kind of argument list, then a

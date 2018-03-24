@@ -56,10 +56,6 @@ to facilitate writing numerical literals of various bases. It contains
 slots `x` and `X`, which parse the argument as hexadecimal; `o` and
 `O`, which parse as octal; and `b` and `B`, which parse as binary.
 
-### `meta brackets.`
-
-[TODO: Document exactly what this does.]
-
 ### `meta statements.`
 
 [TODO: Document exactly what this does.]

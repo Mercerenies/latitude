@@ -194,12 +194,6 @@ ArrayBuilder array := Nil.
 ArrayBuilder next := { self array pushBack: #'$1. }.
 ArrayBuilder finish := { self array. }.
 
-meta brackets := {
-  ArrayBuilder clone tap {
-    self array := Array clone.
-  }.
-}.
-
 ;; Statement List Syntax
 
 global MethodBuilder ::= Object clone.
