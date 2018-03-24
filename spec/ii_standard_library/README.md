@@ -66,7 +66,6 @@ scope object.
      |    +-- StringIterator
      +-- Kernel
      +-- Kernel GC
-     +-- MethodBuilder
      +-- Mixin
      |    +-- Collection
      +-- Module
@@ -78,7 +77,6 @@ scope object.
      |    +-- Cached
      |    +-- Cont
      |    +-- Method
-     |    |    +-- SpecialMethod
      +-- Process
      +-- Slots
      +-- StackFrame

@@ -194,36 +194,5 @@ ArrayBuilder array := Nil.
 ArrayBuilder next := { self array pushBack: #'$1. }.
 ArrayBuilder finish := { self array. }.
 
-;; Statement List Syntax
-
-global MethodBuilder ::= Object clone.
-MethodBuilder array := Nil.
-MethodBuilder next := {
-  self array pushBack: proc #'$1.
-}.
-MethodBuilder finish := {
-  spec := {
-    args := $*.
-    result := Nil.
-    here statements visit {
-      procd := parent self invoke: $1 slot 'call.
-      args dropIn.
-      parent result := procd call.
-    }.
-    result.
-  }.
-  #'spec parent := SpecialMethod.
-  #'spec statements := self array.
-  #'spec.
-}.
-
-global SpecialMethod ::= Method clone.
-SpecialMethod statements := [].
-meta statements := {
-  MethodBuilder clone tap {
-    self array := Array clone.
-  }.
-}.
-
 ;; Return the script
 here.
