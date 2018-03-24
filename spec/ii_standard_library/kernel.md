@@ -152,12 +152,6 @@ returns nil.
 
 ## Inner Object Methods
 
-### `Kernel GC traced.`
-
-Returns whether the garbage collector is currently being
-traced. Tracing is initially disabled for the garbage collector but
-can be enabled with the `trace` method.
-
 ### `Kernel GC run.`
 
 Runs the garbage collector, cleaning up unreachable objects. If the
