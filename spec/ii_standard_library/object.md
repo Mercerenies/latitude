@@ -134,14 +134,14 @@ in `Exception` and thus can be used to throw an exception object
 without invoking any of the exception-specific behavior, such as
 modifying the thrown object's stack trace.
 
-### `Object println.`
+### `Object printObject.`
 
 Prints the object to the screen, by invoking the `toString` method on
 it. This is equivalent to
 
     stdout println: Object.
 
-### `Object dump.`
+### `Object dumpObject.`
 
 Prints the object to the screen, as well as all slots that are
 accessible from it. The exact format of this output is unspecified, so

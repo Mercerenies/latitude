@@ -7,7 +7,7 @@ SystemError toString := "SystemError".
 
 Exception pretty := { (self toString) ++ " - " ++ (self message). }.
 Exception stack := Nil.
-Exception printStackTrace := { self stack dump. }.
+Exception printStackTrace := { self stack dumpObject. }.
 
 ;; Error object
 err toString := "err".

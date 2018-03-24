@@ -81,7 +81,7 @@ named by the caller of `assign=`. For example,
     var := 1.
     'var assign = { $1. }.
     while { var < 10. } do {
-      var println.
+      var printObject.
       var = var + 1.
     }.
 

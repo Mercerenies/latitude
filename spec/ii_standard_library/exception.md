@@ -34,7 +34,7 @@ followed by the exception's message (as per `message`).
 ### `Exception printStackTrace.`
 
 Prints the stack trace of the exception object. This call is
-equivalent to `self stack dump.`.
+equivalent to `self stack dumpObject.`.
 
 ## Exceptions
 
