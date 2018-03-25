@@ -26,7 +26,6 @@ REPL scope := global clone.
 REPL $scope := Nil. ; To be assigned in-loop
 REPL exception := Nil.
 REPL lastResult := Nil.
-REPL maxObjects := 10000.
 
 global quit := { self REPL quit. }.
 global $except := { self REPL exception. }.
@@ -53,12 +52,6 @@ REPL loop := {
   self $scope := $dynamic clone.
   loop {
     {
-;      { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue {
-;        Kernel GC run.
-;        ((Kernel GC total) >= (this maxObjects)) ifTrue {
-;          this maxObjects := this maxObjects * 2.
-;        }.
-;      }.
       counter := this counter + 1.
       expr := this read.
       (expr == "") and (this eof?) ifTrue {
