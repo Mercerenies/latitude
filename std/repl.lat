@@ -53,12 +53,12 @@ REPL loop := {
   self $scope := $dynamic clone.
   loop {
     {
-      { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue {
-        Kernel GC run.
-        ((Kernel GC total) >= (this maxObjects)) ifTrue {
-          this maxObjects := this maxObjects * 2.
-        }.
-      }.
+;      { this maxObjects is: Number. } and { (Kernel GC total) >= (this maxObjects). } ifTrue {
+;        Kernel GC run.
+;        ((Kernel GC total) >= (this maxObjects)) ifTrue {
+;          this maxObjects := this maxObjects * 2.
+;        }.
+;      }.
       counter := this counter + 1.
       expr := this read.
       (expr == "") and (this eof?) ifTrue {

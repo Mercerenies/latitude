@@ -10,6 +10,9 @@ using namespace std;
 
 GC GC::instance = GC();
 
+GC::GC()
+    : alloc(), count(TOTAL_COUNT), limit(8192L), tracing(false) {}
+
 GC& GC::get() noexcept {
     return instance;
 }
@@ -123,7 +126,7 @@ void addSeqToFrontier(const Container& visited, Container& frontier, Container1&
 }
 
 template <typename Container>
-void addContinuationToFrontier(const Container& visited, Container& frontier, ReadOnlyState& state) {
+void addContinuationToFrontier(const Container& visited, Container& frontier, const ReadOnlyState& state) {
     addSeqToFrontier  (visited, frontier, state.lit );
 }
 
@@ -195,7 +198,7 @@ long GC::garbageCollect(std::vector<Object*> globals) {
     return total;
 }
 
-long GC::garbageCollect(IntState& state, ReadOnlyState& reader) {
+long GC::garbageCollect(IntState& state, const ReadOnlyState& reader) {
     // This little type is necessary to make the templated function addContinuationToFrontier
     // think that vectors are set-like.
     struct VectorProxy {
@@ -227,4 +230,18 @@ void GC::setTracing(bool val) {
 
 size_t GC::getTotal() {
     return alloc.size();
+}
+
+void GC::tick(IntState& state, const ReadOnlyState& reader) {
+    --count;
+    if ((count <= 0) && (getTotal() > limit)) {
+        garbageCollect(state, reader);
+        count = TOTAL_COUNT;
+        if (getTotal() > limit) {
+            if (tracing) {
+                limit *= 2;
+                std::cout << "GC: Increasing limit to " << limit << "." << std::endl;
+            }
+        }
+    }
 }

@@ -17,9 +17,12 @@
 class GC {
 private:
     static GC instance;
+    constexpr static long TOTAL_COUNT = 65536L;
     std::set<Object*> alloc;
+    long count;
+    unsigned long limit;
     bool tracing;
-    GC() = default;
+    GC();
 public:
 
     /// Returns the garbage collector singleton instance.
@@ -61,8 +64,7 @@ public:
     /// \param state the interpreter state
     /// \param reader the read-only interpreter state
     /// \return the number of objects freed
-    long garbageCollect(IntState& state, ReadOnlyState& reader);
-
+    long garbageCollect(IntState& state, const ReadOnlyState& reader);
     /// A convenience function which garbage collects given an
     /// arbitrary iterable sequence of global values.
     ///
@@ -78,6 +80,8 @@ public:
     void setTracing(bool);
 
     size_t getTotal();
+
+    void tick(IntState& state, const ReadOnlyState& reader);
 
 };
 

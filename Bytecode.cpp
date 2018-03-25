@@ -3,6 +3,7 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 #include "Assembler.hpp"
+#include "GC.hpp"
 
 //#define DEBUG_INSTR 1
 
@@ -1409,6 +1410,7 @@ void doOneStep(IntState& state, const ReadOnlyState& reader) {
 #ifdef PROFILE_INSTR
         Profiling::get().instructionEnd(instr);
 #endif
+        GC::get().tick(state, reader);
     }
 }
 
