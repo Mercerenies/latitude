@@ -81,6 +81,8 @@ public:
 
     size_t getTotal();
 
+    size_t getLimit();
+
     void tick(IntState& state, const ReadOnlyState& reader);
 
 };

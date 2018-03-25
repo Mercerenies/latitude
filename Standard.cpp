@@ -1520,15 +1520,24 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "Number expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_STR_CHR))));
 
-     // CPP_GC_TOTAL (get the total number of allocated objects from the garbage collector and store it in %ret)
+     // CPP_GC_TOTAL (get the total number of allocated objects from the garbage collector and store it in %ret if %num0 is 0, limit of GC if %num0 is 1)
      // totalGC#.
+     // limitGC#.
      assert(reader.cpp.size() == CPP_GC_TOTAL);
      reader.cpp.push_back([&reader](IntState& state0) {
-         state0.ret = garnishObject(reader, (long)GC::get().getTotal());
+         if (state0.num0.asSmallInt() == 0)
+             state0.ret = garnishObject(reader, (long)GC::get().getTotal());
+         else if (state0.num0.asSmallInt() == 1)
+             state0.ret = garnishObject(reader, (long)GC::get().getLimit());
      });
      sys->put(Symbols::get()["totalGC#"],
               defineMethod(unit, global, method,
-                           asmCode(makeAssemblerLine(Instr::CPP, CPP_GC_TOTAL))));
+                           asmCode(makeAssemblerLine(Instr::INT, 0L),
+                                   makeAssemblerLine(Instr::CPP, CPP_GC_TOTAL))));
+     sys->put(Symbols::get()["limitGC#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::INT, 1L),
+                                   makeAssemblerLine(Instr::CPP, CPP_GC_TOTAL))));
 
      // CPP_TIME_SPAWN (put all the information about the current system time in the %ptr object, using %num0 to
      //             determine whether local time (1) or global time (2))

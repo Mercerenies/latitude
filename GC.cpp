@@ -232,6 +232,10 @@ size_t GC::getTotal() {
     return alloc.size();
 }
 
+size_t GC::getLimit() {
+    return limit;
+}
+
 void GC::tick(IntState& state, const ReadOnlyState& reader) {
     --count;
     if ((count <= 0) && (getTotal() > limit)) {
