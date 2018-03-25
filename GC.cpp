@@ -228,11 +228,11 @@ void GC::setTracing(bool val) {
     tracing = val;
 }
 
-size_t GC::getTotal() {
+size_t GC::getTotal() const {
     return alloc.size();
 }
 
-size_t GC::getLimit() {
+size_t GC::getLimit() const {
     return limit;
 }
 

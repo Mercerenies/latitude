@@ -79,9 +79,9 @@ public:
     /// collector prints a line of text whenever it runs.
     void setTracing(bool);
 
-    size_t getTotal();
+    size_t getTotal() const;
 
-    size_t getLimit();
+    size_t getLimit() const;
 
     void tick(IntState& state, const ReadOnlyState& reader);
 
