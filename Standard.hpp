@@ -57,7 +57,8 @@ namespace Table {
         CPP_COMPLPARTS = 46,
         CPP_OBJID = 47,
         CPP_STREAM_FLUSH = 48,
-        CPP_UNI_CAT = 49;
+        CPP_UNI_CAT = 49,
+        CPP_GC_TRACE = 50;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,

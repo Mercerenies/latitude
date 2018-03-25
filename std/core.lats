@@ -271,15 +271,16 @@ Kernel invokeOnSpecial := {
 Kernel GC := Object clone.
 Kernel GC toString := "GC".
 Kernel GC traced := False.
-Kernel GC run := {
-  self traced ifTrue {
-    stderr putln: "Running garbage collector... " ++ (parent self total).
-  }.
-  meta sys runGC#.
-}.
+Kernel GC run := { meta sys runGC#. }.
 Kernel GC total := { meta sys totalGC#. }.
-Kernel GC trace := { self traced := True. }.
-Kernel GC untrace := { self traced := False. }.
+Kernel GC trace := {
+  meta sys traceGC#.
+  Nil.
+}.
+Kernel GC untrace := {
+  meta sys untraceGC#.
+  Nil.
+}.
 
 ;; Environment variables
 Kernel env := { meta sys envGet#: $1. }.

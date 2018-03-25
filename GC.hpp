@@ -18,6 +18,7 @@ class GC {
 private:
     static GC instance;
     std::set<Object*> alloc;
+    bool tracing;
     GC() = default;
 public:
 
@@ -71,6 +72,10 @@ public:
     /// \see garbageCollect(std::vector<Object*>)
     template <typename InputIterator>
     long garbageCollect(InputIterator begin, InputIterator end);
+
+    /// Activates or deactivates tracing, so that the garbage
+    /// collector prints a line of text whenever it runs.
+    void setTracing(bool);
 
     size_t getTotal();
 

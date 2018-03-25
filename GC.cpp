@@ -143,6 +143,9 @@ long GC::garbageCollect(std::vector<Object*> globals) {
 #if GC_PRINT > 0
     std::cout << "<<ENTER GC>>" << std::endl;
 #endif
+    if (tracing) {
+        std::cout << "GC: Running.... there are " << getTotal() << " objects in memory." << std::endl;
+    }
     std::set<Object*> visited;
     std::set<Object*> frontier;
     for (const auto& elem : globals)
@@ -185,6 +188,10 @@ long GC::garbageCollect(std::vector<Object*> globals) {
 #if GC_PRINT > 0
     std::cout << "<<EXIT GC>>" << std::endl;
 #endif
+    if (tracing) {
+        std::cout << "GC: Finished running.... there are now " << getTotal()
+                  << " objects." << std::endl;
+    }
     return total;
 }
 
@@ -212,6 +219,10 @@ long GC::garbageCollect(IntState& state, ReadOnlyState& reader) {
     addContinuationToFrontier<decltype(globals)>({}, globals, state);
     addContinuationToFrontier<decltype(globals)>({}, globals, reader);
     return garbageCollect(globals.value);
+}
+
+void GC::setTracing(bool val) {
+    tracing = val;
 }
 
 size_t GC::getTotal() {

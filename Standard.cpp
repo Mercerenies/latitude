@@ -2242,6 +2242,23 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_UNI_CAT))));
 
+     // CPP_GC_TRACE (set the tracing attribute of the garbage collector to %num0)
+     // traceGC#.
+     // untraceGC#.
+     assert(reader.cpp.size() == CPP_GC_TRACE);
+     reader.cpp.push_back([&reader](IntState& state0) {
+          auto val = state0.num0.asSmallInt();
+          GC::get().setTracing(val != 0);
+     });
+     sys->put(Symbols::get()["traceGC#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::INT, 1),
+                                   makeAssemblerLine(Instr::CPP, CPP_GC_TRACE))));
+     sys->put(Symbols::get()["untraceGC#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::INT, 0),
+                                   makeAssemblerLine(Instr::CPP, CPP_GC_TRACE))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
