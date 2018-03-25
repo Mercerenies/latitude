@@ -163,6 +163,11 @@ standard error stream.
 Returns the number of objects which are currently allocated for the
 current VM.
 
+### `Kernel GC limit.`
+
+Returns the number of objects which will trigger the garbage
+collector.
+
 ### `Kernel GC trace.`
 
 Enables tracing for the garbage collector. When the garbage collector

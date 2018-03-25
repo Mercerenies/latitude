@@ -273,6 +273,7 @@ Kernel GC toString := "GC".
 Kernel GC traced := False.
 Kernel GC run := { meta sys runGC#. }.
 Kernel GC total := { meta sys totalGC#. }.
+Kernel GC limit := { meta sys limitGC#. }.
 Kernel GC trace := {
   meta sys traceGC#.
   Nil.
