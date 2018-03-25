@@ -48,7 +48,6 @@ int main(int argc, char** argv) {
             ObjectPtr dyn = clone(global);
             std::string pathname = stripFilename(getExecutablePathname());
             readFile(pathname + "std/runner.lats", {lex, dyn}, state, reader);
-            // TODO the garbage collector won't run in this case
             while (!isIdling(state))
                 doOneStep(state, reader);
         } else {
