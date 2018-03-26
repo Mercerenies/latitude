@@ -145,6 +145,26 @@ ID        {SNORMAL}{NORMAL}*
 
 \'\( { BEGIN(INNER_SYMBOL); clear_buffer(); }
 <INNER_SYMBOL>\n { append_buffer(yytext[1]); ++line_num; }
+<INNER_SYMBOL>\\r { append_buffer((char)0x0D); }
+<INNER_SYMBOL>\\t { append_buffer((char)0x09); }
+<INNER_SYMBOL>\\a { append_buffer((char)0x07); }
+<INNER_SYMBOL>\\b { append_buffer((char)0x08); }
+<INNER_SYMBOL>\\f { append_buffer((char)0x0C); }
+<INNER_SYMBOL>\\v { append_buffer((char)0x0B); }
+<INNER_SYMBOL>\\u[+1][A-Za-z0-9]{4} {
+    if (yytext[2] == '+')
+        yytext[2] = '0';
+    long value = strtol(yytext + 2, NULL, 16);
+    // Make space, then store
+    char* start = curr_buffer + curr_buffer_pos;
+    for (int i = 0; i < 4; i++) {
+        append_buffer(0);
+    }
+    char* pt = charEncode(start, value);
+    if (pt == NULL)
+        yyerror("Invalid Unicode code point");
+    curr_buffer_pos = pt - curr_buffer;
+}
 <INNER_SYMBOL>[^\\\)] {append_buffer(yytext[0]); }
 <INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
 <INNER_SYMBOL>\) { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return SYMBOL; }
