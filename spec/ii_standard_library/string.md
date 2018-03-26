@@ -160,9 +160,7 @@ the new string.
 ### `String asciiOrd.`
 
 Returns the ASCII value of the first character of `self`. If `self` is
-empty, an `ArgError` is raised.
-
-[TODO: If the character is out of bounds of ASCII, what happens?]
+empty or its first character is not ASCII, an `ArgError` is raised.
 
 ### `String ord.`
 
