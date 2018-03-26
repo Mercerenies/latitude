@@ -97,16 +97,18 @@ global use := {
     err ModuleError clone tap { self message := "Module has no package". } throw.
   }.
   name := ((header packageName) ++ " " ++ (header moduleName)) intern.
-  if (Slots has? ($moduleLoader &loaded, name))
-    then { Slots hold ($moduleLoader &loaded, name). }
-    else {
-      mod := Module clone tap { self header := header. }.
-      do {
-        $whereAmI := mod.
-        parent mod := Kernel evalFile: fname, global clone.
-      }.
-      Slots put: $moduleLoader &loaded, name, mod.
-      target slot (header moduleName intern) = mod.
-      mod.
+  mod := Nil.
+  'mod assign = { $1. }.
+  if (Slots has? ($moduleLoader &loaded, name)) then {
+    mod = Slots hold ($moduleLoader &loaded, name).
+  } else {
+    mod = Module clone tap { self header := header. }.
+    do {
+      $whereAmI := mod.
+      mod = Kernel evalFile: fname, global clone.
     }.
+    Slots put: $moduleLoader &loaded, name, mod.
+  }.
+  target slot (header moduleName intern) = mod.
+  mod.
 }.
