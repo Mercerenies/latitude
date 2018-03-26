@@ -48,6 +48,7 @@ bool Symbols::requiresEscape(const std::string& str){
         return true;
     sort(str0.begin(), str0.end());
     string special(".,:()[]{}\"\' \t\n");
+    special += '\0';
     sort(special.begin(), special.end());
     string str1;
     set_intersection(str0.begin(), str0.end(), special.begin(), special.end(),
