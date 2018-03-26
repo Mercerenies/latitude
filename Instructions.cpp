@@ -130,8 +130,15 @@ struct AppendVisitor {
     }
 
     void operator()(const std::string& str) {
-        for (char ch : str)
-            instructions->push_back(ch);
+        for (char ch : str) {
+            if (ch == 0) {
+                instructions->push_back('\0');
+                instructions->push_back('.');
+            } else {
+                instructions->push_back(ch);
+            }
+        }
+        instructions->push_back('\0');
         instructions->push_back('\0');
     }
 

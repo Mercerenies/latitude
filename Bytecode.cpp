@@ -162,8 +162,18 @@ long popLong(SerialInstrSeq& state) {
 string popString(SerialInstrSeq& state) { // TODO Null-safety here (null characters will confuse it)
     string str;
     unsigned char ch;
-    while ((ch = popChar(state)) != 0)
-        str += ch;
+    while (true) {
+        ch = popChar(state);
+        if (ch == '\0') {
+            ch = popChar(state);
+            if (ch == '.')
+                str += '\0';
+            else if (ch == '\0')
+                break;
+        } else {
+            str += ch;
+        }
+    }
     return str;
 }
 
