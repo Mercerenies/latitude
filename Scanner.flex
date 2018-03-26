@@ -125,7 +125,7 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_STRING>\\b { append_buffer((char)0x08); }
 <INNER_STRING>\\f { append_buffer((char)0x0C); }
 <INNER_STRING>\\v { append_buffer((char)0x0B); }
-<INNER_STRING>\\u[+1][A-Za-z0-9]{4} {
+<INNER_STRING>\\u[+01][A-Za-z0-9]{4} {
     if (yytext[2] == '+')
         yytext[2] = '0';
     long value = strtol(yytext + 2, NULL, 16);
@@ -151,7 +151,7 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_SYMBOL>\\b { append_buffer((char)0x08); }
 <INNER_SYMBOL>\\f { append_buffer((char)0x0C); }
 <INNER_SYMBOL>\\v { append_buffer((char)0x0B); }
-<INNER_SYMBOL>\\u[+1][A-Za-z0-9]{4} {
+<INNER_SYMBOL>\\u[+01][A-Za-z0-9]{4} {
     if (yytext[2] == '+')
         yytext[2] = '0';
     long value = strtol(yytext + 2, NULL, 16);
