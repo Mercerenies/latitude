@@ -223,19 +223,19 @@ void spawnSystemCallsNew(ObjectPtr global,
                 else if (ch == '\\')
                     oss << "\\\\";
                 else if (ch == '\n')
-                    oss << "\\\n";
+                    oss << "\\n";
                 else if (ch == '\r')
-                    oss << "\\\r";
+                    oss << "\\r";
                 else if (ch == '\a')
-                    oss << "\\\a";
+                    oss << "\\a";
                 else if (ch == '\b')
-                    oss << "\\\b";
+                    oss << "\\b";
                 else if (ch == '\v')
-                    oss << "\\\v";
+                    oss << "\\v";
                 else if (ch == '\t')
-                    oss << "\\\t";
+                    oss << "\\t";
                 else if (ch == '\f')
-                    oss << "\\\f";
+                    oss << "\\f";
                 else
                     oss << ch;
             }
