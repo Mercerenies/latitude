@@ -231,8 +231,10 @@ string. The behavior is undefined if the hex literal does not
 correspond to an assigned Unicode code point.
 
 A backslash followed by any other character (including a second
-backslash or a double quote) will be treated as that second character
-literally.
+backslash or a double quote, but excluding a `u`) will be treated as
+that second character literally. A backslash followed by a `u` which
+is not a part of a Unicode escape sequence is an invalid lexical token
+and will result in a parse error.
 
 A `<rawstring>` consists of any sequence of characters until the `"#`
 terminator is found. Note that no escape sequences are interpreted in

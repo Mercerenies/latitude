@@ -126,6 +126,7 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_STRING>\\f { append_buffer((char)0x0C); }
 <INNER_STRING>\\v { append_buffer((char)0x0B); }
 <INNER_STRING>\\0 { append_buffer((char)0x00); }
+<INNER_STRING>\\u { yyerror("Invalid Unicode escape"); }
 <INNER_STRING>\\u[+01][A-Za-z0-9]{4} {
     if (yytext[2] == '+')
         yytext[2] = '0';
@@ -173,6 +174,7 @@ ID        {SNORMAL}{NORMAL}*
         yyerror("Invalid Unicode code point");
     curr_buffer_pos = pt - curr_buffer;
 }
+<INNER_SYMBOL>\\u { yyerror("Invalid Unicode escape"); }
 <INNER_SYMBOL>[^\\\)] {append_buffer(yytext[0]); }
 <INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
 <INNER_SYMBOL>\) {
