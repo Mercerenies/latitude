@@ -164,7 +164,7 @@ class StmtString : public Stmt {
 private:
     std::string value;
 public:
-    StmtString(int line_no, const char* contents);
+    StmtString(int line_no, std::string contents);
     virtual void translate(TranslationUnit&, InstrSeq&);
 };
 
@@ -175,7 +175,7 @@ class StmtSymbol : public Stmt {
 private:
     std::string value;
 public:
-    StmtSymbol(int line_no, const char* contents);
+    StmtSymbol(int line_no, std::string contents);
     virtual void translate(TranslationUnit&, InstrSeq&);
 };
 

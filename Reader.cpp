@@ -636,7 +636,7 @@ void StmtBigInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
 
 }
 
-StmtString::StmtString(int line_no, const char* contents)
+StmtString::StmtString(int line_no, std::string contents)
     : Stmt(line_no), value(contents) {}
 
 void StmtString::translate(TranslationUnit& unit, InstrSeq& seq) {
@@ -653,7 +653,7 @@ void StmtString::translate(TranslationUnit& unit, InstrSeq& seq) {
 
 }
 
-StmtSymbol::StmtSymbol(int line_no, const char* contents)
+StmtSymbol::StmtSymbol(int line_no, std::string contents)
     : Stmt(line_no), value(contents) {}
 
 void StmtSymbol::translate(TranslationUnit& unit, InstrSeq& seq) {
