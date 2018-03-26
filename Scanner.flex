@@ -153,6 +153,7 @@ ID        {SNORMAL}{NORMAL}*
 
 \'\( { BEGIN(INNER_SYMBOL); clear_buffer(); }
 <INNER_SYMBOL>\n { append_buffer(yytext[1]); ++line_num; }
+<INNER_SYMBOL>\\n { append_buffer((char)0x0A); }
 <INNER_SYMBOL>\\r { append_buffer((char)0x0D); }
 <INNER_SYMBOL>\\t { append_buffer((char)0x09); }
 <INNER_SYMBOL>\\a { append_buffer((char)0x07); }
