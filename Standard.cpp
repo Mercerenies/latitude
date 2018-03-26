@@ -236,6 +236,8 @@ void spawnSystemCallsNew(ObjectPtr global,
                     oss << "\\t";
                 else if (ch == '\f')
                     oss << "\\f";
+                else if (ch == '\0')
+                    oss << "\\0";
                 else
                     oss << ch;
             }
@@ -252,6 +254,22 @@ void spawnSystemCallsNew(ObjectPtr global,
                         oss << "\\)";
                     else if (ch == '\\')
                         oss << "\\\\";
+                else if (ch == '\n')
+                    oss << "\\n";
+                else if (ch == '\r')
+                    oss << "\\r";
+                else if (ch == '\a')
+                    oss << "\\a";
+                else if (ch == '\b')
+                    oss << "\\b";
+                else if (ch == '\v')
+                    oss << "\\v";
+                else if (ch == '\t')
+                    oss << "\\t";
+                else if (ch == '\f')
+                    oss << "\\f";
+                else if (ch == '\0')
+                    oss << "\\0";
                     else
                         oss << ch;
                 }
