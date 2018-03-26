@@ -64,5 +64,9 @@ slots `x` and `X`, which parse the argument as hexadecimal; `o` and
 
 ## `~l (method).`
 
-The `~l` sigil constructs a `Cached` procedure and wraps it in a
-method. [TODO: Finish documenting this once `Cached` is documented.]
+The `~l` sigil constructs a [`Cached`](cached.md) procedure and wraps
+it in a method. A `Cached` procedure will compute its contents once
+and then, if called again, will return the cached result. The `~l`
+sigil wraps this in a method, so that the returned value is
+automatically called when the variable is accessed later. In this way,
+`~l` can be used to simulate lazy-evaluated values in Latitude.
