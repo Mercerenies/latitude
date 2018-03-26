@@ -29,10 +29,16 @@
     struct Expr;
     struct List;
 
+    struct vstring_t {
+        char* str;
+        long length;
+    };
+
     struct Expr {
         int line;
         struct Expr* lhs;
         char* name;
+        long namelen;
         struct List* args;
         bool equals;
         struct Expr* rhs;
@@ -81,6 +87,7 @@
     long ival;
     double dval;
     char* sval;
+    struct vstring_t vsval;
     struct List* argval;
     struct Expr* exprval;
 }
@@ -114,8 +121,8 @@
 %token <dval> NUMBER
 %token <ival> INTEGER
 %token <sval> BIGINT
-%token <sval> STRING
-%token <sval> SYMBOL
+%token <vsval> STRING
+%token <vsval> SYMBOL
 %token <sval> HASHPAREN
 %token <sval> ZERODISPATCH
 %token <sval> HASHQUOTE
@@ -231,8 +238,9 @@ shortarglist:
      literal { $$ = makeList(); $$->car = $1; $$->cdr = makeList(); }
      ;
 literalish:
-    SYMBOL literalish { if (*$1 != '~') { yyerror("Sigil name must be an interned symbol"); }
-                        $$ = makeExpr(); $$->isSigil = true; $$->name = $1; $$->rhs = $2; } |
+    SYMBOL literalish { if ($1.str[0] != '~') { yyerror("Sigil name must be an interned symbol"); }
+                        $$ = makeExpr(); $$->isSigil = true; $$->name = $1.str;
+                        $$->namelen = $1.length; $$->rhs = $2; } |
     '(' stmt ')' { $$ = $2; } |
     literal
     ;
@@ -244,8 +252,8 @@ literal:
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
-    STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1; } |
-    SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; } |
+    STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1.str; $$->namelen = $1.length; } |
+    SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1.str; $$->namelen = $1.length; } |
     '[' arglist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
                       $$->argsProvided = true; } |
     LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
@@ -270,14 +278,14 @@ literallist1:
     ',' listlit literallist1 { $$ = makeList(); $$->car = $2; $$->cdr = $3; }
     ;
 listlit:
-    STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1; } |
-    SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; } |
+    STRING { $$ = makeExpr(); $$->isString = true; $$->name = $1.str; $$->namelen = $1.length; } |
+    SYMBOL { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1.str; $$->namelen = $1.length; } |
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
                           $$->argsProvided = true; } |
-    name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; }
+    name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; $$->namelen = strlen($1); }
     ;
 doublish:
     NUMBER |

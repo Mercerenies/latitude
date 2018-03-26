@@ -140,7 +140,13 @@ ID        {SNORMAL}{NORMAL}*
     curr_buffer_pos = pt - curr_buffer;
 }
 <INNER_STRING>\\. { append_buffer(yytext[1]); }
-<INNER_STRING>\" { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
+<INNER_STRING>\" {
+    BEGIN(0);
+    yylval.vsval.str = curr_buffer;
+    yylval.vsval.length = curr_buffer_pos;
+    unset_buffer();
+    return STRING;
+}
 <INNER_STRING><<EOF>> { yyerror("Unterminated string"); }
 
 \'\( { BEGIN(INNER_SYMBOL); clear_buffer(); }
@@ -167,12 +173,24 @@ ID        {SNORMAL}{NORMAL}*
 }
 <INNER_SYMBOL>[^\\\)] {append_buffer(yytext[0]); }
 <INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
-<INNER_SYMBOL>\) { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return SYMBOL; }
+<INNER_SYMBOL>\) {
+    BEGIN(0);
+    yylval.vsval.str = curr_buffer;
+    yylval.vsval.length = curr_buffer_pos;
+    unset_buffer();
+    return SYMBOL;
+}
 <INNER_SYMBOL><<EOF>> { yyerror("Unterminated symbol"); }
 
 #\" { BEGIN(INNER_RSTRING); clear_buffer(); }
 <INNER_RSTRING>\n { append_buffer(yytext[0]); ++line_num; }
-<INNER_RSTRING>\"# { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
+<INNER_RSTRING>\"# {
+    BEGIN(0);
+    yylval.vsval.str = curr_buffer;
+    yylval.vsval.length = curr_buffer_pos;
+    unset_buffer();
+    return STRING;
+}
 <INNER_RSTRING>. { append_buffer(yytext[0]); }
 <INNER_RSTRING><<EOF>> { yyerror("Unterminated string"); }
 
@@ -193,14 +211,16 @@ ID        {SNORMAL}{NORMAL}*
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
     strcpy(arr, yytext + 1);
-    yylval.sval = arr;
+    yylval.vsval.str = arr;
+    yylval.vsval.length = strlen(yytext) - 1;
     return SYMBOL;
 }
 
 ~{NORMAL}+ {
     char* arr = calloc(strlen(yytext) + 1, sizeof(char));
     strcpy(arr, yytext);
-    yylval.sval = arr;
+    yylval.vsval.str = arr;
+    yylval.vsval.length = strlen(yytext);
     return SYMBOL;
 }
 

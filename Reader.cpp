@@ -50,9 +50,11 @@ list< unique_ptr<Stmt> > translateList(List* list, bool held);
 unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
     int line = expr->line;
     if (expr->isSymbol) {
-        return unique_ptr<Stmt>(new StmtSymbol(line, expr->name));
+        assert(expr->namelen >= 0);
+        return unique_ptr<Stmt>(new StmtSymbol(line, { expr->name, (unsigned long)expr->namelen }));
     } else if (expr->isString) {
-        return unique_ptr<Stmt>(new StmtString(line, expr->name));
+        assert(expr->namelen >= 0);
+        return unique_ptr<Stmt>(new StmtString(line, { expr->name, (unsigned long)expr->namelen }));
     } else if (expr->isNumber) {
         return unique_ptr<Stmt>(new StmtNumber(line, expr->number));
     } else if (expr->isInt) {
