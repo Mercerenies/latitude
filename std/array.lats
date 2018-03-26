@@ -186,13 +186,5 @@ Array clone := {
   }.
 }.
 
-;; Array Syntax
-;; TODO Performance improvements?
-
-global ArrayBuilder ::= Object clone.
-ArrayBuilder array := Nil.
-ArrayBuilder next := { self array pushBack: #'$1. }.
-ArrayBuilder finish := { self array. }.
-
 ;; Return the script
 here.
