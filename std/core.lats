@@ -231,11 +231,11 @@ Kernel executablePath := { meta sys exePath#. }.
 Kernel cwd := { meta sys cwdPath#. }.
 Kernel evaluating? := { meta sys primIsMethod#: #'$1. }.
 Kernel keys := {
-  arr := meta brackets.
+  arr := [].
   meta sys objectKeys#: #'$1, {
-    arr next ($1).
+    arr pushBack ($1).
   }.
-  arr finish.
+  arr.
 }.
 Kernel eq := { meta sys ptrEquals#: #'$1, #'$2. }.
 Kernel id := { meta sys objId#: #'$1. }.
