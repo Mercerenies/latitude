@@ -1,6 +1,8 @@
 ;;* MODULE pattern
 ;;* PACKAGE base
 
+pattern := $whereAmI.
+
 ;; Pattern matching functionality
 Wildcard := Object clone.
 Wildcard symbol := Nil.
@@ -10,6 +12,7 @@ Wildcard toString := {
     then { "#<Wildcard " ++ (parent self symbol) ++ ">". }
     else { "Wildcard". }.
 }.
+pattern Wildcard := Wildcard.
 
 Ellipsis := Wildcard clone.
 Ellipsis toString := {
@@ -17,6 +20,7 @@ Ellipsis toString := {
      then { "#<Ellipsis " ++ (parent self symbol) ++ ">". }
      else { "Ellipsis". }.
 }.
+pattern Ellipsis := Ellipsis.
 
 ; The "match" object is a Proc. If no match was found, the match object is falsy and its `call`
 ; is a no-op. If a match was made, the object is truthy and the `call` expects a single argument,
@@ -26,12 +30,15 @@ Match callback := {}.
 Match call := {
   (self invokeSpecial: #'$1, self slot 'callback) call.
 }.
+pattern Match := Match.
 
 NoMatch ::= Match clone falsify.
 NoMatch call := {}.
+pattern NoMatch := NoMatch.
 
 ; * - A wildcard that matches (and ignores) anything
 * := { Wildcard clone. }.
+pattern * := #'(*).
 
 ; ~m 'name - A wildcard that matches anything and binds it to 'name
 meta sigil m := {
@@ -41,6 +48,7 @@ meta sigil m := {
 
 ; ... - A wildcard that matches potentially multiple list elements and ignores them
 ... := { Ellipsis clone. }.
+pattern ... := #'(...).
 
 ; ~m 'name ... - A wildcard that matches multiple list elements and binds the array containing them to 'name
 Wildcard ... := {
@@ -205,4 +213,4 @@ case := {
   }.
 }.
 
-$whereAmI.
+pattern.

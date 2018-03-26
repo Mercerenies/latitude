@@ -103,7 +103,7 @@ global use := {
       mod := Module clone tap { self header := header. }.
       do {
         $whereAmI := mod.
-        parent mod := Kernel evalFile: fname, mod.
+        parent mod := Kernel evalFile: fname, global clone.
       }.
       Slots put: $moduleLoader &loaded, name, mod.
       target slot (header moduleName intern) = mod.

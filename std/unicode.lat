@@ -3,11 +3,14 @@
 
 use 'enum import '[Enumeration].
 
+unicode := $whereAmI.
+
 Category ::= Enumeration of '[
     Lu, Ll, Lt, Lm, Lo, Mn, Mc, Me, Nd, Nl, No, Pc, Pd,
     Ps, Pe, Pi, Pf, Po, Sm, Sc, Sk, So, Zs, Zl, Zp, Cc,
     Cf, Cs, Co, Cn
 ].
+unicode Category := Category.
 
 Category name := { self major ++ ", " ++ self minor. }.
 Category major := Nil.
@@ -110,3 +113,5 @@ String category := {
   cat := meta sys uniCat#: self.
   Category value (cat).
 }.
+
+unicode.

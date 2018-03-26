@@ -1,7 +1,10 @@
 ;;* MODULE repl
 ;;* PACKAGE base
 
+repl := $whereAmI.
+
 REPL ::= Object clone.
+repl REPL := REPL.
 
 REPL quitter := {
   jump := Nil.
@@ -78,4 +81,4 @@ REPL loop := {
 
 global REPL := REPL.
 
-$whereAmI.
+repl.

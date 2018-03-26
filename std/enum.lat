@@ -1,6 +1,8 @@
 ;;* MODULE enum
 ;;* PACKAGE base
 
+enum := $whereAmI.
+
 ;; Enumeration types
 ;; Example usage:
 ; Day := enum '[Mon, Tue, Wed, Thu, Fri, Sat, Sun].
@@ -23,5 +25,6 @@ Enumeration of := {
     }.
   }.
 }.
+enum Enumeration := Enumeration.
 
-$whereAmI.
+enum.

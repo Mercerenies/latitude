@@ -3,10 +3,14 @@
 
 use 'enum import '[Enumeration].
 
+time := $whereAmI.
+
 Month ::= Enumeration of '[January, February, March, April, May, June, July,
                            August, September, October, November, December].
+time Month := Month.
 
 Weekday ::= Enumeration of '[Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday].
+time Weekday := Weekday.
 
 DateTime := Object clone.
 DateTime toString := {
@@ -32,6 +36,7 @@ DateTime dstNumber := 0.
 DateTime month := { Month value (self monthNumber). }.
 DateTime weekday := { Weekday value (self weekdayNumber). }.
 DateTime dst? := { self dstNumber >= 0. }.
+time DateTime := DateTime.
 
 now := {
   DateTime clone tap { meta sys timeSpawnLocal#: self. }.
@@ -39,3 +44,7 @@ now := {
 utc := {
   DateTime clone tap { meta sys timeSpawnGlobal#: self. }.
 }.
+time now := #'now.
+time utc := #'utc.
+
+time.

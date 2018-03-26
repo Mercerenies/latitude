@@ -1,10 +1,13 @@
 ;;* MODULE util
 ;;* PACKAGE base
 
+util := $whereAmI.
+
 ;; "Cells" a la MIT Scheme
 Cell := Object clone.
 Cell value := Nil.
 Cell toString := "Cell".
+util Cell := Cell.
 
 ;; Cells are also iterable
 Cell iterator := {
@@ -40,6 +43,9 @@ Lockbox toString := "Lockbox".
 Latchkey toString := "Latchkey".
 Latchkey pretty := { "Key " ++ (self tag pretty). }.
 Latchkey == := { (self tag) == (self tag). }.
+
+util Latchkey := Latchkey.
+util Lockbox := Lockbox.
 
 ;; Python-style generator functions
 ; Example usage:
@@ -132,6 +138,8 @@ Proc generatorWith := {
 Proc generator := { #'self generatorWith (Nil). }.
 Collection inject: Generator.
 
+util Generator := Generator.
+
 ;; McCarthy's 'amb' operator
 ; Example usage:
 ; callAmb { x := amb [1, 2, 3].
@@ -167,6 +175,9 @@ callAmb := {
   procd call.
 }.
 
+util Amb := Amb.
+util callAmb := #'callAmb.
+
 ;; Accumulator, similar to Haskell's Writer monad
 ;; Example usage:
 ; accumulate { tell 1.
@@ -185,5 +196,7 @@ accumulate := {
   result.
 }.
 
+util accumulate := #'accumulate.
+
 ;; Return the script
-$whereAmI.
+util.

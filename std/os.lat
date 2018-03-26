@@ -1,9 +1,12 @@
 ;;* MODULE os
 ;;* PACKAGE base
 
+os := $whereAmI.
+
 OS ::= Object clone.
 OS class := Nil.
+os OS := OS.
 
 meta sys osInfo#: OS.
 
-$whereAmI.
+os.

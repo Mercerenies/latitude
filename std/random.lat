@@ -16,6 +16,8 @@
  * l = 18
  *}
 
+random := $whereAmI.
+
 MersenneConfig ::= Object clone.
 MersenneConfig w := 512.
 MersenneConfig n := 39.
@@ -49,6 +51,7 @@ MersenneConfig clone := {
     self f := self f.
   }.
 }.
+random MersenneConfig := MersenneConfig.
 
 global $mersenne := MersenneConfig clone.
 
@@ -100,6 +103,7 @@ MersenneTwister twist := {
   this index := 0.
 }.
 MersenneTwister next := { self extract. }.
+random MersenneTwister := MersenneTwister.
 
 ;; By default, the random generator will just produce 0, for it has not been seeded. Dynamically
 ;; rebinding the $random variable to a random-ish object (such as a MersenneTwister instance) will
@@ -107,3 +111,6 @@ MersenneTwister next := { self extract. }.
 global $random := Object clone :: '#<ConstantRandom> tap { self next := { 0. }. }.
 
 nextInt := { $random next. }.
+random nextInt := nextInt.
+
+random.

@@ -3,6 +3,8 @@
 
 use 'pattern import '[case].
 
+format := $whereAmI.
+
 FormatString ::= Proc clone.
 FormatString original := "".
 FormatString contents := [].
@@ -17,8 +19,9 @@ FormatString printf := {
   result := self call.
   stdout putln: result.
 }.
+format FormatString := FormatString.
 
-format := {
+formatMethod := {
   takes '[text].
   FormatString clone tap {
     localize.
@@ -63,7 +66,8 @@ format := {
       }.
   }.
 }.
+format format := #'formatMethod.
 
 meta lang slot '(fmt ) = { format. }.
 
-$whereAmI.
+format.
