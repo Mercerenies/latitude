@@ -7,6 +7,7 @@
 %{
      #include "Parser.tab.h"
      #include "Operator.h"
+     #include "CUnicode.h"
      #ifdef __cplusplus
      #include <cstdlib>
      #include <cstring>
@@ -124,6 +125,20 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_STRING>\\b { append_buffer((char)0x08); }
 <INNER_STRING>\\f { append_buffer((char)0x0C); }
 <INNER_STRING>\\v { append_buffer((char)0x0B); }
+<INNER_STRING>\\u[+1][A-Za-z0-9]{4} {
+    if (yytext[2] == '+')
+        yytext[2] = '0';
+    long value = strtol(yytext + 2, NULL, 16);
+    // Make space, then store
+    char* start = curr_buffer + curr_buffer_pos;
+    for (int i = 0; i < 4; i++) {
+        append_buffer(0);
+    }
+    char* pt = charEncode(start, value);
+    if (pt == NULL)
+        yyerror("Invalid Unicode code point");
+    curr_buffer_pos = pt - curr_buffer;
+}
 <INNER_STRING>\\. { append_buffer(yytext[1]); }
 <INNER_STRING>\" { BEGIN(0); yylval.sval = curr_buffer; unset_buffer(); return STRING; }
 <INNER_STRING><<EOF>> { yyerror("Unterminated string"); }
