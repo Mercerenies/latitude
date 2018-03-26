@@ -195,8 +195,9 @@ a close-parenthesis (`)`) is interpreted literally as part of the
 symbol's name. This includes spaces and newlines. A backslash
 interprets the character immediately following it literally, even if
 the character following it is another backslash or a
-close-parenthesis. Note that escape sequences (such as `\n`) are not
-interpreted in this context.
+close-parenthesis. Additionally, the backslash escape sequences,
+including Unicode escape sequences, that can be used in string
+literals can be used in symbol literals enclosed in parentheses.
 
 ## String Literals
 
@@ -219,6 +220,15 @@ interpreted specially. The following special translations take place.
 | `\b`     | `U+0008` |
 | `\f`     | `U+000C` |
 | `\v`     | `U+000B` |
+
+Additionally, strings can contain Unicode escape sequences. A Unicode
+escape sequence consists of `\u`, followed by either a five-character
+Unicode code point or a plus and a four-character Unicode code
+point. In either case, the numerical part of the sequence is
+interpreted as a hexadecimal code point, and a single Unicode
+character corresponding to that code point is inserted into the
+string. The behavior is undefined if the hex literal does not
+correspond to an assigned Unicode code point.
 
 A backslash followed by any other character (including a second
 backslash or a double quote) will be treated as that second character
