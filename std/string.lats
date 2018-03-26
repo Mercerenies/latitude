@@ -160,7 +160,11 @@ String asciiOrd := {
   (self == "") ifTrue {
     err ArgError clone tap { self message := "`asciiOrd` on empty string". } throw.
   }.
-  meta sys strOrd#: self.
+  res := meta sys strOrd#: self.
+  (res < 0) ifTrue {
+    err ArgError clone tap { self message := "`asciiOrd` argument is not ASCII". } throw.
+  }.
+  res.
 }.
 String ord := {
   (self == "") ifTrue {
