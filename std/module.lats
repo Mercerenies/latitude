@@ -14,9 +14,9 @@ Module import := {
 }.
 Module importAll := {
   localize.
-  target := lexical caller.
-  target parent := target parent clone.
-  target := target parent.
+  original := lexical caller.
+  original parent := original parent clone.
+  target := original parent.
   name := this header moduleName intern.
   target missing := {
     takes '[sym].
@@ -31,7 +31,7 @@ Module importAll := {
     ; method with the same name as itself. In order to be consistent
     ; with an explicit import of the method name, the method will take
     ; precedence over the module in this case.
-    target slot (name) = this slot (name).
+    original slot (name) = this slot (name).
   }.
   this.
 }.
