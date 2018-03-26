@@ -30,7 +30,6 @@ scope object.
      +-- $argv
      +-- ArgList
      +-- Array
-     +-- ArrayBuilder
      +-- Boolean
      |    +-- False
      |    +-- True
