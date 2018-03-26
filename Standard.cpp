@@ -867,8 +867,9 @@ void spawnSystemCallsNew(ObjectPtr global,
     reader.cpp.push_back([&reader](IntState& state0) {
         if (state0.num0.hierarchyLevel() > 1) {
             throwError(state0, reader, "TypeError", "Cannot produce symbols from non-integers");
+        } else if (state0.num0 > Number(2147483647L)) {
+            throwError(state0, reader, "TypeError", "Cannot produce symbols from large integers");
         } else if (state0.num0.asSmallInt() <= 0) {
-            // TODO This actually doesn't behave correctly for extremely large integers right now
             throwError(state0, reader, "TypeError", "Cannot produce symbols from non-positive numbers");
         } else {
             Symbolic sym = Symbols::natural((int)state0.num0.asSmallInt());

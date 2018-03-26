@@ -59,10 +59,10 @@ in
 every positive integer is uniquely associated with a special symbol,
 called an ordinal symbol. Given a positive integer, this method
 returns the ordinal symbol associated with it. A `TypeError` is thrown
-if the value is non-positive or non-integer.
+if the value is non-positive or non-integer. Additionally, a
+`TypeError` is thrown if the value is above `2^31 - 1 = 2147483647`.
 
-[TODO: For storage reasons, we need to define an upper cap on this; it
-can't go on forever.]
+[TODO: Should this upper limit be specified by the VM (and available as a variable)?]
 
 ### `Number times (block).`
 
