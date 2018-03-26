@@ -222,13 +222,10 @@ interpreted specially. The following special translations take place.
 | `\v`     | `U+000B` |
 
 Additionally, strings can contain Unicode escape sequences. A Unicode
-escape sequence consists of `\u`, followed by either a five-character
-Unicode code point or a plus and a four-character Unicode code
-point. In either case, the numerical part of the sequence is
-interpreted as a hexadecimal code point, and a single Unicode
-character corresponding to that code point is inserted into the
-string. The behavior is undefined if the hex literal does not
-correspond to an assigned Unicode code point.
+escape sequence consists of `\u`, followed either by four hex digits
+or up to six hex digits enclosed in curly braces. This sequence will
+be interpreted as a single Unicode character, whose code point is
+equal to the hex digits, interpreted as a hexadecimal numeral.
 
 A backslash followed by any other character (including a second
 backslash or a double quote, but excluding a `u`) will be treated as
