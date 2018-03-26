@@ -896,3 +896,35 @@ boost::optional<Number> constantNegInf() {
 Number constantEps() {
     return Number(numeric_limits<Number::floating>::epsilon());
 }
+
+boost::optional<Number> parseInteger(char* integer) {
+    int radix;
+    if (integer[0] == 'D') {
+        radix = 10;
+    } else if (integer[0] == 'X') {
+        radix = 16;
+    } else if (integer[0] == 'O') {
+        radix = 8;
+    } else if (integer[0] == 'B') {
+        radix = 2;
+    } else {
+        return boost::none;
+    }
+    ++integer;
+    Number accum = 0L;
+    while (*integer != 0) {
+        int value;
+        if ((*integer >= '0') && (*integer <= '9'))
+            value = *integer - '0';
+        else if ((*integer >= 'A') && (*integer <= 'Z'))
+            value = *integer - 'A' + 10;
+        else if ((*integer >= 'a') && (*integer <= 'z'))
+            value = *integer - 'a' + 10;
+        else
+            return boost::none;
+        if (value >= radix)
+            return boost::none;
+        accum = accum * (long)radix + (long)value;
+    }
+    return accum;
+}
