@@ -2459,7 +2459,6 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     global->put(Symbols::get()["Nil"], nil);
     global->put(Symbols::get()["Boolean"], boolean);
     global->put(Symbols::get()["Cont"], cont);
-    global->put(Symbols::get()["sys"], sys);
     global->put(Symbols::get()["Exception"], exception);
     global->put(Symbols::get()["SystemError"], systemError);
     global->put(Symbols::get()["Array"], array_);
