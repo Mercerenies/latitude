@@ -199,7 +199,9 @@ ID        {SNORMAL}{NORMAL}*
 
 #\" { BEGIN(INNER_RSTRING); clear_buffer(); }
 <INNER_RSTRING>\n { append_buffer(yytext[0]); ++line_num; }
-<INNER_RSTRING>\"# {
+<INNER_RSTRING>\\\\ { append_buffer('\\'); }
+<INNER_RSTRING>\\\" { append_buffer('"'); }
+<INNER_RSTRING>\" {
     BEGIN(0);
     yylval.vsval.str = curr_buffer;
     yylval.vsval.length = curr_buffer_pos;
