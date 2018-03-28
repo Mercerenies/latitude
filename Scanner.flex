@@ -228,7 +228,7 @@ ID        {SNORMAL}{NORMAL}*
     }
 }
 <INNER_RSTRING1>. { append_buffer(yytext[0]); }
-<INNER_RSTRING1><<EOF>> { yyerror("Unterminated string"); }
+<INNER_RSTRING1><<EOF>> { BEGIN(0); yyerror("Unterminated string"); }
 
 #\[ { BEGIN(INNER_RSTRING2); clear_buffer(); }
 <INNER_RSTRING2>\n { append_buffer(yytext[0]); ++line_num; }
@@ -249,7 +249,7 @@ ID        {SNORMAL}{NORMAL}*
     }
 }
 <INNER_RSTRING2>. { append_buffer(yytext[0]); }
-<INNER_RSTRING2><<EOF>> { yyerror("Unterminated string"); }
+<INNER_RSTRING2><<EOF>> { BEGIN(0); yyerror("Unterminated string"); }
 
 #\{ { BEGIN(INNER_RSTRING3); clear_buffer(); }
 <INNER_RSTRING3>\n { append_buffer(yytext[0]); ++line_num; }
@@ -270,7 +270,7 @@ ID        {SNORMAL}{NORMAL}*
     }
 }
 <INNER_RSTRING3>. { append_buffer(yytext[0]); }
-<INNER_RSTRING3><<EOF>> { yyerror("Unterminated string"); }
+<INNER_RSTRING3><<EOF>> { BEGIN(0); yyerror("Unterminated string"); }
 
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
