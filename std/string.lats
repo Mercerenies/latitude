@@ -6,6 +6,9 @@ String findBytes := { meta sys stringFindFirst#: self, $1, $2. }.
 String find := {
   localize.
   takes '[substr, index].
+  index isInteger? ifFalse {
+    err ArgError clone tap { self message := "Non-integer indices are not valid". } throw.
+  }.
   (index < 0) ifTrue {
     parent index := index + this length.
   }.

@@ -77,7 +77,10 @@ Array popBack := {
 Array nth := {
   arr := self.
   index := $1.
-  pos := if ($1 < 0) then {
+  index isInteger? ifFalse {
+    err ArgError clone tap { self message := "Non-integer indices are not valid". } throw.
+  }.
+  pos := if (index < 0) then {
     arr upperBound + index.
   } else {
     arr lowerBound + index.
@@ -92,7 +95,10 @@ Array nth= := {
   arr := self.
   index := $1.
   value := #'$2.
-  pos := if ($1 < 0) then {
+  index isInteger? ifFalse {
+    err ArgError clone tap { self message := "Non-integer indices are not valid". } throw.
+  }.
+  pos := if (index < 0) then {
     arr upperBound + index.
   } else {
     arr lowerBound + index.
