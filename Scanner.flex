@@ -57,6 +57,9 @@ ID        {SNORMAL}{NORMAL}*
 %x INNER_SYMBOL
 %x INNER_COMMENT
 %x INNER_RSTRING
+%x INNER_RSTRING1
+%x INNER_RSTRING2
+%x INNER_RSTRING3
 %%
 
 #< { yyerror("Unreadable object"); }
@@ -201,6 +204,27 @@ ID        {SNORMAL}{NORMAL}*
 }
 <INNER_RSTRING>. { append_buffer(yytext[0]); }
 <INNER_RSTRING><<EOF>> { yyerror("Unterminated string"); }
+
+#\( { BEGIN(INNER_RSTRING1); clear_buffer(); }
+<INNER_RSTRING1>\n { append_buffer(yytext[0]); ++line_num; }
+<INNER_RSTRING1>\\\\ { append_buffer('\\'); }
+<INNER_RSTRING1>\\\( { append_buffer('('); }
+<INNER_RSTRING1>\\\) { append_buffer(')'); }
+<INNER_RSTRING1>\( { append_buffer(yytext[0]); ++hash_parens; }
+<INNER_RSTRING1>\) {
+    if (hash_parens > 0) {
+        append_buffer(yytext[0]);
+        --hash_parens;
+    } else {
+        BEGIN(0);
+        yylval.vsval.str = curr_buffer;
+        yylval.vsval.length = curr_buffer_pos;
+        unset_buffer();
+        return STRING;
+    }
+}
+<INNER_RSTRING1>. { append_buffer(yytext[0]); }
+<INNER_RSTRING1><<EOF>> { yyerror("Unterminated string"); }
 
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
