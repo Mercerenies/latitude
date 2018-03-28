@@ -54,7 +54,6 @@
         bool isList; // Check args
         bool isSigil; // Check name and rhs
         bool isEquality; // Treated like call with a rhs
-        bool isHashParen; // Check name
         bool isZeroDispatch; // Check name
         bool isSpecialMethod; // Just like isMethod
         bool isBind; // Treated like call with a rhs
@@ -123,7 +122,6 @@
 %token <sval> BIGINT
 %token <vsval> STRING
 %token <vsval> SYMBOL
-%token <sval> HASHPAREN
 %token <sval> ZERODISPATCH
 %token <sval> HASHQUOTE
 %token LISTLIT
@@ -258,7 +256,6 @@ literal:
                       $$->argsProvided = true; } |
     LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
                               $$->argsProvided = true; } |
-    HASHPAREN { $$ = makeExpr(); $$->isHashParen = true; $$->name = $1; } |
     ZERODISPATCH { $$ = makeExpr(); $$->isZeroDispatch = true;
                    $$->name = $1; } |
     HASHQUOTE name { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = makeExpr();

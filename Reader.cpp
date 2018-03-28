@@ -70,8 +70,6 @@ unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
         assert(expr->name[0] == '~');
         std::string name = expr->name + 1;
         return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(expr->rhs, held)));
-    } else if (expr->isHashParen) {
-        return unique_ptr<Stmt>(new StmtHashParen(line, expr->name));
     } else if (expr->isZeroDispatch) {
         const char* name = expr->name;
         if (name[0] == '0')
@@ -740,36 +738,6 @@ void StmtSigil::translate(TranslationUnit& unit, InstrSeq& seq) {
 void StmtSigil::propogateFileName(std::string name) {
     rhs->propogateFileName(name);
     Stmt::propogateFileName(name);
-}
-
-StmtHashParen::StmtHashParen(int line_no, string text)
-    : Stmt(line_no), text(text) {}
-
-void StmtHashParen::translate(TranslationUnit& unit, InstrSeq& seq) {
-
-    //stateLine(seq);
-
-    // Find the `hashParen` object
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "hashParen")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
-
-    // Evaluate the argument
-    InstrSeq arg0 = garnishSeq(text);
-    seq.insert(seq.end(), arg0.begin(), arg0.end());
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
-
-    // Get the object back out
-    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
-
 }
 
 StmtZeroDispatch::StmtZeroDispatch(int line_no, char sym, char ch, string text)
