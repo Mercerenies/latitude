@@ -11,7 +11,6 @@ Kernel loadRaw: "std/array.lats".
 Kernel loadRaw: "std/mixin.lats".
 Kernel loadRaw: "std/collection.lats".
 Kernel loadRaw: "std/args.lats".
-Kernel loadRaw: "std/lang.lats".
 Kernel loadRaw: "std/string.lats".
 Kernel loadRaw: "std/module.lats".
 

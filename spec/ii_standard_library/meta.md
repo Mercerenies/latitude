@@ -22,7 +22,6 @@ particular slot on `meta` is intended to be accessed through
 
     meta toString := "meta".
     meta sigil := Object clone.
-    meta lang := Object clone.
 
 ## Methods
 
@@ -48,10 +47,6 @@ either. This most often occurs when dealing with non-traditional
 objects, which might not have a `missing` slot. The built-in meta
 object has a `missed` method which throws a `SystemError` object with
 a generic message.
-
-### `meta hashParen.`
-
-[TODO: Document exactly what this does.]
 
 ## Inner Object Methods
 
