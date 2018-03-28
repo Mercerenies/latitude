@@ -49,13 +49,6 @@ objects, which might not have a `missing` slot. The built-in meta
 object has a `missed` method which throws a `SystemError` object with
 a generic message.
 
-### `meta radix.`
-
-This object is a clone of the root object which contains several slots
-to facilitate writing numerical literals of various bases. It contains
-slots `x` and `X`, which parse the argument as hexadecimal; `o` and
-`O`, which parse as octal; and `b` and `B`, which parse as binary.
-
 ### `meta hashParen.`
 
 [TODO: Document exactly what this does.]

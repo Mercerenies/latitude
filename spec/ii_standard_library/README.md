@@ -86,7 +86,6 @@ scope object.
      +-- global
      +-- meta
      +-- meta lang
-     +-- meta radix
      +-- meta sigil
 
  * [Booleans and Nil](boolnil.md)

@@ -189,6 +189,10 @@ The first two forms construct a floating-point number; the third form
 constructs an integer. For more information on the different types of
 numbers, refer to [Number](../ii_standard_library/number.md).
 
+Additionally, integer literals can be prefixed with `0x`, `0b`, or
+`0o` (case insensitive, following the optional sign) to indicate that
+the literal be parsed in hexadecimal, binary, or octal, respectively.
+
 A `<symbol>` consists of any sequence of non-close-paren characters
 and backslash literals. Any character other than a backslash (`\`) or
 a close-parenthesis (`)`) is interpreted literally as part of the
