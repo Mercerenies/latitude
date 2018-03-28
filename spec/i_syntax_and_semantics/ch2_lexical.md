@@ -150,7 +150,6 @@ following grammar.
               "[" <arglist> "]" |
               "'[" <literallist> "]" |
               "#\"" <rawstring> "\"#" |
-              "#(" <dslstring> ")" |
               [ "-" | "+" ] "0" <letter> { <alphanum> } |
               "@(" <number> "," <number> ")" |
               "#'" <ename>
@@ -242,12 +241,6 @@ terminator is found. Note that no escape sequences are interpreted in
 a raw string. Aside from the difference in parsing, raw string
 literals are equivalent to ordinary string literals and are treated
 the same way at runtime.
-
-A `<dslstring>` consists of any number of characters, all interpreted
-literally, up until a close-parenthesis (`)`) which is not included in
-the DSL string. Note that backslashes are not treated specially in DSL
-strings. Pairs of parentheses may appear inside a DSL string, so long
-as they are balanced (so every `(` must be matched by a `)`).
 
 ## Comments
 
