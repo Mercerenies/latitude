@@ -130,7 +130,7 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_STRING>\\f { append_buffer((char)0x0C); }
 <INNER_STRING>\\v { append_buffer((char)0x0B); }
 <INNER_STRING>\\0 { append_buffer((char)0x00); }
-<INNER_STRING>\\u { yyerror("Invalid Unicode escape"); }
+<INNER_STRING>\\u { BEGIN(0); yyerror("Invalid Unicode escape"); }
 <INNER_STRING>\\u([A-Za-z0-9]{4}|\{[A-Za-z0-9]{1,6}\}) {
     if (yytext[2] == '{')
         yytext[2] = '0';
@@ -141,8 +141,10 @@ ID        {SNORMAL}{NORMAL}*
         append_buffer(0);
     }
     char* pt = charEncode(start, value);
-    if (pt == NULL)
+    if (pt == NULL) {
+        BEGIN(0);
         yyerror("Invalid Unicode code point");
+    }
     curr_buffer_pos = pt - curr_buffer;
 }
 <INNER_STRING>\\. { append_buffer(yytext[1]); }
@@ -153,7 +155,7 @@ ID        {SNORMAL}{NORMAL}*
     unset_buffer();
     return STRING;
 }
-<INNER_STRING><<EOF>> { yyerror("Unterminated string"); }
+<INNER_STRING><<EOF>> { BEGIN(0); yyerror("Unterminated string"); }
 
 \'\( { BEGIN(INNER_SYMBOL); clear_buffer(); }
 <INNER_SYMBOL>\n { append_buffer(yytext[1]); ++line_num; }
@@ -175,11 +177,13 @@ ID        {SNORMAL}{NORMAL}*
         append_buffer(0);
     }
     char* pt = charEncode(start, value);
-    if (pt == NULL)
+    if (pt == NULL) {
+        BEGIN(0);
         yyerror("Invalid Unicode code point");
+    }
     curr_buffer_pos = pt - curr_buffer;
 }
-<INNER_SYMBOL>\\u { yyerror("Invalid Unicode escape"); }
+<INNER_SYMBOL>\\u { BEGIN(0); yyerror("Invalid Unicode escape"); }
 <INNER_SYMBOL>[^\\\)] {append_buffer(yytext[0]); }
 <INNER_SYMBOL>\\. { append_buffer(yytext[1]); }
 <INNER_SYMBOL>\) {
@@ -189,7 +193,7 @@ ID        {SNORMAL}{NORMAL}*
     unset_buffer();
     return SYMBOL;
 }
-<INNER_SYMBOL><<EOF>> { yyerror("Unterminated symbol"); }
+<INNER_SYMBOL><<EOF>> { BEGIN(0); yyerror("Unterminated symbol"); }
 
 #\" { BEGIN(INNER_RSTRING); clear_buffer(); }
 <INNER_RSTRING>\n { append_buffer(yytext[0]); ++line_num; }
@@ -201,7 +205,7 @@ ID        {SNORMAL}{NORMAL}*
     return STRING;
 }
 <INNER_RSTRING>. { append_buffer(yytext[0]); }
-<INNER_RSTRING><<EOF>> { yyerror("Unterminated string"); }
+<INNER_RSTRING><<EOF>> { BEGIN(0); yyerror("Unterminated string"); }
 
 #\( { BEGIN(INNER_HASHPAREN); clear_buffer(); hash_parens++; }
 <INNER_HASHPAREN>\( { append_buffer(yytext[0]); hash_parens++; }
