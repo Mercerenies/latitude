@@ -2476,6 +2476,12 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     meta->put(Symbols::get()["sys"], sys);
     global->put(Symbols::get()["err"], err);
 
+    // Meta Protection
+    meta->addProtection(Symbols::get()["meta"], Protection::PROTECT_DELETE);
+    object->addProtection(Symbols::get()["meta"], Protection::PROTECT_DELETE);
+    meta->addProtection(Symbols::get()["sys"],
+                        Protection::PROTECT_DELETE | Protection::PROTECT_ASSIGN);
+
     // Global variables not accessible in meta
     global->put(Symbols::get()["stdin"], stdin_);
     global->put(Symbols::get()["stderr"], stderr_);
@@ -2530,8 +2536,6 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);
-
-    // TODO Use the new protection system to protect the global names that are defined here
 
     return global;
 }
