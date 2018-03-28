@@ -106,8 +106,7 @@ second.
 A string literal will result in a clone of the string object. The
 resulting cloned object will have a primitive field containing the
 string value enclosed in the literal. This applies both to raw strings
-and ordinary strings, but DSL strings are treated differently, as
-detailed [TODO: This].
+and ordinary strings.
 
 A symbol literal that begins with a single-quote (`'`) or a
 quote-paren (`'(`) will result in a clone of the symbol object. The
@@ -162,28 +161,3 @@ is equivalent to
 
 Notice that the `def` symbol does *not* get double quoted but that the
 bare `abc` identifier becomes quoted.
-
-## User-Defined Literals
-
-[TODO: The `hashParen` and `radix` stuff may change as well.]
-
-A DSL string consists of a hash-paren (`#(`) followed by a string of
-text and then terminated by a close-paren (`)`). The inside of the DSL
-string is made into a string object using the process detailed
-in [Literal Objects](#literal-objects). Then the `hashParen` slot on
-the current lexical meta object is called with the string object as
-its only argument. The result of this call is used as the value of the
-DSL string.
-
-A radix literal consists of an optional sign, then a zero (`0`),
-followed by a single alphabetic letter, followed by one or more
-alphanumeric characters. This first letter is called the dispatch
-letter. The alphanumeric characters after the dispatch letter are made
-into a string object using the process detailed
-in [Literal Objects](#literal-objects). Then the `radix` slot is fully
-retrieved from the current lexical meta. The slot with the name
-corresponding to the dispatch letter is then called on this radix
-object with two arguments. The first argument is the constructed
-string. The second argument is the symbol `+` or `-`, if one of the
-two signs was provided or the symbol with the empty name if no sign
-was provided.
