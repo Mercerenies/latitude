@@ -626,13 +626,15 @@ StmtBigInteger::StmtBigInteger(int line_no, const char* value)
 
 void StmtBigInteger::translate(TranslationUnit& unit, InstrSeq& seq) {
 
+    std::string value0 = "D" + value;
+
     //stateLine(seq);
 
     // Find the literal object to use
     (makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::PTR)).appendOnto(seq);
 
     // Clone and put a prim() onto it
-    (makeAssemblerLine(Instr::NUM, value)).appendOnto(seq);
+    (makeAssemblerLine(Instr::NUM, value0)).appendOnto(seq);
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 

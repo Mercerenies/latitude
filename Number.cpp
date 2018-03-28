@@ -897,7 +897,7 @@ Number constantEps() {
     return Number(numeric_limits<Number::floating>::epsilon());
 }
 
-boost::optional<Number> parseInteger(char* integer) {
+boost::optional<Number> parseInteger(const char* integer) {
     int radix;
     if (integer[0] == 'D') {
         radix = 10;
@@ -911,6 +911,13 @@ boost::optional<Number> parseInteger(char* integer) {
         return boost::none;
     }
     ++integer;
+    long sign = 1;
+    if (*integer == '+') {
+        ++integer;
+    } else if (*integer == '-') {
+        ++integer;
+        sign *= -1;
+    }
     Number accum = 0L;
     while (*integer != 0) {
         int value;
@@ -925,6 +932,7 @@ boost::optional<Number> parseInteger(char* integer) {
         if (value >= radix)
             return boost::none;
         accum = accum * (long)radix + (long)value;
+        ++integer;
     }
-    return accum;
+    return sign * accum;
 }

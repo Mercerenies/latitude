@@ -417,7 +417,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "NUM \"" << str << "\"" << endl;
 #endif
-        state.num0 = Number(static_cast<Number::bigint>(str));
+        auto temp = parseInteger(str.c_str());
+        assert(temp);
+        state.num0 = *temp;
     }
         break;
     case Instr::INT: {

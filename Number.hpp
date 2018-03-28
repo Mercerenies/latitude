@@ -336,6 +336,6 @@ boost::optional<Number> constantNegInf();
 /// \return the epsilon value
 Number constantEps();
 
-boost::optional<Number> parseInteger(char* integer);
+boost::optional<Number> parseInteger(const char* integer);
 
 #endif // NUMBER_HPP
