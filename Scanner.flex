@@ -87,11 +87,15 @@ ID        {SNORMAL}{NORMAL}*
     return INTEGER;
 }
 
-[-+]?0[A-Za-z][0-9A-Za-z]+ {
+[-+]?0[Xx][0-9A-Fa-f]+|[-+]?0[Oo][0-7]+|[-+]?0[Bb][01]+|[-+]?0[Dd][0-9]+ {
     char* arr = calloc(strlen(yytext) + 1, sizeof(char));
     strcpy(arr, yytext);
     yylval.sval = arr;
     return ZERODISPATCH;
+}
+
+0[A-Za-z] {
+    yyerror("Invalid radix form");
 }
 
 {ID} {

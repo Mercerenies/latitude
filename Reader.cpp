@@ -12,6 +12,7 @@ extern "C" {
 #include "Assembler.hpp"
 #include "Optimizer.hpp"
 #include <cstdio>
+#include <cctype>
 #include <list>
 #include <memory>
 #include <algorithm>
@@ -776,35 +777,18 @@ StmtZeroDispatch::StmtZeroDispatch(int line_no, char sym, char ch, string text)
 
 void StmtZeroDispatch::translate(TranslationUnit& unit, InstrSeq& seq) {
 
+    char start = (prefix == '\0') ? '0' : prefix;
+    std::string value0 = std::string(1, (char)toupper(symbol)) + start + text;
+
     //stateLine(seq);
 
-    // Find the `radix` object
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "radix")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+    // Find the literal object to use
+    (makeAssemblerLine(Instr::YLDC, Lit::NUMBER, Reg::PTR)).appendOnto(seq);
 
-    string contents = text;
-    Symbolic prefix = Symbols::get()[ this->prefix == '\0' ? "" : string(1, this->prefix) ];
-
-    InstrSeq seq0 = garnishSeq(contents);
-    seq.insert(seq.end(), seq0.begin(), seq0.end());
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
-
-    InstrSeq seq1 = garnishSeq(prefix);
-    seq.insert(seq.end(), seq1.begin(), seq1.end());
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
-
-    (makeAssemblerLine(Instr::SYM, string(1, this->symbol))).appendOnto(seq);
-    (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-
-    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, 2L)).appendOnto(seq);
+    // Clone and put a prim() onto it
+    (makeAssemblerLine(Instr::NUM, value0)).appendOnto(seq);
+    (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
+    (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
 }
 
