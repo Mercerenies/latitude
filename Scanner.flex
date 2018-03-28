@@ -226,6 +226,48 @@ ID        {SNORMAL}{NORMAL}*
 <INNER_RSTRING1>. { append_buffer(yytext[0]); }
 <INNER_RSTRING1><<EOF>> { yyerror("Unterminated string"); }
 
+#\[ { BEGIN(INNER_RSTRING2); clear_buffer(); }
+<INNER_RSTRING2>\n { append_buffer(yytext[0]); ++line_num; }
+<INNER_RSTRING2>\\\\ { append_buffer('\\'); }
+<INNER_RSTRING2>\\\[ { append_buffer('['); }
+<INNER_RSTRING2>\\\] { append_buffer(']'); }
+<INNER_RSTRING2>\[ { append_buffer(yytext[0]); ++hash_parens; }
+<INNER_RSTRING2>\] {
+    if (hash_parens > 0) {
+        append_buffer(yytext[0]);
+        --hash_parens;
+    } else {
+        BEGIN(0);
+        yylval.vsval.str = curr_buffer;
+        yylval.vsval.length = curr_buffer_pos;
+        unset_buffer();
+        return STRING;
+    }
+}
+<INNER_RSTRING2>. { append_buffer(yytext[0]); }
+<INNER_RSTRING2><<EOF>> { yyerror("Unterminated string"); }
+
+#\{ { BEGIN(INNER_RSTRING3); clear_buffer(); }
+<INNER_RSTRING3>\n { append_buffer(yytext[0]); ++line_num; }
+<INNER_RSTRING3>\\\\ { append_buffer('\\'); }
+<INNER_RSTRING3>\\\{ { append_buffer('{'); }
+<INNER_RSTRING3>\\\} { append_buffer('}'); }
+<INNER_RSTRING3>\{ { append_buffer(yytext[0]); ++hash_parens; }
+<INNER_RSTRING3>\} {
+    if (hash_parens > 0) {
+        append_buffer(yytext[0]);
+        --hash_parens;
+    } else {
+        BEGIN(0);
+        yylval.vsval.str = curr_buffer;
+        yylval.vsval.length = curr_buffer_pos;
+        unset_buffer();
+        return STRING;
+    }
+}
+<INNER_RSTRING3>. { append_buffer(yytext[0]); }
+<INNER_RSTRING3><<EOF>> { yyerror("Unterminated string"); }
+
 \'{NORMAL}+ {
     char* arr = calloc(strlen(yytext), sizeof(char));
     strcpy(arr, yytext + 1);
