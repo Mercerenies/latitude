@@ -165,7 +165,7 @@ following grammar.
               <number> |
               "'(" <symbol> ")" |
               "[" <literallist> "]" |
-              "#\"" <rawstring> "\"#" |
+              <rawstring> |
               <name>
 <name> ::= <stdname> |
            <opname>
@@ -236,11 +236,16 @@ that second character literally. A backslash followed by a `u` which
 is not a part of a Unicode escape sequence is an invalid lexical token
 and will result in a parse error.
 
-A `<rawstring>` consists of any sequence of characters until the `"#`
-terminator is found. Note that no escape sequences are interpreted in
-a raw string. Aside from the difference in parsing, raw string
-literals are equivalent to ordinary string literals and are treated
-the same way at runtime.
+A `<rawstring>` starts with a `#`, followed by the opening delimiter,
+then any text, then the closing delimiter. The valid delimiter pairs
+are `()`, `[]`, `{}`, and `""`. Inside the string's contents,
+backslash is only considered a special character when succeeded by one
+of the delimiter characters or another backslash. In any other case,
+it is treated literally. Additionally, unescaped brackets of the same
+type as the string delimiters can appear in the string, so long as
+they appear in balanced pairs. Aside from the difference in parsing,
+raw string literals are equivalent to ordinary string literals and are
+treated the same way at runtime.
 
 ## Comments
 
