@@ -23,7 +23,6 @@ Object tap := {
 global $whereAmI := Nil.
 
 ;; Stuff that needs to exist in `meta`
-meta radix := Object clone.
 meta sigil := Object clone.
 meta toString := "meta".
 

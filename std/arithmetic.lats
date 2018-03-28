@@ -199,30 +199,5 @@ String radix := {
   num.
 }.
 
-modifiedRadix := {
-  takes '[str, rad, parm].
-  result := str radix: rad.
-  cond {
-    when (parm == '-) do {
-      - (result).
-    }.
-    when ((parm == '+) or (parm == '())) do {
-      result.
-    }.
-    else {
-      err ArgError clone tap {
-        self message := "Sign does not make sense".
-      } throw.
-    }.
-  }.
-}.
-
-meta radix x := { modifiedRadix: $1, 16, $2. }.
-meta radix X := { modifiedRadix: $1, 16, $2. }.
-meta radix o := { modifiedRadix: $1, 8, $2. }.
-meta radix O := { modifiedRadix: $1, 8, $2. }.
-meta radix b := { modifiedRadix: $1, 2, $2. }.
-meta radix B := { modifiedRadix: $1, 2, $2. }.
-
 ;; Return the script
 here.
