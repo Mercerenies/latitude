@@ -102,6 +102,7 @@ scope object.
  * [Parents](parents.md)
  * [Proc](proc.md)
  * [Slots](slots.md)
+ * [StackFrame](stackframe.md)
  * [String](string.md)
  * [Symbol](symbol.md)
  * [meta](meta.md)
