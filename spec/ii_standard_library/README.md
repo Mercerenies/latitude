@@ -103,6 +103,7 @@ scope object.
  * [Proc](proc.md)
  * [Slots](slots.md)
  * [StackFrame](stackframe.md)
+ * [Stream](stream.md)
  * [String](string.md)
  * [Symbol](symbol.md)
  * [meta](meta.md)
