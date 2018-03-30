@@ -422,7 +422,6 @@ StackFrame dumpObject := {
     }.
 }.
 global currentStackTrace := { meta sys stackTrace# parent. }.
-global printStackTrace := { self stack parent dumpObject. }.
 
 ;; We would return the script here, but the `slot?` function requires flow_control.lat
 1.
