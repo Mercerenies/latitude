@@ -50,7 +50,7 @@ a generic message.
 
 ## Inner Object Methods
 
-## `~l (method).`
+### `~l (method).`
 
 The `~l` sigil constructs a [`Cached`](cached.md) procedure and wraps
 it in a method. A `Cached` procedure will compute its contents once
