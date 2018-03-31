@@ -97,6 +97,7 @@ scope object.
  * [Iterator and Iterators](iterator.md)
  * [Kernel](kernel.md)
  * [Method](method.md)
+ * [Mixin](mixin.md)
  * [Number](number.md)
  * [Object](object.md)
  * [Parents](parents.md)
