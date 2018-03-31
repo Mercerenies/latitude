@@ -96,7 +96,9 @@ Collection all := {
   callCC {
     escapable.
     coll visit {
-      (func call #'$1) ifFalse: { return: False. }.
+      curr := #'$1.
+      value := func call (#'curr).
+      #'value ifFalse { return #'value. }.
     }.
     True.
   }.
