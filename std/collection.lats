@@ -108,7 +108,8 @@ Collection any := {
     escapable.
     parent self visit {
       curr := #'$1.
-      func call (#'curr) ifTrue { return #'curr. }.
+      value := func call (#'curr).
+      #'value ifTrue { return #'value. }.
     }.
     False.
   }.
