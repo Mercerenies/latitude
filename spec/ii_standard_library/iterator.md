@@ -7,6 +7,25 @@ An iterator is used to iterate over various data structures in
 Latitude. The `Iterator` object is designed to be the parent to all
 such iterators.
 
+Note that, while it is not strictly required that iterator objects
+inherit from `Iterator`, it is often logical to do so. However, a
+minimal iterator object could feasibly inherit from `Object` directly
+or even be a non-traditional object. Specifically, iterator objects
+are required to have the following methods defined on them.
+
+ * `end?`
+ * `next`
+ * `element`
+ * `element= (value)`
+ * `clone`
+ * `toString`
+
+In particular, all Latitude iterators must be cloneable, meaning that
+they must be multi-pass. Iterators are not, however, required to be
+mutable. Immutable iterators should throw
+a [`ReadOnlyError`](exception.md#readonlyerror) unconditionally if
+`element=` is called.
+
 ## Methods
 
 ### `Iterator iterator.`
