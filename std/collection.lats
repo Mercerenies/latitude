@@ -67,14 +67,20 @@ Collection foldl := {
 Collection foldr := {
   func0 := #'$2.
   func := proc { #'func0 call. }.
-  accum := id.
-  self visit {
-    curr := #'$1.
-    parent accum := accum <| proc {
-      func call: #'curr, #'$1.
+  arg := #'$1.
+  iter := self iterator.
+  rec := {
+    ~l {
+      if (iter end?) then {
+        #'arg.
+      } else {
+        elem := iter element.
+        iter next.
+        func call: elem, rec.
+      }.
     }.
   }.
-  accum call: $1.
+  rec me.
 }.
 Collection size := { self foldl: 0, { $1 + 1. }. }.
 Collection length := { self size. }.
