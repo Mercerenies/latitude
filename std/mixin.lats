@@ -8,7 +8,7 @@ Mixin inject := {
   injector mixin := self.
   injector parent := target parent.
   target parent := injector.
-  injector toString := { mixin toString. }.
+  injector toString := { self mixin toString. }.
   iter := self interface iterator.
   while { iter end? not. }
     do {
