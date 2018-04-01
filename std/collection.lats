@@ -23,7 +23,7 @@ Iterator element= := {
 ;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
 global Collection ::= Mixin clone.
 Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any, notall, notany,
-                          detect, countIf, count, find, containsIf, contains, zip, zip!, take, maximum,
+                          detect, countIf, count, find, containsIf, contains, zip, zip!, take, drop, maximum,
                           minimum, <>, sum, product, append].
 Collection map! := {
   func0 := #'$1.
@@ -232,6 +232,26 @@ Collection take := {
     }.
   }.
   arr.
+}.
+Collection drop := {
+  remaining := $1.
+  decrement := {
+    parent remaining := remaining - 1.
+  }.
+  callCC {
+    escapable.
+    iter := parent self iterator.
+    while { iter end? not. } do {
+      if (remaining > 0)
+        then {
+          decrement.
+        } else {
+          return: iter.
+        }.
+      iter next.
+    }.
+    Nil.
+  }.
 }.
 Collection maximum := {
   current := Nil.
