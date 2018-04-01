@@ -1,6 +1,6 @@
 
 global Iterator ::= Object clone.
-Iterator iterator := { self. }.
+Iterator iterator := { self clone. }.
 Iterator end? := True.
 Iterator next := { }.
 Iterator element := Nil.
