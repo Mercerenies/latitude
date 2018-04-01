@@ -22,9 +22,9 @@ Iterator element= := {
 ;; *  `clone` - Iterators must be cloneable at any intermediate point in their iteration
 ;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
 global Collection ::= Mixin clone.
-Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any, notall, notany,
-                          detect, countIf, count, find, containsIf, contains, zip, zip!, take, drop, maximum,
-                          minimum, <>, sum, product, append].
+Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any,
+                          notall, notany, detect, countIf, count, find, containsIf, contains,
+                          zip, zip!, take, drop, maximum, minimum, <>, sum, product, append].
 Collection map! := {
   func0 := #'$1.
   func := { #'func0 call. }.

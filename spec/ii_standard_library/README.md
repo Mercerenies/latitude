@@ -90,6 +90,7 @@ scope object.
 
  * [Booleans and Nil](boolnil.md)
  * [Cached](cached.md)
+ * [Collection](collection.md)
  * [Cont](cont.md)
  * [Exception and Exceptions](exception.md)
  * [FileHeader](fileheader.md)
