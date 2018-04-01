@@ -209,13 +209,11 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
-                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
             ObjectPtr mthd = clone(reader.lit.at(Lit::METHOD));
             mthd->prim(Method(unit, { 0 }));
             state.lex.top()->put(Symbols::get()["self"], state.lex.top());
             state.lex.top()->put(Symbols::get()["again"], mthd);
-            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
             unit->instructions() = toplevel;
             optimize::lookupSymbols(unit);
@@ -383,13 +381,11 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
             state.lex.push(defScope.lex);
             if (!state.dyn.empty()) {
                 state.dyn.push( clone(state.dyn.top()) );
-                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
             }
             ObjectPtr mthd = clone(reader.lit.at(Lit::METHOD));
             mthd->prim(Method(unit, { 0 }));
             state.lex.top()->put(Symbols::get()["self"], state.lex.top());
             state.lex.top()->put(Symbols::get()["again"], mthd);
-            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
             optimize::lookupSymbols(unit);
             state.stack = pushNode(state.stack, state.cont);

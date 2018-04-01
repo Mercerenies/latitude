@@ -187,8 +187,8 @@ Process execute := { meta sys processExec#: self. }.
 
 ;; Scope self-reference
 global caller := global.
-global lexical := global.
-global $dynamic := global.
+global lexical := { self. }.
+global $dynamic := { self. }.
 global scopeOf := {
   lex := $1.
   dyn := $2.

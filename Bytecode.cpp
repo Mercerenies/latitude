@@ -476,16 +476,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
-            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
-            if (!state.dyn.empty()) {
-                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
-                state.dyn.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
-                                            Symbols::get()["$dynamic"]);
-            }
             state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
-                                        Symbols::get()["self"], Symbols::get()["again"],
-                                        Symbols::get()["lexical"]);
+                                        Symbols::get()["self"], Symbols::get()["again"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
@@ -572,16 +565,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             // (4) Bind all the local variables
             state.lex.top()->put(Symbols::get()["self"], state.slf);
             state.lex.top()->put(Symbols::get()["again"], state.ptr);
-            state.lex.top()->put(Symbols::get()["lexical"], state.lex.top());
             state.lex.top()->put(Symbols::get()["caller"], lex);
-            if (!state.dyn.empty()) {
-                state.dyn.top()->put(Symbols::get()["$dynamic"], state.dyn.top());
-                state.dyn.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
-                                            Symbols::get()["$dynamic"]);
-            }
             state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
-                                        Symbols::get()["self"], Symbols::get()["again"],
-                                        Symbols::get()["lexical"]);
+                                        Symbols::get()["self"], Symbols::get()["again"]);
             // (5) Push the trace information
             state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
             // (6) Bind all of the arguments
