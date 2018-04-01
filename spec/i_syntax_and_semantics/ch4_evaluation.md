@@ -113,12 +113,8 @@ evaluating object) is cloned to create a new lexical scope for the
 call. Then several variables are bound in the new scopes.
 
  * `self` is bound to the caller. `again` is bound to the called
-   object. `lexical` is bound to the newly created lexical scope
    object. `caller` is bound to the caller's lexical scope. These
    bindings all occur in the newly created lexical scope object.
- * `$dynamic` is bound to the newly created lexical scope
-   object. This binding occurs in the newly created dynamic scope
-   object.
 
 All of the bindings created at this time are assign-protected *and*
 delete-protected. Next, the arguments are bound to variables. Note
