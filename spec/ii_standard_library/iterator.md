@@ -13,6 +13,7 @@ minimal iterator object could feasibly inherit from `Object` directly
 or even be a non-traditional object. Specifically, iterator objects
 are required to have the following methods defined on them.
 
+ * `iterator`
  * `end?`
  * `next`
  * `element`
@@ -31,8 +32,9 @@ a [`ReadOnlyError`](exception.md#readonlyerror) unconditionally if
 ### `Iterator iterator.`
 
 The `iterator` method, in general, is designed to return an iterator
-to a collection. On iterators, the method always returns the current
-iterator, unmodified.
+to a collection. On iterators, the method always returns a clone of
+the current iterator, so that the current iterator can be iterated as
+without modifying it.
 
 ### `Iterator end?.`
 
