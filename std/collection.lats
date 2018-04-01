@@ -370,5 +370,7 @@ Nil iterator := {
 }.
 Collection inject: Nil.
 
+Collection inject: Iterator.
+
 ;; Return the script
 here.
