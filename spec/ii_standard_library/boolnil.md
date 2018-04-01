@@ -12,7 +12,9 @@ represent these two concepts, respectively, of truth-hood and
 falsehood. They are primarily used in Boolean statements such as
 if-statements [TODO: Link] and loop conditionals [TODO: Link].
 
-The nil object models the concept of emptiness.
+The nil object models the concept of emptiness. The nil object is
+also [iterable](iterator.md) and will always be viewed as an empty
+collection.
 
 ## Simple Slots
 
@@ -28,3 +30,10 @@ The nil object models the concept of emptiness.
     Nil toString := "Nil".
     Nil toBool := False.
     Nil nil? := True.
+
+## Methods
+
+### `Nil iterator.`
+
+Returns a [`NilIterator`](iterator.md#niliterator) which iterates over
+the empty collection.
