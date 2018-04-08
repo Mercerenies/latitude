@@ -96,14 +96,20 @@ stream's target. If the stream is not designated for output, an
 
 ## Static Methods
 
-### `Stream open (filename, access, mode).`
+### `Stream open (filename, mode).`
 
 Returns a new `Stream` object which points to the file with name
-`filename`. The stream will be opened for input if `access` is the
-symbol `read` and output if `access` is the symbol `write`. `mode`
-should be either `text` or `binary`, and its behavior is OS-dependent.
+`filename`. The stream will be opened with access and mode modifiers
+depending on the `mode` argument, which should be a string.
 
-[TODO: Make this neater and more like other languages ("wb+", etc)]
+| String      | Result                  |
+| ----------- | ----------------------- |
+| `"r"`       | Read-only               |
+| `"w"`       | Write-only              |
+| `"rb"`      | Read-only (binary)      |
+| `"wb"`      | Write-only (binary)     |
+
+Note that some operating systems may disregard the binary flag.
 
 ### `Stream exists? (filename).`
 
