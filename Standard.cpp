@@ -1275,35 +1275,36 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                    makeAssemblerLine(Instr::CPP, CPP_OBJECT_KEYS))));
 
-     // CPP_FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 and $4 are access and mode)
+     // CPP_FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 is access and mode)
      // streamFileOpen#: strm, fname, access, mode.
      assert(reader.cpp.size() == CPP_FILE_DOOPEN);
      reader.cpp.push_back([&reader](IntState& state0) {
          ObjectPtr dyn = state0.dyn.top();
          ObjectPtr access = (*dyn)[ Symbols::get()["$3"] ];
-         ObjectPtr mode = (*dyn)[ Symbols::get()["$4"] ];
-         auto access0 = boost::get<Symbolic>(&access->prim());
-         auto mode0 = boost::get<Symbolic>(&mode->prim());
-         if (access0 && mode0) {
-             auto access1 = Symbols::get()[*access0];
-             auto mode1 = Symbols::get()[*mode0];
+         auto access0 = boost::get<std::string>(&access->prim());
+         if (access0) {
+             bool okay = true;
+             if (*access0 == "")
+                 okay = false;
              FileAccess access2;
              FileMode mode2;
-             if (access1 == "read")
-                 access2 = FileAccess::READ;
-             else if (access1 == "write")
-                 access2 = FileAccess::WRITE;
+             if (okay) {
+                 if ((*access0)[0] == 'r')
+                     access2 = FileAccess::READ;
+                 else if ((*access0)[0] == 'w')
+                     access2 = FileAccess::WRITE;
+                 else
+                     okay = false;
+                 if ((access0->length() < 2) || ((*access0)[0] != 'b'))
+                     mode2 = FileMode::TEXT;
+                 else
+                     mode2 = FileMode::BINARY;
+             }
+             if (okay)
+                 state0.ptr->prim( StreamPtr(new FileStream(state0.str0, access2, mode2)) );
              else
                  throwError(state0, reader, "SystemArgError",
-                            "Invalid access specifier when opening file");
-             if (mode1 == "text")
-                 mode2 = FileMode::TEXT;
-             else if (mode1 == "binary")
-                 mode2 = FileMode::BINARY;
-             else
-                 throwError(state0, reader, "SystemArgError",
-                            "Invalid mode specifier when opening file");
-             state0.ptr->prim( StreamPtr(new FileStream(state0.str0, access2, mode2)) );
+                            "Invalid mode/access specifier when opening file");
          } else {
              throwError(state0, reader, "TypeError",
                         "Symbol expected");
