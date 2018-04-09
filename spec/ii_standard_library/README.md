@@ -90,6 +90,7 @@ scope object.
 
  * [Booleans and Nil](boolnil.md)
  * [Cached](cached.md)
+ * [Chain](chain.md)
  * [Collection](collection.md)
  * [Cont](cont.md)
  * [Cons](cons.md)

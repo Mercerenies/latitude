@@ -81,7 +81,9 @@ multiple iterators together. `ChainIterator` is mutable if and only if
 the current underlying iterator is mutable. Note that this means
 `ChainIterator` may be immutable for some of its iteration and mutable
 for the rest, if one of its underlying iterators is mutable and the
-other is not.
+other is not. `ChainIterator` also provides an additional `make`
+static method, which constructs an iterator out of two iterable
+arguments.
 
 ### `NilIterator.`
 
