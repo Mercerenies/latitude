@@ -242,3 +242,8 @@ using `1` as the base case.
 
 Returns the product (with `++`) of all the elements in the collection,
 using `""` as the base case.
+
+### `Collection empty?.`
+
+Returns whether the collection is empty or not. This will terminate
+even for infinite collections.

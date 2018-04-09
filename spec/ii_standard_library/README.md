@@ -88,6 +88,7 @@ scope object.
      +-- meta lang
      +-- meta sigil
 
+ * [Array](array.md)
  * [Booleans and Nil](boolnil.md)
  * [Cached](cached.md)
  * [Chain](chain.md)
