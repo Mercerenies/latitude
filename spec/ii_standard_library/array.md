@@ -116,3 +116,11 @@ array. Note that this does *not* deep-copy the elements. It simply
 makes a new array with the same internal memory as the original.
 
 Complexity: `O(1)`
+
+### `Array iterator.`
+
+Returns an [`ArrayIterator`](iterator.md#arrayiterator) object which
+will iterate over the data in the array. The array iterator is
+invalidated if the size of the array is altered (usually via push or
+pop operations) but remains valid if individual elements are changed
+without changing the size.
