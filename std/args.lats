@@ -80,13 +80,16 @@ ArgList iterator := {
     self index := 1.
   }.
 }.
-ArgList dropIn := {
-  target := $dynamic parent.
+ArgList dropInto := {
+  target := #'$1.
   index := 1.
   self visit {
     target slot (("$" ++ index) intern) = #'$1.
     parent index := index + 1.
   }.
+}.
+ArgList dropIn := {
+  self dropInto ($dynamic parent).
 }.
 
 Collection inject: ArgList.
