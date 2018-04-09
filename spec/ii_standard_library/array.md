@@ -9,8 +9,6 @@ allows `O(1)` access and `O(1)` insertion and removal at the beginning
 and the end. With `O(n)` insertion and removal anywhere else in the
 list.
 
-## Simple Slots
-
 ## Methods
 
 ### `Array empty?.`
@@ -91,6 +89,12 @@ Flattens one later of the array, returning a new array. Any elements
 which are not arrays are placed in the returned array unmodified.
 
 Complexity: `O(n)`
+
+### `Array toString.`
+
+Returns a string representation of the array, by calling `toString` on
+all of the constituent elements, separating each pair of elements with
+a comma, and enclosing the result in square brackets.
 
 ### `Array == arr.`
 
