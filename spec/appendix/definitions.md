@@ -16,3 +16,6 @@
    in [`ArgList`](../ii_standard_library/arglist.md#arglist-fillwith)) -
    An argument-like object is an object which has slots of the form
    `$1`, `$2` ....
+ * Dictionary object - An object, usually a non-traditional object,
+   whose primary purpose is storing arbitrary key-value data, as a
+   dictionary data structure would.
