@@ -100,9 +100,9 @@ $argv toString := "$argv".
 ; It's very easy to lose track of a `self` in nested method calls, and calling `parent` repeatedly
 ; can be annoying, so the `localize` method will bind `this` to `self` in the calling scope. `this`
 ; will not rebind lexically until that scope exits.
-global this := { caller self. }.
+global this := { self self. }.
 global localize := {
-  caller this := caller slot 'self.
+  self this := #'(self self).
 }.
 
 ; Likewise, the dynamic argument behavior occasonally gets in the way,
