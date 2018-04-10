@@ -322,8 +322,10 @@ Parents origin := {
   meta sys origin#: #'$1, #'$2.
 }.
 Parents above := {
-  orgn := self origin (#'$1, #'$2).
-  #'orgn parent slot #'$2.
+  target := #'$1.
+  orgn := self origin (#'target, #'$2).
+  result := #'orgn parent slot #'$2.
+  { Kernel invokeOn (#'target, #'result) call. }.
 }.
 Parents hierarchy := {
   arr := Array clone.
