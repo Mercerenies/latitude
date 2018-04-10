@@ -103,6 +103,7 @@ scope object.
  * [Kernel](kernel.md)
  * [Method](method.md)
  * [Mixin](mixin.md)
+ * [Module](module.md)
  * [Number](number.md)
  * [Object](object.md)
  * [Parents](parents.md)
