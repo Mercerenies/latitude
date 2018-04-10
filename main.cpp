@@ -44,12 +44,7 @@ int main(int argc, char** argv) {
         state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY })); // Overwrite the nullary register
         ObjectPtr global = spawnObjects(state, reader, argc, argv);
         if (argc > 1) {
-            ObjectPtr lex = clone(global);
-            ObjectPtr dyn = clone(global);
-            std::string pathname = stripFilename(getExecutablePathname());
-            readFile(pathname + "std/runner.lats", {lex, dyn}, state, reader);
-            while (!isIdling(state))
-                doOneStep(state, reader);
+            runRunner(global, state, reader);
         } else {
             runREPL(global, state, reader);
         }
