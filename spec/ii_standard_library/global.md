@@ -241,3 +241,10 @@ Returns `block`, evaluating it if it is a method.
 
 Returns a [`StackFrame`](stackframe.md) object representing the point
 of execution at which this method was called.
+
+## Inner Object Methods
+
+### `global $argv.`
+
+This argument-like object contains the command line arguments passed
+to the program, excluding those absorbed by the Latitude VM.
