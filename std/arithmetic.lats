@@ -153,6 +153,7 @@ Number isComplex? := { (meta sys numLevel#: self) == 4. }.
 
 ;; Radixes
 String radix := {
+  localize.
   takes '[rad].
   rad isInteger? ifFalse {
     err ArgError clone tap {
@@ -191,12 +192,26 @@ String radix := {
     }.
   }.
   num := 0.
-  self visit {
+  iter := this.
+  'iter assign = { $1. }.
+  sign := 1.
+  'sign assign = { $1. }.
+  cond {
+    when (this substring (0, 1) == "+") do {
+      sign = 1.
+      iter = iter drop 1.
+    }.
+    when (this substring (0, 1) == "-") do {
+      sign = -1.
+      iter = iter drop 1.
+    }.
+  }.
+  iter visit {
     curr := convert: $1 ord.
     validate: curr.
     parent num := num * rad + curr.
   }.
-  num.
+  sign * num.
 }.
 
 ;; Return the script
