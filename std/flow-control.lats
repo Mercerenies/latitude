@@ -7,7 +7,7 @@ global callCC := {
 }.
 global escapable := {
   cont := $1.
-  caller return := { cont call. }.
+  self return := { cont call. }.
 }.
 
 ;; Booleans
