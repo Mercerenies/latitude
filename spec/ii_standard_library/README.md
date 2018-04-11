@@ -116,4 +116,5 @@ scope object.
  * [Stream](stream.md)
  * [String](string.md)
  * [Symbol](symbol.md)
+ * [global](global.md)
  * [meta](meta.md)

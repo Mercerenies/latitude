@@ -33,7 +33,7 @@ appropriate branch immediately.
 
 ## Static Methods
 
-### `Conditional if (obj).`
+### `Conditional if (obj) then (block1) else (block2).`
 
 Equivalent to the global `if` method, this method constructs a new
 partial `Conditional` object. This partially constructed object has
@@ -43,3 +43,5 @@ called on it, followed by exactly one call to `then` and exactly one
 call to `else`. The final `else` call triggers the actual conditional
 behavior, which calls either the `then` or `else` argument depending
 on the conditional value.
+
+Example usage: `Conditional if (obj) then { case1. } else { case2. }.`
