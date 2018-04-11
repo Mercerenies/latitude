@@ -78,8 +78,8 @@ This method returns a clone of the argument object.
 This method reads the first several lines of the Latitude script with
 the given filename. These lines are parsed using the Latitude file
 header rules, and a `FileHeader` object is returned. These rules are
-described in detail in [TODO: `FileHeader` information]. If the file
-does not exist or does not have a header of the appropriate format, a
+described in detail in [`FileHeader`](fileheader.md). If the file does
+not exist or does not have a header of the appropriate format, a
 `FileHeader` object containing nil slots is returned.
 
 ### `Kernel executablePath.`

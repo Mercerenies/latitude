@@ -14,8 +14,8 @@ loaded modules.
 
 ### `ModuleLoader &loaded.`
 
-This non-traditional subobject of `&LoadedModules` [TODO: Link] stores
-the actual modules that have been loaded.
+This non-traditional subobject of [`&LoadedModules`](loadedmodules.md)
+stores the actual modules that have been loaded.
 
 ### `ModuleLoader clone.`
 

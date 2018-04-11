@@ -7,7 +7,7 @@ An argument list object encapsulates an argument-like object as an
 iterable collection. Any object which has fields of the form `$1`,
 `$2`, ... can be encapsulated in this way, so that those fields can be
 iterated over. Argument list objects are most frequently constructed
-using the global `$*` [TODO: Link] method.
+using the global [`$*`](global.md#global-) method.
 
 ## Simple Slots
 
@@ -32,8 +32,8 @@ Stores the given argument-like object in `self`'s internal memory. An
 argument-like object is an object which has slots of the form `$1`,
 `$2`, .... The longest unbroken prefix of such slots will be taken to
 be the argument list's elements. In particular, any dynamic scope
-object is an argument-like object, and `$argv` [TODO: Link] is also an
-argument-like object.
+object is an argument-like object,
+and [`$argv`](global.md#global-argv) is also an argument-like object.
 
 ### `ArgList shift.`
 

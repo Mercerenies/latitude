@@ -177,18 +177,18 @@ Returns whether or not the collection contains the given object, by
 
 ### `Collection zip (coll).`
 
-Zips the collection with the argument, producing an array of `Cons`
-[TODO: Link] objects. The length of the returned array will be the
-length of the shorter of the two constituents.
+Zips the collection with the argument, producing an array
+of [`Cons`](cons.md) objects. The length of the returned array will be
+the length of the shorter of the two constituents.
 
 This method will terminate if at least one of the constituents is
 finite.
 
 ### `Collection zip! (coll).`
 
-Modifies `self` in-place, replacing each element with a `Cons` [TODO:
-Link] cell. If `coll` is shorter than `self`, then it will be "padded"
-with `Nil` in the zipped result.
+Modifies `self` in-place, replacing each element with
+a [`Cons`](cons.md) cell. If `coll` is shorter than `self`, then it
+will be "padded" with `Nil` in the zipped result.
 
 ### `Collection take (n).`
 
@@ -224,7 +224,7 @@ This method will not terminate on infinite collections.
 
 ### `Collection <> obj.`
 
-Returns a `Chain` [TODO: Link] which iterates over the elements of
+Returns a [`Chain`](chain.md) which iterates over the elements of
 `self` followed by those of `obj`. `obj` should itself be an iterable
 collection.
 

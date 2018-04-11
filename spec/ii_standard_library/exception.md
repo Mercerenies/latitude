@@ -23,7 +23,7 @@ Throws the current object, triggering any exception handlers that are
 in scope. Unlike [`Object throw`](object.md#object-throw), this method
 assigns a `stack` slot to the curent object, which contains the
 current stack trace at the time the exception was thrown, as per
-`currentStackTrace` [TODO: Link].
+[`currentStackTrace`](global.md#global-currentstacktrace).
 
 ### `Exception pretty.`
 

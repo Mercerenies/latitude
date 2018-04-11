@@ -9,8 +9,9 @@
 The Boolean object models values which represent truth-hood or
 falsehood. Its two subobjects, the true object and the false object,
 represent these two concepts, respectively, of truth-hood and
-falsehood. They are primarily used in Boolean statements such as
-if-statements [TODO: Link] and loop conditionals [TODO: Link].
+falsehood. They are primarily used in Boolean statements such
+as [if-statements](global.md#global-if-obj-then-block1-else-block2)
+and [loop conditionals](global.md#global-while-cond-do-block).
 
 The nil object models the concept of emptiness. The nil object is
 also [iterable](iterator.md) and will always be viewed as an empty

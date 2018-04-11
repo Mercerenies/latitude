@@ -21,7 +21,7 @@ in [Symbol Table](../i_syntax_and_semantics/ch3_object.md#symbol-table)
 
 ### `Symbol toProc.`
 
-Returns a `Proc` [TODO: Link] object which, when called, invokes the
+Returns a [`Proc`](proc.md) object which, when called, invokes the
 method at the given slot on the first argument, with all remaining
 arguments being passed to the invoked method. More concisely, the
 following two calls are equivalent in behavior.

@@ -3,9 +3,9 @@
 
     Cons := Object clone.
 
-A `Cons` object, usually constructed with `cons` [TODO: Link] is a
-simple pair of elements. A `Cons` object consists of a `car` and a
-`cdr`.
+A `Cons` object, usually constructed
+with [`cons`](global.md#global-cons-a-b) is a simple pair of
+elements. A `Cons` object consists of a `car` and a `cdr`.
 
 ## Simple Slots
 

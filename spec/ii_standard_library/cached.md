@@ -7,7 +7,8 @@ A `Cached` object is a procedure which stores a lazy-evaluated
 value. The first time the procedure is invoked, the value is computed,
 as per a stored procedure. The result is stored, so that later calls
 to the procedure can simply return the value. `Cached` objects are
-most commonly created using the `memo` [TODO: Link] global method.
+most commonly created using the [`memo`](global.md#global-memo-block)
+global method.
 
 ## Simple Slots
 

@@ -73,7 +73,8 @@ from global scope.
    respectively, in reporting stack traces and in loading source code
    files. These are accessible using the respective global names
    `StackFrame` and `FileHeader`. Their usage is discussed in more
-   detail in [TODO: This].
+   detail in [`StackFrame`](../ii_standard_library/stackframe.md)
+   and [`FileHeader`](../ii_standard_library/fileheader.md).
 
 Note that these objects will be referred to as "literal objects", or
 as "objects from the literal table". This does not imply anything
