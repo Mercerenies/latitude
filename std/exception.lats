@@ -14,7 +14,6 @@ err toString := "err".
 err Exception := Exception.
 err SystemError := SystemError.
 
-err SystemCallError ::= SystemError clone tap { self message := "Error in system call". }.
 err SystemArgError ::= SystemError clone tap { self message := "Wrong number of arguments to system call". }.
 err TypeError ::= SystemError clone tap { self message := "Type error". }.
 err SlotError ::= SystemError clone tap {
@@ -22,7 +21,6 @@ err SlotError ::= SystemError clone tap {
   self slotName := Nil.
   self objectInstance := Nil.
 }.
-err ContError ::= SystemError clone tap { self message := "Continuation error". }.
 err ParseError ::= SystemError clone tap { self message := "Parse error". }.
 err BoundsError ::= SystemError clone tap { self message := "Bounds error". }.
 err IOError ::= SystemError clone tap { self message := "IO error". }.

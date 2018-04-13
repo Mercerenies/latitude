@@ -73,12 +73,6 @@ none of the more specific exceptions make sense for the situation.
 This exception is thrown when an invalid index is provided to a
 container-like structure.
 
-### `ContError`
-
-    err ContError message := "Continuation error".
-
-[TODO: Is this used?]
-
 ### `IOError`
 
     err IOError message := "IO error".
@@ -166,10 +160,6 @@ an appropriate message, containing the slot name.
 
 As the message name indicates, this exception is thrown when a
 system-level call is made with incorrect arguments.
-
-### `SystemCallError`
-
-[TODO: Is this one used?]
 
 ### `TypeError`
 
