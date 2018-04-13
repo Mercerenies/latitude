@@ -213,6 +213,8 @@ String radix := {
   }.
   sign * num.
 }.
+String toInt := { self radix 10. }.
+String toDouble := { meta sys strToDouble#: self. }.
 
 ;; Return the script
 here.

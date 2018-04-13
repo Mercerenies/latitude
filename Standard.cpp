@@ -2299,6 +2299,30 @@ void spawnSystemCallsNew(ObjectPtr global,
                            asmCode(makeAssemblerLine(Instr::INT, 0),
                                    makeAssemblerLine(Instr::CPP, CPP_GC_TRACE))));
 
+     // CPP_PARSE_DOUBLE (parse %str0 as a double, returning in %ret; throws if no valid conversion could be made)
+     // strToDouble#: value.
+     assert(reader.cpp.size() == CPP_PARSE_DOUBLE);
+     reader.cpp.push_back([&reader](IntState& state0) {
+         const char* start = state0.str0.c_str();
+         char* end = nullptr;
+         double x = strtod(start, &end);
+         if (end > start) {
+             state0.ret = garnishObject(reader, Number(x));
+         } else {
+             throwError(state0, reader, "InputError", "Text is not a number");
+         }
+     });
+     sys->put(Symbols::get()["strToDouble#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::CPP, CPP_PARSE_DOUBLE))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
