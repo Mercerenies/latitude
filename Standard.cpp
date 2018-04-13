@@ -1950,13 +1950,17 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::LOAD, Reg::NUM1),
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
-     // CPP_PROT_VAR (protect the variable named %sym in the object %slf)
+     // CPP_PROT_VAR (protect the variable named %sym in the object %slf using the protection mask %num0)
      // protectVar#: obj, var.
      assert(reader.cpp.size() == CPP_PROT_VAR);
      reader.cpp.push_back([&reader](IntState& state0) {
-         bool result = state0.slf->addProtection(state0.sym,
-                                                 Protection::PROTECT_ASSIGN |
-                                                 Protection::PROTECT_DELETE);
+         long num = state0.num0.asSmallInt();
+         Protection prot = Protection::NO_PROTECTION;
+         if (num & 1)
+             prot |= Protection::PROTECT_ASSIGN;
+         if (num & 2)
+             prot |= Protection::PROTECT_DELETE;
+         bool result = state0.slf->addProtection(state0.sym, prot);
          if (!result) {
              ObjectPtr err = reader.lit[Lit::ERR];
              ObjectPtr slot = (*err)[Symbols::get()["SlotError"]];
@@ -1980,6 +1984,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::EXPD, Reg::SYM),
                                    makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                    makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::INT, 3),
                                    makeAssemblerLine(Instr::CPP, CPP_PROT_VAR),
                                    makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET))));
 
