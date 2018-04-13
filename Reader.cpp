@@ -570,9 +570,9 @@ void StmtMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::GETL, Reg::PTR)).appendOnto(seq);
     (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(seq);
     (makeAssemblerLine(Instr::SETF)).appendOnto(seq);
+    (makeAssemblerLine(Instr::INT, 2)).appendOnto(seq);
+    (makeAssemblerLine(Instr::CPP, Table::CPP_PROT_VAR)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(seq);
-
-    // TODO Find a way to protect the `closure` field here.
 
 }
 
