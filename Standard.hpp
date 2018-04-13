@@ -75,7 +75,8 @@ namespace Table {
         GTU_ERROR_MESSAGE = 12,
         GTU_ERROR = 13,
         GTU_KEYS = 14,
-        GTU_KEY_TERM = 15;
+        GTU_KEY_TERM = 15,
+        GTU_THROW_OBJ = 16;
 
 }
 
@@ -83,5 +84,6 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name, std::string msg);
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name);
+void throwError(IntState& state, const ReadOnlyState& reader, ObjectPtr obj);
 
 #endif // STANDARD_HPP

@@ -1957,8 +1957,14 @@ void spawnSystemCallsNew(ObjectPtr global,
          bool result = state0.slf->addProtection(state0.sym,
                                                  Protection::PROTECT_ASSIGN |
                                                  Protection::PROTECT_DELETE);
-         if (!result) // TODO If we could set objectInstance and slotName here, that would be great.
-             throwError(state0, reader, "SlotError", "Could not protect nonexistent slot");
+         if (!result) {
+             ObjectPtr err = reader.lit[Lit::ERR];
+             ObjectPtr slot = (*err)[Symbols::get()["SlotError"]];
+             ObjectPtr curr = clone(slot);
+             curr->put(Symbols::get()["objectInstance"], state0.slf);
+             curr->put(Symbols::get()["slotName"], garnishObject(reader, state0.sym));
+             throwError(state0, reader, curr);
+         }
      });
      sys->put(Symbols::get()["protectVar#"],
               defineMethod(unit, global, method,
@@ -2397,6 +2403,16 @@ void spawnSystemCallsNew(ObjectPtr global,
      temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO)));
      assert(temp.index == GTU_KEY_TERM);
 
+     // GTU_THROW_OBJ
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::LOCRT),
+                                           makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::SYMN, Symbols::get()["stack"].index),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                           makeAssemblerLine(Instr::SETF),
+                                           makeAssemblerLine(Instr::THROW)));
+     assert(temp.index == GTU_THROW_OBJ);
+
 }
 
 void bindArgv(ObjectPtr argv_, ObjectPtr string, int argc, char** argv) {
@@ -2552,4 +2568,10 @@ void throwError(IntState& state, const ReadOnlyState& reader, std::string name) 
     state.stack = pushNode(state.stack, state.cont);
     state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_ERROR }));
     state.sym = Symbols::get()[name];
+}
+
+void throwError(IntState& state, const ReadOnlyState& reader, ObjectPtr obj) {
+    state.stack = pushNode(state.stack, state.cont);
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_THROW_OBJ }));
+    state.slf = obj;
 }
