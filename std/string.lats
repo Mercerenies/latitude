@@ -59,7 +59,11 @@ String bytes := {
         }.
       }.
     }.
-    self find := self slot 'findBytes.
+    self find := #'(self findBytes).
+    self ord := {
+      val := meta sys strOrd#: self.
+      val mod 256.
+    }.
     self bytes? := True.
   }.
 }.

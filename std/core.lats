@@ -388,7 +388,14 @@ String toString := { meta sys strToString#: self. }.
 String pretty := { self. }.
 String == := { meta sys primEquals#: self, $1. }.
 String < := { meta sys primLT#: self, $1. }.
-String substringBytes := { meta sys stringSubstring#: self, $1, $2. }.
+String substringBytes := {
+  result := meta sys stringSubstring#: self, $1, $2.
+  if (self bytes?) then {
+    result bytes.
+  } else {
+    result.
+  }.
+}.
 String byteCount := { meta sys stringLength#: self. }.
 Symbol assign= := {
   name := self.
