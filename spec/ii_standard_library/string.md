@@ -165,10 +165,7 @@ empty or its first character is not ASCII, an `ArgError` is raised.
 ### `String ord.`
 
 Returns the Unicode value of the first character of `self`. If `self`
-is empty, an `ArgError` is raised. Unlike many of the `String`
-methods, `ord` is unaffected by whether the string is a byte string or
-not; it will always return the Unicode value of the first UTF-8
-character. [TODO: Is this behavior desired?]
+is empty, an `ArgError` is raised.
 
 ### `String iterator.`
 
