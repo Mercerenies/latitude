@@ -76,13 +76,11 @@ The following exceptions take precedence over the above rule.
  * Two colons in a row (`::`) form a valid identifier. Note that there
    is no assignment identifier corresponding to this, as `::=` is a
    special syntactic token and not a valid identifier.
- * A single isolated equal-sign (`=`) and a less-than sign followed by
-   a dash (`<-`) are not valid identifiers, as both are treated
-   specially by the language to allow custom assignment
-   operations. However, identifiers *containing* equal-signs or a
-   less-than sign followed by a dash are allowed. In particular,
-   identifiers consisting only of two or more equal-signs (such as
-   `==` or `===`) are allowed.
+ * The following, on their own, are not valid identifiers: `=`, `<-`,
+   and `=>`. These lexemes are treated specially by the language for
+   various syntactic constructs. However, identifiers which happen to
+   contain these strings are acceptable, so `==` or `<=>`, for
+   example, are perfectly acceptable as identifiers.
  * A plus sign (`+`) or minus sign (`-`) followed by at least one
    digit (`0` to `9`) is not a valid *start* to an identifier. That
    is, any string which begins with a plus sign or minus sign followed

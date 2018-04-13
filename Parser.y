@@ -129,6 +129,7 @@
 %token DCEQUALS
 %token ATPAREN
 %token BIND
+%token ARROW
 
 %%
 

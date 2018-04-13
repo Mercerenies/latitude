@@ -65,6 +65,7 @@ ID        {SNORMAL}{NORMAL}*
 #< { yyerror("Unreadable object"); }
 = { return '='; }
 \<- { return BIND; }
+=\> { return ARROW; }
 ::= { return DCEQUALS; }
 
 [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)? {
