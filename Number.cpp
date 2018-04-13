@@ -180,8 +180,8 @@ namespace MagicNumber {
             auto second0 = Coerce<U>::act(second);
             auto div = Coerce<wide_t>::act(floor((wide_t)(first0 / second0)));
             wide_t result = first0 - div * second0;
-            if ((second0 < 0) ^ (first0 < 0))
-                result *= -1;
+            if ((!std::is_same<wide_t, Number::floating>::value) && ((second0 < 0) ^ (first0 < 0)))
+                result += second0;
             return Number::magic_t(result);
         }
         Number::magic_t operator()(Number::complex& first, Number::complex& second) const {
