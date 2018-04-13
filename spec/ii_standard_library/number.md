@@ -418,9 +418,6 @@ result is the appropriate infinite floating-point or complex value. If
 such a value is not supported on the system, the behavior is
 undefined.
 
-[TODO: A negative real argument to this should return a complex value
-but currently returns NaN. This needs to be fixed.]
-
 ### `Number isBasicInt?.`
 
 Returns whether the value is a fixed-size integer. If the

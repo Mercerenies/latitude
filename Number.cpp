@@ -387,6 +387,23 @@ namespace MagicNumber {
         }
     };
 
+    struct LogVisitor : boost::static_visitor<Number::magic_t> {
+
+        template <typename U>
+        Number::magic_t operator()(const U& first) const {
+            auto value = Coerce<Number::floating>::act(first);
+            if (value < 0)
+                return (*this)(Coerce<Number::complex>::act(value));
+            else
+                return Number::magic_t(std::log(value));
+        }
+
+        Number::magic_t operator()(const Number::complex& first) const {
+            return Number::magic_t(std::log(first));
+        }
+
+    };
+
     struct FloatingOpVisitor : boost::static_visitor<Number::magic_t> {
         typedef std::function<Number::floating(Number::floating)> function_type;
         typedef std::function<Number::complex(Number::complex)> complex_function_type;
@@ -831,9 +848,7 @@ Number Number::atanh() const {
 
 Number Number::log() const {
     Number curr = *this;
-    function<double(double)> func = (double(*)(double))std::log;
-    function<complex(complex)> cfunc = [](const complex& c) { return std::log(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::LogVisitor(), *curr.value));
     return curr;
 }
 
