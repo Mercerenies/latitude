@@ -1,0 +1,58 @@
+
+global Dict ::= Object clone.
+Dict &impl := Object clone.
+Dict &impl parent := Dict &impl.
+Dict &impl missing := #'(Object missing).
+Dict impl0 := Nil.
+Dict impl1 := Nil.
+
+Dict clone := {
+  Kernel cloneObject (self) tap {
+    self &impl := Kernel cloneObject #'(self &impl).
+    self impl0 := Kernel cloneObject #'(self impl0).
+    self impl1 := Kernel cloneObject #'(self impl1).
+  }.
+}.
+Dict get := {
+  localize.
+  key := $1.
+  ;; Messy hack >.<
+  cond {
+    when (key == 'missing) do {
+      this impl0 $1.
+    }.
+    when (key == 'parent) do {
+      this impl1 $1.
+    }.
+    else {
+      Slots hold (this &impl, key).
+    }.
+  }.
+}.
+Dict get= := {
+  localize.
+  key := $1.
+  value := #'$2.
+  ;; Messy hack >.<
+  cond {
+    when (key == 'missing) do {
+      this impl0 $1 := #'value.
+    }.
+    when (key == 'parent) do {
+      this impl1 $1 := #'value.
+    }.
+    else {
+      Slots put (this &impl, key, #'value).
+    }.
+  }.
+}.
+Dict has? := {
+  localize.
+  key := $1.
+  {
+    this get (key).
+    True.
+  } catch:
+    err SlotError,
+    { False. }.
+}.
