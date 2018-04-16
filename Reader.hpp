@@ -259,4 +259,18 @@ public:
     virtual void propogateFileName(std::string name);
 };
 
+/*
+ * An inline dictionary, which by default evaluates to a Dict object.
+ */
+class StmtDict : public Stmt {
+public:
+    typedef std::list< std::pair< Symbolic, std::unique_ptr<Stmt> > > KVList;
+private:
+    KVList args;
+public:
+    StmtDict(int line_no, KVList& arg);
+    virtual void translate(TranslationUnit&, InstrSeq&);
+    virtual void propogateFileName(std::string name);
+};
+
 #endif // READER_HPP

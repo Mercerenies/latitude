@@ -174,6 +174,8 @@ namespace _V {
     struct Necessary<Instr::DEL> { typedef std::tuple<> type; };
     template <>
     struct Necessary<Instr::ARR> { typedef std::tuple<VLong> type; };
+    template <>
+    struct Necessary<Instr::DICT> { typedef std::tuple<VLong> type; };
 
     template <typename T>
     struct ArgToEnum;

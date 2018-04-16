@@ -61,6 +61,7 @@
         bool equals2; // ::= (`a b ::= c.` desugars to `a b := c. a b :: 'b.`)
         bool isHashQuote; // Check lhs
         bool argsProvided;
+        bool isDict; // Check args (in expressions, check name and rhs)
     };
 
     struct List {
@@ -101,6 +102,7 @@
 %type <argval> shortarglist
 %type <argval> arglist
 %type <argval> arglist1
+%type <exprval> postarglist
 %type <exprval> arg
 %type <exprval> chain
 %type <exprval> simplechain
@@ -130,6 +132,7 @@
 %token ATPAREN
 %token BIND
 %token ARROW
+%token ATBRACKET
 
 %%
 
@@ -189,6 +192,19 @@ arglist1:
     /* empty */ { $$ = makeList(); } |
     ',' arg arglist1 { $$ = makeList(); $$->car = $2; $$->cdr = $3; }
     ;
+postarglist:
+    STDNAME ARROW arg { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
+                        $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
+                        $$->args->cdr = makeList(); } |
+    OPNAME ARROW arg { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
+                       $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
+                       $$->args->cdr = makeList(); } |
+    OPNAME ARROW arg ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
+                                      $$->args->cdr = temp; $$->args->car = makeExpr();
+                                      $$->args->car->name = $1; $$->args->car->rhs = $3; } |
+    STDNAME ARROW arg ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
+                                        $$->args->cdr = temp; $$->args->car = makeExpr();
+                                        $$->args->car->name = $1; $$->args->car->rhs = $3; }
 arg:
     simplechain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     chain OPNAME verysimplechainl { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
@@ -261,7 +277,8 @@ literal:
                    $$->name = $1; } |
     HASHQUOTE name { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = makeExpr();
                      $$->lhs->lhs = NULL; $$->lhs->name = $2; } |
-    HASHQUOTE literalish { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = $2; }
+    HASHQUOTE literalish { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = $2; } |
+    ATBRACKET postarglist ']' { $$ = $2; }
     ;
 linelist:
     line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |
@@ -283,6 +300,7 @@ listlit:
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
                           $$->argsProvided = true; } |
+    ATBRACKET postarglist ']' { $$ = $2; } |
     name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; $$->namelen = strlen($1); }
     ;
 doublish:

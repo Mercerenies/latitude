@@ -127,6 +127,7 @@ yldc INT REG (32 INT REG) - Get the nth value from %lit and put a clone into the
 del (33) - Delete the %sym slot of %slf, sets %err0 if %slf is null
 
 arr INT (34 INT) - Construct an array by drawing the top INT values off %arg and placing them in the array so that the topmost value in %arg is at the end of the array. The resulting array is placed in %ret.
+dict INT (35 INT) - Construct a dictionary by drawing the top INT * 2 values off %arg. Each time, the first argument popped is the value and the second (a symbol) is the key. The resulting dictionary is placed in %ret.
 
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions

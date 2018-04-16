@@ -1,10 +1,10 @@
 
-global Dict ::= Object clone.
+Dict toString := "Dict".
 Dict &impl := Object clone.
 Dict &impl parent := Dict &impl.
 Dict &impl missing := #'(Object missing).
-Dict impl0 := Nil.
-Dict impl1 := Nil.
+Dict impl0 := Nil. ; missing
+Dict impl1 := Nil. ; parent
 
 Dict clone := {
   Kernel cloneObject (self) tap {

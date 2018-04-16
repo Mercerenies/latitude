@@ -1374,6 +1374,36 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         state.ret = arr;
     }
         break;
+    case Instr::DICT: {
+        long val = state.cont.readLong(0);
+#if DEBUG_INSTR > 0
+        cout << "DICT " << val << endl;
+#endif
+        ObjectPtr dict = reader.lit.at(Lit::DICT);
+        ObjectPtr impl = clone((*dict)[Symbols::get()["&impl"]]);
+        dict = clone(dict);
+        dict->put(Symbols::get()["&impl"], impl);
+        for (long i = 0; i < val; i++) {
+            ObjectPtr value = state.arg.top();
+            state.arg.pop();
+            ObjectPtr key = state.arg.top();
+            state.arg.pop();
+            auto key0 = boost::get<Symbolic>(&key->prim());
+            if (key0) {
+                if (*key0 == Symbols::get()["missing"]) {
+                    dict->put(Symbols::get()["impl0"], value);
+                } else if (*key0 == Symbols::get()["parent"]) {
+                    dict->put(Symbols::get()["impl1"], value);
+                } else {
+                    impl->put(*key0, value);
+                }
+            } else {
+                throwError(state, reader, "TypeError", "Symbol expected");
+            }
+        }
+        state.ret = dict;
+    }
+        break;
     }
 }
 

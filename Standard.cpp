@@ -2478,6 +2478,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     ObjectPtr stderr_(clone(stream));
 
     ObjectPtr array_(clone(object));
+    ObjectPtr dict(clone(object));
 
     ObjectPtr sys(clone(object));
     ObjectPtr stackFrame(clone(object));
@@ -2508,6 +2509,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     global->put(Symbols::get()["Exception"], exception);
     global->put(Symbols::get()["SystemError"], systemError);
     global->put(Symbols::get()["Array"], array_);
+    global->put(Symbols::get()["Dict"], dict);
     global->put(Symbols::get()["Kernel"], kernel);
     global->put(Symbols::get()["StackFrame"], stackFrame);
     global->put(Symbols::get()["FileHeader"], fileHeader);
@@ -2579,6 +2581,10 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     reader.lit.emplace_back(err       );
     assert(reader.lit.size() == Lit::ARRAY );
     reader.lit.emplace_back(array_    );
+    assert(reader.lit.size() == Lit::DICT  );
+    reader.lit.emplace_back(dict      );
+    assert(reader.lit.size() == Lit::OBJECT);
+    reader.lit.emplace_back(object    );
 
     // The core libraries (this is done in runREPL now)
     //readFile("std/latitude.lat", { global, global }, state);

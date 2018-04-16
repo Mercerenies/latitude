@@ -102,6 +102,14 @@ unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
         return unique_ptr<Stmt>(new StmtDoubleEqual(line, lhs, func, rhs));
     } else if (expr->isHashQuote) {
         return translateStmt(expr->lhs, true);
+    } else if (expr->isDict) {
+        auto list = expr->args;
+        StmtDict::KVList res;
+        while ((list->car != nullptr) && (list->cdr != nullptr)) {
+            res.emplace_back(Symbols::get()[list->car->name], std::move(translateStmt(list->car->rhs, held)));
+            list = list->cdr;
+        }
+        return unique_ptr<Stmt>(new StmtDict(line, res));
     } else {
         auto args = expr->args ? translateList(expr->args, held) : list< unique_ptr<Stmt> >();
         string func;
@@ -923,5 +931,33 @@ void StmtDoubleEqual::propogateFileName(std::string name) {
         className->propogateFileName(name);
     if (rhs)
         rhs->propogateFileName(name);
+    Stmt::propogateFileName(name);
+}
+
+StmtDict::StmtDict(int line_no, KVList& arg)
+    : Stmt(line_no), args(move(arg)) {}
+
+void StmtDict::translate(TranslationUnit& unit, InstrSeq& seq) {
+
+    stateLine(seq);
+
+    // Evaluate each of the arguments, in order
+    for (auto& arg : args) {
+        arg.second->translate(unit, seq);
+        (makeAssemblerLine(Instr::SYM, Symbols::get()[arg.first])).appendOnto(seq);
+        (makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR)).appendOnto(seq);
+        (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq);
+        (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq);
+        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
+    }
+
+    // Make the call
+    (makeAssemblerLine(Instr::DICT, (long)args.size())).appendOnto(seq);
+
+}
+
+void StmtDict::propogateFileName(std::string name) {
+    for (auto& ptr : args)
+        ptr.second->propogateFileName(name);
     Stmt::propogateFileName(name);
 }
