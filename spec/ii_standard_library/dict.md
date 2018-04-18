@@ -51,6 +51,11 @@ key.
 Returns whether or not the dictionary contains a value at the given
 key.
 
+### `Dict delete (key).`
+
+If `key` exists as a key in the dictionary, it is removed from the
+dictionary.
+
 ### `Dict iterator.`
 
 Returns a [`DictIterator`](iterator.md#dictiterator) iterating over
@@ -72,6 +77,12 @@ dictionary.
 
 Maps a method over the dictionary. This behaves equivalently to the
 corresponding `Collection` method but is specialized to dictionaries.
+
+### `Dict == other.`
+
+Returns true if and only if the dictionaries have the same keys and
+each key corresponds to an equivalent (by `==`) value in both
+dictionaries.
 
 ## Static Methods
 

@@ -68,3 +68,38 @@ Dict has? := {
     err SlotError,
     { False. }.
 }.
+Dict delete := {
+  localize.
+  key := $1.
+  cond {
+    when (key == 'missing) do {
+      Slots delete: this, 'impl0.
+    }.
+    when (key == 'parent) do {
+      Slots delete: this, 'impl1.
+    }.
+    else {
+      Slots delete: this &impl, key.
+    }.
+  }.
+}.
+Dict == := {
+  localize.
+  other := #'$1.
+  callCC {
+    escapable.
+    (this keys size == other keys size) ifFalse {
+      return (False).
+    }.
+    this keys visit {
+      takes '[key].
+      other has? (key) ifFalse {
+        return (False).
+      }.
+      (this get (key) == other get (key)) ifFalse {
+        return (False).
+      }.
+    }.
+    True.
+  }.
+}.
