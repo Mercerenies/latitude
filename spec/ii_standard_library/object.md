@@ -69,6 +69,17 @@ Equivalent `Kernel` call:
 
     Kernel Slots has: Object, symbol.
 
+### `Object dup.`
+
+Returns a new object identical to `self` but distinct from it. This is
+different from cloning an object, which returns a new object whose
+*parent* is `self`. This copies the actual slots of `self` into a new
+object which shares `self`'s parent.
+
+Equivalent `Kernel` call:
+
+    Kernel dupObject: self.
+
 ### `Object invoke (method).`
 
 This method returns a procedure object. When invoked, the procedure

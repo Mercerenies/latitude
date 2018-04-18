@@ -14,6 +14,9 @@ Object invoke := {
 Object invokeSpecial := {
   Kernel invokeOnSpecial: #'self, #'$1, #'$2.
 }.
+Object dup := {
+  Kernel dupObject: #'self.
+}.
 Object tap := {
   #'self invoke #'$1 call.
   #'self.
@@ -229,6 +232,7 @@ Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
 Kernel cwd := { meta sys cwdPath#. }.
 Kernel evaluating? := { meta sys primIsMethod#: #'$1. }.
+Kernel dupObject := { meta sys duplicate#: #'$1. }.
 Kernel directKeys := {
   arr := [].
   meta sys objectKeys#: #'$1, {

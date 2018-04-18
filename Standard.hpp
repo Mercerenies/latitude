@@ -59,7 +59,8 @@ namespace Table {
         CPP_STREAM_FLUSH = 48,
         CPP_UNI_CAT = 49,
         CPP_GC_TRACE = 50,
-        CPP_PARSE_DOUBLE = 51;
+        CPP_PARSE_DOUBLE = 51,
+        CPP_DUPLICATE = 52;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,

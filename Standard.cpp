@@ -2323,6 +2323,22 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::THROA, "String expected"),
                                    makeAssemblerLine(Instr::CPP, CPP_PARSE_DOUBLE))));
 
+     // CPP_DUPLICATE (replace the object pointed to at %ptr with one identical to that of %slf)
+     // duplicate#: obj.
+     assert(reader.cpp.size() == CPP_DUPLICATE);
+     reader.cpp.push_back([&reader](IntState& state0) {
+         *(state0.ptr) = *(state0.slf);
+     });
+     sys->put(Symbols::get()["duplicate#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                   makeAssemblerLine(Instr::CLONE),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::CPP, CPP_DUPLICATE))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library

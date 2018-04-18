@@ -73,6 +73,13 @@ invoked explicitly by the user.
 
 This method returns a clone of the argument object.
 
+### `Kernel dupObject (object).`
+
+Returns a new object identical to `object` but distinct from it. This
+is different from cloning an object, which returns a new object whose
+*parent* is the object. This copies the actual slots of the object
+into a new object which shares the original's parent.
+
 ### `Kernel readHeader (filename).`
 
 This method reads the first several lines of the Latitude script with
