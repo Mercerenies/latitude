@@ -203,7 +203,8 @@ postarglist:
                         $$->args->cdr = makeList(); } |
     arg ARROW arg ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
                                       $$->args->cdr = temp; $$->args->car = makeExpr();
-                                      $$->args->car->lhs = $1; $$->args->car->rhs = $3; }
+                                      $$->args->car->lhs = $1; $$->args->car->rhs = $3; } |
+    ARROW { $$ = makeExpr(); $$->isDict = true; $$->args = makeList(); }
 arg:
     simplechain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     chain OPNAME verysimplechainl { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
@@ -308,7 +309,8 @@ postlitlist:
                         $$->args->cdr = makeList(); } |
     listlit ARROW listlit ',' postlitlist { $$ = $5; List* temp = $$->args; $$->args = makeList();
                                       $$->args->cdr = temp; $$->args->car = makeExpr();
-                                      $$->args->car->lhs = $1; $$->args->car->rhs = $3; }
+                                      $$->args->car->lhs = $1; $$->args->car->rhs = $3; } |
+    ARROW { $$ = makeExpr(); $$->isDict = true; $$->args = makeList(); }
 name:
     STDNAME |
     OPNAME
