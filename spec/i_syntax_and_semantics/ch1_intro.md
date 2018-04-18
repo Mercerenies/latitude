@@ -27,4 +27,4 @@ execution file.
 ## Terms
 
 A Latitude program is a file that is currently being parsed, compiled,
-or evaluated. A virtual machine, or VM, is a running Latitude process
+or evaluated. A virtual machine, or VM, is a running Latitude process.
