@@ -271,6 +271,7 @@ literal:
                       $$->argsProvided = true; } |
     LISTLIT literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
                               $$->argsProvided = true; } |
+    LISTLIT postlitlist ']' { $$ = $2; } |
     ZERODISPATCH { $$ = makeExpr(); $$->isZeroDispatch = true;
                    $$->name = $1; } |
     HASHQUOTE name { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = makeExpr();
