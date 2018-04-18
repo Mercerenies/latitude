@@ -338,12 +338,14 @@ Parents above := {
 }.
 Parents hierarchy := {
   arr := Array clone.
-  curr := #'$1.
+  frontier := [#'$1].
+  curr := frontier popFront.
   while {
     arr containsIf { Kernel eq: #'$1, #'curr. } not.
   } do {
     arr pushBack #'curr.
-    parent curr := #'(curr parent).
+    frontier pushBack #'(curr parent).
+    parent curr := frontier popBack.
   }.
   arr.
 }.
