@@ -34,6 +34,11 @@
         long length;
     };
 
+    struct complex_t {
+        double real;
+        double imag;
+    };
+
     struct Expr {
         int line;
         struct Expr* lhs;
@@ -87,6 +92,7 @@
     long ival;
     double dval;
     char* sval;
+    struct complex_t cval;
     struct vstring_t vsval;
     struct List* argval;
     struct Expr* exprval;
@@ -122,6 +128,7 @@
 %token <dval> NUMBER
 %token <ival> INTEGER
 %token <sval> BIGINT
+%token <cval> COMPLEX
 %token <vsval> STRING
 %token <vsval> SYMBOL
 %token <sval> ZERODISPATCH
@@ -264,6 +271,7 @@ literal:
                        $$->argsProvided = true; } |
     ATPAREN doublish ',' doublish ')' { $$ = makeExpr(); $$->number = $2;
                                         $$->number1 = $4; $$->isComplex = true;  } |
+    COMPLEX { $$ = makeExpr(); $$->number = $1.real; $$->number1 = $1.imag; $$->isComplex = true; } |
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |

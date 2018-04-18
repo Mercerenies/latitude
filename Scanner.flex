@@ -78,6 +78,20 @@ ID        {SNORMAL}{NORMAL}*
     return NUMBER;
 }
 
+[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?[-+][0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?i {
+    char* ptr = yytext + 1;
+    while ((ptr[0] != '+') && (ptr[0] != '-') && (ptr[0] != '\0')) {
+        if ((ptr[0] == 'e') || (ptr[0] == 'E'))
+            ptr += 2;
+        else
+            ptr += 1;
+    }
+    ptr[0] = '\0';
+    yylval.cval.real = strtod(yytext, NULL);
+    yylval.cval.imag = strtod(ptr + 1, NULL);
+    return COMPLEX;
+}
+
 [-+]?[0-9]+ {
     errno = 0;
     yylval.ival = strtol(yytext, NULL, 10);
