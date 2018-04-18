@@ -370,11 +370,11 @@ namespace MagicNumber {
         }
 
         void operator()(const Number::complex& first) {
-            stream << fixed << setprecision(2) << "@(";
+            stream << fixed << setprecision(2);
             (*this)(real(first));
-            stream << ", ";
+            stream << "+";
             (*this)(imag(first));
-            stream << ")";
+            stream << "i";
         }
 
         template <typename U>
