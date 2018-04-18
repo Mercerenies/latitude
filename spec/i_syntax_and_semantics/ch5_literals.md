@@ -99,10 +99,7 @@ field containing the method's inner code.
 
 A numerical literal will result in a clone of the number object. The
 resulting cloned object will have a primitive field containing the
-numerical value of the literal. Note that the at-brace syntax `@(...,
-...)` is also a numerical literal, which results in a complex number
-whose real part is listed first and whose imaginary part is listed
-second.
+numerical value of the literal.
 
 A string literal will result in a clone of the string object. The
 resulting cloned object will have a primitive field containing the

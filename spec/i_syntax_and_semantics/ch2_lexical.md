@@ -149,7 +149,6 @@ following grammar.
               "'[" <literallist> "]" |
               "#\"" <rawstring> "\"#" |
               [ "-" | "+" ] "0" <letter> { <alphanum> } |
-              "@(" <number> "," <number> ")" |
               "#'" <ename>
 <linelist> ::= <line> <linelist> |
                λ
@@ -181,10 +180,12 @@ following regular expressions.
     [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)?
     [-+]?[0-9]+([eE][-+]?[0-9]+)
     [-+]?[0-9]+
+    [-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?[-+][0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?i
 
 The first two forms construct a floating-point number; the third form
-constructs an integer. For more information on the different types of
-numbers, refer to [Number](../ii_standard_library/number.md).
+constructs an integer; the fourth constructs a complex number. For
+more information on the different types of numbers, refer
+to [Number](../ii_standard_library/number.md).
 
 Additionally, integer literals can be prefixed with `0x`, `0b`, or
 `0o` (case insensitive, following the optional sign) to indicate that
