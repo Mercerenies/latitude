@@ -373,7 +373,14 @@ DictIterator ::= Object clone.
 DictIterator keys := Nil iterator.
 DictIterator dict := Nil.
 DictIterator end? := { self keys end?. }.
-DictIterator next := { self keys next. }.
+DictIterator next := {
+  localize.
+  this keys next.
+  { this keys end?. } or
+    { this dict has? (this keys element). } ifFalse {
+    this next.
+  }.
+}.
 DictIterator element := {
   localize.
   key := this keys element.
@@ -387,15 +394,11 @@ DictIterator element := {
 Dict iterator := {
   iter := DictIterator clone.
   iter dict := self.
-  iter keys := Kernel keys (self &impl).
-  iter keys upperBound := iter keys upperBound - 2. ; My insides are screaming at this hack
-  self has? 'missing ifTrue {
-    iter keys pushBack 'missing.
+  iter keys := Kernel directKeys (self &impl) iterator.
+  { iter keys end?. } or
+    { iter dict has? (iter keys element). } ifFalse {
+    iter next.
   }.
-  self has? 'parent ifTrue {
-    iter keys pushBack 'parent.
-  }.
-  iter keys := iter keys iterator.
   iter.
 }.
 Dict keys := {
