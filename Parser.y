@@ -120,6 +120,7 @@
 %type <argval> literallist
 %type <argval> literallist1
 %type <exprval> listlit
+%type <exprval> postlitlist
 %type <sval> name
 
 %token <sval> STDNAME
@@ -304,9 +305,22 @@ listlit:
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
                           $$->argsProvided = true; } |
-    ATBRACKET postarglist ']' { $$ = $2; } |
+    ATBRACKET postlitlist ']' { $$ = $2; } |
     name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; $$->namelen = strlen($1); }
     ;
+postlitlist:
+    STDNAME ARROW listlit { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
+                            $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
+                            $$->args->cdr = makeList(); } |
+    OPNAME ARROW listlit { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
+                           $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
+                           $$->args->cdr = makeList(); } |
+    OPNAME ARROW listlit ',' postlitlist { $$ = $5; List* temp = $$->args; $$->args = makeList();
+                                           $$->args->cdr = temp; $$->args->car = makeExpr();
+                                           $$->args->car->name = $1; $$->args->car->rhs = $3; } |
+    STDNAME ARROW listlit ',' postlitlist { $$ = $5; List* temp = $$->args; $$->args = makeList();
+                                            $$->args->cdr = temp; $$->args->car = makeExpr();
+                                            $$->args->car->name = $1; $$->args->car->rhs = $3; }
 name:
     STDNAME |
     OPNAME
