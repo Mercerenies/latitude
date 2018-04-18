@@ -43,9 +43,9 @@ result is a method, it is *not* called. Note that this method may
 result in a call to `missing` if the slot is not found through the
 standard full retrieval.
 
-Equivalent `Kernel` call:
+Equivalent `Slots` call:
 
-    Kernel Slots hold: Object, symbol.
+    Slots hold: Object, symbol.
 
 ### `Object slot (symbol) = value.`
 
@@ -53,9 +53,9 @@ Sets the value of the given slot on the calling object. If the symbol
 is a literal value, this is equivalent to simply using the
 colon-equals assignment.
 
-Equivalent `Kernel` call:
+Equivalent `Slots` call:
 
-    Kernel Slots put: Object, symbol, value.
+    Slots put: Object, symbol, value.
 
 ### `Object slot? (symbol).`
 
@@ -65,9 +65,9 @@ object. Specifically, this method attempts to access the slot using
 true. If the access attempt throws a `SlotError`, the return value is
 false. Any other exceptions or thrown objects are propogated.
 
-Equivalent `Kernel` call:
+Equivalent `Slots` call:
 
-    Kernel Slots has: Object, symbol.
+    Slots has: Object, symbol.
 
 ### `Object dup.`
 
