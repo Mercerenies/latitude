@@ -86,9 +86,9 @@ ID        {SNORMAL}{NORMAL}*
         else
             ptr += 1;
     }
+    yylval.cval.imag = strtod(ptr, NULL);
     ptr[0] = '\0';
     yylval.cval.real = strtod(yytext, NULL);
-    yylval.cval.imag = strtod(ptr + 1, NULL);
     return COMPLEX;
 }
 

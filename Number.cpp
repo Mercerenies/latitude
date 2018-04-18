@@ -372,7 +372,7 @@ namespace MagicNumber {
         void operator()(const Number::complex& first) {
             stream << fixed << setprecision(2);
             (*this)(real(first));
-            stream << "+";
+            stream << showpos;
             (*this)(imag(first));
             stream << "i";
         }
