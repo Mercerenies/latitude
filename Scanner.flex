@@ -78,7 +78,7 @@ ID        {SNORMAL}{NORMAL}*
     return NUMBER;
 }
 
-[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?[-+][0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?i {
+[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?[-+]([0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)?i {
     char* ptr = yytext + 1;
     while ((ptr[0] != '+') && (ptr[0] != '-') && (ptr[0] != '\0')) {
         if ((ptr[0] == 'e') || (ptr[0] == 'E'))
@@ -86,10 +86,23 @@ ID        {SNORMAL}{NORMAL}*
         else
             ptr += 1;
     }
-    yylval.cval.imag = strtod(ptr, NULL);
+    char* temp;
+    yylval.cval.imag = strtod(ptr, &temp);
+    if (temp == ptr) {
+        if (ptr[0] == '-')
+            yylval.cval.imag = -1;
+        else
+            yylval.cval.imag = 1;
+    }
     ptr[0] = '\0';
     yylval.cval.real = strtod(yytext, NULL);
     return COMPLEX;
+}
+
+[-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?i {
+  yylval.cval.real = 0;
+  yylval.cval.imag = strtod(yytext, NULL);
+  return COMPLEX;
 }
 
 [-+]?[0-9]+ {

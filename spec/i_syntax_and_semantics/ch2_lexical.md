@@ -180,11 +180,12 @@ following regular expressions.
     [-+]?[0-9]+(\.[0-9]+)([eE][-+]?[0-9]+)?
     [-+]?[0-9]+([eE][-+]?[0-9]+)
     [-+]?[0-9]+
+    [-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?i
     [-+]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?[-+][0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?i
 
 The first two forms construct a floating-point number; the third form
-constructs an integer; the fourth constructs a complex number. For
-more information on the different types of numbers, refer
+constructs an integer; the fourth and fifth construct complex
+numbers. For more information on the different types of numbers, refer
 to [Number](../ii_standard_library/number.md).
 
 Additionally, integer literals can be prefixed with `0x`, `0b`, or
