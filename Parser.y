@@ -306,7 +306,7 @@ postlitlist:
     listlit ARROW listlit { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
                         $$->args->car = makeExpr(); $$->args->car->lhs = $1; $$->args->car->rhs = $3;
                         $$->args->cdr = makeList(); } |
-    listlit ARROW listlit ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
+    listlit ARROW listlit ',' postlitlist { $$ = $5; List* temp = $$->args; $$->args = makeList();
                                       $$->args->cdr = temp; $$->args->car = makeExpr();
                                       $$->args->car->lhs = $1; $$->args->car->rhs = $3; }
 name:
