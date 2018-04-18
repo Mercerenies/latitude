@@ -27,12 +27,11 @@ case, as only slots that actually exist in the hierarchy are checked.
 ### `Parents above (object, symbol).`
 
 This method identifies the origin of the given slot on the argument
-object, as though through `Parents origin`. It then returns a method
+object, as though through `Parents origin`. It then returns a `Proc`
 which calls the value of the slot on the origin's parent. That is, it
 ignores the current value of the slot and attempts to access the
 inherited value. Effectively, this method emulates the `super`
-construct available in other languages. If the slot's value is a
-method, it is returned without calling.
+construct available in other languages.
 
 ### `Parents hierarchy (object).`
 

@@ -325,7 +325,7 @@ Parents above := {
   target := #'$1.
   orgn := self origin (#'target, #'$2).
   result := #'orgn parent slot #'$2.
-  { Kernel invokeOn (#'target, #'result) call. }.
+  proc { Kernel invokeOn (#'target, #'result) call. }.
 }.
 Parents hierarchy := {
   arr := Array clone.
