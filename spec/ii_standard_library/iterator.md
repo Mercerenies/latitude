@@ -61,7 +61,7 @@ read-only; if an iterator is read-only, this method should raise a
 
 ## Iterators
 
-### `ArgIterator`
+### `ArgIterator.`
 
 This iterator is returned by an `ArgList` and iterates over each
 argument available to the list. `ArgIterator` is a mutable iterator,
@@ -69,7 +69,7 @@ and values that are mutated using `element=` are updated in the
 current scope, even if the original value was defined in a higher
 scope.
 
-### `ArrayIterator`
+### `ArrayIterator.`
 
 This iterator is returned by an `Array` and iterates over each element
 of the array in order. `ArrayIterator` is a mutable iterator.
@@ -98,3 +98,9 @@ character or each byte, as determined by the semantics of the
 string. In addition to the standard iterator methods, `StringIterator`
 defines a `bytes?` method, which returns whether it is iterating over
 bytes (true) or over characters (false).
+
+### `DictIterator.`
+
+This iterator is returned by a `Dict` and iterates over key-value
+pairs stored as [`Cons`](cons.md) objects. `DictIterator` is an
+immutable iterator.

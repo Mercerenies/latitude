@@ -36,6 +36,7 @@ scope object.
      +-- Chain
      +-- Conditional
      +-- Cons
+     +-- Dict
      +-- Exception
      |    +-- SystemError
      |    |    +-- err ArgError
@@ -61,6 +62,7 @@ scope object.
      |    +-- ArgIterator
      |    +-- ArrayIterator
      |    +-- ChainIterator
+     |    +-- DictIterator
      |    +-- NilIterator
      |    +-- StringIterator
      +-- Kernel
@@ -97,6 +99,7 @@ scope object.
  * [Conditional](conditional.md)
  * [Cons](cons.md)
  * [Cont](cont.md)
+ * [Dict](dict.md)
  * [Exception and Exceptions](exception.md)
  * [FileHeader](fileheader.md)
  * [FilePath](filepath.md)
