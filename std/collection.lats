@@ -375,8 +375,14 @@ DictIterator dict := Nil.
 DictIterator end? := { self keys end?. }.
 DictIterator next := { self keys next. }.
 DictIterator element := {
-  key := self keys element.
-  cons (key, self dict get (key)).
+  localize.
+  key := this keys element.
+  cons (key, this dict get (key)) tap {
+    self cdr= := {
+      Parents above (self, 'cdr=) call.
+      this dict get (key) = #'$1.
+    }.
+  }.
 }.
 Dict iterator := {
   iter := DictIterator clone.
