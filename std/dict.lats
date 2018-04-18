@@ -1,5 +1,10 @@
 
-Dict toString := "Dict".
+Dict toString := {
+  content := self toArray map {
+    $1 car toString ++ " => " ++ $1 cdr toString.
+  } joinText ", ".
+  "[" ++ content ++ "]".
+}.
 Dict &impl := Object clone.
 Dict &impl parent := Dict &impl.
 Dict &impl missing := #'(Object missing).
