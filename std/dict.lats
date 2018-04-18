@@ -3,8 +3,8 @@ Dict toString := "Dict".
 Dict &impl := Object clone.
 Dict &impl parent := Dict &impl.
 Dict &impl missing := #'(Object missing).
-Dict impl0 := Nil. ; missing
-Dict impl1 := Nil. ; parent
+;; Dict impl0 := Nil. ; missing
+;; Dict impl1 := Nil. ; parent
 
 Dict clone := {
   Kernel cloneObject (self) tap {
@@ -19,10 +19,10 @@ Dict get := {
   ;; Messy hack >.<
   cond {
     when (key == 'missing) do {
-      this impl0 $1.
+      this impl0.
     }.
     when (key == 'parent) do {
-      this impl1 $1.
+      this impl1.
     }.
     else {
       Slots hold (this &impl, key).
@@ -36,10 +36,10 @@ Dict get= := {
   ;; Messy hack >.<
   cond {
     when (key == 'missing) do {
-      this impl0 $1 := #'value.
+      this impl0 := #'value.
     }.
     when (key == 'parent) do {
-      this impl1 $1 := #'value.
+      this impl1 := #'value.
     }.
     else {
       Slots put (this &impl, key, #'value).
