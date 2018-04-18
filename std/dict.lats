@@ -63,3 +63,49 @@ Dict has? := {
     err SlotError,
     { False. }.
 }.
+
+DictIterator ::= Object clone.
+DictIterator keys := Nil iterator.
+DictIterator dict := Nil.
+DictIterator end? := { self keys end?. }.
+DictIterator next := { self keys next. }.
+DictIterator element := {
+  key := self keys element.
+  cons (key, self dict get (key)).
+}.
+Dict iterator := {
+  iter := DictIterator clone.
+  iter dict := self.
+  iter keys := Kernel keys (self &impl).
+  iter keys upperBound := iter keys upperBound - 2. ; My insides are screaming at this hack
+  self has? 'missing ifTrue {
+    iter keys pushBack 'missing.
+  }.
+  self has? 'parent ifTrue {
+    iter keys pushBack 'parent.
+  }.
+  iter keys := iter keys iterator.
+  iter.
+}.
+Dict keys := {
+  self iterator keys.
+}.
+Dict values := {
+  localize.
+  this iterator keys map {
+    this get.
+  }.
+}.
+Collection inject: Dict.
+
+;; Immutable iterator; needs map override
+Dict map := {
+  func0 := #'$1.
+  func := { #'func0 call. }.
+  coll := Dict clone.
+  self visit {
+    res := func ($1).
+    coll get (res car) = res cdr.
+  }.
+  coll.
+}.
