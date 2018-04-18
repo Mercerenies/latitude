@@ -159,3 +159,27 @@ is equivalent to
 
 Notice that the `def` symbol does *not* get double quoted but that the
 bare `abc` identifier becomes quoted.
+
+## Dictionaries
+
+Dictionaries are similar to lists except that keys are arbitrary
+symbols, not numerical indices. Dictionaries also begin with an
+opening bracket (`[`) and end with a closing bracket (`]`). In the
+middle, expressions of the form `<arg> => <arg>` appear, separated by
+commas. When a dictionary is evaluated, a `Dict` object is constructed
+with the given key-value pairs. If any of the keys evaluates to
+something that is not a symbol, a `TypeError` is raised in
+construction.
+
+Like with lists, there is a corresponding literal dictionary syntax,
+beginning with a single-quote followed by an opening bracket (`'[`)
+and ending with a closing bracket (`]`). Inside the brackets, the
+syntax is similar to an ordinary dictionary, except that the `<arg>`
+expressions can only be expressions which are allowed inside a literal
+list. For example,
+
+    '[ abc => 1, 'def => ghi ].
+
+is equivalent to
+
+    [ 'abc => 1, 'def => 'ghi ].
