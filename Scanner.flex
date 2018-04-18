@@ -320,7 +320,6 @@ ID        {SNORMAL}{NORMAL}*
 , { return ','; }
 \[ { return '['; }
 \] { return ']'; }
-@\( { return ATPAREN; }
 
 \;[^\n]* ; // Line comments
 \{\* { BEGIN(INNER_COMMENT); comments++; }

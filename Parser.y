@@ -120,7 +120,6 @@
 %type <argval> literallist
 %type <argval> literallist1
 %type <exprval> listlit
-%type <dval> doublish
 %type <sval> name
 
 %token <sval> STDNAME
@@ -136,7 +135,6 @@
 %token LISTLIT
 %token CEQUALS
 %token DCEQUALS
-%token ATPAREN
 %token BIND
 %token ARROW
 %token ATBRACKET
@@ -269,8 +267,6 @@ literalish:
 literal:
     '{' linelist '}' { $$ = makeExpr(); $$->isMethod = true; $$->args = $2;
                        $$->argsProvided = true; } |
-    ATPAREN doublish ',' doublish ')' { $$ = makeExpr(); $$->number = $2;
-                                        $$->number1 = $4; $$->isComplex = true;  } |
     COMPLEX { $$ = makeExpr(); $$->number = $1.real; $$->number1 = $1.imag; $$->isComplex = true; } |
     NUMBER { $$ = makeExpr(); $$->isNumber = true; $$->number = $1; } |
     INTEGER { $$ = makeExpr(); $$->isInt = true; $$->integer = $1; } |
@@ -310,11 +306,6 @@ listlit:
                           $$->argsProvided = true; } |
     ATBRACKET postarglist ']' { $$ = $2; } |
     name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; $$->namelen = strlen($1); }
-    ;
-doublish:
-    NUMBER |
-    INTEGER { $$ = (double)$1; } |
-    BIGINT { $$ = strtod($1, NULL); }
     ;
 name:
     STDNAME |

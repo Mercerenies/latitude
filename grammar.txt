@@ -23,8 +23,6 @@
               <arg> <arglist1>
 <arglist1> ::= <lambda> |
                "," <arg> <arglist1>
-<postarglist> ::= <name> "=>" <arg> |
-                  <name> "=>" <arg> "," <postarglist>
 <arg> ::= <chain> <stdname> |
           <chain> <opname> <verysimplechainl> |
           <simplechain> <stdname> <shortarglist> |
@@ -59,10 +57,8 @@
               "#" "[" <text> "]" |
               "#" "{" <text> "}" |
               [ "-" | "+" ] "0" <letter> { <alphanum> } |
-              "@" "(" <number> "," <number> ")" |
               "#'" <text> |
               "#'" <literalish> |
-              "@[" <postarglist> "]" 
 <linelist> ::= <line> <linelist> |
                <lambda>
 <literallist> ::= <listlit> <literallist1> |
@@ -76,5 +72,4 @@
               "'" "(" <text> ")" |
               "[" <literallist> "]" |
               "#" "\"" <text> "\"" "#" |
-              "@[" <postarglist> "]" | 
               <name>

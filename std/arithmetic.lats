@@ -137,7 +137,7 @@ Number polar := { (Number ii * $2) exp * $1. }.
 ;; Important constants
 Number ee := 1 exp.
 Number pi := -1 acos.
-Number ii := @(0, 1).
+Number ii := 0+1i.
 Number nan := { meta sys numNan#: Number clone. } resolve: True, Nil.
 Number inf := { meta sys numInfinity#: Number clone. } resolve: True, Nil.
 Number ninf := { meta sys numNegInfinity#: Number clone. } resolve: True, Nil.
