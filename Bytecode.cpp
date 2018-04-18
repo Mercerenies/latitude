@@ -1399,6 +1399,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 }
             } else {
                 throwError(state, reader, "TypeError", "Symbol expected");
+                return;
             }
         }
         state.ret = dict;
