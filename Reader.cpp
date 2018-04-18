@@ -106,7 +106,7 @@ unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
         auto list = expr->args;
         StmtDict::KVList res;
         while ((list->car != nullptr) && (list->cdr != nullptr)) {
-            res.emplace_back(Symbols::get()[list->car->name], std::move(translateStmt(list->car->rhs, held)));
+            res.emplace_back(std::move(translateStmt(list->car->lhs, held)), std::move(translateStmt(list->car->rhs, held)));
             list = list->cdr;
         }
         return unique_ptr<Stmt>(new StmtDict(line, res));
@@ -943,11 +943,9 @@ void StmtDict::translate(TranslationUnit& unit, InstrSeq& seq) {
 
     // Evaluate each of the arguments, in order
     for (auto& arg : args) {
+        arg.first->translate(unit, seq);
+        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
         arg.second->translate(unit, seq);
-        (makeAssemblerLine(Instr::SYM, Symbols::get()[arg.first])).appendOnto(seq);
-        (makeAssemblerLine(Instr::YLDC, Lit::SYMBOL, Reg::PTR)).appendOnto(seq);
-        (makeAssemblerLine(Instr::LOAD, Reg::SYM)).appendOnto(seq);
-        (makeAssemblerLine(Instr::PUSH, Reg::PTR, Reg::ARG)).appendOnto(seq);
         (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
     }
 

@@ -66,7 +66,7 @@
         bool equals2; // ::= (`a b ::= c.` desugars to `a b := c. a b :: 'b.`)
         bool isHashQuote; // Check lhs
         bool argsProvided;
-        bool isDict; // Check args (in expressions, check name and rhs)
+        bool isDict; // Check args (in expressions, check lhs and rhs)
     };
 
     struct List {
@@ -199,18 +199,12 @@ arglist1:
     ',' arg arglist1 { $$ = makeList(); $$->car = $2; $$->cdr = $3; }
     ;
 postarglist:
-    STDNAME ARROW arg { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
-                        $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
+    arg ARROW arg { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
+                        $$->args->car = makeExpr(); $$->args->car->lhs = $1; $$->args->car->rhs = $3;
                         $$->args->cdr = makeList(); } |
-    OPNAME ARROW arg { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
-                       $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
-                       $$->args->cdr = makeList(); } |
-    OPNAME ARROW arg ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
+    arg ARROW arg ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
                                       $$->args->cdr = temp; $$->args->car = makeExpr();
-                                      $$->args->car->name = $1; $$->args->car->rhs = $3; } |
-    STDNAME ARROW arg ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
-                                        $$->args->cdr = temp; $$->args->car = makeExpr();
-                                        $$->args->car->name = $1; $$->args->car->rhs = $3; }
+                                      $$->args->car->lhs = $1; $$->args->car->rhs = $3; }
 arg:
     simplechain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     chain OPNAME verysimplechainl { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
@@ -309,18 +303,12 @@ listlit:
     name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; $$->namelen = strlen($1); }
     ;
 postlitlist:
-    STDNAME ARROW listlit { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
-                            $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
-                            $$->args->cdr = makeList(); } |
-    OPNAME ARROW listlit { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
-                           $$->args->car = makeExpr(); $$->args->car->name = $1; $$->args->car->rhs = $3;
-                           $$->args->cdr = makeList(); } |
-    OPNAME ARROW listlit ',' postlitlist { $$ = $5; List* temp = $$->args; $$->args = makeList();
-                                           $$->args->cdr = temp; $$->args->car = makeExpr();
-                                           $$->args->car->name = $1; $$->args->car->rhs = $3; } |
-    STDNAME ARROW listlit ',' postlitlist { $$ = $5; List* temp = $$->args; $$->args = makeList();
-                                            $$->args->cdr = temp; $$->args->car = makeExpr();
-                                            $$->args->car->name = $1; $$->args->car->rhs = $3; }
+    listlit ARROW listlit { $$ = makeExpr(); $$->isDict = true; $$->args = makeList();
+                        $$->args->car = makeExpr(); $$->args->car->lhs = $1; $$->args->car->rhs = $3;
+                        $$->args->cdr = makeList(); } |
+    listlit ARROW listlit ',' postarglist { $$ = $5; List* temp = $$->args; $$->args = makeList();
+                                      $$->args->cdr = temp; $$->args->car = makeExpr();
+                                      $$->args->car->lhs = $1; $$->args->car->rhs = $3; }
 name:
     STDNAME |
     OPNAME

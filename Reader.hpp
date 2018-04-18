@@ -264,7 +264,7 @@ public:
  */
 class StmtDict : public Stmt {
 public:
-    typedef std::list< std::pair< Symbolic, std::unique_ptr<Stmt> > > KVList;
+    typedef std::list< std::pair< std::unique_ptr<Stmt>, std::unique_ptr<Stmt> > > KVList;
 private:
     KVList args;
 public:
