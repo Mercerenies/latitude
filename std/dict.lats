@@ -6,11 +6,18 @@ Dict &impl missing := #'(Object missing).
 ;; Dict impl0 := Nil. ; missing
 ;; Dict impl1 := Nil. ; parent
 
+Dict empty := {
+  self clone.
+}.
 Dict clone := {
   Kernel cloneObject (self) tap {
     self &impl := Kernel cloneObject #'(self &impl).
-    self impl0 := Kernel cloneObject #'(self impl0).
-    self impl1 := Kernel cloneObject #'(self impl1).
+    self has? 'impl0 ifTrue {
+      self impl0 := Kernel cloneObject #'(self impl0).
+    }.
+    self has? 'impl1 ifTrue {
+      self impl1 := Kernel cloneObject #'(self impl1).
+    }.
   }.
 }.
 Dict get := {
