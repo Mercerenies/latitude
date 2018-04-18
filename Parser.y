@@ -138,7 +138,6 @@
 %token DCEQUALS
 %token BIND
 %token ARROW
-%token ATBRACKET
 
 %%
 
@@ -277,7 +276,7 @@ literal:
     HASHQUOTE name { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = makeExpr();
                      $$->lhs->lhs = NULL; $$->lhs->name = $2; } |
     HASHQUOTE literalish { $$ = makeExpr(); $$->isHashQuote = true; $$->lhs = $2; } |
-    ATBRACKET postarglist ']' { $$ = $2; }
+    '[' postarglist ']' { $$ = $2; }
     ;
 linelist:
     line linelist { $$ = makeList(); $$->car = $1; $$->cdr = $2; } |
@@ -299,7 +298,7 @@ listlit:
     BIGINT { $$ = makeExpr(); $$->isBigInt = true; $$->name = $1; } |
     '[' literallist ']' { $$ = makeExpr(); $$->isList = true; $$->args = $2;
                           $$->argsProvided = true; } |
-    ATBRACKET postlitlist ']' { $$ = $2; } |
+    '[' postlitlist ']' { $$ = $2; } |
     name { $$ = makeExpr(); $$->isSymbol = true; $$->name = $1; $$->namelen = strlen($1); }
     ;
 postlitlist:

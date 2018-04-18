@@ -319,7 +319,6 @@ ID        {SNORMAL}{NORMAL}*
 }
 
 #\' { return HASHQUOTE; }
-@\[ { return ATBRACKET; }
 
 \'\[ { return LISTLIT; }
 
