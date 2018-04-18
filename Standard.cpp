@@ -1253,7 +1253,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // objectKeys#: obj.
      assert(reader.cpp.size() == CPP_OBJECT_KEYS);
      reader.cpp.push_back([&reader](IntState& state0) {
-         set<Symbolic> allKeys = keys(state0.slf);
+         set<Symbolic> allKeys = state0.slf->directKeys();
          state0.stack = pushNode(state0.stack, state0.cont);
          state0.cont = MethodSeek(Method(reader.gtu, { GTU_KEY_TERM }));
          for (auto& key : allKeys) {

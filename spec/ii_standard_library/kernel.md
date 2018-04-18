@@ -98,6 +98,14 @@ Returns whether the argument is an evaluating object or not. That is,
 returns true if and only if the object has a primitive field
 containing a method.
 
+### `Kernel directKeys (object).`
+
+Returns a list, as though allocated using the built-in list syntax, of
+all of the slot names available *directly* on the object. This
+excludes any slots belonging to parent objects and does not take into
+account `missing` results. As such, it returns exactly the keys which
+can be deleted from `object` using `Slots delete`.
+
 ### `Kernel keys (object).`
 
 Returns a list, as though allocated using the built-in list syntax, of

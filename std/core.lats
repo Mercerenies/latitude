@@ -229,10 +229,19 @@ Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
 Kernel cwd := { meta sys cwdPath#. }.
 Kernel evaluating? := { meta sys primIsMethod#: #'$1. }.
-Kernel keys := {
+Kernel directKeys := {
   arr := [].
   meta sys objectKeys#: #'$1, {
     arr pushBack ($1).
+  }.
+  arr.
+}.
+Kernel keys := {
+  arr := [].
+  Parents hierarchy #'$1 visit {
+    meta sys objectKeys#: #'$1, {
+      arr pushBack ($1).
+    }.
   }.
   arr.
 }.
