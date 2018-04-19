@@ -1,6 +1,16 @@
 ;;* MODULE sequence
 ;;* PACKAGE base
 
+sequence := $whereAmI.
+
+SequenceIterator ::= Iterator clone.
+SequenceIterator inside := Nil.
+SequenceIterator next := { self inside := self inside cdr. }.
+SequenceIterator end? := { self inside nil?. }.
+SequenceIterator element := { self inside car. }.
+SequenceIterator element= := { self inside car := $1. }.
+SequenceIterator.
+
 ;; Forward linked lists
 Sequence := Object clone.
 Sequence toString := { "#<Sequence " ++ (self list pretty) ++ ">". }.
@@ -19,14 +29,9 @@ Sequence fromArray := {
   }.
 }.
 Sequence iterator := {
-  SequenceIterator ::= Object clone.
-  SequenceIterator iterator := { self. }.
-  SequenceIterator inside := self list.
-  SequenceIterator next := { self inside := self inside cdr. }.
-  SequenceIterator end? := { self inside nil?. }.
-  SequenceIterator element := { self inside car. }.
-  SequenceIterator element= := { self inside car := $1. }.
-  SequenceIterator.
+  iter := SequenceIterator clone.
+  iter inside := self list.
+  iter.
 }.
 Sequence head := {
   if (self list nil?)
@@ -54,6 +59,7 @@ Sequence lazy := {
   seq list := lazyCons: cons0.
   seq.
 }.
+sequence Sequence := Sequence.
 
 Collection inject: Sequence.
 
@@ -118,6 +124,7 @@ LazySequence foldr := {
   }.
   recurse: self list.
 }.
+sequence LazySequence := LazySequence.
 
 Proc iterate := {
   procd := proc { (parent slot 'self) call. }.
