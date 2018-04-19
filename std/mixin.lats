@@ -2,24 +2,29 @@
 ;; Mixins
 global Mixin ::= Object clone.
 Mixin interface := '[].
+Mixin injector := Nil.
 Mixin inject := {
+  this := self.
   target := $1.
-  injector := target parent clone.
-  injector mixin := self.
-  injector parent := target parent.
-  target parent := injector.
-  injector toString := { self mixin toString. }.
-  iter := self interface iterator.
-  while { iter end? not. }
-    do {
-      curr := iter element.
-      injector slot (curr) =
-        {
+  { Kernel eq (this injector, Nil). } ifTrue {
+    injector := Object clone.
+    injector mixin := this.
+    injector toString := { self mixin toString. }.
+    iter := this interface iterator.
+    while { iter end? not. }
+      do {
+        curr := iter element.
+        injector slot (curr) = {
           procd := self invoke: (self mixin slot: curr).
           procd call.
         }.
-      iter next.
-    }.
+        iter next.
+      }.
+    this injector := injector.
+  }.
+  injector := this injector dup.
+  injector parent := target parent.
+  target parent := injector.
   injector.
 }.
 Mixin member? := {
