@@ -26,7 +26,7 @@ Equivalent `Kernel` call:
 
     Kernel cloneObject: Object.
 
-### `Object is (target).`
+### `Object is? (target).`
 
 Returns whether the calling object contains the target object in its
 inheritance hierarchy. Note that this relation forms a preorder, not a

@@ -8,7 +8,7 @@ Cons pretty := {
       when (curr cdr nil?) do {
         curr car toString.
       }.
-      when (curr cdr is (Cons)) do {
+      when (curr cdr is? (Cons)) do {
         curr car toString ++ " " ++ chain (curr cdr).
       }.
       else {
@@ -146,7 +146,7 @@ Array concat := {
   arr := Array clone.
   self visit {
     arg := #'$1.
-    if (#'arg is (Array)) then {
+    if (#'arg is? (Array)) then {
       #'arg visit { arr pushBack: #'$1. }.
     } else {
       arr pushBack: #'arg.
@@ -161,7 +161,7 @@ Array == := {
   localize.
   takes '[arr].
   {
-    arr is: Array.
+    arr is?: Array.
   } and {
     this size == arr size.
   } and {
@@ -173,7 +173,7 @@ Array < := {
   takes '[arr].
   callCC {
     escapable.
-    arr is (Array) ifFalse {
+    arr is? (Array) ifFalse {
       err TypeError clone tap { self message := "Array expected". } throw.
     }.
     this zip (arr) visit {

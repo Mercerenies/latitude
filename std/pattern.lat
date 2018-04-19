@@ -6,7 +6,7 @@ pattern := $whereAmI.
 ;; Pattern matching functionality
 Wildcard := Object clone.
 Wildcard symbol := Nil.
-Wildcard named? := { self symbol is: Symbol. }.
+Wildcard named? := { self symbol is?: Symbol. }.
 Wildcard toString := {
   if (self named?)
     then { "#<Wildcard " ++ (parent self symbol) ++ ">". }
@@ -85,7 +85,7 @@ Array =~ := {
     (Collection member? (rhs)) ifFalse {
       return: NoMatch clone.
     }.
-    isEllipsis := this detect { $1 is (Ellipsis). } toBool.
+    isEllipsis := this detect { $1 is? (Ellipsis). } toBool.
     if (isEllipsis)
       then { (this size - 1) <= (rhs size). }
       else { (this size) == (rhs size). }
@@ -100,7 +100,7 @@ Array =~ := {
         if (checking)
           then { increment. }
           else {
-            (elem is: Ellipsis) ifTrue { check. }.
+            (elem is?: Ellipsis) ifTrue { check. }.
           }.
       }.
       (rhs size) - (after).
@@ -128,7 +128,7 @@ Array =~ := {
     }.
     this visit {
       curr := $1.
-      if (curr is: Ellipsis)
+      if (curr is?: Ellipsis)
         then {
           accum := Array clone.
           while { (currIndex) < (afterIndex). }
@@ -157,7 +157,7 @@ Cons =~ := {
   takes '[rhs].
   callCC {
     escapable.
-    (rhs is: Cons) ifFalse: { return: NoMatch clone. }.
+    (rhs is?: Cons) ifFalse: { return: NoMatch clone. }.
     carPart := (this car) =~ (rhs car).
     cdrPart := (this cdr) =~ (rhs cdr).
     if ((carPart) and (cdrPart))
@@ -189,7 +189,7 @@ case := {
                 self do := {
                   result := #'$1.
                   finished call:
-                    if (#'result is (Method))
+                    if (#'result is? (Method))
                       then { match call (#'result). }
                       else #'result.
                 }.

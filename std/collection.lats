@@ -308,7 +308,7 @@ ChainIterator element := { self iter element. }.
 ChainIterator element= := { self iter element=. }.
 ChainIterator next := {
   localize.
-  hasSecondHalf := this secondHalf is (this nilThing) not.
+  hasSecondHalf := this secondHalf is? (this nilThing) not.
   this iter next.
   (this iter end?) and (hasSecondHalf) ifTrue {
     this iter := this secondHalf iterator.

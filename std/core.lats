@@ -1,7 +1,7 @@
 
 ;; Cloning and metaprogramming basics
 Object clone := { Kernel cloneObject: #'self. }.
-Object is := { Parents isInstance? (#'self, #'$1). }.
+Object is? := { Parents isInstance? (#'self, #'$1). }.
 Object slot := { Slots hold (#'self, #'$1). }.
 Object slot= := { Slots put (#'self, #'$1, #'$2). }.
 Object slot? := { Slots has? (#'self, #'$1). }.
@@ -52,7 +52,7 @@ Method resolve := {
 }.
 Method catch := {
   target := $1.
-  #'self resolve: { $1 is (target). }, #'$2.
+  #'self resolve: { $1 is? (target). }, #'$2.
 }.
 Method catchAll := { #'self catch: Exception, #'$1. }.
 Method default := { #'self catch: Exception, #'$1. }.

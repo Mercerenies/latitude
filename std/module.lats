@@ -20,7 +20,7 @@ Module importAll := {
   name := this header moduleName intern.
   target missing := {
     takes '[sym].
-    if { this is (target) not. } and { this slot? (sym). } then {
+    if { this is? (target) not. } and { this slot? (sym). } then {
       this slot (sym).
     } else {
       target invoke (target parent slot 'missing) call: sym.
@@ -65,7 +65,7 @@ ModuleLoader loadPath := do {
 ModuleLoader resolveImport := {
   takes '[imp].
   localize.
-  if (imp is (String)) then {
+  if (imp is? (String)) then {
     imp.
   } else {
     callCC {
