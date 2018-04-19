@@ -68,6 +68,4 @@ formatMethod := {
 }.
 format format := #'formatMethod.
 
-meta lang slot '(fmt ) = { format. }.
-
 format.
