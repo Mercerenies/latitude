@@ -12,6 +12,7 @@ Module import := {
       this slot (name) me.
     }.
   }.
+  this.
 }.
 Module importAll := {
   localize.

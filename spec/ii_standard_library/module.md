@@ -29,7 +29,7 @@ sigils. These can be imported into the current scope with
 
 For each name in the iterable `names`, (shallow-) copies the value at
 that slot in `self` to the slot with the same name in the caller's
-lexical scope.
+lexical scope. Returns `self`.
 
 [TODO: Should this also work with dynamic scope?]
 
@@ -41,7 +41,8 @@ ever looked up in the calling lexical scope and cannot be found, then
 the injected lookup object's `missing` method will look up that same
 name in the `self` module's scope. If the name is found there, then
 that value is returned. If the name is not found, the injected
-object's `missing` will delegate to the parent's `missing`.
+object's `missing` will delegate to the parent's `missing`. Returns
+`self`.
 
 ### `Module importAllSigils.`
 
