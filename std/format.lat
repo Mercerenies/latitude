@@ -68,4 +68,6 @@ formatMethod := {
 }.
 format format := #'formatMethod.
 
+format sigils fmt := { format format. }.
+
 format.
