@@ -37,3 +37,9 @@ construct available in other languages.
 
 Returns an array containing, in order, all of the objects in the
 argument's inheritance hierarchy.
+
+### `Parents isInstance? (object, target).`
+
+Returns whether `object` is a subobject of `target`. Specifically,
+returns whether `object` contains `target` in its inheritance
+hierarchy.

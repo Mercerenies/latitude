@@ -34,7 +34,9 @@ partial order as in many languages. That is, it is possible for `a`
 and `b` to each fall within the other's inheritance hierarchy without
 `a` and `b` being the same object.
 
-[TODO: Equivalent Kernel call?]
+Equivalent `Parents` call:
+
+    Parents isInstance? (Object, target).
 
 ### `Object slot (symbol).`
 
