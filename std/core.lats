@@ -1,7 +1,7 @@
 
 ;; Cloning and metaprogramming basics
 Object clone := { Kernel cloneObject: #'self. }.
-Object is := { meta sys instanceOf#: #'self, $1. }.
+Object is := { Parents isInstance? (#'self, #'$1). }.
 Object slot := { Slots hold (#'self, #'$1). }.
 Object slot= := { Slots put (#'self, #'$1, #'$2). }.
 Object slot? := { Slots has? (#'self, #'$1). }.
@@ -352,6 +352,9 @@ Parents hierarchy := {
     parent curr := frontier popBack.
   }.
   arr.
+}.
+Parents isInstance? := {
+  meta sys instanceOf#: #'$1, #'$2.
 }.
 
 ;; FilePath functions
