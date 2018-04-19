@@ -18,14 +18,7 @@ Sequence list := Nil.
 Sequence fromArray := {
   arr := $1.
   self clone tap {
-    self list := arr foldr:
-      Nil,
-      {
-        cc := Cons clone.
-        cc car := $1.
-        cc cdr := $2.
-        cc.
-      }.
+    self list := arr foldr (Nil, { cons (#'$1, $2). }).
   }.
 }.
 Sequence iterator := {

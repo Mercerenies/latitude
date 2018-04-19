@@ -77,7 +77,7 @@ Collection foldr := {
       } else {
         elem := iter element.
         iter next.
-        func call: elem, rec.
+        func call: #'elem, rec.
       }.
     }.
   }.
