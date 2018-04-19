@@ -111,6 +111,6 @@ random MersenneTwister := MersenneTwister.
 global $random := Object clone :: '#<ConstantRandom> tap { self next := { 0. }. }.
 
 nextInt := { $random next. }.
-random nextInt := nextInt.
+random nextInt := #'nextInt.
 
 random.
