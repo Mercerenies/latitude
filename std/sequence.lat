@@ -9,7 +9,7 @@ SequenceIterator next := { self inside := self inside cdr. }.
 SequenceIterator end? := { self inside nil?. }.
 SequenceIterator element := { self inside car. }.
 SequenceIterator element= := { self inside car := $1. }.
-SequenceIterator.
+sequence SequenceIterator := SequenceIterator.
 
 ;; Forward linked lists
 Sequence := Object clone.
@@ -47,7 +47,7 @@ Sequence lazy := {
                   then { Nil. }
                   else { cc := Cons clone.
                          cc car := cons1 car.
-                         cc cdr := { cache call. }.
+                         cc cdr := { cache call. }. ; ///// Rework the lazy sequences so that this is implemented in terms of Proc iterate and so that cons cells are mutable *wherever possible*
                          cc. }. }.
   seq list := lazyCons: cons0.
   seq.
