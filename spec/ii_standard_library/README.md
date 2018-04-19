@@ -132,3 +132,4 @@ scope.
  * [format](format.md)
  * [random](random.md)
  * [repl](repl.md)
+ * [sequence](sequence.md)
