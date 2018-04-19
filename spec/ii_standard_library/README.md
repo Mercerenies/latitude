@@ -129,3 +129,4 @@ are several standard modules which can be imported explicitly into
 scope.
 
  * [enum](enum.md)
+ * [format](format.md)

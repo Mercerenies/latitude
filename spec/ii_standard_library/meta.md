@@ -48,7 +48,7 @@ objects, which might not have a `missing` slot. The built-in meta
 object has a `missed` method which throws a `SystemError` object with
 a generic message.
 
-## Inner Object Methods
+## Sigils
 
 ### `~l (method).`
 
