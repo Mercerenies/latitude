@@ -121,3 +121,11 @@ scope object.
  * [Symbol](symbol.md)
  * [global](global.md)
  * [meta](meta.md)
+
+## Standard Modules
+
+In addition to the core library, which is imported by default, there
+are several standard modules which can be imported explicitly into
+scope.
+
+ * [enum](enum.md)
