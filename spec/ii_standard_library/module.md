@@ -18,6 +18,13 @@ provided a module object through the `$whereAmI` variable.
 Returns the module's header, a [`FileHeader`](fileheader.md) object
 that details certain information about the module being loaded.
 
+### `Module sigils.`
+
+Returns an object whose keys are sigils that the module exports and
+whose values are the corresponding implementations of those
+sigils. These can be imported into the current scope with
+`importAllSigils`.
+
 ### `Module import (names).`
 
 For each name in the iterable `names`, (shallow-) copies the value at
@@ -35,3 +42,8 @@ the injected lookup object's `missing` method will look up that same
 name in the `self` module's scope. If the name is found there, then
 that value is returned. If the name is not found, the injected
 object's `missing` will delegate to the parent's `missing`.
+
+### `Module importAllSigils.`
+
+Imports all of the sigils in `sigils` into the current lexical scope's
+meta object. Returns `self`.

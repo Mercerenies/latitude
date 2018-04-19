@@ -2,6 +2,7 @@
 ;; Modules
 Module ::= global clone.
 Module header := Nil.
+Module sigils := Object clone.
 Module import := {
   localize.
   target := lexical caller.
@@ -32,6 +33,17 @@ Module importAll := {
     ; with an explicit import of the method name, the method will take
     ; precedence over the module in this case.
     original slot (name) = this slot (name).
+  }.
+  this.
+}.
+Module importAllSigils := {
+  localize.
+  target := lexical caller meta sigil.
+  Kernel directKeys (this sigils) visit {
+    curr := $1.
+    (curr == 'parent) ifFalse {
+      target slot (curr) = this sigils slot (curr).
+    }.
   }.
   this.
 }.
