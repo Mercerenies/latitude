@@ -3,6 +3,8 @@
 
 pattern := $whereAmI.
 
+;; TODO 'and' and 'or' patterns
+
 ;; Pattern matching functionality
 Wildcard := Object clone.
 Wildcard symbol := Nil.
