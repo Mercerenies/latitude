@@ -422,6 +422,9 @@ Object assign= := {
   sym := ($1 asText ++ "=") intern.
   #'target slot (sym) = { #'target slot (name) = rhs. }.
 }.
+Object assignable := {
+  #'self assign ($1) = { #'$1. }.
+}.
 
 ;; Method cloning
 Method clone := {

@@ -193,9 +193,9 @@ String radix := {
   }.
   num := 0.
   iter := this.
-  assign 'iter = { $1. }.
+  assignable 'iter.
   sign := 1.
-  assign 'sign = { $1. }.
+  assignable 'sign.
   cond {
     when (this substring (0, 1) == "+") do {
       sign = 1.

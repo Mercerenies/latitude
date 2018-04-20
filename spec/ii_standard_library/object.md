@@ -266,6 +266,11 @@ Without the `assign=` call, it would be necessary to use `parent var
 := var + 1` to increment the variable, which can become a nuisance
 when methods are nested several scopes deep.
 
+### `Object assignable (symbol).`
+
+Constructs an assignment operator for `symbol` on `self`. Equivalent
+to `self assign ($1) = { $1. }`, modulo evaluation-correctness.
+
 ### `Object missing (symbol).`
 
 The default behavior of the `missing` method for traditional objects
