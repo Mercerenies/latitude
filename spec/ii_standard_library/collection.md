@@ -28,7 +28,7 @@ object can be passed as a function, even an evaluating object.
     Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all,
                               any, notAll, notAny, detect, countIf, count, find, containsIf,
                               contains, zip, zip!, take, drop, maximum, minimum, <>, sum,
-                              product, append].
+                              product, append, empty?].
 
 ## Methods
 

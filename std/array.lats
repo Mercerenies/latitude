@@ -142,7 +142,7 @@ Array joinText := {
   }.
   str.
 }.
-Array concat := {
+Array flatten := {
   arr := Array clone.
   self visit {
     arg := #'$1.
