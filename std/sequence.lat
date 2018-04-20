@@ -38,20 +38,6 @@ Sequence tail := {
     else { seq list := parent self list cdr. }.
   seq.
 }.
-Sequence lazy := {
-  cons0 := self list.
-  seq := LazySequence clone.
-  lazyCons := { cons1 := $1.
-                cache := memo { lazyCons: cons1 cdr. }.
-                if ($1 nil?)
-                  then { Nil. }
-                  else { cc := Cons clone.
-                         cc car := cons1 car.
-                         cc cdr := { cache call. }. ; ///// Rework the lazy sequences so that this is implemented in terms of Proc iterate and so that cons cells are mutable *wherever possible*
-                         cc. }. }.
-  seq list := lazyCons: cons0.
-  seq.
-}.
 sequence Sequence := Sequence.
 
 Collection inject: Sequence.
