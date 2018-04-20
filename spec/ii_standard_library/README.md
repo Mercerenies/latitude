@@ -128,6 +128,7 @@ In addition to the core library, which is imported by default, there
 are several standard modules which can be imported explicitly into
 scope.
 
+ * [cell](cell.md)
  * [enum](enum.md)
  * [format](format.md)
  * [os](os.md)
