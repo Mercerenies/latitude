@@ -45,11 +45,6 @@ first element of the current sequence. The two sequences share cons
 cells, so changes to one will be reflected in the other. If the
 sequence is empty, another empty sequence is returned.
 
-#### `Sequence lazy.`
-
-Coerces the sequence object into a `LazySequence`, returning a new
-`LazySequence` object over the same data.
-
 ### Static Methods
 
 #### `Sequence fromArray (arr).`
@@ -63,7 +58,7 @@ the array.
 
 A lazy sequence is a specialized type of sequence which does not
 compute its head or tail until explicitly required to do so. These
-sequences are usually constructed using `Proc iterate`.
+sequences are usually constructed using `make` or `iterate`.
 
 ### Methods
 
@@ -73,7 +68,39 @@ Forces the first element (if it exists) of the sequence and prints a
 representation of the string, which includes the stringified first
 element. The tail is not forced.
 
-[TODO: The rest of this]
+#### `LazySequence list.`
+
+Returns the cons cell (or `Nil`) representing the start of the
+sequence. The cons cell objects are specialized so that their `car`
+and `cdr` will not force until necessary. Additionally, the `car` of
+such cells is mutable but the `cdr` is immutable.
+
+#### `LazySequence map! (block).`
+
+Mutates the sequence by mapping the block over each element. This
+method is overridden from `Collection map!` to be lazy so that
+infinite sequences will behave correctly when this method is called.
+
+### Static Methods
+
+#### `LazySequence make (block).`
+
+Given a procedure, this method produces an infinite lazy sequence.
+Each element of the sequence is determined by calling (lazily,
+on-demand) the procedure `block` with no arguments. The procedure is
+guaranteed to be called in order, so the first call should return the
+first element, the second should return the second, and so on. As
+such, for any nontrivial uses of this method, `block` should be
+stateful.
+
+#### `LazySequence iterate (initial, procd).`
+
+Produces an infinite lazy sequence. The first element of the sequence
+will be `initial`. Each subsequent element is obtained by calling
+`procd` and passing the previous element as the argument.
+
+This method behaves in a similar way to the Haskell `iterate`
+function.
 
 ## `SequenceIterator`
 
