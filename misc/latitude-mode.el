@@ -36,6 +36,8 @@
           (1 font-lock-function-name-face))
         `("\\_<\\(&?[A-Z]\\(?:\\sw\\|\\s_\\)*\\)\\_>"
           (1 font-lock-type-face))
+        `("'[^][.,:;(){}\"\' \t\n\r`\\\\]+"
+          . font-lock-string-face)
         `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*:="
           (1 font-lock-variable-name-face))
         `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "parent"
