@@ -66,25 +66,9 @@ LazySequence map! := {
   self list := impl list.
   self.
 }.
-LazySequence foldr := {
-  func0 := #'$2.
-  func := {
-    #'func0 call.
-  }.
-  init := #'$1.
-  recurse := {
-    curr := $1.
-    cache := memo { recurse: curr cdr. }.
-    if (curr nil?)
-      then { init. }
-      else {
-        func: curr car, { cache call. }.
-      }.
-  }.
-  recurse: self list.
-}.
 LazySequence make := {
-  func := #'$1.
+  func0 := #'$1.
+  func := { #'func0 call. }.
   seq := self clone.
   recurse := {
     curr := Cons clone.
@@ -108,9 +92,9 @@ LazySequence make := {
   seq.
 }.
 LazySequence iterate := {
-  func0 := #'$1.
+  func0 := #'$2.
   procd := proc { #'func0 call. }.
-  next := #'$2.
+  next := #'$1.
   'next assign = { #'$1. }.
   LazySequence make {
     curr := #'next.
