@@ -23,7 +23,7 @@ Iterator element= := {
 ;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
 global Collection ::= Mixin clone.
 Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any,
-                          notall, notany, detect, countIf, count, find, containsIf, contains,
+                          notAll, notAny, detect, countIf, count, find, containsIf, contains,
                           zip, zip!, take, drop, maximum, minimum, <>, sum, product, append,
                           empty?].
 Collection map! := {
