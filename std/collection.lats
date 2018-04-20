@@ -282,49 +282,48 @@ Collection minimum := {
 }.
 
 global Chain ::= Object clone.
-Chain first := Nil.
-Chain second := Nil.
+Chain data := [].
 Chain iterator := {
-  ChainIterator make: self first, self second.
+  iter := ChainIterator clone.
+  iter iter := self data iterator.
+  iter iter end? ifFalse {
+    iter curr := iter iter element iterator.
+  }.
+  iter check.
+  iter.
+}.
+
+;; Nil is an iterator over an empty collection
+Nil iterator := {
+  NilIterator ::= Iterator clone.
+  NilIterator end? := True.
+  NilIterator.
 }.
 
 global ChainIterator ::= Iterator clone.
-ChainIterator nilThing := Nil.
 ChainIterator iter := Nil.
-ChainIterator secondHalf := Nil.
-ChainIterator element := { self iter element. }.
-ChainIterator element= := { self iter element=. }.
-ChainIterator next := {
+ChainIterator curr := Nil.
+ChainIterator check := {
   localize.
-  hasSecondHalf := this secondHalf is? (this nilThing) not.
-  this iter next.
-  (this iter end?) and (hasSecondHalf) ifTrue {
-    this iter := this secondHalf iterator.
-    this secondHalf := this nilThing.
-  }.
-}.
-ChainIterator end? := { self iter end?. }.
-ChainIterator make := {
-  first := #'$1.
-  second := #'$2.
-  self clone tap {
-    ; We must construct a "NilThing" to act like
-    ; Nil since Nil is a valid element in a chain
-    localize.
-    this nilThing := Nil clone.
-    this iter := #'first iterator.
-    this secondHalf := #'second.
-    this end? ifTrue {
-      this iter := this secondHalf iterator.
-      this secondHalf := this nilThing.
+  this iter end? ifFalse {
+    this curr end? ifTrue {
+      this iter next.
+      this iter end? ifFalse { this curr := this iter element iterator. }.
+      this check.
     }.
   }.
 }.
+ChainIterator element := { self curr element. }.
+ChainIterator element= := { self curr element=. }.
+ChainIterator next := {
+  self curr next.
+  self check.
+}.
+ChainIterator end? := { self iter end?. }.
 
 Collection <> := {
   chain := Chain clone.
-  chain first := self.
-  chain second := $1.
+  chain data := [#'self, #'$1].
   chain.
 }.
 
@@ -349,12 +348,6 @@ Array iterator := {
   }.
 }.
 
-;; Nil is an iterator over an empty collection
-Nil iterator := {
-  NilIterator ::= Iterator clone.
-  NilIterator end? := True.
-  NilIterator.
-}.
 Collection inject: Nil.
 
 DictIterator ::= Object clone.
