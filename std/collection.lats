@@ -27,47 +27,42 @@ Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray,
                           zip, zip!, take, drop, maximum, minimum, <>, sum, product, append,
                           empty?].
 Collection map! := {
-  func0 := #'$1.
-  func := { #'func0 call. }.
+  func := #'$1 shield.
   iter := self iterator.
   while { iter end? not. }
     do {
-      iter element=: (func: iter element).
+      iter element=: (func call: iter element).
       iter next.
     }.
   self.
 }.
 Collection visit := {
-  func0 := #'$1.
-  func := { #'func0 call. }.
+  func := #'$1 shield.
   iter := self iterator.
   while { iter end? not. }
     do {
-      func: iter element.
+      func call: iter element.
       iter next.
     }.
   self.
 }.
 Collection map := {
   coll := self clone.
-  func0 := #'$1.
-  func := { #'func0 call. }.
+  func := #'$1 shield.
   coll map! {
-    func.
+    func call.
   }.
 }.
 Collection foldl := {
-  func0 := #'$2.
-  func := { #'func0 call. }.
+  func := #'$2 shield.
   accum := $1.
   self visit {
-    parent accum := func (accum, #'$1).
+    parent accum := func call (accum, #'$1).
   }.
   accum.
 }.
 Collection foldr := {
-  func0 := #'$2.
-  func := proc { #'func0 call. }.
+  func := #'$2 shield.
   arg := #'$1.
   iter := self iterator.
   rec := {
@@ -91,8 +86,7 @@ Collection toArray := {
   arr.
 }.
 Collection all := {
-  func0 := #'$1.
-  func := proc { #'func0 call. }.
+  func := #'$1 shield.
   coll := #'self.
   callCC {
     escapable.
@@ -105,8 +99,7 @@ Collection all := {
   }.
 }.
 Collection any := {
-  func0 := #'$1.
-  func := proc { #'func0 call. }.
+  func := #'$1 shield.
   callCC {
     escapable.
     parent self visit {
@@ -118,8 +111,7 @@ Collection any := {
   }.
 }.
 Collection notAll := {
-  func0 := #'$1.
-  func := proc { #'func0 call. }.
+  func := #'$1 shield.
   callCC {
     escapable.
     parent self visit {
@@ -129,8 +121,7 @@ Collection notAll := {
   }.
 }.
 Collection notAny := {
-  func0 := #'$1.
-  func := proc { #'func0 call. }.
+  func := #'$1 shield.
   callCC {
     escapable.
     parent self visit {
@@ -140,8 +131,7 @@ Collection notAny := {
   }.
 }.
 Collection detect := {
-  func0 := #'$1.
-  func := proc { #'func0 call. }.
+  func := #'$1 shield.
   callCC {
     escapable.
     parent self visit {
@@ -152,8 +142,7 @@ Collection detect := {
   }.
 }.
 Collection countIf := {
-  func0 := #'$1.
-  func := proc { #'func0 call. }.
+  func := #'$1 shield.
   self foldl: 0, {
     if (func call #'$2)
       then (#'$1 + 1)
@@ -169,8 +158,7 @@ Collection find := {
   self detect: { #'arg == #'$1. }.
 }.
 Collection containsIf := {
-  func0 := #'$1.
-  func := proc { #'func0 call. }.
+  func := #'$1 shield.
   callCC {
     escapable.
     parent self visit {
@@ -413,11 +401,10 @@ Dict values := {
 
 ;; Immutable iterator; needs map override
 Dict map := {
-  func0 := #'$1.
-  func := { #'func0 call. }.
+  func := #'$1 shield.
   coll := Dict clone.
   self visit {
-    res := func ($1).
+    res := func call ($1).
     coll get (res car) = res cdr.
   }.
   coll.
