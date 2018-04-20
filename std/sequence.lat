@@ -8,7 +8,7 @@ SequenceIterator inside := Nil.
 SequenceIterator next := { self inside := self inside cdr. }.
 SequenceIterator end? := { self inside nil?. }.
 SequenceIterator element := { self inside car. }.
-SequenceIterator element= := { self inside car := $1. }.
+SequenceIterator element= := { self inside car = $1. }.
 sequence SequenceIterator := SequenceIterator.
 
 ;; Forward linked lists
@@ -54,37 +54,17 @@ LazySequence toString := {
 LazySequence list := Nil.
 LazySequence map! := {
   func0 := #'$1.
-  func := {
-    #'func0 call.
+  func := { #'func0 call. }.
+  curr := self list.
+  'curr assign = { #'$1. }.
+  impl := LazySequence make {
+    curr car = func (curr car).
+    curr car tap {
+      curr = curr cdr.
+    }.
   }.
-  recurse := {
-    curr := $1.
-    if (curr nil?)
-      then { Nil. }
-      else {
-        cell := Cons clone.
-        cell car := { func: curr car. }.
-        cell cdr := { recurse: curr cdr. }.
-      }.
-  }.
-  self list := recurse: self list.
-}.
-LazySequence visit := {
-  func0 := #'$1.
-  func := {
-    #'func0 call.
-  }.
-  recurse := {
-    curr := $1.
-    if (curr nil?)
-      then { Nil. }
-      else {
-        cell := Cons clone.
-        cell car := func: curr car.
-        cell cdr := recurse: curr cdr.
-      }.
-  }.
-  recurse: self list.
+  self list := impl list.
+  self.
 }.
 LazySequence foldr := {
   func0 := #'$2.
@@ -127,11 +107,10 @@ LazySequence make := {
   seq list := recurse.
   seq.
 }.
-sequence LazySequence := LazySequence.
-
-Proc iterate := {
-  procd := proc { (parent slot 'self) call. }.
-  next := #'$1.
+LazySequence iterate := {
+  func0 := #'$1.
+  procd := proc { #'func0 call. }.
+  next := #'$2.
   'next assign = { #'$1. }.
   LazySequence make {
     curr := #'next.
@@ -139,6 +118,7 @@ Proc iterate := {
     curr.
   }.
 }.
+sequence LazySequence := LazySequence.
 
 ;; Return the script
 $whereAmI.
