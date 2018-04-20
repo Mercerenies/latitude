@@ -134,3 +134,4 @@ scope.
  * [repl](repl.md)
  * [sequence](sequence.md)
  * [time](time.md)
+ * [unicode](unicode.md)
