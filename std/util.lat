@@ -25,15 +25,17 @@ Cell make := {
 util Cell := Cell.
 
 ;; Cells are also iterable
+CellIterator ::= Iterator clone.
+CellIterator cell := Nil.
+CellIterator end? := False.
+CellIterator next := { self end? := True. }.
+CellIterator element := { self cell value. }.
+CellIterator element= := { self cell value = #'$1. }.
+
 Cell iterator := {
-  CellIterator := Object clone.
-  CellIterator toString := "CellIterator".
-  CellIterator cell := self.
-  CellIterator end? := False.
-  CellIterator next := { self end? := True. }.
-  CellIterator element := { self cell value. }.
-  CellIterator element= := { self cell value := #'$1. }.
-  CellIterator.
+  iter := CellIterator clone.
+  iter cell := self.
+  iter.
 }.
 Collection inject: Cell.
 
