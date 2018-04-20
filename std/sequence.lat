@@ -145,16 +145,13 @@ sequence LazySequence := LazySequence.
 
 Proc iterate := {
   procd := proc { (parent slot 'self) call. }.
-  recurse := {
-    curr := $1.
-    cell := Cons clone.
-    cell car := ~l { curr. }.
-    cell cdr := ~l { recurse: procd call (curr). }.
-    cell.
+  next := #'$1.
+  'next assign = { #'$1. }.
+  LazySequence make {
+    curr := #'next.
+    next = procd call #'curr.
+    curr.
   }.
-  seq := LazySequence clone.
-  seq list := recurse: $1.
-  seq.
 }.
 
 ;; Return the script
