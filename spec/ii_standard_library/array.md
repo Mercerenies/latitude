@@ -83,13 +83,6 @@ elements. `stringify` will be called on `delimiter`.
 
 Complexity: `O(n)`
 
-### `Array flatten.`
-
-Flattens one later of the array, returning a new array. Any elements
-which are not arrays are placed in the returned array unmodified.
-
-Complexity: `O(n)`
-
 ### `Array toString.`
 
 Returns a string representation of the array, by calling `toString` on

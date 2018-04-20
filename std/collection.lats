@@ -25,7 +25,7 @@ global Collection ::= Mixin clone.
 Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any,
                           notAll, notAny, detect, countIf, count, find, containsIf, contains,
                           zip, zip!, take, drop, maximum, minimum, <>, sum, product, append,
-                          empty?].
+                          empty?, flatten].
 Collection map! := {
   func := #'$1 shield.
   iter := self iterator.
@@ -332,6 +332,13 @@ Collection sum := { self foldl: 0, '+ toProc. }.
 Collection product := { self foldl: 1, '* toProc. }.
 Collection append := { self foldl: "", '++ toProc. }.
 Collection empty? := { self iterator end?. }.
+
+Collection flatten := {
+  localize.
+  Chain clone tap {
+    self data := this.
+  }.
+}.
 
 ;; Collection Methods for Array
 global ArrayIterator ::= Iterator clone.

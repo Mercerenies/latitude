@@ -247,3 +247,9 @@ using `""` as the base case.
 
 Returns whether the collection is empty or not. This will terminate
 even for infinite collections.
+
+### `Collection flatten.`
+
+Flattens one layer of the collection, which should consist entirely of
+iterable collections. Returns a `Chain` which iterates over the
+elements *of* the elements of the collection.

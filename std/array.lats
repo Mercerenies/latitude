@@ -142,18 +142,6 @@ Array joinText := {
   }.
   str.
 }.
-Array flatten := {
-  arr := Array clone.
-  self visit {
-    arg := #'$1.
-    if (#'arg is? (Array)) then {
-      #'arg visit { arr pushBack: #'$1. }.
-    } else {
-      arr pushBack: #'arg.
-    }.
-  }.
-  arr.
-}.
 Array toString := {
   "[" ++ self join (", ") ++ "]".
 }.
