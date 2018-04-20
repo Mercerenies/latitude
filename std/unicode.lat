@@ -106,11 +106,12 @@ Category Co minor := "private use".
 Category Cn major := "Other".
 Category Cn minor := "not assigned".
 
-String category := {
-  (self == "") ifTrue {
+unicode category := {
+  str := $1.
+  (str == "") ifTrue {
     err ArgError clone tap { self message := "`category` on empty string". } throw.
   }.
-  cat := meta sys uniCat#: self.
+  cat := meta sys uniCat#: str.
   Category value (cat).
 }.
 
