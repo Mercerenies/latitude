@@ -24,7 +24,7 @@ ArgList shift := {
     size := parent self size.
     temp := #'first.
     index := 2.
-    'index assign = { $1. }.
+    assign 'index = { $1. }.
     parent self map! {
       if (index > size) then {
         #'first.

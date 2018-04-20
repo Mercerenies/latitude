@@ -246,6 +246,26 @@ join together strings and other values in preparation for printing.
 
     stdout println: "Good morning, " ++ userName ++ ". It is " ++ currentTime ++ " right now.".
 
+### `Object assign (symbol) = mthd.`
+
+When called, this method defines a method on `self` which, when
+called, performs an assignment of the slot with name `symbol`. The
+newly constructed method's name will be `symbol` with an equal sign
+`=` appended, so that it can be called using the assignment syntax.
+When called, the new method will invoke `mthd`, forwarding any
+arguments, and assign the returned value to the appropriate slot.
+
+    var := 1.
+    assign 'var = { $1. }.
+    while { var < 10. } do {
+      var printObject.
+      var = var + 1.
+    }.
+
+Without the `assign=` call, it would be necessary to use `parent var
+:= var + 1` to increment the variable, which can become a nuisance
+when methods are nested several scopes deep.
+
 ### `Object missing (symbol).`
 
 The default behavior of the `missing` method for traditional objects

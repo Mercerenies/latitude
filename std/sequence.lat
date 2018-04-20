@@ -56,7 +56,7 @@ LazySequence map! := {
   func0 := #'$1.
   func := { #'func0 call. }.
   curr := self list.
-  'curr assign = { #'$1. }.
+  assign 'curr = { #'$1. }.
   impl := LazySequence make {
     curr car = func (curr car).
     curr car tap {
@@ -95,7 +95,7 @@ LazySequence iterate := {
   func0 := #'$2.
   procd := proc { #'func0 call. }.
   next := #'$1.
-  'next assign = { #'$1. }.
+  assign 'next = { #'$1. }.
   LazySequence make {
     curr := #'next.
     next = procd call #'curr.

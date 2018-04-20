@@ -64,31 +64,6 @@ necessarily the lexicographic ordering of the names; it is an
 arbitrary but consistent total ordering of the symbols in the symbol
 table.
 
-### `Symbol assign = mthd.`
-
-When called, this method defines a method in the current scope which
-performs an assignment of the variable with the name `self`. The newly
-constructed method will be assigned in either the current lexical or
-current dynamic scope depending on
-the
-[name of the symbol](../i_syntax_and_semantics/ch4_evaluation.md). The
-newly constructed method's name will be the name of the caller with an
-equal sign `=` appended, so that it can be called using the assignment
-syntax. When called with one argument, the new method will invoke
-`mthd` with the argument and assign the returned value to the symbol
-named by the caller of `assign=`. For example,
-
-    var := 1.
-    'var assign = { $1. }.
-    while { var < 10. } do {
-      var printObject.
-      var = var + 1.
-    }.
-
-Without the `assign=` call, it would be necessary to use `parent var
-:= var + 1` to increment the variable, which can become a nuisance
-when methods are nested several scopes deep.
-
 ## Static Methods
 
 ### `Symbol gensym.`

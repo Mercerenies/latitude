@@ -118,7 +118,7 @@ global use := {
   }.
   name := ((header packageName) ++ " " ++ (header moduleName)) intern.
   mod := Nil.
-  'mod assign = { $1. }.
+  assign 'mod = { $1. }.
   if (Slots has? ($moduleLoader &loaded, name)) then {
     mod = Slots hold ($moduleLoader &loaded, name).
   } else {

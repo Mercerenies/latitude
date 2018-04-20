@@ -70,8 +70,8 @@ String bytes := {
 
 String substring := {
   takes '[i, j].
-  'i assign = { $1. }.
-  'j assign = { $1. }.
+  assign 'j = { $1. }.
+  assign 'i = { $1. }.
   size := ~l { parent self length. }.
   (i < 0) ifTrue { i = (i) + (size). }.
   (j < 0) ifTrue { j = (j) + (size). }.
@@ -79,8 +79,8 @@ String substring := {
   (j < 0) ifTrue { j = 0. }.
   i1 := self byteCount.
   j1 := self byteCount.
-  'i1 assign = { $1. }.
-  'j1 assign = { $1. }.
+  assign 'i1 = { $1. }.
+  assign 'j1 = { $1. }.
   iter := self iterator.
   while { iter end? not. }
     do {
@@ -130,7 +130,7 @@ String replaceAll := {
   takes '[substr, mthd].
   curr := self.
   negativeIndex := curr size.
-  'negativeIndex assign = { $1. }.
+  assign 'negativeIndex = { $1. }.
   index := { (curr size) - (negativeIndex). }.
   index= := {
     index := $1.
@@ -149,7 +149,7 @@ String replaceAll := {
 String padLeft := {
   takes '[ch, n].
   newStr := self.
-  'newStr assign = { $1. }.
+  assign 'newStr = { $1. }.
   while { (newStr size) < (n). }
     do { newStr = (ch) ++ (newStr). }.
   newStr.
@@ -157,7 +157,7 @@ String padLeft := {
 String padRight := {
   takes '[ch, n].
   newStr := self.
-  'newStr assign = { $1. }.
+  assign 'newStr = { $1. }.
   while { (newStr size) < (n). }
     do { newStr = (newStr) ++ (ch). }.
   newStr.
