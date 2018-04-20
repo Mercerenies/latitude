@@ -19,3 +19,6 @@
  * Dictionary object - An object, usually a non-traditional object,
    whose primary purpose is storing arbitrary key-value data, as a
    dictionary data structure would.
+ * Structure object - An object whose primary purpose is storing
+   structured data. Structure objects usually have very few, if any,
+   methods defined on them, and many simple slots which hold values.

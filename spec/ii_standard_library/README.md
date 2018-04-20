@@ -133,3 +133,4 @@ scope.
  * [random](random.md)
  * [repl](repl.md)
  * [sequence](sequence.md)
+ * [time](time.md)
