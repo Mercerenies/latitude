@@ -117,6 +117,30 @@ LazySequence foldr := {
   }.
   recurse: self list.
 }.
+LazySequence make := {
+  func := #'$1.
+  seq := self clone.
+  recurse := {
+    curr := Cons clone.
+    curr car := ~l { func. }.
+    curr car= := {
+      self car.
+      self car := #'$1.
+    }.
+    curr cdr := ~l {
+      curr car.
+      recurse.
+    }.
+    curr cdr= := {
+      err ReadOnlyError clone tap {
+        self message := "Read-only cell".
+      } throw.
+    }.
+    curr.
+  }.
+  seq list := recurse.
+  seq.
+}.
 sequence LazySequence := LazySequence.
 
 Proc iterate := {
