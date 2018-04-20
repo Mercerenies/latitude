@@ -30,3 +30,9 @@ arguments and then calls `self` with the result.
 This method implements left-to-right function composition. A new
 `Proc` object is returned which, when invoked, calls `self` with its
 arguments and then calls `arg` with the result.
+
+### `Proc shield.`
+
+Returns the procedure. This method is overriden
+in [`Method`](method.md) to return a non-evaluating form of the
+method.

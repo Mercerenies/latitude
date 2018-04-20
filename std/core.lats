@@ -93,6 +93,8 @@ Proc <| := {
 Proc |> := {
   #'$1 <| #'self.
 }.
+Proc shield := { self. }.
+Method shield := { proc #'self. }.
 Symbol toProc := {
   sym := self.
   proc {

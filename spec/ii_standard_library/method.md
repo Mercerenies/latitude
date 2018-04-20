@@ -107,3 +107,9 @@ When a method is cloned, the `closure` field is directly assigned into
 the new object as well. This is primarily of internal importance, as
 `closure` must always exist on the evaluating object being called
 directly and not on a parent object.
+
+### `Method shield.`
+
+Returns a non-evaluating `Proc` which has the same code as `self`.
+Note carefully that proc objects are always called on themselves, so
+methods which use `self` will behave strangely when shielded.
