@@ -198,6 +198,16 @@ Number chr := {
   meta sys uniChr#: self.
 }.
 
+String toUpper := {
+  self map { meta sys strUpper#: $1. }.
+}.
+String toLower := {
+  self map { meta sys strLower#: $1. }.
+}.
+String toTitle := {
+  self map { meta sys strTitle#: $1. }.
+}.
+
 global StringIterator ::= Iterator clone.
 StringIterator index := 0.
 StringIterator string := "".

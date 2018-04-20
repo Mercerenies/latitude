@@ -2339,6 +2339,74 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
                                    makeAssemblerLine(Instr::CPP, CPP_DUPLICATE))));
 
+     // CPP_UNI_CASE (convert the first character of %str0 to the given case, returning ONLY THIS CHARACTER into %ret, based on the value of %num0)
+     // - 0 - Lower
+     // - 1 - Upper
+     // - 2 - Title
+     // strLower#: str.
+     // strUpper#: str.
+     // strTitle#: str.
+     assert(reader.cpp.size() == CPP_UNI_CASE);
+     reader.cpp.push_back([&reader](IntState& state0) {
+         std::string str = state0.str0;
+         if (str == "") {
+             state0.ret = garnishObject(reader, str);
+         } else {
+             auto ch = charAt(str, 0);
+             if (!ch) {
+                 state0.err0 = true;
+             } else {
+                 switch (state0.num0.asSmallInt()) {
+                 case 0:
+                     state0.ret = garnishObject(reader, static_cast<std::string>(ch->toLower()));
+                     break;
+                 case 1:
+                     state0.ret = garnishObject(reader, static_cast<std::string>(ch->toUpper()));
+                     break;
+                 case 2:
+                     state0.ret = garnishObject(reader, static_cast<std::string>(ch->toTitle()));
+                     break;
+                 }
+             }
+         }
+     });
+     sys->put(Symbols::get()["strLower#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::INT, 0),
+                                   makeAssemblerLine(Instr::CPP, CPP_UNI_CASE),
+                                   makeAssemblerLine(Instr::THROA, "Internal error CPP_UNI_CASE"))));
+     sys->put(Symbols::get()["strUpper#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::INT, 1),
+                                   makeAssemblerLine(Instr::CPP, CPP_UNI_CASE),
+                                   makeAssemblerLine(Instr::THROA, "Internal error CPP_UNI_CASE"))));
+     sys->put(Symbols::get()["strTitle#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::STR0),
+                                   makeAssemblerLine(Instr::THROA, "String expected"),
+                                   makeAssemblerLine(Instr::INT, 2),
+                                   makeAssemblerLine(Instr::CPP, CPP_UNI_CASE),
+                                   makeAssemblerLine(Instr::THROA, "Internal error CPP_UNI_CASE"))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library

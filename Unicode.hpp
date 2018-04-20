@@ -13,6 +13,9 @@ public:
     operator std::string();
     long codePoint();
     uni_class_t genCat();
+    UniChar toUpper();
+    UniChar toLower();
+    UniChar toTitle();
 };
 
 long uniOrd(UniChar ch);

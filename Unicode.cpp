@@ -37,6 +37,18 @@ uni_class_t UniChar::genCat() {
     return get_class(codepoint);
 }
 
+UniChar UniChar::toUpper() {
+    return UniChar(to_upper(codepoint));
+}
+
+UniChar UniChar::toLower() {
+    return UniChar(to_lower(codepoint));
+}
+
+UniChar UniChar::toTitle() {
+    return UniChar(to_title(codepoint));
+}
+
 long uniOrd(UniChar ch) {
     return ch.codePoint();
 }

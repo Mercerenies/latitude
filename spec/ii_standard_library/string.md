@@ -179,3 +179,21 @@ Applies the method to each character of `self`, returning a new string
 containing the concatenated results. The results are concatenated with
 `++`, which means `stringify` will be called to convert them to
 strings.
+
+### `String toUpper.`
+
+Converts every Unicode character in the string to uppercase, using
+simple 1-to-1 mapping. Characters with no uppercase equivalent are
+unmodified. Returns a new string.
+
+### `String toLower.`
+
+Converts every Unicode character in the string to lowercase, using
+simple 1-to-1 mapping. Characters with no lowercase equivalent are
+unmodified. Returns a new string.
+
+### `String toTitle.`
+
+Converts every Unicode character in the string to title case, using
+simple 1-to-1 mapping. Characters with no title case equivalent are
+unmodified. Returns a new string.
