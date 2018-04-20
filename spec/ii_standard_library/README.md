@@ -130,6 +130,7 @@ scope.
 
  * [enum](enum.md)
  * [format](format.md)
+ * [os](os.md)
  * [random](random.md)
  * [repl](repl.md)
  * [sequence](sequence.md)
