@@ -420,7 +420,7 @@ Symbol assign= := {
   curr := scopeOf (lexical caller, $dynamic parent, self).
   rhs := #'$1.
   sym := (self asText ++ "=") intern.
-  curr slot (sym) = { curr slot (name) = rhs ($1). }.
+  curr slot (sym) = { curr slot (name) = rhs #'$1. }.
 }.
 
 ;; Method cloning
