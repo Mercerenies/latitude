@@ -7,10 +7,6 @@ A module object, which is also a scope object, encapsulates the notion
 of a loaded module. When a module is loaded into Latitude, it is
 provided a module object through the `$whereAmI` variable.
 
-## Simple Slots
-
-    Module toString := "Module".
-
 ## Methods
 
 ### `Module header.`
@@ -24,6 +20,12 @@ Returns an object whose keys are sigils that the module exports and
 whose values are the corresponding implementations of those
 sigils. These can be imported into the current scope with
 `importAllSigils`.
+
+### `Module toString.`
+
+If called on the `Module` object itself, returns `"Module"`.
+Otherwise, returns the module's name. In the latter case, equivalent
+to `self header moduleName`.
 
 ### `Module import (names).`
 

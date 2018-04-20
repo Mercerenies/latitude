@@ -1,8 +1,15 @@
 
 ;; Modules
-Module ::= global clone.
+Module := global clone.
 Module header := Nil.
 Module sigils := Object clone.
+Module toString := {
+  if (self === Module) then {
+    "Module".
+  } else {
+    parent self header moduleName.
+  }.
+}.
 Module import := {
   localize.
   target := lexical caller.
