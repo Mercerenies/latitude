@@ -69,9 +69,9 @@ Dict has? := {
   {
     this get (key).
     True.
-  } catch:
-    err SlotError,
-    { False. }.
+  } catch (err SlotError) do {
+    False.
+  }.
 }.
 Dict delete := {
   localize.

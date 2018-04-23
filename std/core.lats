@@ -35,24 +35,28 @@ Method handle := {
 }.
 Method resolve := {
   mthd := #'self.
-  cond := #'$1.
-  catcher := #'$2.
-  callCC {
-    outer := $1.
-    { mthd. } handle {
-      exc := $1.
-      cond (exc) ifTrue {
-        outer call: (catcher: exc).
+  cond := #'($1).
+  Object clone tap {
+    self do := {
+      catcher := #'($1).
+      callCC {
+        outer := $1.
+        #'(mthd) handle {
+          exc := $1.
+          cond (exc) ifTrue {
+            outer call: (catcher: exc).
+          }.
+        }.
       }.
     }.
   }.
 }.
 Method catch := {
   target := $1.
-  #'self resolve: { $1 is? (target). }, #'$2.
+  #'self resolve { $1 is? (target). }.
 }.
-Method catchAll := { #'self catch: Exception, #'$1. }.
-Method default := { #'self catch: Exception, #'$1. }.
+Method catchAll := { #'self catch (Exception) do #'($1). }.
+Method default := { #'self catch (Exception) do #'($1). }.
 ; Observe that `rethrow` is not overriden in `Exception`, so it will never set the `stack` field.
 Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
@@ -323,9 +327,9 @@ Slots has? := {
   {
     Slots hold: #'obj, #'symbol.
     True.
-  } catch:
-    err SlotError,
-    { False. }.
+  } catch (err SlotError) do {
+    False.
+  }.
 }.
 
 ;; Kernel parenting functions

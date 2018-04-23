@@ -64,18 +64,16 @@ REPL loop := {
       this lastResult := this eval: expr.
       this print: this slot 'lastResult.
       this counter := counter.
-    } resolve:
-      True,
+    } resolve (True) do {
+      this exception := $1.
+      stderr putln: "***** EXCEPTION *****".
+      stderr putln: this exception pretty.
       {
-        this exception := $1.
-        stderr putln: "***** EXCEPTION *****".
-        stderr putln: this exception pretty.
-        {
-          this exception slot? 'printStackTrace.
-        } ifTrue {
-          this exception printStackTrace.
-        }.
+        this exception slot? 'printStackTrace.
+      } ifTrue {
+        this exception printStackTrace.
       }.
+    }.
   }.
 }.
 
