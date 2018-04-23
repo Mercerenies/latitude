@@ -12,7 +12,7 @@ Object send := {
   Kernel invoke #'($1) on #'(self).
 }.
 Object invokeSpecial := {
-  Kernel invokeOnSpecial: #'self, #'$1, #'$2.
+  Kernel invoke #'($1) on #'(self) by #'($2).
 }.
 Object dup := {
   Kernel dupObject: #'self.
@@ -266,21 +266,18 @@ Kernel invoke := {
   procd := Proc clone.
   procd target := Nil.
   procd call := {
-    meta sys invoke#: #'(self target), #'mthd.
+    meta sys invoke#: #'(self target), #'(mthd).
   }.
   procd on := {
     self target := #'$1.
     self.
   }.
-  procd.
-}.
-Kernel invokeOnSpecial := {
-  obj := #'$1.
-  mthd := #'$2.
-  mod := #'$3.
-  procd := Proc clone.
-  procd call := {
-    meta sys doWithCallback#: #'obj, #'mthd, #'mod.
+  procd by := {
+    self handler := #'$1.
+    self call := {
+      meta sys doWithCallback#: #'(self target), #'(mthd), #'(self handler).
+    }.
+    self.
   }.
   procd.
 }.
