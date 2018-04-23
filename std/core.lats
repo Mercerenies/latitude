@@ -8,7 +8,7 @@ Object slot? := { Slots has? (#'self, #'$1). }.
 ;; Note that these delegate to `Kernel` functions. The `Kernel`
 ;; versions should be used directly if it is possible that the caller
 ;; is an NTO.
-Object invoke := {
+Object send := {
   Kernel invokeOn: #'self, #'$1.
 }.
 Object invokeSpecial := {
@@ -18,7 +18,7 @@ Object dup := {
   Kernel dupObject: #'self.
 }.
 Object tap := {
-  #'self invoke #'$1 call.
+  #'self send #'$1 call.
   #'self.
 }.
 
@@ -61,7 +61,7 @@ Object rethrow := { meta sys throw#: self. }.
 Object throw := { meta sys throw#: self. }.
 Exception throw := {
   self stack := currentStackTrace parent.
-  self invoke (Object slot 'throw) call.
+  self send (Object slot 'throw) call.
 }.
 Method protect := {
   thunk: { }, #'self, #'$1.
@@ -78,7 +78,7 @@ global thunk := {
 ;; Procs and Methods handling
 Method closure := global.
 Proc call := {}.
-Method call := { #'self invoke #'self call. }.
+Method call := { #'self send #'self call. }.
 Method toString := "Method".
 Proc toString := "Proc".
 Method == := { (self) == ($1). }. ; Evaluate the method and then try again
@@ -99,7 +99,7 @@ Symbol toProc := {
   sym := self.
   proc {
     obj := ArgList clone fill shift.
-    (obj invoke (obj slot: sym)) call.
+    (obj send (obj slot: sym)) call.
   }.
 }.
 
@@ -150,7 +150,7 @@ Stream closeAfter := {
   stream := self.
   method := #'$1.
   {
-    stream invoke (#'method) call.
+    stream send (#'method) call.
   } protect {
     stream close.
   }.
@@ -201,7 +201,7 @@ global scopeOf := {
     then { dyn. }
     else { lex. }.
 }.
-Object me := { #'self invoke #'self call. }.
+Object me := { #'self send #'self call. }.
 global do := { $1. }.
 global here := {
   if (self slot? 'again)
@@ -430,7 +430,7 @@ Object assignable := {
 
 ;; Method cloning
 Method clone := {
-  procd := #'self invoke: (Object slot 'clone).
+  procd := #'self send: (Object slot 'clone).
   procd call tap {
     #'self closure := parent slot 'self closure.
   }.

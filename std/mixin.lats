@@ -15,7 +15,7 @@ Mixin inject := {
       do {
         curr := iter element.
         injector slot (curr) = {
-          procd := self invoke: (self mixin slot: curr).
+          procd := self send: (self mixin slot: curr).
           procd call.
         }.
         iter next.

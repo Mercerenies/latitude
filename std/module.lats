@@ -32,7 +32,7 @@ Module importAll := {
     if { this is? (target) not. } and { this slot? (sym). } then {
       this slot (sym).
     } else {
-      target invoke (target parent slot 'missing) call: sym.
+      target send (target parent slot 'missing) call: sym.
     }.
   }.
   this slot? (name) ifTrue {
@@ -66,7 +66,7 @@ global &LoadedModules := Object clone tap {
 global ModuleLoader ::= Object clone.
 ModuleLoader &loaded := &LoadedModules.
 ModuleLoader clone := {
-  self invoke (Object slot 'clone) call tap {
+  self send (Object slot 'clone) call tap {
     self &loaded := Kernel cloneObject: self &loaded.
   }.
 }.

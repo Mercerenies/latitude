@@ -174,7 +174,7 @@ Array < := {
 
 ;; This is a fix for a problem with `map` from `Collection`
 Array clone := {
-  self invoke (Object slot 'clone) call tap {
+  self send (Object slot 'clone) call tap {
     self lowerBound := self lowerBound.
     self upperBound := self upperBound.
   }.

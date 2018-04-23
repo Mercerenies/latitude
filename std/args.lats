@@ -3,7 +3,7 @@
 global ArgList ::= Object clone.
 ArgList enclosingScope := global.
 ArgList clone := {
-  self invoke (Object slot 'clone) call tap {
+  self send (Object slot 'clone) call tap {
     self enclosingScope := self enclosingScope clone.
   }.
 }.

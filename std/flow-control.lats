@@ -38,7 +38,7 @@ Conditional and := {
   arg := #'$1.
   self truthy := meta sys ifThenElse#:
     self truthy,
-    { parent self invoke #'arg call toBool. },
+    { parent self send #'arg call toBool. },
     { False. }.
   self.
 }.
@@ -47,7 +47,7 @@ Conditional or := {
   self truthy := meta sys ifThenElse#:
     self truthy,
     { True. },
-    { parent self invoke #'arg call toBool. }.
+    { parent self send #'arg call toBool. }.
   self.
 }.
 Conditional then := {
@@ -62,7 +62,7 @@ Conditional else := {
 Conditional if := {
   truthy := #'$1.
   Conditional clone tap {
-    self truthy := self invoke #'truthy call toBool.
+    self truthy := self send #'truthy call toBool.
   }.
 }.
 global if := { Conditional if. }.

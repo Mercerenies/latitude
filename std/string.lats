@@ -49,7 +49,7 @@ String bytes := {
   localize.
   this clone tap {
     self iterator := {
-      self invoke (this slot 'iterator) call tap {
+      self send (this slot 'iterator) call tap {
         self next := {
           self index := self index + 1.
         }.
