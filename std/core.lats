@@ -9,7 +9,7 @@ Object slot? := { Slots has? (#'self, #'$1). }.
 ;; versions should be used directly if it is possible that the caller
 ;; is an NTO.
 Object send := {
-  Kernel invokeOn: #'self, #'$1.
+  Kernel invoke #'($1) on #'(self).
 }.
 Object invokeSpecial := {
   Kernel invokeOnSpecial: #'self, #'$1, #'$2.
@@ -261,12 +261,16 @@ Kernel id := { meta sys objId#: #'$1. }.
 ;       private or untouchable and should not be used as such.
 
 ;; Kernel invocations
-Kernel invokeOn := {
-  obj := #'$1.
-  mthd := #'$2.
+Kernel invoke := {
+  mthd := #'$1.
   procd := Proc clone.
+  procd target := Nil.
   procd call := {
-    meta sys invoke#: #'obj, #'mthd.
+    meta sys invoke#: #'(self target), #'mthd.
+  }.
+  procd on := {
+    self target := #'$1.
+    self.
   }.
   procd.
 }.
@@ -314,7 +318,7 @@ Kernel env= := {
 global Slots := Object clone.
 Slots toString := "Slots".
 Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
-Slots get := { Kernel invokeOn (#'$1, self hold) call. }.
+Slots get := { Kernel invoke (self hold) on #'($1) call. }.
 Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
 Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
 Slots protect := { meta sys protectVar#: #'$1, $2. }.
@@ -340,7 +344,7 @@ Parents above := {
   target := #'$1.
   orgn := self origin (#'target, #'$2).
   result := #'orgn parent slot #'$2.
-  proc { Kernel invokeOn (#'target, #'result) call. }.
+  proc { Kernel invoke #'(result) on #'(target) call. }.
 }.
 Parents hierarchy := {
   arr := Array clone.

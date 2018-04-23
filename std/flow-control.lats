@@ -68,12 +68,12 @@ Conditional if := {
 global if := { Conditional if. }.
 Object ifTrue := {
   content := #'$1.
-  if (self) then { Kernel invokeOn (parent slot 'self, #'content) call. } else { Nil. }.
+  if (self) then { Kernel invoke #'(content) on #'(parent self) call. } else { Nil. }.
   #'self.
 }.
 Object ifFalse := {
   content := #'$1.
-  if (self) then { Nil. } else { Kernel invokeOn (parent slot 'self, #'content) call. }.
+  if (self) then { Nil. } else { Kernel invoke #'(content) on #'(parent self) call. }.
   #'self.
 }.
 Object and := {
@@ -90,15 +90,15 @@ Object not := {
 ;; Loops
 global loop := {
   content := #'$1.
-  meta sys loopDo#: { Kernel invokeOn (Conditional, #'content) call. }.
+  meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
 }.
 global while := {
   cond0 := #'$1.
-  cond := { Kernel invokeOn (Conditional, #'cond0) call. }.
+  cond := { Kernel invoke #'(cond0) on (Conditional) call. }.
   Object clone tap {
     self do := {
       stmt0 := #'$1.
-      stmt := { Kernel invokeOn (Conditional, #'stmt0) call. }.
+      stmt := { Kernel invoke #'(stmt0) on (Conditional) call. }.
       callCC {
         escapable.
         $break := #'return.
@@ -115,7 +115,7 @@ global while := {
 Number times := {
   localize.
   block0 := #'$1.
-  block := { Kernel invokeOn (Conditional, #'block0) call. }.
+  block := { Kernel invoke #'(block0) on (Conditional) call. }.
   i := 0.
   incr := {
     parent i := i + 1.
@@ -131,7 +131,7 @@ Number upto := {
   Object clone tap {
     self do := {
       block0 := #'$1.
-      block := { Kernel invokeOn (Conditional, #'block0) call. }.
+      block := { Kernel invoke #'(block0) on (Conditional) call. }.
       i := this floor.
       incr := { parent i := i + 1. }.
       while { (i) < (n floor). } do {
@@ -147,7 +147,7 @@ Number downto := {
   Object clone tap {
     self do := {
       block0 := #'$1.
-      block := { Kernel invokeOn (Conditional, #'block0) call. }.
+      block := { Kernel invoke #'(block0) on (Conditional) call. }.
       i := this floor.
       decr := {
         parent i := i - 1.
@@ -166,10 +166,10 @@ global cond := {
   callCC {
     finished := $1.
     whenProc := proc {
-      if (Kernel invokeOn (Conditional, #'$1) call)
+      if (Kernel invoke #'($1) on (Conditional) call)
         then {
           Object clone tap {
-            self do := { finished call: (Kernel invokeOn (Conditional, #'$1) call). }.
+            self do := { finished call: (Kernel invoke #'($1) on (Conditional) call). }.
           }.
         } else {
           Object clone tap {
@@ -183,7 +183,7 @@ global cond := {
         $1 when := { whenProc call. }.
         $1 else := {
           body := #'$1.
-          self when (True) do { (Kernel invokeOn (Conditional, #'body) call). }.
+          self when (True) do { (Kernel invoke #'(body) on (Conditional) call). }.
         }.
       }.
     procd call.
