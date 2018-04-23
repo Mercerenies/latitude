@@ -29,7 +29,7 @@ is raised, there is no circumstance in which `handle` exits
 normally. Either the VM will terminate or a continuation jump will
 occur, so the return value of `handler` will never be used anywhere.
 
-### `Method resolve (cond, handler).`
+### `Method resolve (cond) do (handler).`
 
 This method registers an exception handler, as with `handle`, but the
 handler is prepared to not only handle the exception but resolve
@@ -42,7 +42,7 @@ from `resolve`. If `cond` returns falsy, the exception is propogated
 to the next handler as normal. If no exception occurs, the return
 value of `self` is returned from `resolve`.
 
-### `Method catch (target, handler).`
+### `Method catch (target) do (handler).`
 
 This method emulates the more traditional try-catch statement in other
 languages. `self` is called with no arguments. If no exception occurs,
