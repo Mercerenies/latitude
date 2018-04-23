@@ -82,37 +82,19 @@ Equivalent `Kernel` call:
 
     Kernel dupObject: self.
 
-### `Object invoke (method).`
+### `Object send (method).`
 
 This method returns a procedure object. When invoked, the procedure
 will call `method` with the arguments supplied to the procedure. The
-caller at this time will be the object on which `invoke` was called.
+caller at this time will be the object on which `send` was called.
+
+Note that this method delegates specifically to `Kernel invoke`, so
+`by` and `on` will behave the same way if called on the return value
+of this method as if called on `Kernel invoke`.
 
 Equivalent `Kernel` call:
 
-    Kernel invokeOn: Object, method.
-
-### `Object invokeSpecial (method, modifier).`
-
-This method returns a procedure object. When invoked, the procedure
-will call `method` with the arguments supplied to the procedure. The
-caller at this time will be the object on which `invoke` was
-called.
-
-However, unlike `invoke`, this method adds an additional step to the
-call. After the new lexical and dynamic scopes for the method call
-have been created, `modifier` will be called with two arguments: the
-lexical and dynamic scopes. The modifier method is free to modify
-these scopes, usually to add variables which will be in-scope during
-the method invocation.
-
-The `invokeSpecial` method allows other methods to be called in
-customizable contexts, which creates unique opportunities for
-metaprogramming.
-
-Equivalent `Kernel` call:
-
-    Kernel invokeOnSpecial: Object, method, modifier.
+    Kernel invoke (method) on (Object).
 
 ### `Object tap (method).`
 

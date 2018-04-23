@@ -134,22 +134,27 @@ object. As long as the object is retained in memory, the identifier
 will be unique to it. Once the object is garbage collected, its
 identifier may be reused.
 
-### `Kernel invokeOn (object, method).`
+### `Kernel invoke (method) on (object).`
 
-This method returns a procedure object. When invoked, the procedure
-will call `method` with the arguments supplied to the procedure. The
-caller at this time will be `object`. This method works like `Object
-invoke` but also behaves correctly on non-traditional objects.
+`invoke` returns a procedure object. On this procedure object, an `on`
+method is defined, which sets the target object. When invoked, the
+procedure will call `method` with the arguments supplied to the
+procedure. The caller at this time will be the target object. If the
+target object has not been set, it defaults to `Nil`. The `on` method
+returns the procedure object.
 
-### `Kernel invokeOnSpecial (object, method, modifier).`
+Additionally, the returned procedure has a method `by` defined on it.
+If `by` is called with a method argument, then the procedure object is
+modified to have a handler method. This adds an additional step to the
+call. When the procedure is invoked, after the new lexical and dynamic
+scopes are constructed, the handler will be called with two arguments:
+the lexical and dynamic scopes. The handler method is free to modify
+these scopes for metaprogramming purposes.
 
-This method returns a procedure object. When invoked, the procedure
-will call `method` with the arguments supplied to the procedure. The
-caller at this time will be `object`.
+Example use:
 
-This method acts like `Object invokeOn` but also behaves correctly on
-non-traditional objects. As such, the behavior of `modifier` is the
-same as if `Object invokeOn` were called.
+    Kernel invoke (method) on (object) call.
+    Kernel invoke (method) on (object) by (handler) call.
 
 ### `Kernel env (name).`
 
