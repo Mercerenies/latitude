@@ -177,15 +177,13 @@ global cond := {
           }.
         }.
     }.
-    procd := $dynamic invokeSpecial:
-      #'block,
-      {
-        $1 when := { whenProc call. }.
-        $1 else := {
-          body := #'$1.
-          self when (True) do { (Kernel invoke #'(body) on (Conditional) call). }.
-        }.
+    procd := $dynamic send #'(block) by {
+      $1 when := { whenProc call. }.
+      $1 else := {
+        body := #'$1.
+        self when (True) do { (Kernel invoke #'(body) on (Conditional) call). }.
       }.
+    }.
     procd call.
     Nil.
   }.

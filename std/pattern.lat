@@ -30,7 +30,7 @@ pattern Ellipsis := Ellipsis.
 Match ::= Proc clone.
 Match callback := {}.
 Match call := {
-  (self invokeSpecial: #'$1, self slot 'callback) call.
+  self send #'($1), #'(self callback) call.
 }.
 pattern Match := Match.
 
@@ -202,12 +202,9 @@ case := {
               }.
             }.
         }.
-        procd := Conditional invokeSpecial:
-          #'block,
-          {
-            $1 when := { whenProc call. }.
-            $1 else := { self when (*) do #'$1. }.
-          }.
+        procd := Conditional send #'(block) by {
+          $1 when := { whenProc call. }.
+          $1 else := { self when (*) do #'$1. }.
         procd call.
         Nil.
       }.

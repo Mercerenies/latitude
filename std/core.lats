@@ -11,9 +11,6 @@ Object slot? := { Slots has? (#'self, #'$1). }.
 Object send := {
   Kernel invoke #'($1) on #'(self).
 }.
-Object invokeSpecial := {
-  Kernel invoke #'($1) on #'(self) by #'($2).
-}.
 Object dup := {
   Kernel dupObject: #'self.
 }.
