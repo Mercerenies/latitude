@@ -50,5 +50,18 @@ Object missing := {
   err throw.
 }.
 
+;; Handling assignments in scopes
+global missing := {
+  scope := self.
+  name := $1.
+  if { name asText substringBytes (-1, name asText length) == "=". } then {
+    prefix := name asText substringBytes (0, -1) intern.
+    orgn := Parents origin (scope, prefix).
+    { orgn slot (prefix) = #'($1). }.
+  } else {
+    Parents above (scope, 'missing) call (name).
+  }.
+}.
+
 ;; We would return the script here, but the `slot?` function requires flow_control.lat
 1.
