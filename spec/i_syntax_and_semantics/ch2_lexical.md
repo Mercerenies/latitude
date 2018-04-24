@@ -172,7 +172,7 @@ Note that a `<letter>` is any single lowercase or capital alphabetic
 letter. Similarly, an `<alphanum>` is a letter or single digit. A
 `<stdname>` is any valid standard identifier, and an `<opname>` is any
 valid operator identifier. An `<ename>` is any nonempty sequence of
-normal characters.
+normal or semi-special characters.
 
 A `<number>` is a string of characters which satisfies one of the
 following regular expressions.
