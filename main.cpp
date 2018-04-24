@@ -16,8 +16,6 @@ extern "C" {
 
 int main(int argc, char** argv) {
 
-    std::cout << "Latitude [Development Version]" << std::endl;
-
     CmdArgs args = parseArgs(argc, argv);
 
     switch (args.output) {
@@ -26,9 +24,7 @@ int main(int argc, char** argv) {
         break;
     }
     case OutputMode::VERSION: {
-        // This will print an actual version number once the language has been
-        // formally released. For now, it's a placeholder string.
-        std::cout << "Latitude [Development Version]" << std::endl;
+        outputVersion();
         break;
     }
     case OutputMode::HELP: {
@@ -46,6 +42,7 @@ int main(int argc, char** argv) {
         if (argc > 1) {
             runRunner(global, state, reader);
         } else {
+            outputVersion();
             runREPL(global, state, reader);
         }
         break;

@@ -39,3 +39,9 @@ void outputHelp() {
     std::cout << "with the given command line arguments. If no additional" << std::endl;
     std::cout << "arguments are supplied, a REPL will be started." << std::endl;
 }
+
+void outputVersion() {
+    // This will print an actual version number once the language has been
+    // formally released. For now, it's a placeholder string.
+    std::cout << "Latitude [Development Version]" << std::endl;
+}

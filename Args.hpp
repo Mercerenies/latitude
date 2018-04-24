@@ -21,4 +21,6 @@ CmdArgs parseArgs(int& argc, char**& argv);
 
 void outputHelp();
 
+void outputVersion();
+
 #endif // ARGS_HPP
