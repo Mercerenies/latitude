@@ -30,7 +30,10 @@ public:
         return isIn;
     }
     virtual void out(char ch) {
-        write(fd, &ch, 1);
+        if (write(fd, &ch, 1) == 0) {
+            // Not good
+            close();
+        }
     }
     virtual char in() {
         char ch;
