@@ -1410,7 +1410,31 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "XXX " << val << endl;
 #endif
-        // Doesn't do anything right now. Don't mind me ^.^
+        static NodePtr<BacktraceFrame> trace_marker = nullptr;
+        switch (val) {
+        case 0:
+            // Store
+            trace_marker = state.trace;
+            break;
+        case 1: {
+            // Compare
+            auto temp = state.trace;
+            while ((trace_marker != nullptr) && (temp != nullptr)) {
+                if (trace_marker->data != temp->data) {
+                    // Welp
+                    cerr << "Trace assertion failure!" << endl;
+                    hardKill(state, reader);
+                }
+            }
+            if (trace_marker != temp) {
+                // Welp
+                cerr << "Trace assertion failure!" << endl;
+                hardKill(state, reader);
+            }
+            trace_marker = nullptr;
+        }
+            break;
+        }
     }
         break;
     }
