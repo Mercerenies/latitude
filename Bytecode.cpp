@@ -1420,7 +1420,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             // Compare
             auto temp = state.trace;
             while ((trace_marker != nullptr) && (temp != nullptr)) {
-                if (trace_marker->data != temp->data) {
+                if (trace_marker->get() != temp->get()) {
                     // Welp
                     cerr << "Trace assertion failure!" << endl;
                     hardKill(state, reader);
