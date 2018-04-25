@@ -185,4 +185,5 @@ It can be passed
  5. If all of the above fail, rtrv triggers a kernel panic and terminates the virtual machine
 
 ((( xxx )))
- (not used currently)
+ - 0L - Store trace assertion information
+ - 1L - Compare trace assertion information; on unequal values, immediately abort
