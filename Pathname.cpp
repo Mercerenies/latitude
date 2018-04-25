@@ -8,6 +8,7 @@ using namespace std;
 #ifdef USE_POSIX
 #include <unistd.h>
 #include <libgen.h>
+#include <sys/stat.h>
 
 std::string getExecutablePathname() {
     constexpr int SIZE = 512;
@@ -46,6 +47,15 @@ std::string stripDirname(std::string path) {
     string result = basename(buffer);
     return result;
 }
+
+std::time_t modificationTime(std::string path) {
+    struct stat result;
+    if (stat(path.c_str(), &result) == 0) {
+        return result.st_mtime;
+    } else {
+        return time_t {};
+    }
+}
 #endif
 
 #ifdef USE_WINDOWS
@@ -53,6 +63,7 @@ std::string stripDirname(std::string path) {
 #include <windows.h>
 #include <stdlib.h>
 #include <algorithm>
+#include <sys/stat.h>
 
 std::string getExecutablePathname() {
     constexpr int SIZE = 512;
@@ -88,6 +99,15 @@ std::string stripDirname(std::string path) {
     string result;
     result += string(file) + string(ext);
     return result;
+}
+
+std::time_t modificationTime(std::string path) {
+    struct _stat result;
+    if (_stat(path.c_str(), &result) == 0) {
+        return result.st_mtime;
+    } else {
+        return time_t {};
+    }
 }
 #endif
 

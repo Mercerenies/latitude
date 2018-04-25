@@ -11,6 +11,7 @@ extern "C" {
 #include "Macro.hpp"
 #include "Assembler.hpp"
 #include "Optimizer.hpp"
+#include "Pathname.hpp"
 #include <cstdio>
 #include <cctype>
 #include <list>
@@ -407,11 +408,23 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
     }
 }
 
+bool fileExists(string fname) {
+    if (FILE* file = fopen(fname.c_str(), "r")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }
+}
+
 void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
     // Soon, this will attempt to read a compiled file first.
-    // compileFile(fname, fname + "c", state, reader);
-    readFileSource(fname, defScope, state, reader);
-    // readFileComp(fname + "c", defScope, state, reader);
+    string cname = fname + "c";
+    if (!fileExists(cname) || std::difftime(modificationTime(cname), modificationTime(fname)) <= 0) {
+        compileFile(fname, fname + "c", state, reader);
+    }
+    // readFileSource(fname, defScope, state, reader);
+    readFileComp(fname + "c", defScope, state, reader);
 }
 
 Stmt::Stmt(int line_no)

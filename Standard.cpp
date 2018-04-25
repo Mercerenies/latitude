@@ -2233,8 +2233,9 @@ void spawnSystemCallsNew(ObjectPtr global,
      // objId#: obj.
      assert(reader.cpp.size() == CPP_OBJID);
      reader.cpp.push_back([&reader](IntState& state0) {
-         long value = reinterpret_cast<long>(state0.ret.get());
-         state0.ret = garnishObject(reader, Number(value));
+         auto value = (intptr_t)(state0.ret.get());
+         auto value1 = Number::bigint(value);
+         state0.ret = garnishObject(reader, Number(value1));
      });
      sys->put(Symbols::get()["objId#"],
               defineMethod(unit, global, method,

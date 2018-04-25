@@ -2,6 +2,7 @@
 #define PATHNAME_HPP
 
 #include <string>
+#include <ctime>
 
 /// \file
 ///
@@ -43,5 +44,15 @@ std::string stripFilename(std::string path);
 /// \param path an absolute path
 /// \return the filename, without the directory
 std::string stripDirname(std::string path);
+
+/// Returns the modification date of the argument, which should be a
+/// path.
+///
+/// Note: This function is only defined if the operating system is
+/// recognized.
+///
+/// \param path a path name
+/// \return the modification time
+std::time_t modificationTime(std::string path);
 
 #endif // PATHNAME_HPP
