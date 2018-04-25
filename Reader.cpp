@@ -359,7 +359,7 @@ void compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
             }
             (makeAssemblerLine(Instr::RET)).appendOnto(toplevel);
             ofstream file1;
-            file1.open(fname1);
+            file1.open(fname1, std::ofstream::out | std::ofstream::binary);
             BOOST_SCOPE_EXIT(&file1) {
                 file1.close();
             } BOOST_SCOPE_EXIT_END;
@@ -380,7 +380,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
     ifstream file;
     file.exceptions(ifstream::badbit);
     try {
-        file.open(fname);
+        file.open(fname, std::ifstream::out | std::ifstream::binary);
         BOOST_SCOPE_EXIT(&file) {
             file.close();
         } BOOST_SCOPE_EXIT_END;
@@ -409,7 +409,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
 }
 
 bool fileExists(string fname) {
-    if (FILE* file = fopen(fname.c_str(), "r")) {
+    if (FILE* file = fopen(fname.c_str(), "rb")) {
         fclose(file);
         return true;
     } else {
