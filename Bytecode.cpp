@@ -1425,6 +1425,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                     cerr << "Trace assertion failure!" << endl;
                     hardKill(state, reader);
                 }
+                trace_marker = popNode(trace_marker);
+                temp = popNode(temp);
             }
             if (trace_marker != temp) {
                 // Welp
