@@ -14,7 +14,8 @@ std::string getExecutablePathname() {
     constexpr int SIZE = 512;
     char buffer[SIZE];
     memset(buffer, 0, SIZE * sizeof(char));
-    readlink("/proc/self/exe", buffer, SIZE);
+    if (readlink("/proc/self/exe", buffer, SIZE) == -1)
+        return "";
     std::string result(buffer);
     return result;
 }
@@ -23,7 +24,8 @@ std::string getWorkingDirectory() {
     constexpr int SIZE = 512;
     char buffer[SIZE];
     memset(buffer, 0, SIZE * sizeof(char));
-    getcwd(buffer, SIZE);
+    if (getcwd(buffer, SIZE) == NULL)
+        return "";
     std::string result(buffer);
     return result;
 }

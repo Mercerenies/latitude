@@ -1407,6 +1407,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         break;
     case Instr::XXX: {
         long val = state.cont.readLong(0);
+        val = val; // Ignore unused variable warning
 #if DEBUG_INSTR > 0
         cout << "XXX " << val << endl;
 #endif

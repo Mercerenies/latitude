@@ -1572,6 +1572,8 @@ void spawnSystemCallsNew(ObjectPtr global,
              info = *localtime(&raw);
          else if (state0.num0.asSmallInt() == 2)
              info = *gmtime(&raw);
+         else
+             assert(false);
          state0.ptr->put(Symbols::get()["second"], garnishObject(reader, info.tm_sec));
          state0.ptr->put(Symbols::get()["minute"], garnishObject(reader, info.tm_min));
          state0.ptr->put(Symbols::get()["hour"], garnishObject(reader, info.tm_hour));
