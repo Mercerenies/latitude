@@ -75,6 +75,7 @@ void InstructionSet::initialize() {
     props[Instr::DEL] = { };
     props[Instr::ARR] = { isLongRegisterArg };
     props[Instr::DICT] = { isLongRegisterArg };
+    props[Instr::XXX] = { isLongRegisterArg };
 }
 
 bool isRegister(const RegisterArg& arg) {

@@ -1405,6 +1405,14 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         state.ret = dict;
     }
         break;
+    case Instr::XXX: {
+        long val = state.cont.readLong(0);
+#if DEBUG_INSTR > 0
+        cout << "XXX " << val << endl;
+#endif
+        // Doesn't do anything right now. Don't mind me ^.^
+    }
+        break;
     }
 }
 

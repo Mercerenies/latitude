@@ -164,6 +164,8 @@ std::vector<AsmType> argPush(Instr instr) {
     case Instr::DICT:
         _V::ArgPush<typename _V::Necessary<Instr::DICT>::type>::push(vec);
         break;
+    case Instr::XXX:
+        _V::ArgPush<typename _V::Necessary<Instr::XXX>::type>::push(vec);
     }
     return vec;
 }
