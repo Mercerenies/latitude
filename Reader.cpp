@@ -486,7 +486,10 @@ void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
     if (performCall) {
 
         // Store the method/slot object
-        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+        if (!args.empty())
+            (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
+        else
+            (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
 
         // Evaluate each of the arguments, in order
         for (auto& arg : args) {
@@ -495,7 +498,8 @@ void StmtCall::translate(TranslationUnit& unit, InstrSeq& seq) {
         }
 
         // Make the call
-        (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
+        if (!args.empty())
+            (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
         (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
         (makeAssemblerLine(Instr::CALL, (long)args.size())).appendOnto(seq);
 
