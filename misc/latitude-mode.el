@@ -31,6 +31,17 @@
      (modify-syntax-entry ?\& "w" st)
      st))
 
+(defun latitude-mode--is-in-comment-or-string ()
+  ; Checks at point
+  (let ((face (get-text-property (point) 'face)))
+    (unless (listp face)
+      (setq face (list face)))
+    (or (memq 'font-lock-comment-face face)
+        (memq 'font-lock-string-face face))))
+
+;(defun latitude-mode--font-lock-literal-string (lim)
+;  ())
+
 (defvar latitude-mode-font-lock-keywords
   (list `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
           (1 font-lock-function-name-face))
