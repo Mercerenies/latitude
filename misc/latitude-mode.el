@@ -65,6 +65,7 @@
                             (point)))
       t)))
 
+;; TODO Does not work over multiple lines
 (defun latitude-mode--font-lock-literal-string (lim)
   (save-excursion
     (or (latitude-mode--font-lock-search-string lim "#("  ?(  ?) )
