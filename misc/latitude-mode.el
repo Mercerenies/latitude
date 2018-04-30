@@ -39,11 +39,44 @@
     (or (memq 'font-lock-comment-face face)
         (memq 'font-lock-string-face face))))
 
-;(defun latitude-mode--font-lock-literal-string (lim)
-;  ())
+(defun latitude-mode--forward-string-check (lim)
+  (save-excursion
+    (let ((matched (search-forward "#\"" lim t)))
+      (when matched
+        (backward-char 2)
+        (set-match-data (list (point) (1+ (point))))
+        t))))
+
+(defun latitude-mode--font-lock-search-string (lim start lhs rhs)
+  (let ((matched (search-forward start lim t))
+        (nests 0))
+    (when matched
+      (while (and (>= nests 0)
+                  (< (point) lim)
+                  (not (eobp)))
+        (let ((ch (following-char)))
+          (cond
+           ((equal ch ?\\) (forward-char))
+           ((equal ch lhs) (setq nests (1+ nests)))
+           ((equal ch rhs) (setq nests (1- nests)))
+           (t))
+          (forward-char)))
+      (set-match-data (list (- matched 2)
+                            (point)))
+      t)))
+
+(defun latitude-mode--font-lock-literal-string (lim)
+  (save-excursion
+    (or (latitude-mode--font-lock-search-string lim "#("  ?(  ?) )
+        (latitude-mode--font-lock-search-string lim "#["  ?[  ?] )
+        (latitude-mode--font-lock-search-string lim "#{"  ?{  ?} ))))
 
 (defvar latitude-mode-font-lock-keywords
-  (list `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
+  (list `(latitude-mode--forward-string-check
+          . font-lock-string-face)
+        `(latitude-mode--font-lock-literal-string
+          . font-lock-string-face)
+        `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
           (1 font-lock-function-name-face))
         `("\\_<\\(&?[A-Z]\\(?:\\sw\\|\\s_\\)*\\)\\_>"
           (1 font-lock-type-face))
