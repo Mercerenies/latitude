@@ -1953,7 +1953,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
      // CPP_PROT_VAR (protect the variable named %sym in the object %slf using the protection mask %num0)
-     // protectVar#: obj, var.
+     // protectVar#: obj, var, level.
      assert(reader.cpp.size() == CPP_PROT_VAR);
      reader.cpp.push_back([&reader](IntState& state0) {
          long num = state0.num0.asSmallInt();
@@ -1981,7 +1981,15 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::GETD, Reg::SLF),
                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
                                    makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$3"].index),
+                                   makeAssemblerLine(Instr::RTRV),
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                    makeAssemblerLine(Instr::ECLR),
                                    makeAssemblerLine(Instr::EXPD, Reg::SYM),
                                    makeAssemblerLine(Instr::THROA, "Symbol expected"),
