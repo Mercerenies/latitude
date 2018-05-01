@@ -96,7 +96,8 @@
                          "interface" "import" "importAll" "importAllSigils" "times" "upto"
                          "downto" "mod" "is?" "dup" "send" "tap" "stringify" "assign" "assignable"
                          "missing" "falsify" "println" "putln" "puts" "print" "dump" "dumpObject"
-                         "printObject" "intern" "toProc" "sys" "escapable" "cond" "use" "breakable")
+                         "printObject" "intern" "toProc" "sys" "escapable" "cond" "use" "breakable"
+                         "return" "break" "$break" "read" "readln")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
