@@ -1574,6 +1574,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              info = *gmtime(&raw);
          else
              assert(false);
+         Number base = Number::bigint(raw);
          state0.ptr->put(Symbols::get()["second"], garnishObject(reader, info.tm_sec));
          state0.ptr->put(Symbols::get()["minute"], garnishObject(reader, info.tm_min));
          state0.ptr->put(Symbols::get()["hour"], garnishObject(reader, info.tm_hour));
@@ -1583,6 +1584,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          state0.ptr->put(Symbols::get()["weekdayNumber"], garnishObject(reader, info.tm_wday));
          state0.ptr->put(Symbols::get()["yearDay"], garnishObject(reader, info.tm_yday + 1));
          state0.ptr->put(Symbols::get()["dstNumber"], garnishObject(reader, info.tm_isdst));
+         state0.ptr->put(Symbols::get()["raw"], garnishObject(reader, base));
      });
      sys->put(Symbols::get()["timeSpawnLocal#"],
               defineMethod(unit, global, method,
