@@ -85,23 +85,26 @@
           (1 font-lock-string-face))
         `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*:="
           (1 font-lock-variable-name-face))
-        `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "parent"
-                         "here" "again" "self" "invoke" "get" "has?" "put" "slot" "hold" "callCC"
+        `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "parent"
+                         "here" "again" "self" "invoke" "slot" "callCC"
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
-                         "catch" "handle" "load" "eval" "rethrow" "inject" "iterator"
-                         "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
-                         "member?" "takes" "localize" "this" "brackets" "origin" "resolve"
+                         "catch" "handle" "rethrow" "inject" "iterator"
+                         "$dynamic" "cons" "car" "cdr" "proc" "memo"
+                         "member?" "takes" "localize" "this" "resolve"
                          "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?"
-                         "caller")
+                         "caller" "nth" "size" "length" "toBool" "catchAll" "closure" "shield"
+                         "interface" "import" "importAll" "importAllSigils" "times" "upto"
+                         "downto" "mod" "is?" "dup" "send" "tap" "stringify" "assign" "assignable"
+                         "missing" "falsify" "println" "putln" "puts" "print" "dump" "dumpObject"
+                         "printObject" "intern" "toProc" "sys" "escapable" "cond" "use")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
-                         "Proc" "Stream" "Cont" "Exception" "SystemError" "Array" "Kernel"
-                         "Sequence" "ArgList" "Collection" "SystemArgError"
-                         "SystemCallError" "TypeError" "SlotError" "ContError" "ParseError"
-                         "BoundsError" "Mixin" "Cons" "Cell" "Lockbox" "Latchkey" "Cached"
-                         "IOError" "Wildcard" "Ellipsis" "Match" "NoMatch" "LazySequence" "Process"
-                         "StackFrame" "NotSupportedError" "REPL" "FilePath" "FileHeader")
+                         "Proc" "Stream" "Cont" "Exception" "Array" "Kernel"
+                         "ArgList" "Collection" "Iterator"
+                         "Mixin" "Cons" "Cached" "Parents" "Slots" "Process"
+                         "StackFrame" "REPL" "FilePath" "FileHeader" "Chain"
+                         "Conditional" "Dict")
                        'symbols)
           . font-lock-constant-face)
         `(,(regexp-opt '(":=" "::=" "=" "<-"))
