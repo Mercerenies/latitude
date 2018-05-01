@@ -9,6 +9,10 @@ global escapable := {
   cont := $1.
   self return := { cont call. }.
 }.
+global breakable := {
+  breakBlock := $break.
+  self break := { breakBlock call. }.
+}.
 
 ;; Booleans
 Object toBool := True.
@@ -92,7 +96,7 @@ global loop := {
   content := #'$1.
   callCC {
     escapable.
-    $break := #'(return).
+    $break := proc { return. }.
     meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
   }.
 }.
@@ -106,7 +110,7 @@ global while := {
       loop {
         if (cond)
           then { stmt. }
-          else { $break: Nil. }.
+          else { $break call: Nil. }.
       }.
     }.
   }.

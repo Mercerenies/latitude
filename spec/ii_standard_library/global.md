@@ -40,6 +40,14 @@ with an argument, this method will invoke the continuation `cont`,
 jumping to the point of the continuation and passing its argument
 onward.
 
+### `global breakable.`
+
+Defines a `break` slot on `self` which contains a method. When called
+with an argument, this method will invoke the value of `$break` at the
+time `breakable` was called. It is usually used inside of loops to
+convert the default dynamic `$break` procedure into a lexical `break`
+method.
+
 ### `global $moduleLoader.`
 
 This slot contains the current [`ModuleLoader`](moduleloader.md). It
@@ -147,7 +155,7 @@ if-statement.
 Loops infinitely, calling `block` at every iteration of the
 loop. `mthd` will be called on the `Conditional` object.
 
-Inside the block body, a `$break` method is defined, which takes a
+Inside the block body, a `$break` procedure is defined, which takes a
 single argument and will exit the loop immediately, returning the
 argument.
 
@@ -161,7 +169,7 @@ exited and `Nil` is returned. The block will be executed with
 `Conditional` as the caller, but `cond` will be called as a method
 with an undefined caller.
 
-Inside the block body, a `$break` method is defined, which takes a
+Inside the block body, a `$break` procedure is defined, which takes a
 single argument and will exit the loop immediately, returning the
 argument.
 

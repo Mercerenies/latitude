@@ -150,11 +150,11 @@ truthy, the body will be executed once. Then the condition will be
 checked again, and so on. If the loop exits as a result of the
 condition becoming falsy, the return value of the condition will be
 the nil object. Within the scope of the body method *and* the
-condition method, the loop will define a dynamically-scoped method
+condition method, the loop will define a dynamically-scoped procedure
 `$break`. This method can be called with one argument, which will
 result in the loop immediately ceasing execution. In this case, the
 return value of the loop is the value of the argument to the `$break`
-method.
+procedure.
 
 The resulting while-loop syntax is as follows.
 
