@@ -147,6 +147,10 @@ if-statement.
 Loops infinitely, calling `block` at every iteration of the
 loop. `mthd` will be called on the `Conditional` object.
 
+Inside the block body, a `$break` method is defined, which takes a
+single argument and will exit the loop immediately, returning the
+argument.
+
 ### `global while (cond) do (block).`
 
 Executes a while-loop statement. `while` returns an intermediate
@@ -155,11 +159,15 @@ object, and `do` executes the statement. In one iteration, first
 run and these two steps repeated. If it is false, then the loop is
 exited and `Nil` is returned. The block will be executed with
 `Conditional` as the caller, but `cond` will be called as a method
-with an undefined caller. Inside the block body, a `$break` method is
-defined, which takes a single argument and will exit the loop
-immediately, returning the argument. Remember that `cond` should
-probably be a method, for if it is not then its truthiness will be
-evaluated immediately and never re-checked during later iterations.
+with an undefined caller.
+
+Inside the block body, a `$break` method is defined, which takes a
+single argument and will exit the loop immediately, returning the
+argument.
+
+Remember that `cond` should probably be a method, for if it is not
+then its truthiness will be evaluated immediately and never re-checked
+during later iterations.
 
 ### `global cond (body).`
 

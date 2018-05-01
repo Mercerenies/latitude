@@ -90,7 +90,11 @@ Object not := {
 ;; Loops
 global loop := {
   content := #'$1.
-  meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
+  callCC {
+    escapable.
+    $break := #'(return).
+    meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
+  }.
 }.
 global while := {
   cond0 := #'$1.
@@ -99,14 +103,10 @@ global while := {
     self do := {
       stmt0 := #'$1.
       stmt := { Kernel invoke #'(stmt0) on (Conditional) call. }.
-      callCC {
-        escapable.
-        $break := #'return.
-        loop {
-          if (cond)
-            then { stmt. }
-            else { $break: Nil. }.
-        }.
+      loop {
+        if (cond)
+          then { stmt. }
+          else { $break: Nil. }.
       }.
     }.
   }.
