@@ -17,7 +17,7 @@ InstrSeq garnishSeq(bool value) {
     return seq;
 }
 
-InstrSeq garnishSeq(boost::blank value) {
+InstrSeq garnishSeq(Unit value) {
     InstrSeq seq = asmCode(makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET));
     return seq;
 }
@@ -54,7 +54,7 @@ ObjectPtr garnishObject(const ReadOnlyState& reader, bool value) {
     return value ? reader.lit.at(Lit::TRUE) : reader.lit.at(Lit::FALSE);
 }
 
-ObjectPtr garnishObject(const ReadOnlyState& reader, boost::blank value) {
+ObjectPtr garnishObject(const ReadOnlyState& reader, Unit value) {
     return reader.lit.at(Lit::NIL);
 }
 

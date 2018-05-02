@@ -20,7 +20,6 @@ extern "C" {
 #include <sstream>
 #include <fstream>
 #include <boost/scope_exit.hpp>
-#include <boost/blank.hpp>
 
 //#define DEBUG_LOADS
 
@@ -180,7 +179,7 @@ void eval(IntState& state, const ReadOnlyState& reader, string str) {
             state.cont = MethodSeek(Method(unit, { 0 }));
             state.trns.push(unit);
         } else {
-            state.ret = garnishObject(reader, boost::blank());
+            state.ret = garnishObject(reader, Unit());
         }
     } catch (std::string str) {
         throwError(state, reader, "ParseError", str);

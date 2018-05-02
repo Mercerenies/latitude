@@ -181,7 +181,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                         (*stream0)->writeLine(*str0);
                         break;
                     }
-                    state0.ret = garnishObject(reader, boost::blank());
+                    state0.ret = garnishObject(reader, Unit());
                 } else {
                     throwError(state0, reader, "IOError", "Stream not designated for output");
                 }
@@ -1436,7 +1436,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      reader.cpp.push_back([&reader](IntState& state0) {
          auto pos = state0.str0.find(state0.str1, state0.num0.asSmallInt());
          if (pos == string::npos)
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader, Unit());
          else
              state0.ret = garnishObject(reader, (long)pos);
      });
@@ -1613,7 +1613,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          if (value)
              state0.ret = garnishObject(reader, *value);
          else
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader, Unit());
      });
      sys->put(Symbols::get()["envGet#"],
               defineMethod(unit, global, method,
@@ -1638,7 +1638,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              success = setEnv(state0.str0, state0.str1);
          }
          if (success)
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader, Unit());
          else
              throwError(state0, reader, "NotSupportedError",
                         "Mutable environment variables not supported on this system");
@@ -2030,7 +2030,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          if (result)
              state0.ret = garnishObject(reader, *result);
          else
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader, Unit());
      });
      sys->put(Symbols::get()["stringNext#"],
               defineMethod(unit, global, method,

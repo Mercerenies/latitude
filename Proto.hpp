@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
-#include <boost/blank.hpp>
 #include <variant>
 #include <set>
 
@@ -63,9 +62,11 @@ struct PtrCompare {
     bool operator()(const ObjectPtr& a, const ObjectPtr& b);
 };
 
+struct Unit {};
+
 /// \brief A primitive field, which can be either empty or an element
 /// of any number of types.
-using Prim = std::variant<boost::blank, Number, std::string,
+using Prim = std::variant<Unit, Number, std::string,
                           StreamPtr, Symbolic, ProcessPtr,
                           Method, StatePtr>;
 

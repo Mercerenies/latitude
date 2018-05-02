@@ -2,7 +2,6 @@
 #define GARNISH_HPP
 
 #include <string>
-#include <boost/blank.hpp>
 #include "Proto.hpp"
 #include "Bytecode.hpp"
 
@@ -25,9 +24,9 @@ InstrSeq garnishSeq(bool value);
 /// Returns an instruction sequence which places the literal value
 /// `Nil` equivalent to the argument in the `%%ret` register.
 ///
-/// \param value the singular `boost::blank` value
+/// \param value the singular `Unit` value
 /// \return a sequence of instructions
-InstrSeq garnishSeq(boost::blank value);
+InstrSeq garnishSeq(Unit value);
 
 /// Returns an instruction sequence which places a string value
 /// equivalent to the argument in the `%%ret` register.
@@ -70,7 +69,7 @@ ObjectPtr garnishObject(const ReadOnlyState& reader, bool value);
 /// \param reader the read-only state
 /// \param value a placeholder for the "empty" object
 /// \return the Nil object
-ObjectPtr garnishObject(const ReadOnlyState& reader, boost::blank value);
+ObjectPtr garnishObject(const ReadOnlyState& reader, Unit value);
 
 /// Allocates and returns a new Latitude string object representing
 /// the given string.
