@@ -1,9 +1,8 @@
 #ifndef SYMBOL_HPP
 #define SYMBOL_HPP
 
-#include <boost/bimap.hpp>
-#include <boost/bimap/unordered_set_of.hpp>
-#include <boost/bimap/unordered_multiset_of.hpp>
+#include <unordered_map>
+#include <deque>
 #include <string>
 #include <functional>
 
@@ -16,12 +15,11 @@ struct Symbolic;
 class Symbols {
 public:
     using index_t = long;
-    using bimap_t = boost::bimap< boost::bimaps::unordered_set_of<index_t>,
-                                  boost::bimaps::unordered_multiset_of<std::string> >;
 private:
     static long gensymIndex;
     static Symbols instance;
-    bimap_t syms;
+    std::deque<std::string> syms;
+    std::unordered_map<std::string, index_t> names;
     index_t index;
     index_t parentIndex;
     Symbols();
