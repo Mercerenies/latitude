@@ -4,7 +4,8 @@
 #include <vector>
 #include <map>
 #include <functional>
-#include <boost/variant.hpp>
+#include <memory>
+#include <variant>
 
 /// \file
 ///
@@ -104,7 +105,7 @@ using InstrSeq = std::deque<AssemblerLine>;
 ///
 /// Arguments to instructions can be references to registers, integer
 /// values, string values, or indices of functions in the VM.
-using RegisterArg = boost::variant<Reg, long, std::string, FunctionIndex>;
+using RegisterArg = std::variant<Reg, long, std::string, FunctionIndex>;
 
 /// The singleton InstructionSet instance manages the collection of
 /// valid instruction opcodes. It is used by makeRuntimeAssemblerLine

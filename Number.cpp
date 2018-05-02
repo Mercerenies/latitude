@@ -88,7 +88,7 @@ namespace MagicNumber {
         }
     };
 
-    struct LevelVisitor : boost::static_visitor<int> {
+    struct LevelVisitor {
         template <typename U>
         int operator()(const U& first) const {
             return (int)NumeralT<U>::type::value;
@@ -96,7 +96,7 @@ namespace MagicNumber {
     };
 
     template <typename T>
-    struct StrictCastVisitor : boost::static_visitor<T> {
+    struct StrictCastVisitor {
         template <typename U>
         T operator()(const U& first) const {
             return (T)first;
@@ -106,7 +106,7 @@ namespace MagicNumber {
         }
     };
 
-    struct PlusVisitor : boost::static_visitor<Number::magic_t> {
+    struct PlusVisitor {
         template <typename U, typename V>
         Number::magic_t operator()(U& first, V& second) const {
             auto first0 = Coerce<V>::act(first);
@@ -116,7 +116,7 @@ namespace MagicNumber {
         }
     };
 
-    struct TimesVisitor : boost::static_visitor<Number::magic_t> {
+    struct TimesVisitor {
         template <typename U, typename V>
         Number::magic_t operator()(U& first, V& second) const {
             auto first0 = Coerce<V>::act(first);
@@ -126,7 +126,7 @@ namespace MagicNumber {
         }
     };
 
-    struct NegateVisitor : boost::static_visitor<Number::magic_t> {
+    struct NegateVisitor {
         template <typename U>
         Number::magic_t operator()(U& first) const {
             U result = - first;
@@ -134,7 +134,7 @@ namespace MagicNumber {
         }
     };
 
-    struct RecipVisitor : boost::static_visitor<Number::magic_t> {
+    struct RecipVisitor {
         template <typename U>
         Number::magic_t operator()(U& first) const {
             if (first == 0)
@@ -168,7 +168,7 @@ namespace MagicNumber {
 
     };
 
-    struct ModVisitor : boost::static_visitor<Number::magic_t> {
+    struct ModVisitor {
         template <typename U, typename V>
         Number::magic_t operator()(U& first, V& second) const {
             typedef typename Wider<U, V>::type wide_t;
@@ -197,7 +197,7 @@ namespace MagicNumber {
         }
     };
 
-    struct PowerVisitor : boost::static_visitor<Number::magic_t> {
+    struct PowerVisitor {
 
         template <typename U, typename V>
         U ipow(U base, V exp) const {
@@ -255,7 +255,7 @@ namespace MagicNumber {
                 NegateVisitor negate;
                 Number::magic_t firstx = recip(first0);
                 Number::magic_t secondx = negate(second);
-                return boost::apply_visitor(*this, firstx, secondx);
+                return std::visit(*this, firstx, secondx);
             }
         }
 
@@ -280,7 +280,7 @@ namespace MagicNumber {
                 NegateVisitor negate;
                 Number::magic_t firstx = recip(first0);
                 Number::magic_t secondx = negate(second);
-                return boost::apply_visitor(*this, firstx, secondx);
+                return std::visit(*this, firstx, secondx);
             }
         }
 
@@ -317,7 +317,7 @@ namespace MagicNumber {
 
     };
 
-    struct EqualVisitor : boost::static_visitor<bool> {
+    struct EqualVisitor {
         template <typename U, typename V>
         bool operator()(const U& first, const V& second) const {
             auto first0 = Coerce<V>::act(first);
@@ -326,7 +326,7 @@ namespace MagicNumber {
         }
     };
 
-    struct LessVisitor : boost::static_visitor<bool> {
+    struct LessVisitor {
         template <typename U, typename V>
         bool operator()(const U& first, const V& second) const {
             auto first0 = Coerce<V>::act(first);
@@ -346,7 +346,7 @@ namespace MagicNumber {
         }
     };
 
-    struct StringifyVisitor : boost::static_visitor<> {
+    struct StringifyVisitor {
         ostringstream stream;
 
         StringifyVisitor()
@@ -387,7 +387,7 @@ namespace MagicNumber {
         }
     };
 
-    struct LogVisitor : boost::static_visitor<Number::magic_t> {
+    struct LogVisitor {
 
         template <typename U>
         Number::magic_t operator()(const U& first) const {
@@ -404,7 +404,7 @@ namespace MagicNumber {
 
     };
 
-    struct FloatingOpVisitor : boost::static_visitor<Number::magic_t> {
+    struct FloatingOpVisitor {
         typedef std::function<Number::floating(Number::floating)> function_type;
         typedef std::function<Number::complex(Number::complex)> complex_function_type;
         function_type func;
@@ -424,7 +424,7 @@ namespace MagicNumber {
 
     };
 
-    struct FloatingComplexOpVisitor : boost::static_visitor<Number::magic_t> {
+    struct FloatingComplexOpVisitor {
         typedef FloatingOpVisitor::function_type function_type;
         typedef FloatingOpVisitor::complex_function_type complex_function_type;
         typedef std::function<bool(Number::floating)> predicate_type;
@@ -450,7 +450,7 @@ namespace MagicNumber {
 
     };
 
-    struct FloorVisitor : boost::static_visitor<Number::magic_t> {
+    struct FloorVisitor {
 
         Number::magic_t operator()(const Number::smallint& value) const {
             return value;
@@ -477,7 +477,7 @@ namespace MagicNumber {
 
     };
 
-    struct ComplexVisitor : boost::static_visitor<Number::magic_t> {
+    struct ComplexVisitor {
         template <typename U, typename V>
         Number::magic_t operator()(const U& first, const V& second) const {
             Number::floating first0 = static_cast<Number::floating>(first);
@@ -497,7 +497,7 @@ namespace MagicNumber {
         }
     };
 
-    struct AndVisitor : boost::static_visitor<Number::magic_t> {
+    struct AndVisitor {
 
         Number::magic_t operator()(const Number::smallint& first, const Number::smallint& second) const {
             return Number::magic_t(first & second);
@@ -524,7 +524,7 @@ namespace MagicNumber {
 
     };
 
-    struct OrVisitor : boost::static_visitor<Number::magic_t> {
+    struct OrVisitor {
 
         Number::magic_t operator()(const Number::smallint& first, const Number::smallint& second) const {
             return Number::magic_t(first | second);
@@ -551,7 +551,7 @@ namespace MagicNumber {
 
     };
 
-    struct XorVisitor : boost::static_visitor<Number::magic_t> {
+    struct XorVisitor {
 
         Number::magic_t operator()(const Number::smallint& first, const Number::smallint& second) const {
             return Number::magic_t(first ^ second);
@@ -578,7 +578,7 @@ namespace MagicNumber {
 
     };
 
-    struct ComplVisitor : boost::static_visitor<Number::magic_t> {
+    struct ComplVisitor {
 
         Number::magic_t operator()(const Number::smallint& first) const {
             return Number::magic_t(~first);
@@ -595,7 +595,7 @@ namespace MagicNumber {
 
     };
 
-    struct DestructuringVisitor : boost::static_visitor< std::tuple<Number, Number> > {
+    struct DestructuringVisitor {
 
         template <typename U>
         std::tuple<Number, Number> operator()(const U& first) const {
@@ -638,21 +638,21 @@ Number& Number::operator =(Number other) {
 
 bool Number::operator ==(const Number& other) const {
     auto& second = *other.value;
-    return boost::apply_visitor(MagicNumber::EqualVisitor(), *value, second);
+    return std::visit(MagicNumber::EqualVisitor(), *value, second);
 }
 
 bool Number::operator <(const Number& other) const {
     auto& second = *other.value;
-    return boost::apply_visitor(MagicNumber::LessVisitor(), *value, second);
+    return std::visit(MagicNumber::LessVisitor(), *value, second);
 }
 
 Number& Number::operator +=(const Number& other) {
     auto& second = *other.value;
-    if ((value->which() == 0) && (second.which() == 0)) {
+    if ((value->index() == 0) && (second.index() == 0)) {
         // Possibility of overflow (two smallints)
         bool promote = false;
-        smallint x0 = boost::get<smallint>(*value);
-        smallint x1 = boost::get<smallint>(second);
+        smallint x0 = std::get<smallint>(*value);
+        smallint x1 = std::get<smallint>(second);
         if ((x1 > 0) && (x0 > numeric_limits<smallint>::max() - x1))
             promote = true;
         if ((x1 < 0) && (x0 < numeric_limits<smallint>::min() - x1))
@@ -660,7 +660,7 @@ Number& Number::operator +=(const Number& other) {
         if (promote)
             value = std::make_unique<magic_t>(bigint(x0));
     }
-    value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::PlusVisitor(), *value, second));
+    value = std::make_unique<magic_t>(std::visit(MagicNumber::PlusVisitor(), *value, second));
     return *this;
 }
 
@@ -670,17 +670,17 @@ Number& Number::operator -=(const Number& other) {
 
 Number& Number::operator *=(const Number& other) {
     auto& second = *other.value;
-    if ((value->which() == 0) && (second.which() == 0)) {
+    if ((value->index() == 0) && (second.index() == 0)) {
         // Possibility of overflow (two smallints)
         bool promote = false;
-        smallint x0 = boost::get<smallint>(*value);
-        smallint x1 = boost::get<smallint>(second);
+        smallint x0 = std::get<smallint>(*value);
+        smallint x1 = std::get<smallint>(second);
         if ((x1 != 0) && (abs(x0) > numeric_limits<smallint>::max() / abs(x1)))
             promote = true;
         if (promote)
             value = std::make_unique<magic_t>(bigint(x0));
     }
-    value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::TimesVisitor(), *value, second));
+    value = std::make_unique<magic_t>(std::visit(MagicNumber::TimesVisitor(), *value, second));
     return *this;
 }
 
@@ -690,7 +690,7 @@ Number& Number::operator /=(const Number& other) {
 
 Number& Number::operator %=(const Number& other) {
     auto& second = *other.value;
-    value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::ModVisitor(), *value, second));
+    value = std::make_unique<magic_t>(std::visit(MagicNumber::ModVisitor(), *value, second));
     return *this;
 }
 
@@ -698,43 +698,43 @@ Number Number::pow(const Number& other) const {
     auto& first = *this->value;
     auto& second = *other.value;
     Number result;
-    result.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::PowerVisitor(), first, second));
+    result.value = std::make_unique<magic_t>(std::visit(MagicNumber::PowerVisitor(), first, second));
     return result;
 }
 
 Number Number::operator -() const {
     Number curr = *this;
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::NegateVisitor(), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::NegateVisitor(), *curr.value));
     return curr;
 }
 
 Number Number::recip() const {
     Number curr = *this;
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::RecipVisitor(), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::RecipVisitor(), *curr.value));
     return curr;
 }
 
 Number& Number::operator &=(const Number& other) {
     auto& second = *other.value;
-    value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::AndVisitor(), *value, second));
+    value = std::make_unique<magic_t>(std::visit(MagicNumber::AndVisitor(), *value, second));
     return *this;
 }
 
 Number& Number::operator |=(const Number& other) {
     auto& second = *other.value;
-    value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::OrVisitor(), *value, second));
+    value = std::make_unique<magic_t>(std::visit(MagicNumber::OrVisitor(), *value, second));
     return *this;
 }
 
 Number& Number::operator ^=(const Number& other) {
     auto& second = *other.value;
-    value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::XorVisitor(), *value, second));
+    value = std::make_unique<magic_t>(std::visit(MagicNumber::XorVisitor(), *value, second));
     return *this;
 }
 
 Number Number::operator ~() const {
     Number next;
-    next.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::ComplVisitor(), *value));
+    next.value = std::make_unique<magic_t>(std::visit(MagicNumber::ComplVisitor(), *value));
     return next;
 }
 
@@ -742,7 +742,7 @@ Number Number::sin() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::sin;
     function<complex(complex)> cfunc = [](const complex& c) { return std::sin(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -750,7 +750,7 @@ Number Number::cos() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::cos;
     function<complex(complex)> cfunc = [](const complex& c) { return std::cos(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -758,7 +758,7 @@ Number Number::tan() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::tan;
     function<complex(complex)> cfunc = [](const complex& c) { return std::tan(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -766,7 +766,7 @@ Number Number::sinh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::sinh;
     function<complex(complex)> cfunc = [](const complex& c) { return std::sinh(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -774,7 +774,7 @@ Number Number::cosh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::cosh;
     function<complex(complex)> cfunc = [](const complex& c) { return std::cosh(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -782,7 +782,7 @@ Number Number::tanh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::tanh;
     function<complex(complex)> cfunc = [](const complex& c) { return std::tanh(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -790,7 +790,7 @@ Number Number::exp() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::exp;
     function<complex(complex)> cfunc = [](const complex& c) { return std::exp(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -799,7 +799,7 @@ Number Number::asin() const {
     function<bool(double)> pred = [](double d) { return (d < -1) || (d > 1); };
     function<double(double)> func = (double(*)(double))std::asin;
     function<complex(complex)> cfunc = [](const complex& c) { return std::asin(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
     return curr;
 }
 
@@ -808,7 +808,7 @@ Number Number::acos() const {
     function<bool(double)> pred = [](double d) { return (d < -1) || (d > 1); };
     function<double(double)> func = (double(*)(double))std::acos;
     function<complex(complex)> cfunc = [](const complex& c) { return std::acos(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
     return curr;
 }
 
@@ -816,7 +816,7 @@ Number Number::atan() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::atan;
     function<complex(complex)> cfunc = [](const complex& c) { return std::atan(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -824,7 +824,7 @@ Number Number::asinh() const {
     Number curr = *this;
     function<double(double)> func = (double(*)(double))std::asinh;
     function<complex(complex)> cfunc = [](const complex& c) { return std::asinh(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingOpVisitor(func, cfunc), *curr.value));
     return curr;
 }
 
@@ -833,7 +833,7 @@ Number Number::acosh() const {
     function<bool(double)> pred = [](double d) { return (d < 1); };
     function<double(double)> func = (double(*)(double))std::acosh;
     function<complex(complex)> cfunc = [](const complex& c) { return std::acosh(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
     return curr;
 }
 
@@ -842,48 +842,48 @@ Number Number::atanh() const {
     function<bool(double)> pred = [](double d) { return (d == -1) || (d == 1); };
     function<double(double)> func = (double(*)(double))std::atanh;
     function<complex(complex)> cfunc = [](const complex& c) { return std::atanh(c); };
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloatingComplexOpVisitor(func, cfunc, pred), *curr.value));
     return curr;
 }
 
 Number Number::log() const {
     Number curr = *this;
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::LogVisitor(), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::LogVisitor(), *curr.value));
     return curr;
 }
 
 Number Number::floor() const {
     Number curr = *this;
-    curr.value = std::make_unique<magic_t>(boost::apply_visitor(MagicNumber::FloorVisitor(), *curr.value));
+    curr.value = std::make_unique<magic_t>(std::visit(MagicNumber::FloorVisitor(), *curr.value));
     return curr;
 }
 
 string Number::asString() const {
     MagicNumber::StringifyVisitor visitor;
-    boost::apply_visitor(visitor, *value);
+    std::visit(visitor, *value);
     return visitor.str();
 }
 
 Number Number::realPart() const {
-    return std::get<0>(boost::apply_visitor(MagicNumber::DestructuringVisitor(), *value));
+    return std::get<0>(std::visit(MagicNumber::DestructuringVisitor(), *value));
 }
 
 Number Number::imagPart() const {
-    return std::get<1>(boost::apply_visitor(MagicNumber::DestructuringVisitor(), *value));
+    return std::get<1>(std::visit(MagicNumber::DestructuringVisitor(), *value));
 }
 
 auto Number::asSmallInt() const
     -> smallint {
-    return boost::apply_visitor(MagicNumber::StrictCastVisitor<smallint>(), *value);
+    return std::visit(MagicNumber::StrictCastVisitor<smallint>(), *value);
 }
 
 int Number::hierarchyLevel() const {
-    return boost::apply_visitor(MagicNumber::LevelVisitor(), *value);
+    return std::visit(MagicNumber::LevelVisitor(), *value);
 }
 
 Number complexNumber(const Number& real, const Number& imag) {
     Number curr;
-    curr.value = std::make_unique<Number::magic_t>(boost::apply_visitor(MagicNumber::ComplexVisitor(), *real.value, *imag.value));
+    curr.value = std::make_unique<Number::magic_t>(std::visit(MagicNumber::ComplexVisitor(), *real.value, *imag.value));
     return curr;
 }
 

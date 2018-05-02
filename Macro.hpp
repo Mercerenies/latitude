@@ -5,7 +5,7 @@
 #include <tuple>
 #include <iterator>
 #include <type_traits>
-#include <boost/variant.hpp>
+#include <variant>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/find.hpp>
 #include "Reader.hpp"
@@ -84,13 +84,13 @@ struct _VariantVisitor {
 /// \param variant the variant value
 /// \return whether or not the variant contains a value of the given type
 template <typename T, typename... Ss>
-bool variantIsType(const boost::variant<Ss...>& variant) {
+bool variantIsType(const std::variant<Ss...>& variant) {
     typedef boost::mpl::vector<Ss...> pack_t;
     static_assert(!std::is_same<
                   typename boost::mpl::find<pack_t, T>::type,
                   typename boost::mpl::end<pack_t>::type>::value,
                   "invalid type given to variant check");
-    return boost::apply_visitor(_VariantVisitor<T>(), variant);
+    return std::visit(_VariantVisitor<T>(), variant);
 }
 
 #endif // MACRO_HPP

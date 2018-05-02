@@ -12,7 +12,7 @@ namespace optimize {
             for (AssemblerLine& line : seq) {
                 if (line.getCommand() == Instr::SYM) {
                     // Assume the instruction is valid, so its first argument is a string.
-                    auto sym = boost::get<std::string>(line.argument(0));
+                    auto sym = std::get<std::string>(line.argument(0));
                     line.setCommand(Instr::SYMN);
                     line.clearRegisterArgs();
                     line.addRegisterArg(Symbols::get()[sym].index);

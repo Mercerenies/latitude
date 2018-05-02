@@ -5,7 +5,7 @@
 #include <string>
 #include <type_traits>
 #include <complex>
-#include <boost/variant.hpp>
+#include <variant>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/distance.hpp>
 #include <boost/mpl/begin_end.hpp>
@@ -50,7 +50,7 @@ public:
 
     /// \brief This is the internal type of the Number instance which
     /// contains the actual value.
-    typedef boost::variant<smallint, bigint, ratio, floating, complex> magic_t;
+    typedef std::variant<smallint, bigint, ratio, floating, complex> magic_t;
 
 private:
     std::unique_ptr<magic_t> value;

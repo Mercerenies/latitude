@@ -455,7 +455,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&state.ptr->prim());
+        auto stmt = std::get_if<Method>(&state.ptr->prim());
         ObjectPtr closure = (*state.ptr)[ Symbols::get()["closure"] ];
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
@@ -533,7 +533,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "XCALL (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
-        auto stmt = boost::get<Method>(&state.ptr->prim());
+        auto stmt = std::get_if<Method>(&state.ptr->prim());
         if (stmt) {
             // (6) Push %cont onto %stack
             state.stack = pushNode(state.stack, state.cont);
@@ -550,7 +550,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "XCALL0 " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&state.ptr->prim());
+        auto stmt = std::get_if<Method>(&state.ptr->prim());
         ObjectPtr closure = (*state.ptr)[ Symbols::get()["closure"] ];
         if ((closure != nullptr) && stmt) {
             // It's a method; get ready to call it
@@ -728,7 +728,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 1
             cout << "* Found " << value << endl;
 #if DEBUG_INSTR > 2
-            auto stmt = boost::get<Method>(&value->prim());
+            auto stmt = std::get_if<Method>(&value->prim());
             cout << "* Method Properties " <<
                 (stmt ? stmt->index().index : -1) << " " <<
                 (stmt ? stmt->translationUnit() : nullptr) << endl;
@@ -771,7 +771,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         switch (expd) {
         case Reg::SYM: {
-            auto test = boost::get<Symbolic>(&state.ptr->prim());
+            auto test = std::get_if<Symbolic>(&state.ptr->prim());
             if (test)
                 state.sym = *test;
             else
@@ -779,7 +779,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::NUM0: {
-            auto test = boost::get<Number>(&state.ptr->prim());
+            auto test = std::get_if<Number>(&state.ptr->prim());
             if (test)
                 state.num0 = *test;
             else
@@ -787,7 +787,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::NUM1: {
-            auto test = boost::get<Number>(&state.ptr->prim());
+            auto test = std::get_if<Number>(&state.ptr->prim());
             if (test)
                 state.num1 = *test;
             else
@@ -795,7 +795,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::STR0: {
-            auto test = boost::get<string>(&state.ptr->prim());
+            auto test = std::get_if<string>(&state.ptr->prim());
             if (test)
                 state.str0 = *test;
             else
@@ -803,7 +803,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::STR1: {
-            auto test = boost::get<string>(&state.ptr->prim());
+            auto test = std::get_if<string>(&state.ptr->prim());
             if (test)
                 state.str1 = *test;
             else
@@ -811,7 +811,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::MTHD: {
-            auto test = boost::get<Method>(&state.ptr->prim());
+            auto test = std::get_if<Method>(&state.ptr->prim());
             if (test)
                 state.mthd = *test;
             else
@@ -819,7 +819,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::STRM: {
-            auto test = boost::get<StreamPtr>(&state.ptr->prim());
+            auto test = std::get_if<StreamPtr>(&state.ptr->prim());
             if (test)
                 state.strm = *test;
             else
@@ -827,7 +827,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::PRCS: {
-            auto test = boost::get<ProcessPtr>(&state.ptr->prim());
+            auto test = std::get_if<ProcessPtr>(&state.ptr->prim());
             if (test)
                 state.prcs = *test;
             else
@@ -835,7 +835,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
             break;
         case Reg::MTHDZ: {
-            auto test = boost::get<Method>(&state.ptr->prim());
+            auto test = std::get_if<Method>(&state.ptr->prim());
             if (test)
                 state.mthdz = *test;
             else
@@ -1052,7 +1052,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "CGOTO" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( state.ptr->prim() );
+        auto cont = std::get<StatePtr>( state.ptr->prim() );
         if (cont) {
             auto oldWind = state.wind;
             auto newWind = cont->wind;
@@ -1069,7 +1069,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "CRET" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( state.ptr->prim() );
+        auto cont = std::get<StatePtr>( state.ptr->prim() );
         auto ret = state.ret;
         if (cont) {
             auto oldWind = state.wind;
@@ -1088,8 +1088,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "WND" << endl;
 #endif
-        auto before = boost::get<Method>(&state.slf->prim()),
-             after  = boost::get<Method>(&state.ptr->prim());
+        auto before = std::get_if<Method>(&state.slf->prim()),
+             after  = std::get_if<Method>(&state.ptr->prim());
         if (before && after) {
             WindPtr frame = WindPtr(new WindFrame(Thunk(*before), Thunk(*after)));
             frame->before.lex = (*state.slf)[ Symbols::get()["closure"] ];
@@ -1388,7 +1388,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.arg.pop();
             ObjectPtr key = state.arg.top();
             state.arg.pop();
-            auto key0 = boost::get<Symbolic>(&key->prim());
+            auto key0 = std::get_if<Symbolic>(&key->prim());
             if (key0) {
                 if (*key0 == Symbols::get()["missing"]) {
                     dict->put(Symbols::get()["impl0"], value);

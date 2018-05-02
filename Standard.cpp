@@ -62,7 +62,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         ObjectPtr str = (*dyn)[ Symbols::get()["$1"] ];
         ObjectPtr global = (*dyn)[ Symbols::get()["$2"] ];
         if ((str != nullptr) && (global != nullptr)) {
-            auto str0 = boost::get<string>(&str->prim());
+            auto str0 = std::get_if<string>(&str->prim());
             if (str0) {
                 string str1 = *str0;
                 if (state0.num0.asSmallInt() == 1)
@@ -134,7 +134,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         if (stream != nullptr) {
-            auto stream0 = boost::get<StreamPtr>(&stream->prim());
+            auto stream0 = std::get_if<StreamPtr>(&stream->prim());
             if (stream0) {
                 switch (state0.num0.asSmallInt()) {
                 case 0:
@@ -169,8 +169,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         ObjectPtr str = (*dyn)[ Symbols::get()["$2"] ];
         if ((stream != nullptr) && (str != nullptr)) {
-            auto stream0 = boost::get<StreamPtr>(&stream->prim());
-            auto str0 = boost::get<string>(&str->prim());
+            auto stream0 = std::get_if<StreamPtr>(&stream->prim());
+            auto str0 = std::get_if<string>(&str->prim());
             if (stream0 && str0) {
                 if ((*stream0)->hasOut()) {
                     switch (state0.num0.asSmallInt()) {
@@ -557,7 +557,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         if (stream != NULL) {
-            auto stream0 = boost::get<StreamPtr>(&stream->prim());
+            auto stream0 = std::get_if<StreamPtr>(&stream->prim());
             if (stream0) {
                 if ((*stream0)->hasIn()) {
                     if (state0.num0.asSmallInt() == 0)
@@ -966,12 +966,12 @@ void spawnSystemCallsNew(ObjectPtr global,
         state0.flag = false;
         auto prim0 = state0.slf->prim();
         auto prim1 = state0.ptr->prim();
-        auto n0 = boost::get<Number>(&prim0);
-        auto n1 = boost::get<Number>(&prim1);
-        auto st0 = boost::get<string>(&prim0);
-        auto st1 = boost::get<string>(&prim1);
-        auto sy0 = boost::get<Symbolic>(&prim0);
-        auto sy1 = boost::get<Symbolic>(&prim1);
+        auto n0 = std::get_if<Number>(&prim0);
+        auto n1 = std::get_if<Number>(&prim1);
+        auto st0 = std::get_if<string>(&prim0);
+        auto st1 = std::get_if<string>(&prim1);
+        auto sy0 = std::get_if<Symbolic>(&prim0);
+        auto sy1 = std::get_if<Symbolic>(&prim1);
         if (n0 && n1)
             magicCmp(n0, n1);
         else if (st0 && st1)
@@ -1281,7 +1281,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      reader.cpp.push_back([&reader](IntState& state0) {
          ObjectPtr dyn = state0.dyn.top();
          ObjectPtr access = (*dyn)[ Symbols::get()["$3"] ];
-         auto access0 = boost::get<std::string>(&access->prim());
+         auto access0 = std::get_if<std::string>(&access->prim());
          if (access0) {
              bool okay = true;
              if (*access0 == "")

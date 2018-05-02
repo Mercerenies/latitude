@@ -132,7 +132,7 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, co
 
 template <typename Container>
 void addContinuationToFrontier(const Container& visited, Container& frontier, Object* curr) {
-    auto state0 = boost::get<StatePtr>(&curr->prim());
+    auto state0 = std::get_if<StatePtr>(&curr->prim());
     if (state0) {
         auto state = *state0;
 #if GC_PRINT > 1

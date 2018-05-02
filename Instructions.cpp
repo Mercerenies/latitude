@@ -79,11 +79,11 @@ void InstructionSet::initialize() {
 }
 
 bool isRegister(const RegisterArg& arg) {
-    return (bool)(boost::get<Reg>(&arg));
+    return (bool)(std::get_if<Reg>(&arg));
 }
 
 bool isObjectRegister(const RegisterArg& arg) {
-    if (const Reg* reg = boost::get<Reg>(&arg)) {
+    if (const Reg* reg = std::get_if<Reg>(&arg)) {
         if ((unsigned char)(*reg) <= 0x03)
             return true;
         return false;
@@ -92,7 +92,7 @@ bool isObjectRegister(const RegisterArg& arg) {
 }
 
 bool isStackRegister(const RegisterArg& arg) {
-    if (const Reg* reg = boost::get<Reg>(&arg)) {
+    if (const Reg* reg = std::get_if<Reg>(&arg)) {
         if (*reg == Reg::HAND)
             return true;
         if (((unsigned char)(*reg) > 0x03) && ((unsigned char)(*reg) <= 0x07))
@@ -103,15 +103,15 @@ bool isStackRegister(const RegisterArg& arg) {
 }
 
 bool isStringRegisterArg(const RegisterArg& arg) {
-    return (bool)(boost::get<std::string>(&arg));
+    return (bool)(std::get_if<std::string>(&arg));
 }
 
 bool isLongRegisterArg(const RegisterArg& arg) {
-    return (bool)(boost::get<long>(&arg));
+    return (bool)(std::get_if<long>(&arg));
 }
 
 bool isAsmRegisterArg(const RegisterArg& arg) {
-    return (bool)(boost::get<FunctionIndex>(&arg));
+    return (bool)(std::get_if<FunctionIndex>(&arg));
 }
 
 AssemblerError::AssemblerError()
@@ -170,7 +170,7 @@ struct AppendVisitor {
 
 void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq) {
     AppendVisitor visitor { &seq };
-    boost::apply_visitor(visitor, arg);
+    std::visit(visitor, arg);
 }
 
 void appendInstruction(const Instr& instr, SerialInstrSeq& seq) {
@@ -341,15 +341,15 @@ bool MethodSeek::atEnd() {
 }
 
 long MethodSeek::readLong(int n) {
-    return boost::get<long>(instructions()[position()].argument(n));
+    return std::get<long>(instructions()[position()].argument(n));
 }
 
 string MethodSeek::readString(int n) {
-    return boost::get<string>(instructions()[position()].argument(n));
+    return std::get<string>(instructions()[position()].argument(n));
 }
 
 Reg MethodSeek::readReg(int n) {
-    return boost::get<Reg>(instructions()[position()].argument(n));
+    return std::get<Reg>(instructions()[position()].argument(n));
 }
 
 Instr MethodSeek::readInstr() {
@@ -357,7 +357,7 @@ Instr MethodSeek::readInstr() {
 }
 
 FunctionIndex MethodSeek::readFunction(int n) {
-    return boost::get<FunctionIndex>(instructions()[position()].argument(n));
+    return std::get<FunctionIndex>(instructions()[position()].argument(n));
 }
 
 InstrSeq& MethodSeek::instructions() {

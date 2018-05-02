@@ -13,8 +13,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <string>
-#include <boost/variant.hpp>
 #include <boost/blank.hpp>
+#include <variant>
 #include <set>
 
 /// \file
@@ -65,9 +65,9 @@ struct PtrCompare {
 
 /// \brief A primitive field, which can be either empty or an element
 /// of any number of types.
-using Prim = boost::variant<boost::blank, Number, std::string,
-                            StreamPtr, Symbolic, ProcessPtr,
-                            Method, StatePtr>;
+using Prim = std::variant<boost::blank, Number, std::string,
+                          StreamPtr, Symbolic, ProcessPtr,
+                          Method, StatePtr>;
 
 /// A Slot is either empty (INH) or has contents (PTR).
 enum class SlotType { PTR, INH };
