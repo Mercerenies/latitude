@@ -5,8 +5,8 @@ ifndef BOOST
 endif
 
 CCFLAGS=-c -Wall
-CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
-LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
+CXXFLAGS=$(BOOST) -c -Wall -std=c++17
+LINKFLAGS=$(BOOST) -Wall -std=c++17
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o latitude
 FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o Optimizer.o CUnicode.o Protection.o
 
