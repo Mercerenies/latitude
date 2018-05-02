@@ -6,6 +6,7 @@
 #include <iterator>
 #include <type_traits>
 #include <variant>
+#include <optional>
 #include <boost/mpl/vector.hpp>
 #include <boost/mpl/find.hpp>
 #include "Reader.hpp"
@@ -91,6 +92,29 @@ bool variantIsType(const std::variant<Ss...>& variant) {
                   typename boost::mpl::end<pack_t>::type>::value,
                   "invalid type given to variant check");
     return std::visit(_VariantVisitor<T>(), variant);
+}
+
+template <typename T>
+class CloseOnExit {
+private:
+    T* value;
+public:
+    explicit CloseOnExit(T& v) : value(&v) {}
+    CloseOnExit(const CloseOnExit<T>&) = delete;
+    CloseOnExit(CloseOnExit<T>&& arg) : value(arg.value) {
+        arg.value = nullptr;
+    }
+    CloseOnExit& operator=(const CloseOnExit&) = delete;
+    CloseOnExit& operator=(CloseOnExit&& arg) {
+        value = arg.value;
+        arg.value = nullptr;
+    }
+    ~CloseOnExit() { if (value) value->close(); }
+};
+
+template <typename T>
+CloseOnExit<T> close_on_exit(T& value) {
+    return std::move(CloseOnExit<T>(value));
 }
 
 #endif // MACRO_HPP

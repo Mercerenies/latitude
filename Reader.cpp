@@ -19,7 +19,6 @@ extern "C" {
 #include <algorithm>
 #include <sstream>
 #include <fstream>
-#include <boost/scope_exit.hpp>
 
 //#define DEBUG_LOADS
 
@@ -194,9 +193,7 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
     file.exceptions(ifstream::failbit | ifstream::badbit);
     try {
         file.open(fname);
-        BOOST_SCOPE_EXIT(&file) {
-            file.close();
-        } BOOST_SCOPE_EXIT_END;
+        auto foo_uniq000 = close_on_exit(file);
         stringstream str;
         while ((file >> str.rdbuf()).good());
         try {
@@ -338,9 +335,7 @@ void compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
     file.exceptions(ifstream::failbit | ifstream::badbit);
     try {
         file.open(fname);
-        BOOST_SCOPE_EXIT(&file) {
-            file.close();
-        } BOOST_SCOPE_EXIT_END;
+        auto foo_uniq000 = close_on_exit(file);
         stringstream str;
         while ((file >> str.rdbuf()).good());
         try {
@@ -359,9 +354,7 @@ void compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
             (makeAssemblerLine(Instr::RET)).appendOnto(toplevel);
             ofstream file1;
             file1.open(fname1, std::ofstream::out | std::ofstream::binary);
-            BOOST_SCOPE_EXIT(&file1) {
-                file1.close();
-            } BOOST_SCOPE_EXIT_END;
+            auto foo_uniq001 = close_on_exit(file1);
             unit->instructions() = toplevel;
             saveToFile(file1, unit);
         } catch (std::string parseException) {
@@ -380,9 +373,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
     file.exceptions(ifstream::badbit);
     try {
         file.open(fname, std::ifstream::out | std::ifstream::binary);
-        BOOST_SCOPE_EXIT(&file) {
-            file.close();
-        } BOOST_SCOPE_EXIT_END;
+        auto foo_uniq000 = close_on_exit(file);
         try {
             TranslationUnitPtr unit = loadFromFile(file);
             auto lex = state.lex.top();

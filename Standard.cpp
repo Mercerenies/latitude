@@ -12,7 +12,6 @@
 #include <list>
 #include <sstream>
 #include <fstream>
-#include <boost/scope_exit.hpp>
 #include <optional>
 
 using namespace std;
