@@ -13,7 +13,7 @@
 #include <sstream>
 #include <fstream>
 #include <boost/scope_exit.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 
 using namespace std;
 
@@ -1609,7 +1609,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // envGet#: str.
      assert(reader.cpp.size() == CPP_ENV_GET);
      reader.cpp.push_back([&reader](IntState& state0) {
-         boost::optional<std::string> value = getEnv(state0.str0);
+         std::optional<std::string> value = getEnv(state0.str0);
          if (value)
              state0.ret = garnishObject(reader, *value);
          else

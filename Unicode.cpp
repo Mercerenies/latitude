@@ -57,7 +57,7 @@ UniChar uniChr(long cp) {
     return UniChar(cp);
 }
 
-boost::optional<UniChar> charAt(std::string str, long i) {
+std::optional<UniChar> charAt(std::string str, long i) {
     bool valid = true;
     long result = 0L;
     auto full_len = str.length();
@@ -94,10 +94,10 @@ boost::optional<UniChar> charAt(std::string str, long i) {
     if (valid)
         return UniChar(result);
     else
-        return boost::none;
+        return std::nullopt;
 }
 
-boost::optional<long> nextCharPos(std::string str, long i) {
+std::optional<long> nextCharPos(std::string str, long i) {
     // Based on the algorithm at http://stackoverflow.com/a/4063258/2288659
     bool valid = true;
     auto full_len = str.length();
@@ -125,5 +125,5 @@ boost::optional<long> nextCharPos(std::string str, long i) {
     if (valid)
         return static_cast<signed long>(i + n);
     else
-        return boost::none;
+        return std::nullopt;
 }

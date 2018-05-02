@@ -4,11 +4,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
-#include <boost/optional.hpp>
+#include <optional>
 
 BOOL isOperator(char* id) {
     std::string str(id);
-    boost::optional<long> pos { 0L };
+    std::optional<long> pos { 0L };
     while (pos) {
         if (auto ch = charAt(str, *pos)) {
             if (!isOperatorChar(ch->codePoint())) {

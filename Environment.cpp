@@ -3,16 +3,16 @@
 #include "Platform.hpp"
 #include <string>
 #include <cstdlib>
-#include <boost/optional.hpp>
+#include <optional>
 
 using namespace std;
 
-boost::optional<string> getEnv(string name) {
+std::optional<string> getEnv(string name) {
     char* env = getenv(name.c_str());
     if (env) {
         return string(env);
     } else {
-        return boost::none;
+        return std::nullopt;
     }
 }
 

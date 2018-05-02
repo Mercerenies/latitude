@@ -3,7 +3,7 @@
 
 #include "pl_Unidata.h"
 #include <string>
-#include <boost/optional.hpp>
+#include <optional>
 
 class UniChar {
 private:
@@ -21,7 +21,7 @@ public:
 long uniOrd(UniChar ch);
 UniChar uniChr(long cp);
 
-boost::optional<UniChar> charAt(std::string str, long i);
-boost::optional<long> nextCharPos(std::string str, long i);
+std::optional<UniChar> charAt(std::string str, long i);
+std::optional<long> nextCharPos(std::string str, long i);
 
 #endif // UNICODE_HPP

@@ -887,32 +887,32 @@ Number complexNumber(const Number& real, const Number& imag) {
     return curr;
 }
 
-boost::optional<Number> constantNan() {
+std::optional<Number> constantNan() {
     if (numeric_limits<Number::floating>::has_quiet_NaN)
         return Number(numeric_limits<Number::floating>::quiet_NaN());
     else
-        return boost::none;
+        return std::nullopt;
 }
 
-boost::optional<Number> constantInf() {
+std::optional<Number> constantInf() {
     if (numeric_limits<Number::floating>::has_infinity)
         return Number(numeric_limits<Number::floating>::infinity());
     else
-        return boost::none;
+        return std::nullopt;
 }
 
-boost::optional<Number> constantNegInf() {
+std::optional<Number> constantNegInf() {
     if (numeric_limits<Number::floating>::has_infinity)
         return - Number(numeric_limits<Number::floating>::infinity());
     else
-        return boost::none;
+        return std::nullopt;
 }
 
 Number constantEps() {
     return Number(numeric_limits<Number::floating>::epsilon());
 }
 
-boost::optional<Number> parseInteger(const char* integer) {
+std::optional<Number> parseInteger(const char* integer) {
     int radix;
     if (integer[0] == 'D') {
         radix = 10;
@@ -923,7 +923,7 @@ boost::optional<Number> parseInteger(const char* integer) {
     } else if (integer[0] == 'B') {
         radix = 2;
     } else {
-        return boost::none;
+        return std::nullopt;
     }
     ++integer;
     long sign = 1;
@@ -943,9 +943,9 @@ boost::optional<Number> parseInteger(const char* integer) {
         else if ((*integer >= 'a') && (*integer <= 'z'))
             value = *integer - 'a' + 10;
         else
-            return boost::none;
+            return std::nullopt;
         if (value >= radix)
-            return boost::none;
+            return std::nullopt;
         accum = accum * (long)radix + (long)value;
         ++integer;
     }

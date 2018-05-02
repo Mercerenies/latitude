@@ -13,7 +13,7 @@
 #include <boost/mpl/size.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/operators.hpp>
-#include <boost/optional.hpp>
+#include <optional>
 
 /// \file
 ///
@@ -316,19 +316,19 @@ Number complexNumber(const Number& real, const Number& imag);
 /// Returns a floating point number representing NaN, if it exists.
 ///
 /// \return the value NaN
-boost::optional<Number> constantNan();
+std::optional<Number> constantNan();
 
 /// Returns a floating point number representing positive infinity, if
 /// it exists.
 ///
 /// \return the value infinity
-boost::optional<Number> constantInf();
+std::optional<Number> constantInf();
 
 /// Returns a floating point number representing negative infinity, if
 /// it exists.
 ///
 /// \return the value negative infinity
-boost::optional<Number> constantNegInf();
+std::optional<Number> constantNegInf();
 
 /// Returns the smallest floating point number strictly greater than
 /// zero representable on the current system.
@@ -336,6 +336,6 @@ boost::optional<Number> constantNegInf();
 /// \return the epsilon value
 Number constantEps();
 
-boost::optional<Number> parseInteger(const char* integer);
+std::optional<Number> parseInteger(const char* integer);
 
 #endif // NUMBER_HPP

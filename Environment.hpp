@@ -2,7 +2,7 @@
 #define ENVIRONMENT_HPP
 
 #include <string>
-#include <boost/optional.hpp>
+#include <optional>
 
 /// \file
 ///
@@ -11,8 +11,8 @@
 /// Retrieves the value of the environment variable with the given name.
 ///
 /// \param name the name of the environment variable
-/// \return the value of the variable, or boost::none if the variable doesn't exist
-boost::optional<std::string> getEnv(std::string name);
+/// \return the value of the variable, or an empty value if the variable doesn't exist
+std::optional<std::string> getEnv(std::string name);
 
 /// Sets the value of the given environment variable. If the variable
 /// does not exist, it is created. This function may not be supported
