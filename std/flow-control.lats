@@ -164,6 +164,10 @@ Number downto := {
   }.
 }.
 
+global Ellipsis ::= Object clone.
+global ... := Ellipsis.
+Ellipsis =~ := True.
+
 ;; Cond Statement
 global cond := {
   takes '[block].
@@ -190,6 +194,38 @@ global cond := {
     }.
     procd call.
     Nil.
+  }.
+}.
+
+;; Case Statement
+global case := {
+  elem := $1. ; Evaluate if a method is passed in
+  Object clone tap {
+    self do := {
+      takes '[block].
+      callCC {
+        escapable.
+        whenProc := proc {
+          match := #'($1) =~ #'(elem).
+          if (match) then {
+            Object clone tap {
+              self do := {
+                return: Conditional send ($1) call.
+              }.
+            }.
+          } else {
+            Object clone tap {
+              self do := { }.
+            }.
+          }.
+        }.
+        Conditional send #'(block) by {
+          $1 when := { whenProc call. }.
+          $1 else := { self when (...) do. }.
+        } call.
+        Nil.
+      }.
+    }.
   }.
 }.
 

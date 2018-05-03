@@ -12,6 +12,8 @@ this page for brevity.
 
 ## Simple Slots
 
+    global ... := Ellipsis.
+
 ## Methods
 
 ### `global this.`
@@ -198,7 +200,34 @@ Example usage:
     cond {
       when (x > 10) do { stdout putln: "X is large". }.
       when (x > 0) do { stdout putln: "X is positive". }.
-      else do { stdout putln: "X is not positive". }.
+      else { stdout putln: "X is not positive". }.
+    }.
+
+### `global case (expr) do (body).`
+
+Evaluates `expr` (if it is a method), then runs `body` in a modified
+environment. In this environment, two special methods are defined:
+`when` and `else`.
+
+A statement of the form `when (obj) do (block)` will check whether
+`obj =~ expr` is truthy. If it is, then `block` will be run on
+`Conditional` and then the `case` block will be exited. Otherwise,
+nothing will happen. In the former case, `case` will return the value
+returned by `block`.
+
+A statement of the form `else (block)` is equivalent to `when (...) do
+(block)`.
+
+If no case triggers, `Nil` is returned. In any case, `expr` is always
+evaluated exactly once.
+
+Example usage:
+
+    case (x) do {
+      when 1 do { stdout putln: "one". }.
+      when 2 do { stdout putln: "two". }.
+      when 3 do { stdout putln: "three". }.
+      else { stdout putln: "What is this strange number?". }.
     }.
 
 ### `global use (name).`
