@@ -105,10 +105,13 @@ MersenneTwister twist := {
 MersenneTwister next := { self extract. }.
 random MersenneTwister := MersenneTwister.
 
+NativeRandom ::= Object clone.
+NativeRandom next := { meta sys random#. }.
+
 ;; By default, the random generator will just produce 0, for it has not been seeded. Dynamically
 ;; rebinding the $random variable to a random-ish object (such as a MersenneTwister instance) will
 ;; cause the random-producing functions to produce useful values.
-global $random := Object clone :: '#<ConstantRandom> tap { self next := { 0. }. }.
+global $random := NativeRandom.
 
 nextInt := { $random next. }.
 random nextInt := #'nextInt.

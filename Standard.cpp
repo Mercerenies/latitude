@@ -2420,6 +2420,17 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_UNI_CASE),
                                    makeAssemblerLine(Instr::THROA, "Internal error CPP_UNI_CASE"))));
 
+     // CPP_RANDOM (puts a random integer into %ret)
+     // random#.
+     assert(reader.cpp.size() == CPP_RANDOM);
+     reader.cpp.push_back([&reader](IntState& state0) {
+         // TODO Use the C++ random generator here, and try to make things thread-safe and not global
+         state0.ret = garnishObject(reader, rand());
+     });
+     sys->put(Symbols::get()["random#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::CPP, CPP_RANDOM))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library

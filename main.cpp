@@ -13,8 +13,15 @@ extern "C" {
 #include "Args.hpp"
 #include <iostream>
 #include <cstring>
+#include <ctime>
+#include <cstdlib>
+
+void initRandom() {
+    srand(time(NULL));
+}
 
 int main(int argc, char** argv) {
+    initRandom();
 
     CmdArgs args = parseArgs(argc, argv);
 

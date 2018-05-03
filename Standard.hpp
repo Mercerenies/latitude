@@ -61,7 +61,8 @@ namespace Table {
         CPP_GC_TRACE = 50,
         CPP_PARSE_DOUBLE = 51,
         CPP_DUPLICATE = 52,
-        CPP_UNI_CASE = 53;
+        CPP_UNI_CASE = 53,
+        CPP_RANDOM = 54;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,
