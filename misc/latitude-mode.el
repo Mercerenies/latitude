@@ -83,6 +83,8 @@
           (1 font-lock-type-face))
         `("[^#]\\('[^][.,:;(){}\"\' \t\n\r`\\\\]+\\)"
           (1 font-lock-string-face))
+        `("~[^][.,:;(){}\"\' \t\n\r`\\\\]+"
+          . font-lock-string-face)
         `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*:="
           (1 font-lock-variable-name-face))
         `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "parent"
