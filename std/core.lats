@@ -79,6 +79,7 @@ global thunk := {
 ;; Procs and Methods handling
 Method closure := global.
 Proc call := {}.
+Proc =~ := {#'self call. }.
 Method call := { #'self send #'self call. }.
 Method toString := "Method".
 Proc toString := "Proc".
