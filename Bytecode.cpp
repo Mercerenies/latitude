@@ -994,7 +994,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
         auto func = reader.cpp.at(val);
         if (func)
-            func(state);
+            func(state, reader);
         else
             state.err0 = true;
     }
