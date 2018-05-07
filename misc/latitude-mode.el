@@ -110,7 +110,7 @@
                          "Conditional" "Dict")
                        'symbols)
           . font-lock-constant-face)
-        `(,(regexp-opt '(":=" "::=" "=" "<-"))
+        `(,(regexp-opt '(":=" "::=" "=" "<-" "#'"))
           . font-lock-keyword-face)))
 
 (defun latitude-mode-skip-blanks ()
