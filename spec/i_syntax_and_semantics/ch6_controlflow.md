@@ -83,6 +83,10 @@ which takes no arguments. Hard kills are also performed by the VM
 itself under some circumstances, as will be detailed in the following
 sections.
 
+A VM-level panic is like a hard kill. However, a panic does not exit
+silently. It will print various debugging information before
+terminating.
+
 ## Conditionals and Loops
 
 There is an object defined in global scope with the name
@@ -198,10 +202,10 @@ usually through the `throw` method on the root object, the exception
 handler stack is checked. Then, in order from top to bottom, each
 method on the exception handler stack is called in the scope of the
 `throw` invocation. Each method is called with one argument: the
-object that was thrown. After this, the VM performs a hard kill.
+object that was thrown. After this, the VM performs a panic.
 
 In the ideal case, one of the exception handlers will perform a
-continuation jump which escapes from the hard kill. This is how the
+continuation jump which escapes from the panic. This is how the
 try-catch standard library methods are written to behave.
 
 ## Thunks

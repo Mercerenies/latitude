@@ -5,21 +5,14 @@ Kernel loadRaw := { meta sys kernelLoad0#: $1, Kernel cloneObject (global). }.
 
 Kernel loadRaw: "std/core.lats".
 Kernel loadRaw: "std/exception.lats".
-
-{
-  Kernel loadRaw: "std/flow-control.lats".
-  Kernel loadRaw: "std/arithmetic.lats".
-  Kernel loadRaw: "std/array.lats".
-  Kernel loadRaw: "std/mixin.lats".
-  Kernel loadRaw: "std/dict.lats".
-  Kernel loadRaw: "std/collection.lats".
-  Kernel loadRaw: "std/args.lats".
-  Kernel loadRaw: "std/string.lats".
-  Kernel loadRaw: "std/module.lats".
-} handle {
-  stderr putln: "!!!!! EXCEPTION !!!!!".
-  stderr putln: "Standard library failure " ++ $1.
-  stderr putln: "Please report this error.".
-}.
+Kernel loadRaw: "std/flow-control.lats".
+Kernel loadRaw: "std/arithmetic.lats".
+Kernel loadRaw: "std/array.lats".
+Kernel loadRaw: "std/mixin.lats".
+Kernel loadRaw: "std/dict.lats".
+Kernel loadRaw: "std/collection.lats".
+Kernel loadRaw: "std/args.lats".
+Kernel loadRaw: "std/string.lats".
+Kernel loadRaw: "std/module.lats".
 
 here.

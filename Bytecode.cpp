@@ -1143,7 +1143,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "* Got handlers: " << handlers.size() << endl;
 #endif
         state.stack = pushNode(state.stack, state.cont);
-        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_TERMINATE }));
+        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_PANIC }));
         for (ObjectPtr handler : handlers) {
             state.arg.push(exc);
             state.sto.push(handler);

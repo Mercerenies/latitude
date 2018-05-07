@@ -81,7 +81,8 @@ namespace Table {
         GTU_ERROR = 13,
         GTU_KEYS = 14,
         GTU_KEY_TERM = 15,
-        GTU_THROW_OBJ = 16;
+        GTU_THROW_OBJ = 16,
+        GTU_PANIC = 17;
 
 }
 
