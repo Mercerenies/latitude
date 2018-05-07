@@ -12,6 +12,8 @@ this page for brevity.
 
 ## Simple Slots
 
+    global ... := Ellipsis.
+
 ## Methods
 
 ### `global this.`
@@ -39,6 +41,14 @@ Defines a `return` slot on `self` which contains a method. When called
 with an argument, this method will invoke the continuation `cont`,
 jumping to the point of the continuation and passing its argument
 onward.
+
+### `global breakable.`
+
+Defines a `break` slot on `self` which contains a method. When called
+with an argument, this method will invoke the value of `$break` at the
+time `breakable` was called. It is usually used inside of loops to
+convert the default dynamic `$break` procedure into a lexical `break`
+method.
 
 ### `global $moduleLoader.`
 
@@ -147,6 +157,10 @@ if-statement.
 Loops infinitely, calling `block` at every iteration of the
 loop. `mthd` will be called on the `Conditional` object.
 
+Inside the block body, a `$break` procedure is defined, which takes a
+single argument and will exit the loop immediately, returning the
+argument.
+
 ### `global while (cond) do (block).`
 
 Executes a while-loop statement. `while` returns an intermediate
@@ -155,11 +169,15 @@ object, and `do` executes the statement. In one iteration, first
 run and these two steps repeated. If it is false, then the loop is
 exited and `Nil` is returned. The block will be executed with
 `Conditional` as the caller, but `cond` will be called as a method
-with an undefined caller. Inside the block body, a `$break` method is
-defined, which takes a single argument and will exit the loop
-immediately, returning the argument. Remember that `cond` should
-probably be a method, for if it is not then its truthiness will be
-evaluated immediately and never re-checked during later iterations.
+with an undefined caller.
+
+Inside the block body, a `$break` procedure is defined, which takes a
+single argument and will exit the loop immediately, returning the
+argument.
+
+Remember that `cond` should probably be a method, for if it is not
+then its truthiness will be evaluated immediately and never re-checked
+during later iterations.
 
 ### `global cond (body).`
 
@@ -182,7 +200,34 @@ Example usage:
     cond {
       when (x > 10) do { stdout putln: "X is large". }.
       when (x > 0) do { stdout putln: "X is positive". }.
-      else do { stdout putln: "X is not positive". }.
+      else { stdout putln: "X is not positive". }.
+    }.
+
+### `global case (expr) do (body).`
+
+Evaluates `expr` (if it is a method), then runs `body` in a modified
+environment. In this environment, two special methods are defined:
+`when` and `else`.
+
+A statement of the form `when (obj) do (block)` will check whether
+`obj =~ expr` is truthy. If it is, then `block` will be run on
+`Conditional` and then the `case` block will be exited. Otherwise,
+nothing will happen. In the former case, `case` will return the value
+returned by `block`.
+
+A statement of the form `else (block)` is equivalent to `when (...) do
+(block)`.
+
+If no case triggers, `Nil` is returned. In any case, `expr` is always
+evaluated exactly once.
+
+Example usage:
+
+    case (x) do {
+      when 1 do { stdout putln: "one". }.
+      when 2 do { stdout putln: "two". }.
+      when 3 do { stdout putln: "three". }.
+      else { stdout putln: "What is this strange number?". }.
     }.
 
 ### `global use (name).`

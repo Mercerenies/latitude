@@ -166,6 +166,13 @@ root object, this method is equivalent to `===`. However, subobjects
 are encouraged to override this method's behavior to provide better
 notions of equality for specific types.
 
+### `Object =~ target.`
+
+Returns whether the object *matches* the target. For the root object,
+this method delegates to `==`. However, subobjects are encouraged to
+override this method's behavior. This is often the loosest form of
+"equality", and need not even be an equivalence relation.
+
 ### `Object > target.`
 
 This method simply delegates to the call `target < (Object)`.

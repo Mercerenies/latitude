@@ -45,11 +45,11 @@ void spawnSystemCallsNew(ObjectPtr global,
 
     // CPP_TERMINATE
     assert(reader.cpp.size() == CPP_TERMINATE);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         // A last-resort termination of a fiber that malfunctioned; this should ONLY
         // be used as a last resort, as it does not correctly unwind the frames
         // before aborting
-        hardKill(state0, reader);
+        hardKill(state0, reader0);
     });
 
     // CPP_KERNEL_LOAD ($1 = filename, $2 = global)
@@ -57,7 +57,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // kernelLoad#: filename, global.
     // kernelLoad0#: filename, global.
     assert(reader.cpp.size() == CPP_KERNEL_LOAD);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr str = (*dyn)[ Symbols::get()["$1"] ];
         ObjectPtr global = (*dyn)[ Symbols::get()["$2"] ];
@@ -67,12 +67,12 @@ void spawnSystemCallsNew(ObjectPtr global,
                 string str1 = *str0;
                 if (state0.num0.asSmallInt() == 1)
                     str1 = stripFilename(getExecutablePathname()) + str1;
-                readFile(str1, { global, global }, state0, reader);
+                readFile(str1, { global, global }, state0, reader0);
             } else {
-                throwError(state0, reader, "TypeError", "String expected");
+                throwError(state0, reader0, "TypeError", "String expected");
             }
         } else {
-            throwError(state0, reader, "SystemArgError", "Wrong number of arguments");
+            throwError(state0, reader0, "SystemArgError", "Wrong number of arguments");
         }
     });
     sys->put(Symbols::get()["kernelLoad#"],
@@ -130,7 +130,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // streamIn#: stream.
     // streamOut#: stream.
     assert(reader.cpp.size() == CPP_STREAM_DIR);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         if (stream != nullptr) {
@@ -138,17 +138,17 @@ void spawnSystemCallsNew(ObjectPtr global,
             if (stream0) {
                 switch (state0.num0.asSmallInt()) {
                 case 0:
-                    state0.ret = garnishObject(reader, (*stream0)->hasIn());
+                    state0.ret = garnishObject(reader0, (*stream0)->hasIn());
                     break;
                 case 1:
-                    state0.ret = garnishObject(reader, (*stream0)->hasOut());
+                    state0.ret = garnishObject(reader0, (*stream0)->hasOut());
                     break;
                 }
             } else {
-                throwError(state0, reader, "TypeError", "Stream expected");
+                throwError(state0, reader0, "TypeError", "Stream expected");
             }
         } else {
-            throwError(state0, reader, "SystemArgError", "Wrong number of arguments");
+            throwError(state0, reader0, "SystemArgError", "Wrong number of arguments");
         }
     });
     sys->put(Symbols::get()["streamIn#"],
@@ -164,7 +164,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // streamPuts#: stream, str.
     // streamPutln#: stream, str.
     assert(reader.cpp.size() == CPP_STREAM_PUT);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         ObjectPtr str = (*dyn)[ Symbols::get()["$2"] ];
@@ -181,15 +181,15 @@ void spawnSystemCallsNew(ObjectPtr global,
                         (*stream0)->writeLine(*str0);
                         break;
                     }
-                    state0.ret = garnishObject(reader, boost::blank());
+                    state0.ret = garnishObject(reader0, boost::blank());
                 } else {
-                    throwError(state0, reader, "IOError", "Stream not designated for output");
+                    throwError(state0, reader0, "IOError", "Stream not designated for output");
                 }
             } else {
-                throwError(state0, reader, "SystemArgError", "Invalid argument to output function");
+                throwError(state0, reader0, "SystemArgError", "Invalid argument to output function");
             }
         } else {
-            throwError(state0, reader, "SystemArgError", "Wrong number of arguments");
+            throwError(state0, reader0, "SystemArgError", "Wrong number of arguments");
         }
     });
     sys->put(Symbols::get()["streamPuts#"],
@@ -209,7 +209,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // strToString#: str
     // symToString#: sym
     assert(reader.cpp.size() == CPP_TO_STRING);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         ostringstream oss;
         switch (state0.num0.asSmallInt()) {
         case 0:
@@ -282,7 +282,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         }
             break;
         }
-        state0.ret = garnishObject(reader, oss.str());
+        state0.ret = garnishObject(reader0, oss.str());
     });
     sys->put(Symbols::get()["numToString#"],
              defineMethod(unit, global, method,
@@ -322,7 +322,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // gensym#: self.
     // gensymOf#: self, prefix.
     assert(reader.cpp.size() == CPP_GENSYM);
-    reader.cpp.push_back([](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         switch (state0.num0.asSmallInt()) {
         case 0:
         state0.sym = Symbols::gensym();
@@ -503,7 +503,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_INSTANCE_OF (check if %slf is an instance of %ptr, put result in %flag)
     // instanceOf#: obj, anc
     assert(reader.cpp.size() == CPP_INSTANCE_OF);
-    reader.cpp.push_back([](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         auto hier = hierarchy(state0.slf);
         state0.flag = (find_if(hier.begin(), hier.end(),
                                [&state0](auto& o){ return o == state0.ptr; }) != hier.end());
@@ -553,7 +553,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // - 1 - Read a single character
     // streamRead#: stream.
     assert(reader.cpp.size() == CPP_STREAM_READ);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
         if (stream != NULL) {
@@ -561,14 +561,14 @@ void spawnSystemCallsNew(ObjectPtr global,
             if (stream0) {
                 if ((*stream0)->hasIn()) {
                     if (state0.num0.asSmallInt() == 0)
-                        state0.ret = garnishObject(reader, (*stream0)->readLine());
+                        state0.ret = garnishObject(reader0, (*stream0)->readLine());
                     else
-                        state0.ret = garnishObject(reader, (*stream0)->readText(1));
+                        state0.ret = garnishObject(reader0, (*stream0)->readText(1));
                 } else {
-                    throwError(state0, reader, "IOError", "Stream not designated for input");
+                    throwError(state0, reader0, "IOError", "Stream not designated for input");
                 }
             } else {
-                throwError(state0, reader, "TypeError", "Stream expected");
+                throwError(state0, reader0, "TypeError", "Stream expected");
             }
         }
     });
@@ -584,8 +584,8 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
     // eval#: lex, dyn, str.
     assert(reader.cpp.size() == CPP_EVAL);
-    reader.cpp.push_back([&reader](IntState& state0) {
-        eval(state0, reader, state0.str0);
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+        eval(state0, reader0, state0.str0);
     });
     sys->put(Symbols::get()["eval#"],
              defineMethod(unit, global, method,
@@ -846,9 +846,9 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_SYM_NAME (takes %sym, looks up its name, and outputs a string as %ret)
     // symName#: sym.
     assert(reader.cpp.size() == CPP_SYM_NAME);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         std::string name = Symbols::get()[ state0.sym ];
-        state0.ret = garnishObject(reader, name);
+        state0.ret = garnishObject(reader0, name);
     });
     sys->put(Symbols::get()["symName#"],
              defineMethod(unit, global, method,
@@ -864,16 +864,16 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_SYM_NUM (takes %num0 and outputs an appropriate symbol to %ret)
     // natSym#: num.
     assert(reader.cpp.size() == CPP_SYM_NUM);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         if (state0.num0.hierarchyLevel() > 1) {
-            throwError(state0, reader, "TypeError", "Cannot produce symbols from non-integers");
+            throwError(state0, reader0, "TypeError", "Cannot produce symbols from non-integers");
         } else if (state0.num0 > Number(2147483647L)) {
-            throwError(state0, reader, "TypeError", "Cannot produce symbols from large integers");
+            throwError(state0, reader0, "TypeError", "Cannot produce symbols from large integers");
         } else if (state0.num0.asSmallInt() <= 0) {
-            throwError(state0, reader, "TypeError", "Cannot produce symbols from non-positive numbers");
+            throwError(state0, reader0, "TypeError", "Cannot produce symbols from non-positive numbers");
         } else {
             Symbolic sym = Symbols::natural((int)state0.num0.asSmallInt());
-            state0.ret = garnishObject(reader, sym);
+            state0.ret = garnishObject(reader0, sym);
         }
     });
     sys->put(Symbols::get()["natSym#"],
@@ -929,9 +929,9 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_SYM_INTERN (takes %str0, looks it up, and puts the result as a symbol in %ret)
     // intern#: str.
     assert(reader.cpp.size() == CPP_SYM_INTERN);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         Symbolic name = Symbols::get()[ state0.str0 ];
-        state0.ret = garnishObject(reader, name);
+        state0.ret = garnishObject(reader0, name);
     });
     sys->put(Symbols::get()["intern#"],
              defineMethod(unit, global, method,
@@ -953,7 +953,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // primEquals#: lhs, rhs.
     // primLT#: lhs, rhs.
     assert(reader.cpp.size() == CPP_SIMPLE_CMP);
-    reader.cpp.push_back([](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         bool doLT = false;
         if (state0.num0.asSmallInt() == 1)
             doLT = true;
@@ -1011,8 +1011,8 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_NUM_LEVEL (determine the "level" of %num0 and put the result in %ret)
     // numLevel#: num.
     assert(reader.cpp.size() == CPP_NUM_LEVEL);
-    reader.cpp.push_back([&reader](IntState& state0) {
-        state0.ret = garnishObject(reader, state0.num0.hierarchyLevel());
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+        state0.ret = garnishObject(reader0, state0.num0.hierarchyLevel());
     });
     sys->put(Symbols::get()["numLevel#"],
              defineMethod(unit, global, method,
@@ -1036,7 +1036,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_ORIGIN (find the origin of %sym in %slf, store resulting object in %ret, throw SlotError otherwise
     // origin#: self, sym.
     assert(reader.cpp.size() == CPP_ORIGIN);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         list<ObjectPtr> parents;
         ObjectPtr curr = state0.slf;
         Symbolic name = state0.sym;
@@ -1051,7 +1051,7 @@ void spawnSystemCallsNew(ObjectPtr global,
             curr = (*curr)[ Symbols::parent() ];
         }
         if (value == nullptr) {
-            throwError(state0, reader, "SlotError", "Cannot find origin of nonexistent slot");
+            throwError(state0, reader0, "SlotError", "Cannot find origin of nonexistent slot");
         } else {
             state0.ret = value;
         }
@@ -1090,12 +1090,12 @@ void spawnSystemCallsNew(ObjectPtr global,
     // processExitCode#: prc.
     // processExec#: prc.
     assert(reader.cpp.size() == CPP_PROCESS_TASK);
-    reader.cpp.push_back([&reader](IntState& state0) {
+    reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         switch (state0.num0.asSmallInt()) {
         case 0: {
             ProcessPtr proc = makeProcess(state0.str0);
             if (!proc)
-                throwError(state0, reader, "NotSupportedError",
+                throwError(state0, reader0, "NotSupportedError",
                            "Asynchronous processes not supported on this system");
             state0.ret = clone(state0.slf);
             state0.ret->prim(proc);
@@ -1104,7 +1104,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         case 1: {
             bool status = state0.prcs->run();
             if (!status)
-                throwError(state0, reader, "IOError",
+                throwError(state0, reader0, "IOError",
                            "Could not start process");
             break;
         }
@@ -1121,15 +1121,15 @@ void spawnSystemCallsNew(ObjectPtr global,
             break;
         }
         case 5: {
-            state0.ret = garnishObject(reader, state0.prcs->isRunning());
+            state0.ret = garnishObject(reader0, state0.prcs->isRunning());
             break;
         }
         case 6: {
-            state0.ret = garnishObject(reader, state0.prcs->getExitCode());
+            state0.ret = garnishObject(reader0, state0.prcs->getExitCode());
             break;
         }
         case 7: {
-            state0.ret = garnishObject(reader, state0.prcs->isDone());
+            state0.ret = garnishObject(reader0, state0.prcs->isDone());
             break;
         }
         }
@@ -1252,16 +1252,16 @@ void spawnSystemCallsNew(ObjectPtr global,
      //                  for each key in the object)
      // objectKeys#: obj.
      assert(reader.cpp.size() == CPP_OBJECT_KEYS);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          set<Symbolic> allKeys = state0.slf->directKeys();
          state0.stack = pushNode(state0.stack, state0.cont);
-         state0.cont = MethodSeek(Method(reader.gtu, { GTU_KEY_TERM }));
+         state0.cont = MethodSeek(Method(reader0.gtu, { GTU_KEY_TERM }));
          for (auto& key : allKeys) {
-             ObjectPtr obj = clone(reader.lit.at(Lit::SYMBOL));
+             ObjectPtr obj = clone(reader0.lit.at(Lit::SYMBOL));
              obj->prim(key);
              state0.arg.push(obj);
              state0.stack = pushNode(state0.stack, state0.cont);
-             state0.cont = MethodSeek(Method(reader.gtu, { GTU_KEYS }));
+             state0.cont = MethodSeek(Method(reader0.gtu, { GTU_KEYS }));
          }
      });
      sys->put(Symbols::get()["objectKeys#"],
@@ -1278,7 +1278,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_FILE_DOOPEN (%str0 is the filename, %ptr is a stream object to be filled, $3 is access and mode)
      // streamFileOpen#: strm, fname, access, mode.
      assert(reader.cpp.size() == CPP_FILE_DOOPEN);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          ObjectPtr dyn = state0.dyn.top();
          ObjectPtr access = (*dyn)[ Symbols::get()["$3"] ];
          auto access0 = boost::get<std::string>(&access->prim());
@@ -1303,10 +1303,10 @@ void spawnSystemCallsNew(ObjectPtr global,
              if (okay)
                  state0.ptr->prim( StreamPtr(new FileStream(state0.str0, access2, mode2)) );
              else
-                 throwError(state0, reader, "SystemArgError",
+                 throwError(state0, reader0, "SystemArgError",
                             "Invalid mode/access specifier when opening file");
          } else {
-             throwError(state0, reader, "TypeError",
+             throwError(state0, reader0, "TypeError",
                         "Symbol expected");
          }
      });
@@ -1330,7 +1330,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_FILE_DOCLOSE (takes %strm and closes it)
      // streamClose#: strm.
      assert(reader.cpp.size() == CPP_FILE_DOCLOSE);
-     reader.cpp.push_back([](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          state0.strm->close();
      });
      sys->put(Symbols::get()["streamClose#"],
@@ -1348,7 +1348,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_FILE_EOF (takes %strm and outputs whether it's at eof into %flag)
      // streamEof#: strm.
      assert(reader.cpp.size() == CPP_FILE_EOF);
-     reader.cpp.push_back([](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          state0.flag = state0.strm->isEof();
      });
      sys->put(Symbols::get()["streamEof#"],
@@ -1366,8 +1366,8 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_STRING_LENGTH (outputs length of %str0 into %ret)
      // stringLength#: str.
      assert(reader.cpp.size() == CPP_STRING_LENGTH);
-     reader.cpp.push_back([&reader](IntState& state0) {
-         state0.ret = garnishObject(reader, (long)state0.str0.length());
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         state0.ret = garnishObject(reader0, (long)state0.str0.length());
      });
      sys->put(Symbols::get()["stringLength#"],
               defineMethod(unit, global, method,
@@ -1383,7 +1383,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_STRING_SUB (outputs substring of %str0 from %num0 to %num1 into %ret)
      // stringSubstring#: str, beg, end.
      assert(reader.cpp.size() == CPP_STRING_SUB);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          long start1 = state0.num0.asSmallInt();
          long end1 = state0.num1.asSmallInt();
          long size = state0.str0.length();
@@ -1402,7 +1402,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          long len = end1 - start1;
          if (len < 0)
              len = 0;
-         state0.ret = garnishObject(reader, state0.str0.substr(start1, len));
+         state0.ret = garnishObject(reader0, state0.str0.substr(start1, len));
      });
      sys->put(Symbols::get()["stringSubstring#"],
               defineMethod(unit, global, method,
@@ -1433,12 +1433,12 @@ void spawnSystemCallsNew(ObjectPtr global,
      //              new index or Nil in %ret)
      // stringFindFirst#: str, substr, pos.
      assert(reader.cpp.size() == CPP_STRING_FIND);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          auto pos = state0.str0.find(state0.str1, state0.num0.asSmallInt());
          if (pos == string::npos)
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader0, boost::blank());
          else
-             state0.ret = garnishObject(reader, (long)pos);
+             state0.ret = garnishObject(reader0, (long)pos);
      });
      sys->put(Symbols::get()["stringFindFirst#"],
               defineMethod(unit, global, method,
@@ -1468,12 +1468,9 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_GC_RUN (run the garbage collector and store the number of objects deleted at %ret)
      // runGC#.
      assert(reader.cpp.size() == CPP_GC_RUN);
-     reader.cpp.push_back([&reader](IntState& state0) {
-         // TODO This assumes the reader that's in use is the same as the reader that was created
-         //      with this reader. Remove this unusual dependency somehow (this happens in
-         //      some other places here too; search for captures of the form [&reader])
-         long result = GC::get().garbageCollect(state0, reader);
-         state0.ret = garnishObject(reader, result);
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         long result = GC::get().garbageCollect(state0, reader0);
+         state0.ret = garnishObject(reader0, result);
      });
      sys->put(Symbols::get()["runGC#"],
               defineMethod(unit, global, method,
@@ -1482,14 +1479,14 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_FILE_HEADER (check the %str0 file and put a FileHeader object in %ret)
      // fileHeader#: filename.
      assert(reader.cpp.size() == CPP_FILE_HEADER);
-     reader.cpp.push_back([&reader](IntState& state0) {
-         ObjectPtr obj = clone(reader.lit.at(Lit::FHEAD));
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         ObjectPtr obj = clone(reader0.lit.at(Lit::FHEAD));
          Header header = getFileHeader(state0.str0);
          if (header.fields & (unsigned int)HeaderField::MODULE) {
-             obj->put(Symbols::get()["moduleName"], garnishObject(reader, header.module));
+             obj->put(Symbols::get()["moduleName"], garnishObject(reader0, header.module));
          }
          if (header.fields & (unsigned int)HeaderField::PACKAGE) {
-             obj->put(Symbols::get()["packageName"], garnishObject(reader, header.package));
+             obj->put(Symbols::get()["packageName"], garnishObject(reader0, header.package));
          }
          state0.ret = obj;
      });
@@ -1509,15 +1506,15 @@ void spawnSystemCallsNew(ObjectPtr global,
      // strOrd#: str.
      // strChr#: num.
      assert(reader.cpp.size() == CPP_STR_ORD);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          if (state0.str0 == "")
-             state0.ret = garnishObject(reader, 0);
+             state0.ret = garnishObject(reader0, 0);
          else
-             state0.ret = garnishObject(reader, (int)state0.str0[0]);
+             state0.ret = garnishObject(reader0, (int)state0.str0[0]);
      });
      assert(reader.cpp.size() == CPP_STR_CHR);
-     reader.cpp.push_back([&reader](IntState& state0) {
-         state0.ret = garnishObject(reader, string(1, (char)state0.num0.asSmallInt()));
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         state0.ret = garnishObject(reader0, string(1, (char)state0.num0.asSmallInt()));
      });
      sys->put(Symbols::get()["strOrd#"],
               defineMethod(unit, global, method,
@@ -1544,11 +1541,11 @@ void spawnSystemCallsNew(ObjectPtr global,
      // totalGC#.
      // limitGC#.
      assert(reader.cpp.size() == CPP_GC_TOTAL);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          if (state0.num0.asSmallInt() == 0)
-             state0.ret = garnishObject(reader, (long)GC::get().getTotal());
+             state0.ret = garnishObject(reader0, (long)GC::get().getTotal());
          else if (state0.num0.asSmallInt() == 1)
-             state0.ret = garnishObject(reader, (long)GC::get().getLimit());
+             state0.ret = garnishObject(reader0, (long)GC::get().getLimit());
      });
      sys->put(Symbols::get()["totalGC#"],
               defineMethod(unit, global, method,
@@ -1564,7 +1561,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // timeSpawnLocal#: obj.
      // timeSpawnGlobal#: obj.
      assert(reader.cpp.size() == CPP_TIME_SPAWN);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          time_t raw;
          tm info;
          time(&raw);
@@ -1574,15 +1571,17 @@ void spawnSystemCallsNew(ObjectPtr global,
              info = *gmtime(&raw);
          else
              assert(false);
-         state0.ptr->put(Symbols::get()["second"], garnishObject(reader, info.tm_sec));
-         state0.ptr->put(Symbols::get()["minute"], garnishObject(reader, info.tm_min));
-         state0.ptr->put(Symbols::get()["hour"], garnishObject(reader, info.tm_hour));
-         state0.ptr->put(Symbols::get()["day"], garnishObject(reader, info.tm_mday));
-         state0.ptr->put(Symbols::get()["monthNumber"], garnishObject(reader, info.tm_mon));
-         state0.ptr->put(Symbols::get()["year"], garnishObject(reader, info.tm_year + 1900));
-         state0.ptr->put(Symbols::get()["weekdayNumber"], garnishObject(reader, info.tm_wday));
-         state0.ptr->put(Symbols::get()["yearDay"], garnishObject(reader, info.tm_yday + 1));
-         state0.ptr->put(Symbols::get()["dstNumber"], garnishObject(reader, info.tm_isdst));
+         Number base = Number::bigint(raw);
+         state0.ptr->put(Symbols::get()["second"], garnishObject(reader0, info.tm_sec));
+         state0.ptr->put(Symbols::get()["minute"], garnishObject(reader0, info.tm_min));
+         state0.ptr->put(Symbols::get()["hour"], garnishObject(reader0, info.tm_hour));
+         state0.ptr->put(Symbols::get()["day"], garnishObject(reader0, info.tm_mday));
+         state0.ptr->put(Symbols::get()["monthNumber"], garnishObject(reader0, info.tm_mon));
+         state0.ptr->put(Symbols::get()["year"], garnishObject(reader0, info.tm_year + 1900));
+         state0.ptr->put(Symbols::get()["weekdayNumber"], garnishObject(reader0, info.tm_wday));
+         state0.ptr->put(Symbols::get()["yearDay"], garnishObject(reader0, info.tm_yday + 1));
+         state0.ptr->put(Symbols::get()["dstNumber"], garnishObject(reader0, info.tm_isdst));
+         state0.ptr->put(Symbols::get()["raw"], garnishObject(reader0, base));
      });
      sys->put(Symbols::get()["timeSpawnLocal#"],
               defineMethod(unit, global, method,
@@ -1606,12 +1605,12 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_ENV_GET (retrieve the environment variable matching the name in %str0 and store the result in %ret)
      // envGet#: str.
      assert(reader.cpp.size() == CPP_ENV_GET);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          boost::optional<std::string> value = getEnv(state0.str0);
          if (value)
-             state0.ret = garnishObject(reader, *value);
+             state0.ret = garnishObject(reader0, *value);
          else
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader0, boost::blank());
      });
      sys->put(Symbols::get()["envGet#"],
               defineMethod(unit, global, method,
@@ -1628,7 +1627,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // envSet#: name, value.
      // envUnset#: name.
      assert(reader.cpp.size() == CPP_ENV_SET);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          bool success = false;
          if (state0.num0.asSmallInt() != 0) {
              success = unsetEnv(state0.str0);
@@ -1636,9 +1635,9 @@ void spawnSystemCallsNew(ObjectPtr global,
              success = setEnv(state0.str0, state0.str1);
          }
          if (success)
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader0, boost::blank());
          else
-             throwError(state0, reader, "NotSupportedError",
+             throwError(state0, reader0, "NotSupportedError",
                         "Mutable environment variables not supported on this system");
      });
      sys->put(Symbols::get()["envSet#"],
@@ -1677,16 +1676,16 @@ void spawnSystemCallsNew(ObjectPtr global,
      // exePath#.
      // cwdPath#.
      assert(reader.cpp.size() == CPP_EXE_PATH);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
-             state0.ret = garnishObject(reader, getExecutablePathname());
+             state0.ret = garnishObject(reader0, getExecutablePathname());
              break;
          case 2:
-             state0.ret = garnishObject(reader, getWorkingDirectory());
+             state0.ret = garnishObject(reader0, getWorkingDirectory());
              break;
          default:
-             throwError(state0, reader, "SystemArgError",
+             throwError(state0, reader0, "SystemArgError",
                         "Invalid numerical argument to EXE_PATH");
              break;
          }
@@ -1705,16 +1704,16 @@ void spawnSystemCallsNew(ObjectPtr global,
      //  * %num0 == 2: Get filename of pathname
      // dirName#: str.
      assert(reader.cpp.size() == CPP_PATH_OP);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
-             state0.ret = garnishObject(reader, stripFilename(state0.str0));
+             state0.ret = garnishObject(reader0, stripFilename(state0.str0));
          break;
          case 2:
-             state0.ret = garnishObject(reader, stripDirname(state0.str0));
+             state0.ret = garnishObject(reader0, stripDirname(state0.str0));
              break;
          default:
-             throwError(state0, reader, "SystemArgError",
+             throwError(state0, reader0, "SystemArgError",
                         "Invalid numerical argument to PATH_OP");
              break;
          }
@@ -1745,7 +1744,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_FILE_EXISTS (check the pathname in %str0 for existence, storing result in %flag)
      // fileExists#: fname.
      assert(reader.cpp.size() == CPP_FILE_EXISTS);
-     reader.cpp.push_back([](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          std::ifstream f(state0.str0.c_str());
          state0.flag = f.good();
          f.close();
@@ -1765,7 +1764,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_TRIG_OP (perform the operation indicated in %num0 on the value in %num1, storing result in %num1)
      // numTrig#: num, op.
      assert(reader.cpp.size() == CPP_TRIG_OP);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          switch (state0.num0.asSmallInt()) {
          case 0: // Sin
              state0.num1 = state0.num1.sin();
@@ -1812,7 +1811,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              state0.num1 = state0.num1.log();
              break;
          default:
-             throwError(state0, reader, "SystemArgError",
+             throwError(state0, reader0, "SystemArgError",
                         "Invalid numerical argument to TRIG_OP");
              break;
          }
@@ -1844,7 +1843,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_MATH_FLOOR (floor the value in %num0, storing result in %num0)
      // numFloor#: num.
      assert(reader.cpp.size() == CPP_MATH_FLOOR);
-     reader.cpp.push_back([](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          state0.num0 = state0.num0.floor();
      });
      sys->put(Symbols::get()["numFloor#"],
@@ -1869,7 +1868,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // numNegInfinity#: number.
      // numEpsilon#: number.
      assert(reader.cpp.size() == CPP_NUM_CONST);
-     reader.cpp.push_back([](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          switch (state0.num0.asSmallInt()) {
          case 0: { // NaN
              auto num = constantNan();
@@ -1953,9 +1952,9 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET))));
 
      // CPP_PROT_VAR (protect the variable named %sym in the object %slf using the protection mask %num0)
-     // protectVar#: obj, var.
+     // protectVar#: obj, var, level.
      assert(reader.cpp.size() == CPP_PROT_VAR);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          long num = state0.num0.asSmallInt();
          Protection prot = Protection::NO_PROTECTION;
          if (num & 1)
@@ -1964,12 +1963,12 @@ void spawnSystemCallsNew(ObjectPtr global,
              prot |= Protection::PROTECT_DELETE;
          bool result = state0.slf->addProtection(state0.sym, prot);
          if (!result) {
-             ObjectPtr err = reader.lit[Lit::ERR];
+             ObjectPtr err = reader0.lit[Lit::ERR];
              ObjectPtr slot = (*err)[Symbols::get()["SlotError"]];
              ObjectPtr curr = clone(slot);
              curr->put(Symbols::get()["objectInstance"], state0.slf);
-             curr->put(Symbols::get()["slotName"], garnishObject(reader, state0.sym));
-             throwError(state0, reader, curr);
+             curr->put(Symbols::get()["slotName"], garnishObject(reader0, state0.sym));
+             throwError(state0, reader0, curr);
          }
      });
      sys->put(Symbols::get()["protectVar#"],
@@ -1981,7 +1980,15 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::GETD, Reg::SLF),
                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
                                    makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$3"].index),
+                                   makeAssemblerLine(Instr::RTRV),
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                    makeAssemblerLine(Instr::ECLR),
                                    makeAssemblerLine(Instr::EXPD, Reg::SYM),
                                    makeAssemblerLine(Instr::THROA, "Symbol expected"),
@@ -1993,8 +2000,8 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
      // protectIs#: obj, var.
      assert(reader.cpp.size() == CPP_PROT_IS);
-     reader.cpp.push_back([&reader](IntState& state0) {
-         state0.ret = garnishObject(reader, state0.slf->hasAnyProtection(state0.sym));
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         state0.ret = garnishObject(reader0, state0.slf->hasAnyProtection(state0.sym));
      });
      sys->put(Symbols::get()["protectIs#"],
               defineMethod(unit, global, method,
@@ -2015,12 +2022,12 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)
      // stringNext#: str, num.
      assert(reader.cpp.size() == CPP_STR_NEXT);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          auto result = nextCharPos(state0.str0, state0.num0.asSmallInt());
          if (result)
-             state0.ret = garnishObject(reader, *result);
+             state0.ret = garnishObject(reader0, *result);
          else
-             state0.ret = garnishObject(reader, boost::blank());
+             state0.ret = garnishObject(reader0, boost::blank());
      });
      sys->put(Symbols::get()["stringNext#"],
               defineMethod(unit, global, method,
@@ -2044,7 +2051,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_COMPLEX (take %num0 as real part, %num1 as imaginary part, and produce complex number in %num0)
      // complexNumber#: number, re, im.
      assert(reader.cpp.size() == CPP_COMPLEX);
-     reader.cpp.push_back([](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          state0.num0 = complexNumber(state0.num0, state0.num1);
      });
      sys->put(Symbols::get()["complexNumber#"],
@@ -2094,7 +2101,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_PRIM_METHOD (takes %slf and puts whether or not it has a method prim in %flag)
      // primIsMethod#: obj.
      assert(reader.cpp.size() == CPP_PRIM_METHOD);
-     reader.cpp.push_back([](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          state0.flag = variantIsType<Method>(state0.slf->prim());
      });
      sys->put(Symbols::get()["primIsMethod#"],
@@ -2109,9 +2116,9 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_LOOP_DO (takes %ptr, calls it, then does LOOP_DO again)
      // loopDo#: method.
      assert(reader.cpp.size() == CPP_LOOP_DO);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          state0.stack = pushNode(state0.stack, state0.cont);
-         state0.cont = MethodSeek(Method(reader.gtu, { GTU_LOOP_DO }));
+         state0.cont = MethodSeek(Method(reader0.gtu, { GTU_LOOP_DO }));
      });
      sys->put(Symbols::get()["loopDo#"],
               defineMethod(unit, global, method,
@@ -2126,16 +2133,16 @@ void spawnSystemCallsNew(ObjectPtr global,
      // uniOrd#: str.
      // uniChr#: num.
      assert(reader.cpp.size() == CPP_UNI_ORD);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          auto ch = charAt(state0.str0, 0L);
          if (ch)
-             state0.ret = garnishObject(reader, uniOrd(*ch));
+             state0.ret = garnishObject(reader0, uniOrd(*ch));
          else
-             state0.ret = garnishObject(reader, 0L);
+             state0.ret = garnishObject(reader0, 0L);
      });
      assert(reader.cpp.size() == CPP_UNI_CHR);
-     reader.cpp.push_back([&reader](IntState& state0) {
-         state0.ret = garnishObject(reader,
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         state0.ret = garnishObject(reader0,
                                     static_cast<std::string>(UniChar(state0.num0.asSmallInt())));
      });
      sys->put(Symbols::get()["uniOrd#"],
@@ -2162,7 +2169,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_OSINFO (store info about the OS in %ptr)
      // osInfo#: obj.
      assert(reader.cpp.size() == CPP_OSINFO);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          Symbolic sym = Symbols::get()[""];
          switch (systemOS) {
          case OS::WINDOWS:
@@ -2175,7 +2182,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              sym = Symbols::get()["unknown"];
              break;
          }
-         ObjectPtr symbolObj = clone(reader.lit.at(Lit::SYMBOL));
+         ObjectPtr symbolObj = clone(reader0.lit.at(Lit::SYMBOL));
          symbolObj->prim(sym);
          state0.ptr->put(Symbols::get()["class"], symbolObj);
      });
@@ -2194,16 +2201,16 @@ void spawnSystemCallsNew(ObjectPtr global,
      // realPart#: num.
      // imagPart#: num.
      assert(reader.cpp.size() == CPP_COMPLPARTS);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          switch (state0.num0.asSmallInt()) {
          case 1:
-             state0.ret = garnishObject(reader, state0.num1.realPart());
+             state0.ret = garnishObject(reader0, state0.num1.realPart());
              break;
          case 2:
-             state0.ret = garnishObject(reader, state0.num1.imagPart());
+             state0.ret = garnishObject(reader0, state0.num1.imagPart());
              break;
          default:
-             throwError(state0, reader, "SystemArgError",
+             throwError(state0, reader0, "SystemArgError",
                         "Invalid numerical argument to EXE_PATH");
              break;
          }
@@ -2234,10 +2241,10 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_OBJID (store in %ret the identifier of %slf)
      // objId#: obj.
      assert(reader.cpp.size() == CPP_OBJID);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          auto value = (intptr_t)(state0.ret.get());
          auto value1 = Number::bigint(value);
-         state0.ret = garnishObject(reader, Number(value1));
+         state0.ret = garnishObject(reader0, Number(value1));
      });
      sys->put(Symbols::get()["objId#"],
               defineMethod(unit, global, method,
@@ -2250,7 +2257,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_STREAM_FLUSH (flush the stream in %strm)
      // streamFlush#: stream.
      assert(reader.cpp.size() == CPP_STREAM_FLUSH);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          state0.strm->flush();
      });
      sys->put(Symbols::get()["streamFlush#"],
@@ -2267,12 +2274,12 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_UNI_CAT (put the category of the string in %str0 into %ret as a number object)
      // uniCat#: str.
      assert(reader.cpp.size() == CPP_UNI_CAT);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          auto ch = charAt(state0.str0, 0L);
          if (ch)
-             state0.ret = garnishObject(reader, static_cast<long>(ch->genCat()));
+             state0.ret = garnishObject(reader0, static_cast<long>(ch->genCat()));
          else
-             state0.ret = garnishObject(reader, 0L);
+             state0.ret = garnishObject(reader0, 0L);
      });
      sys->put(Symbols::get()["uniCat#"],
               defineMethod(unit, global, method,
@@ -2289,7 +2296,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // traceGC#.
      // untraceGC#.
      assert(reader.cpp.size() == CPP_GC_TRACE);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
           auto val = state0.num0.asSmallInt();
           GC::get().setTracing(val != 0);
      });
@@ -2305,14 +2312,14 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_PARSE_DOUBLE (parse %str0 as a double, returning in %ret; throws if no valid conversion could be made)
      // strToDouble#: value.
      assert(reader.cpp.size() == CPP_PARSE_DOUBLE);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          const char* start = state0.str0.c_str();
          char* end = nullptr;
          double x = strtod(start, &end);
          if (end > start) {
-             state0.ret = garnishObject(reader, Number(x));
+             state0.ret = garnishObject(reader0, Number(x));
          } else {
-             throwError(state0, reader, "InputError", "Text is not a number");
+             throwError(state0, reader0, "InputError", "Text is not a number");
          }
      });
      sys->put(Symbols::get()["strToDouble#"],
@@ -2329,7 +2336,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // CPP_DUPLICATE (replace the object pointed to at %ptr with one identical to that of %slf)
      // duplicate#: obj.
      assert(reader.cpp.size() == CPP_DUPLICATE);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          *(state0.ptr) = *(state0.slf);
      });
      sys->put(Symbols::get()["duplicate#"],
@@ -2350,10 +2357,10 @@ void spawnSystemCallsNew(ObjectPtr global,
      // strUpper#: str.
      // strTitle#: str.
      assert(reader.cpp.size() == CPP_UNI_CASE);
-     reader.cpp.push_back([&reader](IntState& state0) {
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          std::string str = state0.str0;
          if (str == "") {
-             state0.ret = garnishObject(reader, str);
+             state0.ret = garnishObject(reader0, str);
          } else {
              auto ch = charAt(str, 0);
              if (!ch) {
@@ -2361,13 +2368,13 @@ void spawnSystemCallsNew(ObjectPtr global,
              } else {
                  switch (state0.num0.asSmallInt()) {
                  case 0:
-                     state0.ret = garnishObject(reader, static_cast<std::string>(ch->toLower()));
+                     state0.ret = garnishObject(reader0, static_cast<std::string>(ch->toLower()));
                      break;
                  case 1:
-                     state0.ret = garnishObject(reader, static_cast<std::string>(ch->toUpper()));
+                     state0.ret = garnishObject(reader0, static_cast<std::string>(ch->toUpper()));
                      break;
                  case 2:
-                     state0.ret = garnishObject(reader, static_cast<std::string>(ch->toTitle()));
+                     state0.ret = garnishObject(reader0, static_cast<std::string>(ch->toTitle()));
                      break;
                  }
              }
@@ -2409,6 +2416,17 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::INT, 2),
                                    makeAssemblerLine(Instr::CPP, CPP_UNI_CASE),
                                    makeAssemblerLine(Instr::THROA, "Internal error CPP_UNI_CASE"))));
+
+     // CPP_RANDOM (puts a random integer into %ret)
+     // random#.
+     assert(reader.cpp.size() == CPP_RANDOM);
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         // TODO Use the C++ random generator here, and try to make things thread-safe and not global
+         state0.ret = garnishObject(reader0, rand());
+     });
+     sys->put(Symbols::get()["random#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::CPP, CPP_RANDOM))));
 
      // GTU METHODS //
 

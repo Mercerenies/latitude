@@ -79,6 +79,7 @@ global thunk := {
 ;; Procs and Methods handling
 Method closure := global.
 Proc call := {}.
+Proc =~ := {#'self call. }.
 Method call := { #'self send #'self call. }.
 Method toString := "Method".
 Proc toString := "Proc".
@@ -219,6 +220,7 @@ global toString := {
 ; TODO Consider moving the comparison operators to a mixin
 Object === := { Kernel eq: #'self, #'$1. }.
 Object == := { (self) === ($1). }.
+Object =~ := { #'(self) == #'($1). }.
 Object > := { ($1) < (self). }.
 Object >= := { ((self) > ($1)) or ((self) == ($1)). }.
 Object <= := { ((self) < ($1)) or ((self) == ($1)). }.
@@ -319,7 +321,7 @@ Slots hold := { meta sys accessSlot#: #'$1, #'$2. }.
 Slots get := { Kernel invoke (self hold) on #'($1) call. }.
 Slots put := { meta sys putSlot#: #'$1, #'$2, #'$3. }.
 Slots delete := { meta sys remSlot#: #'$1, #'$2. Nil. }.
-Slots protect := { meta sys protectVar#: #'$1, $2. }.
+Slots protect := { meta sys protectVar#: #'$1, $2, 3. }.
 Slots protected? := { meta sys protectIs#: #'$1, $2. }.
 Slots has? := {
   obj := #'$1.

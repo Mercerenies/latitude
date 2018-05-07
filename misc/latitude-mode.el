@@ -31,32 +31,83 @@
      (modify-syntax-entry ?\& "w" st)
      st))
 
+(defun latitude-mode--is-in-comment-or-string ()
+  ; Checks at point
+  (let ((face (get-text-property (point) 'face)))
+    (unless (listp face)
+      (setq face (list face)))
+    (or (memq 'font-lock-comment-face face)
+        (memq 'font-lock-string-face face))))
+
+(defun latitude-mode--forward-string-check (lim)
+  (save-excursion
+    (let ((matched (search-forward "#\"" lim t)))
+      (when matched
+        (backward-char 2)
+        (set-match-data (list (point) (1+ (point))))
+        t))))
+
+(defun latitude-mode--font-lock-search-string (lim start lhs rhs)
+  (let ((matched (search-forward start lim t))
+        (nests 0))
+    (when matched
+      (while (and (>= nests 0)
+                  (< (point) lim)
+                  (not (eobp)))
+        (let ((ch (following-char)))
+          (cond
+           ((equal ch ?\\) (forward-char))
+           ((equal ch lhs) (setq nests (1+ nests)))
+           ((equal ch rhs) (setq nests (1- nests)))
+           (t))
+          (forward-char)))
+      (set-match-data (list (- matched 2)
+                            (point)))
+      t)))
+
+;; TODO Does not work over multiple lines
+(defun latitude-mode--font-lock-literal-string (lim)
+  (save-excursion
+    (or (latitude-mode--font-lock-search-string lim "#("  ?(  ?) )
+        (latitude-mode--font-lock-search-string lim "#["  ?[  ?] )
+        (latitude-mode--font-lock-search-string lim "#{"  ?{  ?} ))))
+
 (defvar latitude-mode-font-lock-keywords
-  (list `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
+  (list `(latitude-mode--forward-string-check
+          . font-lock-string-face)
+        `(latitude-mode--font-lock-literal-string
+          . font-lock-string-face)
+        `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
           (1 font-lock-function-name-face))
         `("\\_<\\(&?[A-Z]\\(?:\\sw\\|\\s_\\)*\\)\\_>"
           (1 font-lock-type-face))
         `("[^#]\\('[^][.,:;(){}\"\' \t\n\r`\\\\]+\\)"
           (1 font-lock-string-face))
+        `("~[^][.,:;(){}\"\' \t\n\r`\\\\]+"
+          . font-lock-string-face)
         `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*:="
           (1 font-lock-variable-name-face))
-        `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "lexical" "parent"
-                         "here" "again" "self" "invoke" "get" "has?" "put" "slot" "hold" "callCC"
+        `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "parent"
+                         "here" "again" "self" "invoke" "slot" "callCC"
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
-                         "catch" "handle" "load" "eval" "rethrow" "inject" "iterator"
-                         "$dynamic" "scope" "$scope" "cons" "car" "cdr" "proc" "id" "memo" "inject"
-                         "member?" "takes" "localize" "this" "brackets" "origin" "resolve"
+                         "catch" "handle" "rethrow" "inject" "iterator"
+                         "$dynamic" "cons" "car" "cdr" "proc" "memo"
+                         "member?" "takes" "localize" "this" "resolve"
                          "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?"
-                         "caller")
+                         "caller" "nth" "size" "length" "toBool" "catchAll" "closure" "shield"
+                         "interface" "import" "importAll" "importAllSigils" "times" "upto"
+                         "downto" "mod" "is?" "dup" "send" "tap" "stringify" "assign" "assignable"
+                         "missing" "falsify" "println" "putln" "puts" "print" "dump" "dumpObject"
+                         "printObject" "intern" "toProc" "sys" "escapable" "cond" "use" "breakable"
+                         "return" "break" "$break" "read" "readln")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
-                         "Proc" "Stream" "Cont" "Exception" "SystemError" "Array" "Kernel"
-                         "Sequence" "ArgList" "Collection" "SystemArgError"
-                         "SystemCallError" "TypeError" "SlotError" "ContError" "ParseError"
-                         "BoundsError" "Mixin" "Cons" "Cell" "Lockbox" "Latchkey" "Cached"
-                         "IOError" "Wildcard" "Ellipsis" "Match" "NoMatch" "LazySequence" "Process"
-                         "StackFrame" "NotSupportedError" "REPL" "FilePath" "FileHeader")
+                         "Proc" "Stream" "Cont" "Exception" "Array" "Kernel"
+                         "ArgList" "Collection" "Iterator"
+                         "Mixin" "Cons" "Cached" "Parents" "Slots" "Process"
+                         "StackFrame" "REPL" "FilePath" "FileHeader" "Chain"
+                         "Conditional" "Dict")
                        'symbols)
           . font-lock-constant-face)
         `(,(regexp-opt '(":=" "::=" "=" "<-"))

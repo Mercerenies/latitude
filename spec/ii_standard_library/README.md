@@ -37,6 +37,7 @@ scope object.
      +-- Conditional
      +-- Cons
      +-- Dict
+     +-- Ellipsis
      +-- Exception
      |    +-- SystemError
      |    |    +-- err ArgError
@@ -100,6 +101,7 @@ scope object.
  * [Cons](cons.md)
  * [Cont](cont.md)
  * [Dict](dict.md)
+ * [Ellipsis](ellipsis.md)
  * [Exception and Exceptions](exception.md)
  * [FileHeader](fileheader.md)
  * [FilePath](filepath.md)

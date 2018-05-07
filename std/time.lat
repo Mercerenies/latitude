@@ -33,6 +33,7 @@ DateTime year := 0.
 DateTime weekdayNumber := 0.
 DateTime yearDay := 0.
 DateTime dstNumber := 0.
+DateTime raw := 0.
 DateTime month := { Month value (self monthNumber). }.
 DateTime weekday := { Weekday value (self weekdayNumber). }.
 DateTime dst? := { self dstNumber >= 0. }.

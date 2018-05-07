@@ -9,6 +9,10 @@ global escapable := {
   cont := $1.
   self return := { cont call. }.
 }.
+global breakable := {
+  breakBlock := $break.
+  self break := { breakBlock call. }.
+}.
 
 ;; Booleans
 Object toBool := True.
@@ -90,7 +94,11 @@ Object not := {
 ;; Loops
 global loop := {
   content := #'$1.
-  meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
+  callCC {
+    escapable.
+    $break := proc { return. }.
+    meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
+  }.
 }.
 global while := {
   cond0 := #'$1.
@@ -99,14 +107,10 @@ global while := {
     self do := {
       stmt0 := #'$1.
       stmt := { Kernel invoke #'(stmt0) on (Conditional) call. }.
-      callCC {
-        escapable.
-        $break := #'return.
-        loop {
-          if (cond)
-            then { stmt. }
-            else { $break: Nil. }.
-        }.
+      loop {
+        if (cond)
+          then { stmt. }
+          else { $break call: Nil. }.
       }.
     }.
   }.
@@ -160,6 +164,10 @@ Number downto := {
   }.
 }.
 
+global Ellipsis ::= Object clone.
+global ... := Ellipsis.
+Ellipsis =~ := True.
+
 ;; Cond Statement
 global cond := {
   takes '[block].
@@ -186,6 +194,38 @@ global cond := {
     }.
     procd call.
     Nil.
+  }.
+}.
+
+;; Case Statement
+global case := {
+  elem := $1. ; Evaluate if a method is passed in
+  Object clone tap {
+    self do := {
+      takes '[block].
+      callCC {
+        escapable.
+        whenProc := proc {
+          match := #'($1) =~ #'(elem).
+          if (match) then {
+            Object clone tap {
+              self do := {
+                return: Conditional send ($1) call.
+              }.
+            }.
+          } else {
+            Object clone tap {
+              self do := { }.
+            }.
+          }.
+        }.
+        Conditional send #'(block) by {
+          $1 when := { whenProc call. }.
+          $1 else := { self when (...) do. }.
+        } call.
+        Nil.
+      }.
+    }.
   }.
 }.
 

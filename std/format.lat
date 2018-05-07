@@ -1,8 +1,6 @@
 ;;* MODULE format
 ;;* PACKAGE base
 
-use 'pattern import '[case].
-
 format := $whereAmI.
 
 FormatString ::= Proc clone.

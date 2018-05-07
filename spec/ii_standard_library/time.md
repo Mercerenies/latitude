@@ -66,6 +66,13 @@ by this object.
 Returns whether the current time and date is subject to active
 daylight savings time.
 
+#### `DateTime raw.`
+
+Returns a raw numerical representation of the date and time. On
+Unix-like systems, this is the number of seconds since the Unix epoch.
+On other systems, this value may be a machine-dependent numerical
+value.
+
 ## The Month Object
 
     Month := Enumeration clone.
