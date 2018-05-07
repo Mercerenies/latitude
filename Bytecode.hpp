@@ -169,6 +169,10 @@ void hardKill(IntState& state, const ReadOnlyState& reader);
 /// \param newWind the wind stack that the continuation is jumping \e to
 void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
 
+void pushTrace(IntState& state);
+
+void popTrace(IntState& state);
+
 /// Given a serial instruction sequence, pops a single character off
 /// the front and returns it.
 ///

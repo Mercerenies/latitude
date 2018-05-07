@@ -138,6 +138,17 @@ void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr
     }
 }
 
+void pushTrace(IntState& state) {
+    state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
+}
+
+void popTrace(IntState& state) {
+    auto curr = state.trace->get();
+    state.trace = popNode(state.trace);
+    state.line = std::get<0>(curr);
+    state.file = std::get<1>(curr);
+}
+
 unsigned char popChar(SerialInstrSeq& state) {
     if (state.empty())
         return 0;
@@ -480,7 +491,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"]);
             // (5) Push the trace information
-            state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
+            pushTrace(state);
             // (6) Bind all of the arguments
             if (!state.dyn.empty()) {
                 int index = args;
@@ -569,7 +580,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"]);
             // (5) Push the trace information
-            state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
+            pushTrace(state);
             // (6) Bind all of the arguments
             if (!state.dyn.empty()) {
                 int index = args;
@@ -604,7 +615,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         if (!state.trace)
             state.err0 = true;
         else
-            state.trace = popNode(state.trace);
+            popTrace(state);
         if (state.trns.empty())
             state.err0 = true;
         else
