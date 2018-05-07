@@ -2434,7 +2434,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(reader.cpp.size() == CPP_PANIC);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          std::cerr << "Panic!" << std::endl;
-         std::cerr << DebugObject(state0.ret) << std::endl; // Random example
+         dumpEverything(std::cerr, state0);
          hardKill(state0, reader0);
      });
      sys->put(Symbols::get()["panic#"],
