@@ -17,9 +17,9 @@ Kernel loadRaw: "std/exception.lats".
   Kernel loadRaw: "std/string.lats".
   Kernel loadRaw: "std/module.lats".
 } handle {
-  stdout putln: "!!!!! EXCEPTION !!!!!".
-  stdout putln: "Standard library failure " ++ $1.
-  stdout putln: "Please report this error.".
+  stderr putln: "!!!!! EXCEPTION !!!!!".
+  stderr putln: "Standard library failure " ++ $1.
+  stderr putln: "Please report this error.".
 }.
 
 here.
