@@ -62,7 +62,8 @@ namespace Table {
         CPP_PARSE_DOUBLE = 51,
         CPP_DUPLICATE = 52,
         CPP_UNI_CASE = 53,
-        CPP_RANDOM = 54;
+        CPP_RANDOM = 54,
+        CPP_PANIC = 55;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,
