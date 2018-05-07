@@ -355,8 +355,9 @@ void cleanupL(struct List* stmt) {
 
 struct Expr* makeExpr() {
     struct Expr* expr = new Expr();
-    // TODO No idea why this '+ 1' is necessary but it makes things work right
-    expr->line = line_num + 1;
+    // TODO This +1 correction seems to be only necessary in specifically repl.lats... :/
+    //expr->line = line_num + 1;
+    expr->line = line_num;
     return expr;
 }
 
