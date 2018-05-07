@@ -1249,14 +1249,16 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 auto elem = stck->get();
                 tie(line, file) = elem;
                 temp = clone(sframe);
-                if (frame == nullptr) {
-                    top = temp;
-                } else {
-                    frame->put(Symbols::parent(), temp);
+                if (file != "") {
+                    if (frame == nullptr) {
+                        top = temp;
+                    } else {
+                        frame->put(Symbols::parent(), temp);
+                    }
+                    frame = temp;
+                    frame->put(Symbols::get()["line"], garnishObject(reader, line));
+                    frame->put(Symbols::get()["file"], garnishObject(reader, file));
                 }
-                frame = temp;
-                frame->put(Symbols::get()["line"], garnishObject(reader, line));
-                frame->put(Symbols::get()["file"], garnishObject(reader, file));
                 stck = popNode(stck);
             }
             assert(top != nullptr); // Should always be non-null since the loop must run once
