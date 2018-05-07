@@ -81,7 +81,7 @@ IntState intState() {
     // mthdz default to empty method
     // flag default to false
     // wind default to empty
-    // line default to zero
+    state.line = 0;
     // file default to empty string
     // trace default to empty stack
     // trns default to empty stack
