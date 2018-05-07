@@ -9,6 +9,7 @@
 #include "Pathname.hpp"
 #include "Unicode.hpp"
 #include "Platform.hpp"
+#include "Dump.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -2433,6 +2434,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(reader.cpp.size() == CPP_PANIC);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          std::cerr << "Panic!" << std::endl;
+         std::cerr << DebugObject(state0.ret) << std::endl; // Random example
          hardKill(state0, reader0);
      });
      sys->put(Symbols::get()["panic#"],
