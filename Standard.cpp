@@ -2428,8 +2428,8 @@ void spawnSystemCallsNew(ObjectPtr global,
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::CPP, CPP_RANDOM))));
 
-     // CPP_PANIC (panic, using %slf, then kill)
-     // panic#: object.
+     // CPP_PANIC (panic, then kill)
+     // panic#.
      assert(reader.cpp.size() == CPP_PANIC);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          std::cerr << "Panic!" << std::endl;
@@ -2437,11 +2437,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      });
      sys->put(Symbols::get()["panic#"],
               defineMethod(unit, global, method,
-                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
-                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
-                                   makeAssemblerLine(Instr::RTRV),
-                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
-                                   makeAssemblerLine(Instr::CPP, CPP_PANIC))));
+                           asmCode(makeAssemblerLine(Instr::CPP, CPP_PANIC))));
 
      // GTU METHODS //
 
