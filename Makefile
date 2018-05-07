@@ -121,7 +121,7 @@ Optimizer.o:	Optimizer.cpp Optimizer.hpp Instructions.hpp Symbol.hpp
 CUnicode.o:	CUnicode.cpp CUnicode.h
 	$(CXX) $(CXXFLAGS) CUnicode.cpp
 
-Dump.o:	Dump.cpp Dump.hpp Proto.hpp
+Dump.o:	Dump.cpp Dump.hpp Proto.hpp Bytecode.hpp Instructions.hpp
 	$(CXX) $(CXXFLAGS) Dump.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp Protection.hpp

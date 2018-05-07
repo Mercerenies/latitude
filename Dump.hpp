@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include "Proto.hpp"
+#include "Bytecode.hpp"
 
 /// An adaptor class which provides useful dumping and printing
 /// capabilities for object pointers.
