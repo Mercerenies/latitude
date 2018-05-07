@@ -228,7 +228,7 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
             optimize::lookupSymbols(unit);
             state.stack = pushNode(state.stack, state.cont);
             state.cont = MethodSeek(Method(unit, { 0 }));
-            state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
+            pushTrace(state);
             state.trns.push(unit);
         } catch (std::string parseException) {
 #ifdef DEBUG_LOADS
@@ -400,7 +400,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
             optimize::lookupSymbols(unit);
             state.stack = pushNode(state.stack, state.cont);
             state.cont = MethodSeek(Method(unit, { 0 }));
-            state.trace = pushNode(state.trace, make_tuple(state.line, state.file));
+            pushTrace(state);
             state.trns.push(unit);
         } catch (std::string parseException) {
             throwError(state, reader, "ParseError", parseException);
