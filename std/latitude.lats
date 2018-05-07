@@ -1,4 +1,9 @@
 
+meta missed := {
+  ;; If we reach this point in the code then uh-oh...
+  meta sys panic#.
+}.
+
 Kernel cloneObject := { meta sys doClone#: #'$1. }.
 Kernel load := { meta sys kernelLoad#: $1, Kernel cloneObject (global). }.
 Kernel loadRaw := { meta sys kernelLoad0#: $1, Kernel cloneObject (global). }.
