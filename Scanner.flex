@@ -1,3 +1,4 @@
+ /* -*- C -*- */
 
 %option noyywrap
 %option noinput
