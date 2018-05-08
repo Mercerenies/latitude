@@ -27,6 +27,15 @@ release:	CCFLAGS += -O3
 release:	LINKFLAGS += -O3
 release:	Project
 
+install:
+	./latitude --compile
+	mkdir -p /usr/local/lib/latitude
+	mkdir -p /usr/local/lib/latitude/std
+	cp latitude    /usr/local/lib/latitude/
+	cp std/*.latc  /usr/local/lib/latitude/std/
+	cp std/*.latsc /usr/local/lib/latitude/std/
+	ln -sf /usr/local/lib/latitude/latitude /usr/local/bin/latitude
+
 Project:	$(FILES)
 	$(LINK) $(FILES)
 
