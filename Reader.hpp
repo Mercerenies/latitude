@@ -46,13 +46,13 @@ void clearCurrentLine() noexcept;
  */
 std::list< std::unique_ptr<Stmt> > parse(std::string str);
 
-void eval(IntState& state, const ReadOnlyState& reader, std::string str);
+bool eval(IntState& state, const ReadOnlyState& reader, std::string str);
 
-void readFileSource(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
+bool readFileSource(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
 
-void compileFile(std::string fname, std::string fname1, IntState& state, const ReadOnlyState& reader);
+bool compileFile(std::string fname, std::string fname1, IntState& state, const ReadOnlyState& reader);
 
-void readFile(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
+bool readFile(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
 
 /*
  * A statement. Defines only one method, which executes

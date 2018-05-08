@@ -165,7 +165,7 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str) {
     return result;
 }
 
-void eval(IntState& state, const ReadOnlyState& reader, string str) {
+bool eval(IntState& state, const ReadOnlyState& reader, string str) {
     try {
         auto result = parse(str);
         if (!result.empty()) {
@@ -184,10 +184,12 @@ void eval(IntState& state, const ReadOnlyState& reader, string str) {
         }
     } catch (std::string str) {
         throwError(state, reader, "ParseError", str);
+        return false;
     }
+    return true;
 }
 
-void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
+bool readFileSource(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Loading " << fname << "..." << endl;
 #endif
@@ -235,10 +237,13 @@ void readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
             std::cout << parseException << std::endl;
 #endif
             throwError(state, reader, "ParseError", parseException);
+            return false;
         }
     } catch (ios_base::failure err) {
         throwError(state, reader, "IOError", err.what());
+        return false;
     }
+    return true;
 }
 
 void saveInstrs(ofstream& file, const InstrSeq& seq) {
@@ -332,7 +337,7 @@ TranslationUnitPtr loadFromFile(ifstream& file) {
     return result;
 }
 
-void compileFile(string fname, string fname1, IntState& state, const ReadOnlyState& reader) {
+bool compileFile(string fname, string fname1, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
 #endif
@@ -368,13 +373,16 @@ void compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
             saveToFile(file1, unit);
         } catch (std::string parseException) {
             throwError(state, reader, "ParseError", parseException);
+            return false;
         }
     } catch (ios_base::failure err) {
         throwError(state, reader, "IOError", err.what());
+        return false;
     }
+    return true;
 }
 
-void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
+bool readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
 #ifdef DEBUG_LOADS
     cout << "Loading (compiled) " << fname << "..." << endl;
 #endif
@@ -404,10 +412,13 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
             state.trns.push(unit);
         } catch (std::string parseException) {
             throwError(state, reader, "ParseError", parseException);
+            return false;
         }
     } catch (ios_base::failure err) {
         throwError(state, reader, "IOError", err.what());
+        return false;
     }
+    return true;
 }
 
 bool needsRecompile(string fname, string cname) {
@@ -429,13 +440,16 @@ bool needsRecompile(string fname, string cname) {
 
 }
 
-void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
+bool readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
+    bool okay = true;
     string cname = fname + "c";
     if (needsRecompile(fname, cname)) {
-        compileFile(fname, cname, state, reader);
+        okay &= compileFile(fname, cname, state, reader);
     }
     // readFileSource(fname, defScope, state, reader);
-    readFileComp(cname, defScope, state, reader);
+    if (okay)
+        okay &= readFileComp(cname, defScope, state, reader);
+    return okay;
 }
 
 Stmt::Stmt(int line_no)
