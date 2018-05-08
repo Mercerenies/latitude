@@ -22,6 +22,11 @@ CmdArgs parseArgs(int& argc, char**& argv) {
             result.run = RunMode::EXIT;
             result.output = OutputMode::HELP;
             argc--;
+        } else if (std::strcmp(argv[i], "--compile") == 0) {
+            // Compile then exit
+            result.run = RunMode::COMPILE;
+            result.output = OutputMode::NONE;
+            argc--;
         } else {
             // Unrecognized command, so keep it
             argv[j++] = argv[i];
@@ -38,6 +43,7 @@ void outputHelp() {
     std::cout << "Usage: latitude [options...] [filename [args...]]" << std::endl;
     std::cout << "  --help     Show this message and exit" << std::endl;
     std::cout << "  --version  Print the current version and exit" << std::endl;
+    std::cout << "  --compile  Compile the standard library and given file, then exit" << std::endl;
     std::cout << "If a filename is provided, that file will be executed," << std::endl;
     std::cout << "with the given command line arguments. If no additional" << std::endl;
     std::cout << "arguments are supplied, a REPL will be started." << std::endl;

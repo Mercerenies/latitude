@@ -26,3 +26,12 @@ void runRunner(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
     while (!isIdling(state))
         doOneStep(state, reader);
 }
+
+void runCompiler(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
+
+    string pathname = stripFilename(getExecutablePathname());
+    readFile(pathname + "std/compiler.lats", { clone(global), clone(global) }, state, reader);
+
+    while (!isIdling(state))
+        doOneStep(state, reader);
+}

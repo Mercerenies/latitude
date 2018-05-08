@@ -8,4 +8,6 @@ void runREPL(ObjectPtr global, IntState& state, ReadOnlyState& reader);
 
 void runRunner(ObjectPtr global, IntState& state, ReadOnlyState& reader);
 
+void runCompiler(ObjectPtr global, IntState& state, ReadOnlyState& reader);
+
 #endif // REPL_HPP

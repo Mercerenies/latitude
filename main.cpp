@@ -58,6 +58,14 @@ int main(int argc, char** argv) {
         runRunner(global, state, reader);
         break;
     }
+    case RunMode::COMPILE: {
+        IntState state = intState();
+        ReadOnlyState reader = readOnlyState();
+        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY })); // Overwrite the nullary register
+        ObjectPtr global = spawnObjects(state, reader, argc, argv);
+        runCompiler(global, state, reader);
+        break;
+    }
     case RunMode::EXIT: {
         // Do nothing and exit
         break;

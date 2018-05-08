@@ -4,6 +4,7 @@
 enum class RunMode {
     REPL,
     RUNNER,
+    COMPILE,
     EXIT
 };
 
