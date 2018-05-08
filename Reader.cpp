@@ -421,9 +421,9 @@ bool needsRecompile(string fname, string cname) {
     // Otherwise, recompile if any of the conditions are met.
     bool recomp = false;
     // (1) The compiled file doesn't exist.
-    recomp ||= !fileExists(cname);
+    recomp = recomp || !fileExists(cname);
     // (2) The source file was modified after the compiled file.
-    recomp ||= (std::difftime(modificationTime(cname), modificationTime(fname)) <= 0);
+    recomp = recomp || (std::difftime(modificationTime(cname), modificationTime(fname)) <= 0);
 
     return recomp;
 
