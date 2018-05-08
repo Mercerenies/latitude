@@ -233,6 +233,7 @@ Kernel toString := "Kernel".
 Kernel kill := { meta sys kill#. }.
 Kernel eval := { meta sys eval#: $1, $2, $3. }.
 Kernel evalFile := { meta sys kernelLoad#: $1, $2. }.
+Kernel compileFile := { meta sys kernelComp#: $1, Nil. }.
 Kernel readHeader := { meta sys fileHeader#: $1. }.
 Kernel executablePath := { meta sys exePath#. }.
 Kernel cwd := { meta sys cwdPath#. }.

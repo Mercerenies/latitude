@@ -50,7 +50,7 @@ void eval(IntState& state, const ReadOnlyState& reader, std::string str);
 
 void readFileSource(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
 
-void compileFile(std::string fname, std::string fname1, Scope defScope, IntState& state, const ReadOnlyState& reader);
+void compileFile(std::string fname, std::string fname1, IntState& state, const ReadOnlyState& reader);
 
 void readFile(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
 

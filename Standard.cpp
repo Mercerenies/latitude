@@ -54,7 +54,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     });
 
     // CPP_KERNEL_LOAD ($1 = filename, $2 = global)
-    //  * Checks %num0 (if 0, then standard load; if 1, then raw load)
+    //  * Checks %num0 (if 0, then standard load; if 1, then raw load; if 2, then compile only)
     // kernelLoad#: filename, global.
     // kernelLoad0#: filename, global.
     assert(reader.cpp.size() == CPP_KERNEL_LOAD);
@@ -66,9 +66,13 @@ void spawnSystemCallsNew(ObjectPtr global,
             auto str0 = boost::get<string>(&str->prim());
             if (str0) {
                 string str1 = *str0;
-                if (state0.num0.asSmallInt() == 1)
-                    str1 = stripFilename(getExecutablePathname()) + str1;
-                readFile(str1, { global, global }, state0, reader0);
+                if (state0.num0.asSmallInt() == 2) {
+                    compileFile(str1, str1 + "c", state0, reader0);
+                } else {
+                    if (state0.num0.asSmallInt() == 1)
+                        str1 = stripFilename(getExecutablePathname()) + str1;
+                    readFile(str1, { global, global }, state0, reader0);
+                }
             } else {
                 throwError(state0, reader0, "TypeError", "String expected");
             }
@@ -83,6 +87,10 @@ void spawnSystemCallsNew(ObjectPtr global,
     sys->put(Symbols::get()["kernelLoad0#"],
              defineMethod(unit, global, method,
                           asmCode(makeAssemblerLine(Instr::INT, 1),
+                                  makeAssemblerLine(Instr::CPP, CPP_KERNEL_LOAD))));
+    sys->put(Symbols::get()["kernelComp#"],
+             defineMethod(unit, global, method,
+                          asmCode(makeAssemblerLine(Instr::INT, 2),
                                   makeAssemblerLine(Instr::CPP, CPP_KERNEL_LOAD))));
 
     // accessSlot#: obj, sym.
