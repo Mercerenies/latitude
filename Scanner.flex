@@ -335,6 +335,7 @@ ID        {SNORMAL}{NORMAL}*
 \] { return ']'; }
 
 \;[^\n]* ; // Line comments
+^#![^\n]* ; // Shebang
 \{\* { BEGIN(INNER_COMMENT); comments++; }
 <INNER_COMMENT>\{\* { comments++; }
 <INNER_COMMENT>\*\} { comments--; if (comments == 0) BEGIN(0); }

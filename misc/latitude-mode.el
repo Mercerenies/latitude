@@ -77,6 +77,8 @@
           . font-lock-string-face)
         `(latitude-mode--font-lock-literal-string
           . font-lock-string-face)
+        `("^#![^\n]*"
+          . font-lock-comment-face)
         `("\\_<\\(\\(?:\\sw\\|\\s_\\)+\\)\\s-*::?=\\s-*{"
           (1 font-lock-function-name-face))
         `("\\_<\\(&?[A-Z]\\(?:\\sw\\|\\s_\\)*\\)\\_>"

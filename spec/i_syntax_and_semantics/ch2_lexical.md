@@ -258,3 +258,7 @@ comment so long as they are balanced. Comments can be placed in the
 code anywhere that whitespace would be ignored, so in particular
 comments cannot be placed in the middle of an identifier or inside a
 string.
+
+Finally, an additional type of line comment is allowed. If a line
+begins with `#!` then that entire line will be ignored by the parser.
+This allows Unix-style shebang lines at the start of the file.
