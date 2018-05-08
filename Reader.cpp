@@ -410,14 +410,32 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
     }
 }
 
+bool needsRecompile(string fname, string cname) {
+
+    // TODO Detect whether or not we can write to the target directory and never recompile if we can't.
+
+    // If the source doesn't exist, don't recompile.
+    if (!fileExists(fname))
+        return false;
+
+    // Otherwise, recompile if any of the conditions are met.
+    bool recomp = false;
+    // (1) The compiled file doesn't exist.
+    recomp ||= !fileExists(cname);
+    // (2) The source file was modified after the compiled file.
+    recomp ||= (std::difftime(modificationTime(cname), modificationTime(fname)) <= 0);
+
+    return recomp;
+
+}
+
 void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
-    // Soon, this will attempt to read a compiled file first.
     string cname = fname + "c";
-    if (!fileExists(cname) || std::difftime(modificationTime(cname), modificationTime(fname)) <= 0) {
-        compileFile(fname, fname + "c", state, reader);
+    if (needsRecompile(fname, cname)) {
+        compileFile(fname, cname, state, reader);
     }
     // readFileSource(fname, defScope, state, reader);
-    readFileComp(fname + "c", defScope, state, reader);
+    readFileComp(cname, defScope, state, reader);
 }
 
 Stmt::Stmt(int line_no)
