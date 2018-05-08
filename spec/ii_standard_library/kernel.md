@@ -53,6 +53,16 @@ What constitutes a valid filename depends on the underlying operating
 system. On most commonly-used systems, `evalFile` will accept either a
 relative or absolute pathname.
 
+### `Kernel compileFile (filename).`
+
+Compiles the file into Latitude bytecode, storing the compiled result
+in a new file in the same directory as `filename`, with the same name,
+except that the letter "c" is appended to the end.
+
+What constitutes a valid filename depends on the underlying operating
+system. On most commonly-used systems, `compileFile` will accept either a
+relative or absolute pathname.
+
 ### `Kernel load (filename).`
 
 Reads and evaluates the given file in a clone of the global lexical
