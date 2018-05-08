@@ -410,15 +410,6 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
     }
 }
 
-bool fileExists(string fname) {
-    if (FILE* file = fopen(fname.c_str(), "rb")) {
-        fclose(file);
-        return true;
-    } else {
-        return false;
-    }
-}
-
 void readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
     // Soon, this will attempt to read a compiled file first.
     string cname = fname + "c";

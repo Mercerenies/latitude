@@ -116,3 +116,12 @@ std::time_t modificationTime(std::string path) {
 #ifdef USE_NULL
 #error Unsupported operating system; Please implement Pathname.cpp for your system
 #endif
+
+bool fileExists(std::string fname) {
+    if (FILE* file = fopen(fname.c_str(), "rb")) {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }
+}

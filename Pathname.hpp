@@ -55,4 +55,6 @@ std::string stripDirname(std::string path);
 /// \return the modification time
 std::time_t modificationTime(std::string path);
 
+bool fileExists(std::string fname);
+
 #endif // PATHNAME_HPP
