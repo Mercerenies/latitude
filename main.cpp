@@ -41,17 +41,21 @@ int main(int argc, char** argv) {
     }
 
     switch (args.run) {
-    case RunMode::DEFAULT: {
+    case RunMode::REPL: {
         IntState state = intState();
         ReadOnlyState reader = readOnlyState();
         state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY })); // Overwrite the nullary register
         ObjectPtr global = spawnObjects(state, reader, argc, argv);
-        if (argc > 1) {
-            runRunner(global, state, reader);
-        } else {
-            outputVersion();
-            runREPL(global, state, reader);
-        }
+        outputVersion();
+        runREPL(global, state, reader);
+        break;
+    }
+    case RunMode::RUNNER: {
+        IntState state = intState();
+        ReadOnlyState reader = readOnlyState();
+        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY })); // Overwrite the nullary register
+        ObjectPtr global = spawnObjects(state, reader, argc, argv);
+        runRunner(global, state, reader);
         break;
     }
     case RunMode::EXIT: {

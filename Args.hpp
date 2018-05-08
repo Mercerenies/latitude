@@ -2,7 +2,8 @@
 #define ARGS_HPP
 
 enum class RunMode {
-    DEFAULT,
+    REPL,
+    RUNNER,
     EXIT
 };
 

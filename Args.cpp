@@ -8,7 +8,7 @@ CmdArgs parseArgs(int& argc, char**& argv) {
     int j = 1;
     CmdArgs result;
 
-    result.run = RunMode::DEFAULT;
+    result.run = RunMode::RUNNER;
     result.output = OutputMode::NONE;
 
     for (int i = 1; i < len; i++) {
@@ -28,11 +28,14 @@ CmdArgs parseArgs(int& argc, char**& argv) {
         }
     }
 
+    if ((result.run == RunMode::RUNNER) && (argc <= 1))
+        result.run = RunMode::REPL;
+
     return result;
 }
 
 void outputHelp() {
-    std::cout << "Usage: latitude [options...] [filename] [args...]" << std::endl;
+    std::cout << "Usage: latitude [options...] [filename [args...]]" << std::endl;
     std::cout << "  --help     Show this message and exit" << std::endl;
     std::cout << "  --version  Print the current version and exit" << std::endl;
     std::cout << "If a filename is provided, that file will be executed," << std::endl;
