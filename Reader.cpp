@@ -381,7 +381,7 @@ void readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyS
     ifstream file;
     file.exceptions(ifstream::badbit);
     try {
-        file.open(fname, std::ifstream::out | std::ifstream::binary);
+        file.open(fname, std::ifstream::in | std::ifstream::binary);
         BOOST_SCOPE_EXIT(&file) {
             file.close();
         } BOOST_SCOPE_EXIT_END;
