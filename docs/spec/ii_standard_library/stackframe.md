@@ -35,3 +35,5 @@ is desired, use `stdout dump: StackFrame`.
 
 
 [[up](.)]
+<br/>[[prev - The Slots Object](slots.md)]
+<br/>[[next - The Stream Object](stream.md)]

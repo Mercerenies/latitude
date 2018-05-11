@@ -24,3 +24,5 @@ Returns a symbol representing the class of operating system. Possible
 values: `'windows`, `'posix`, or `'unknown`.
 
 [[up](.)]
+<br/>[[prev - The Format Module](format.md)]
+<br/>[[next - The Random Module](random.md)]

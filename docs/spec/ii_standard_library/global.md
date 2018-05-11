@@ -295,3 +295,5 @@ This argument-like object contains the command line arguments passed
 to the program, excluding those absorbed by the Latitude VM.
 
 [[up](.)]
+<br/>[[prev - The Symbol Object](symbol.md)]
+<br/>[[next - The Meta Object](meta.md)]

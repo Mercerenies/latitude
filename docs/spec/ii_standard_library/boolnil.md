@@ -40,3 +40,5 @@ Returns a [`NilIterator`](iterator.md#niliterator) which iterates over
 the empty collection.
 
 [[up](.)]
+<br/>[[prev - The Array Object](array.md)]
+<br/>[[next - The Cached Value Object](cached.md)]

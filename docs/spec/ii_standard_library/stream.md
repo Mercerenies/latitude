@@ -116,3 +116,5 @@ Note that some operating systems may disregard the binary flag.
 Returns whether or not a file with the given name exists.
 
 [[up](.)]
+<br/>[[prev - The Stack Frame Object](stackframe.md)]
+<br/>[[next - The String Object](string.md)]

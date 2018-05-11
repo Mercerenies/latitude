@@ -60,3 +60,5 @@ string, which is then printed to the standard output stream.
 Constructs a format string, as though by the `format` method.
 
 [[up](.)]
+<br/>[[prev - The Enumeration Module](enum.md)]
+<br/>[[next - The OS Module](os.md)]

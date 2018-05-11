@@ -72,3 +72,5 @@ long-range continuation jump, this method will never exit until it is
 time for the VM process to end.
 
 [[up](.)]
+<br/>[[prev - The Random Module](random.md)]
+<br/>[[next - The Sequence Module](sequence.md)]

@@ -39,3 +39,5 @@ onto the end before searching. If no appropriate path can be found, a
 `ModuleError` is raised.
 
 [[up](.)]
+<br/>[[prev - The Module Object](module.md)]
+<br/>[[next - The Number Object](number.md)]

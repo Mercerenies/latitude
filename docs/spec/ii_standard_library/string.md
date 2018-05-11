@@ -199,3 +199,5 @@ simple 1-to-1 mapping. Characters with no title case equivalent are
 unmodified. Returns a new string.
 
 [[up](.)]
+<br/>[[prev - The Stream Object](stream.md)]
+<br/>[[next - The Symbol Object](symbol.md)]

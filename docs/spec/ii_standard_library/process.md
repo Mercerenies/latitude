@@ -59,3 +59,5 @@ a string. This does not start the process but merely constructs the
 resources necessary to start it in the future.
 
 [[up](.)]
+<br/>[[prev - The Procedure Object](proc.md)]
+<br/>[[next - The Slots Object](slots.md)]

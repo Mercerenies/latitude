@@ -81,3 +81,5 @@ generated symbol shall begin with `~`, followed by the prefix,
 followed by an arbitrary numeral. The prefix value must be a string.
 
 [[up](.)]
+<br/>[[prev - The String Object](string.md)]
+<br/>[[next - The Global Object](global.md)]

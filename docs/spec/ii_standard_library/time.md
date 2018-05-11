@@ -92,3 +92,5 @@ values: `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`,
 `"Weekday"`. Note that the week begins on Sunday, not Monday.
 
 [[up](.)]
+<br/>[[prev - The Sequence Module](sequence.md)]
+<br/>[[next - The Unicode Module](unicode.md)]

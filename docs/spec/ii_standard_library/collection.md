@@ -255,3 +255,5 @@ iterable collections. Returns a `Chain` which iterates over the
 elements *of* the elements of the collection.
 
 [[up](.)]
+<br/>[[prev - The Chain Object](chain.md)]
+<br/>[[next - The Conditional Object](conditional.md)]

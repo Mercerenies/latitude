@@ -211,3 +211,5 @@ be printed when the garbage collector is invokved. If tracing is
 already disabled, this method does nothing.
 
 [[up](.)]
+<br/>[[prev - The Iterator Object and Iterators](iterator.md)]
+<br/>[[next - The Method Object](method.md)]

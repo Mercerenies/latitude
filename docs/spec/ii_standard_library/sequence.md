@@ -109,3 +109,5 @@ iterator is lazy if the underlying iterator is lazy, and a sequence
 iterator is always a mutable iterator.
 
 [[up](.)]
+<br/>[[prev - The REPL Module](repl.md)]
+<br/>[[next - The Time Module](time.md)]

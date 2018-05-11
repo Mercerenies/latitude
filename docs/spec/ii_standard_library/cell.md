@@ -50,3 +50,5 @@ Makes a new cell whose value is `arg`, not evaluated.
 value. `CellIterator` is a mutable iterator.
 
 [[up](.)]
+<br/>[[prev - The Meta Object](meta.md)]
+<br/>[[next - The Enumeration Module](enum.md)]

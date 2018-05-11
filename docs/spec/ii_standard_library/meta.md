@@ -60,3 +60,5 @@ automatically called when the variable is accessed later. In this way,
 `~l` can be used to simulate lazy-evaluated values in Latitude.
 
 [[up](.)]
+<br/>[[prev - The Global Object](global.md)]
+<br/>[[next - The Cell Module](cell.md)]

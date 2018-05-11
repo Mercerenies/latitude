@@ -91,3 +91,5 @@ dictionaries.
 Returns a fresh empty dictionary.
 
 [[up](.)]
+<br/>[[prev - The Continuation Object](cont.md)]
+<br/>[[next - The Ellipsis Object](ellipsis.md)]

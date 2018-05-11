@@ -37,3 +37,4 @@ before the start index, the result will be the empty sequence or
 string.
 
 [[up](.)]
+<br/>[[next - Definitions](definitions.md)]

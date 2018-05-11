@@ -52,3 +52,5 @@ Imports all of the sigils in `sigils` into the current lexical scope's
 meta object. Returns `self`.
 
 [[up](.)]
+<br/>[[prev - The Mixin Object](mixin.md)]
+<br/>[[next - The Module Loader Object](moduleloader.md)]

@@ -141,3 +141,5 @@ scope.
  * [unicode](unicode.md)
 
 [[up](..)]
+<br/>[[prev - Section I - Syntax and Semantics](../i_syntax_and_semantics/)]
+<br/>[[next - Appendix](../appendix/)]

@@ -44,3 +44,5 @@ clones are the instances of the new enumeration type. Each clone has a
 
 
 [[up](.)]
+<br/>[[prev - The Cell Module](cell.md)]
+<br/>[[next - The Format Module](format.md)]

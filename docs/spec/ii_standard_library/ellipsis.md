@@ -13,3 +13,5 @@ will always return truthy when `=~` is called on it, making it a
     Ellipsis =~ := True.
 
 [[up](.)]
+<br/>[[prev - The Dictionary Object](dict.md)]
+<br/>[[next - The Exception Object and Built-in Exceptions](exception.md)]

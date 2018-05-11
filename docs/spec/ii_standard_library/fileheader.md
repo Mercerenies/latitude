@@ -16,3 +16,5 @@ it and is primarily used to store structured data.
     FileHeader moduleName := Nil.
 
 [[up](.)]
+<br/>[[prev - The Exception Object and Built-in Exceptions](exception.md)]
+<br/>[[next - The FilePath Object](filepath.md)]

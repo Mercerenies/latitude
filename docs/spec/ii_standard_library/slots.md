@@ -59,3 +59,5 @@ Returns whether the given slot on the supplied object has any
 protections applied to it.
 
 [[up](.)]
+<br/>[[prev - The Process Object](process.md)]
+<br/>[[next - The Stack Frame Object](stackframe.md)]

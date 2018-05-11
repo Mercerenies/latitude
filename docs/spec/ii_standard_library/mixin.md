@@ -48,3 +48,5 @@ inheritance hierarchy has a slot `mixin` whose value is equal (`===`)
 to the calling mixin object.
 
 [[up](.)]
+<br/>[[prev - The Method Object](method.md)]
+<br/>[[next - The Module Object](module.md)]

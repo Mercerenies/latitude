@@ -20,3 +20,5 @@ a [`ChainIterator`](iterator.md#chainiterator). The iterator returned
 is exactly as mutable as the underlying container being iterated.
 
 [[up](.)]
+<br/>[[prev - The Cached Value Object](cached.md)]
+<br/>[[next - The Collection Mixin Object](collection.md)]

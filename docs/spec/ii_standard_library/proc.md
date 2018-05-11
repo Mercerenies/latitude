@@ -42,3 +42,5 @@ in [`Method`](method.md) to return a non-evaluating form of the
 method.
 
 [[up](.)]
+<br/>[[prev - The Parents Object](parents.md)]
+<br/>[[next - The Process Object](process.md)]

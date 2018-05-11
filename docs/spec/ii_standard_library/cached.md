@@ -44,3 +44,5 @@ stored value.
 
 
 [[up](.)]
+<br/>[[prev - Booleans and the Nil Object](boolnil.md)]
+<br/>[[next - The Chain Object](chain.md)]

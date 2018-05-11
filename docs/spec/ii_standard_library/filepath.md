@@ -37,3 +37,5 @@ Returns the file extension in `path`. If no extension exists, returns
 the empty string.
 
 [[up](.)]
+<br/>[[prev - The FileHeader Object](fileheader.md)]
+<br/>[[next - The Iterator Object and Iterators](iterator.md)]

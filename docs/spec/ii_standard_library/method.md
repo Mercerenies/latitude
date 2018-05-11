@@ -115,3 +115,5 @@ Note carefully that proc objects are always called on themselves, so
 methods which use `self` will behave strangely when shielded.
 
 [[up](.)]
+<br/>[[prev - The Kernel Object](kernel.md)]
+<br/>[[next - The Mixin Object](mixin.md)]

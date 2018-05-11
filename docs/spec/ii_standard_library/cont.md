@@ -27,3 +27,5 @@ method return sense, as the flow of control will have shifted to a new
 point in the code.
 
 [[up](.)]
+<br/>[[prev - The Cons Object](cons.md)]
+<br/>[[next - The Dictionary Object](dict.md)]

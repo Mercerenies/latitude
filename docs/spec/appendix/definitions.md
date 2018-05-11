@@ -24,3 +24,4 @@
    methods defined on them, and many simple slots which hold values.
 
 [[up](.)]
+<br/>[[prev - Terms and Conventions](terms.md)]

@@ -336,3 +336,5 @@ If the caller (called as a method) is truthy, then the false value is
 returned. Otherwise, the true value is returned.
 
 [[up](.)]
+<br/>[[prev - The Number Object](number.md)]
+<br/>[[next - The Parents Object](parents.md)]

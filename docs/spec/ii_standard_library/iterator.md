@@ -106,3 +106,5 @@ are specialized so that modifications to their `cdr` cell (via `cdr=`)
 will affect the original value in the dictionary as well.
 
 [[up](.)]
+<br/>[[prev - The FilePath Object](filepath.md)]
+<br/>[[next - The Kernel Object](kernel.md)]

@@ -462,3 +462,5 @@ This method returns a new complex number with the given magnitude and
 direction.
 
 [[up](.)]
+<br/>[[prev - The Module Loader Object](moduleloader.md)]
+<br/>[[next - The Root Object](object.md)]

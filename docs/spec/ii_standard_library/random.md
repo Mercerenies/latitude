@@ -108,3 +108,5 @@ Cloning a `MersenneConfig` object explicitly copies the numerical
 parameters of the object.
 
 [[up](.)]
+<br/>[[prev - The OS Module](os.md)]
+<br/>[[next - The REPL Module](repl.md)]

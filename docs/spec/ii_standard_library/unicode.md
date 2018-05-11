@@ -46,3 +46,4 @@ category.
 Returns the major category followed by the minor category.
 
 [[up](.)]
+<br/>[[prev - The Time Module](time.md)]
