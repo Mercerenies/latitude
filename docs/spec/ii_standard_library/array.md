@@ -123,5 +123,5 @@ pop operations) but remains valid if individual elements are changed
 without changing the size.
 
 [[up](.)]
-<br/>[[prev - The Loaded Modules Object](loadedmodules.md)]
+<br/>[[prev - The Argument List Object](arglist.md)]
 <br/>[[next - Booleans and the Nil Object](boolnil.md)]

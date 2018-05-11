@@ -92,6 +92,7 @@ scope object.
      +-- meta sigil
 
  * [&LoadedModules](loadedmodules.md)
+ * [Arglist](arglist.md)
  * [Array](array.md)
  * [Booleans and Nil](boolnil.md)
  * [Cached](cached.md)
