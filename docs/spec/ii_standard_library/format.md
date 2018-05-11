@@ -58,3 +58,5 @@ string, which is then printed to the standard output stream.
 #### `~fmt (string).`
 
 Constructs a format string, as though by the `format` method.
+
+[[up](.)]

@@ -58,3 +58,5 @@ and then, if called again, will return the cached result. The `~l`
 sigil wraps this in a method, so that the returned value is
 automatically called when the variable is accessed later. In this way,
 `~l` can be used to simulate lazy-evaluated values in Latitude.
+
+[[up](.)]

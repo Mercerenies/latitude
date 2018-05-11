@@ -197,3 +197,5 @@ unmodified. Returns a new string.
 Converts every Unicode character in the string to title case, using
 simple 1-to-1 mapping. Characters with no title case equivalent are
 unmodified. Returns a new string.
+
+[[up](.)]

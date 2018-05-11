@@ -334,3 +334,5 @@ short-circuiting is enabled.
 
 If the caller (called as a method) is truthy, then the false value is
 returned. Otherwise, the true value is returned.
+
+[[up](.)]

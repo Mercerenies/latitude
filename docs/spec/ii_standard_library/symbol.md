@@ -79,3 +79,5 @@ arbitrary numeral. An invocation of this method is equivalent to
 Returns a new uninterned symbol, like `gensym`. The name of the
 generated symbol shall begin with `~`, followed by the prefix,
 followed by an arbitrary numeral. The prefix value must be a string.
+
+[[up](.)]

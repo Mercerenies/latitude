@@ -46,3 +46,5 @@ Returns true if `obj` has had `self` injected into its
 hierarchy. Specifically, returns true if some object in `obj`'s
 inheritance hierarchy has a slot `mixin` whose value is equal (`===`)
 to the calling mixin object.
+
+[[up](.)]

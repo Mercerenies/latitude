@@ -57,3 +57,5 @@ supplied object. If the slot does not exist, a `SlotError` is raised.
 
 Returns whether the given slot on the supplied object has any
 protections applied to it.
+
+[[up](.)]

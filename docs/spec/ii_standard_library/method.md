@@ -113,3 +113,5 @@ directly and not on a parent object.
 Returns a non-evaluating `Proc` which has the same code as `self`.
 Note carefully that proc objects are always called on themselves, so
 methods which use `self` will behave strangely when shielded.
+
+[[up](.)]

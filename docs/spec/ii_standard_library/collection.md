@@ -253,3 +253,5 @@ even for infinite collections.
 Flattens one layer of the collection, which should consist entirely of
 iterable collections. Returns a `Chain` which iterates over the
 elements *of* the elements of the collection.
+
+[[up](.)]

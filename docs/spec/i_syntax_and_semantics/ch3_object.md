@@ -115,3 +115,5 @@ distinct object is created from the object pool. The new object is
 given only one slot: the `parent` slot. The new object's parent is set
 to be the old object. Additionally, the parent object's primitive
 field is copied into the new object's primitive field.
+
+[[up](.)]

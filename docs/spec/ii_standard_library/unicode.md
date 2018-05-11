@@ -44,3 +44,5 @@ category.
 #### `Category name.`
 
 Returns the major category followed by the minor category.
+
+[[up](.)]

@@ -11,3 +11,5 @@ will always return truthy when `=~` is called on it, making it a
 
     Ellipsis toString := "Ellipsis".
     Ellipsis =~ := True.
+
+[[up](.)]

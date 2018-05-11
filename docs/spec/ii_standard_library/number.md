@@ -460,3 +460,5 @@ imaginary parts.
 
 This method returns a new complex number with the given magnitude and
 direction.
+
+[[up](.)]

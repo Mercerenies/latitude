@@ -22,3 +22,5 @@ This object contains information about the current operating system.
 
 Returns a symbol representing the class of operating system. Possible
 values: `'windows`, `'posix`, or `'unknown`.
+
+[[up](.)]

@@ -106,3 +106,5 @@ with this object.
 
 Cloning a `MersenneConfig` object explicitly copies the numerical
 parameters of the object.
+
+[[up](.)]

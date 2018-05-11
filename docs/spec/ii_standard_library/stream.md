@@ -114,3 +114,5 @@ Note that some operating systems may disregard the binary flag.
 ### `Stream exists? (filename).`
 
 Returns whether or not a file with the given name exists.
+
+[[up](.)]

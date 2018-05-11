@@ -40,3 +40,5 @@ arguments and then calls `arg` with the result.
 Returns the procedure. This method is overriden
 in [`Method`](method.md) to return a non-evaluating form of the
 method.
+
+[[up](.)]

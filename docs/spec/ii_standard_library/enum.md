@@ -42,3 +42,5 @@ name and with value a clone of the new enumeration subobject; these
 clones are the instances of the new enumeration type. Each clone has a
 `toString` which evaluates to the name to which it is associated.
 
+
+[[up](.)]

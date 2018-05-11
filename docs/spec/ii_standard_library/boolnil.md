@@ -38,3 +38,5 @@ collection.
 
 Returns a [`NilIterator`](iterator.md#niliterator) which iterates over
 the empty collection.
+
+[[up](.)]

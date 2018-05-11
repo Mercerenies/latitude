@@ -90,3 +90,5 @@ also defines a `toString` which evaluates to `"Month"`.
 values: `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`,
 `Friday`, `Saturday`. It also defines a `toString` which evaluates to
 `"Weekday"`. Note that the week begins on Sunday, not Monday.
+
+[[up](.)]

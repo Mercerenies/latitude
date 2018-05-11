@@ -18,3 +18,5 @@ of [`Collection <>`](collection.md#collection--obj).
 Chains are iterable objects, so this method returns
 a [`ChainIterator`](iterator.md#chainiterator). The iterator returned
 is exactly as mutable as the underlying container being iterated.
+
+[[up](.)]

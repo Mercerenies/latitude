@@ -35,3 +35,5 @@ half-open intervals, so the start index is included in the list but
 the end index is not. If the end index points to a position at or
 before the start index, the result will be the empty sequence or
 string.
+
+[[up](.)]

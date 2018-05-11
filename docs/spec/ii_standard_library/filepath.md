@@ -35,3 +35,5 @@ exists, this is equivalent to `filename`.
 
 Returns the file extension in `path`. If no extension exists, returns
 the empty string.
+
+[[up](.)]

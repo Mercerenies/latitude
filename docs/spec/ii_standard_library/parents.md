@@ -43,3 +43,5 @@ argument's inheritance hierarchy.
 Returns whether `object` is a subobject of `target`. Specifically,
 returns whether `object` contains `target` in its inheritance
 hierarchy.
+
+[[up](.)]

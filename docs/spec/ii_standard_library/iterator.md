@@ -104,3 +104,5 @@ pairs stored as [`Cons`](cons.md) objects. `DictIterator` is an
 immutable iterator. However, the cons objects returned by `element`
 are specialized so that modifications to their `cdr` cell (via `cdr=`)
 will affect the original value in the dictionary as well.
+
+[[up](.)]

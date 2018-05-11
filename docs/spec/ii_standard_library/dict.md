@@ -89,3 +89,5 @@ dictionaries.
 ### `Dict empty.`
 
 Returns a fresh empty dictionary.
+
+[[up](.)]

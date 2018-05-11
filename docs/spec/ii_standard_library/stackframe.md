@@ -33,3 +33,5 @@ This method overrides `Object dumpObject`, to print the individual
 stack frames in a concise way. If the original `dumpObject` behavior
 is desired, use `stdout dump: StackFrame`.
 
+
+[[up](.)]
