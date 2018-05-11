@@ -92,7 +92,7 @@ ModuleLoader resolveImport := {
       escapable.
       this loadPath visit {
         curr := $1 ++ (imp asText) ++ ".lat".
-        Stream exists? (curr) ifTrue {
+        { Stream exists? (curr). } or { Stream exists? (curr ++ "c"). } ifTrue {
           return: curr.
         }.
       }.

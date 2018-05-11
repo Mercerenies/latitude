@@ -32,6 +32,8 @@ install:
 	mkdir -p /usr/local/lib/latitude
 	mkdir -p /usr/local/lib/latitude/std
 	cp latitude    /usr/local/lib/latitude/
+	cp std/*.lat   /usr/local/lib/latitude/std/
+	cp std/*.lats  /usr/local/lib/latitude/std/
 	cp std/*.latc  /usr/local/lib/latitude/std/
 	cp std/*.latsc /usr/local/lib/latitude/std/
 	ln -sf /usr/local/lib/latitude/latitude /usr/local/bin/latitude

@@ -1,6 +1,9 @@
 
 meta sys kernelLoad0#: "std/latitude.lats", global.
 
+;; ///// Need to load all the modules here so that *everything* in the
+;; standard library is pre-compiled
+
 {
   $argv slot? '$0 ifTrue {
     $whereAmI := $argv $0.
