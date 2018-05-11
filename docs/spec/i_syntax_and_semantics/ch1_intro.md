@@ -30,3 +30,4 @@ A Latitude program is a file that is currently being parsed, compiled,
 or evaluated. A virtual machine, or VM, is a running Latitude process.
 
 [[up](.)]
+<br/>[[next - Chapter 2 - Lexical Structure](ch2_lexical.md)]

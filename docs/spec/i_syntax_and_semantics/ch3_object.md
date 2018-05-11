@@ -117,3 +117,5 @@ to be the old object. Additionally, the parent object's primitive
 field is copied into the new object's primitive field.
 
 [[up](.)]
+<br/>[[prev - Chapter 2 - Lexical Structure](ch2_lexical.md)]
+<br/>[[next - Chapter 4 - Evaluation](ch4_evaluation.md)]

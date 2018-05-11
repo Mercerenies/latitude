@@ -191,3 +191,5 @@ dictionaries to be specified in a convenient way, as `[]` is parsed as
 an empty list, so `[=>]` will be parsed as an empty dictionary.
 
 [[up](.)]
+<br/>[[prev - Chapter 4 - Evaluation](ch4_evaluation.md)]
+<br/>[[next - Chapter 6 - Control Flow](ch6_controlflow.md)]

@@ -255,3 +255,5 @@ caller. The return value of the statement will be the result of the
 call.
 
 [[up](.)]
+<br/>[[prev - Chapter 3 - Object Model](ch3_object.md)]
+<br/>[[next - Chapter 5 - Literals](ch5_literals.md)]

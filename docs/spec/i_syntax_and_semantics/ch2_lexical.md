@@ -264,3 +264,5 @@ begins with `#!` then that entire line will be ignored by the parser.
 This allows Unix-style shebang lines at the start of the file.
 
 [[up](.)]
+<br/>[[prev - Chapter 1 - Introduction](ch1_intro.md)]
+<br/>[[next - Chapter 3 - Object Model](ch3_object.md)]

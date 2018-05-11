@@ -269,3 +269,4 @@ are not executed. In this case, the stack is simply ignored and the VM
 exits immediately.
 
 [[up](.)]
+<br/>[[prev - Chapter 5 - Literals](ch5_literals.md)]
