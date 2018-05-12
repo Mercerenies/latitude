@@ -1,10 +1,19 @@
 
 meta sys kernelLoad0#: "std/latitude.lats", global.
 
-;; ///// Need to load all the modules here so that *everything* in the
-;; standard library is pre-compiled
-
 {
+  ;; We have to load all the standard library code so that the
+  ;; system doesn't try to recompile it in a directory to which
+  ;; non-sudoers can't write.
+  use 'cell.
+  use 'enum.
+  use 'format.
+  use 'os.
+  use 'random.
+  use 'repl.
+  use 'sequence.
+  use 'time.
+  use 'unicode.
   $argv slot? '$0 ifTrue {
     $whereAmI := $argv $0.
     Kernel compileFile: $argv $0, global clone.
