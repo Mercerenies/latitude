@@ -143,6 +143,7 @@ Stream puts := { meta sys streamPuts#: self, $1. }.
 Stream putln := { meta sys streamPutln#: self, $1. }.
 Stream print := { self puts: #'$1 toString. }.
 Stream println := { self putln: #'$1 toString. }.
+Stream printf := { self putln: $* shift call. }.
 Stream readln := { meta sys streamRead#: self. }.
 Stream read := { meta sys streamReadChar#: self. }.
 Stream eof? := { meta sys streamEof#: self. }.

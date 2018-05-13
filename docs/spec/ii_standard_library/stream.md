@@ -45,6 +45,12 @@ Sends `obj` to the stream, followed by a newline. `toString` will be
 called on `obj` before it is sent to the stream. The stream must be
 designated for output, or an `IOError` will be raised.
 
+### `Stream printf (obj, args...).`
+
+Calls `obj` (a proc-like object) with `args...` as arguments. The
+resulting string is sent to the stream. The stream must be designated
+for output, or an `IOError` will be raised.
+
 ### `Stream readln.`
 
 Reads one full line of input from the stream and returns it, as a
