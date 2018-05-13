@@ -47,35 +47,40 @@
         (set-match-data (list (point) (1+ (point))))
         t))))
 
-(defun latitude-mode--font-lock-search-string (lim start lhs rhs)
-  (let ((matched (search-forward start lim t))
-        (nests 0))
-    (when matched
-      (while (and (>= nests 0)
-                  (< (point) lim)
-                  (not (eobp)))
-        (let ((ch (following-char)))
-          (cond
-           ((equal ch ?\\) (forward-char))
-           ((equal ch lhs) (setq nests (1+ nests)))
-           ((equal ch rhs) (setq nests (1- nests)))
-           (t))
-          (forward-char)))
-      (set-match-data (list (- matched 2)
-                            (point)))
-      t)))
-
 ;; TODO Does not work over multiple lines
-(defun latitude-mode--font-lock-literal-string (lim)
+(defun latitude-mode--font-lock-search-string (lim start lhs rhs &optional check)
   (save-excursion
-    (or (latitude-mode--font-lock-search-string lim "#("  ?(  ?) )
-        (latitude-mode--font-lock-search-string lim "#["  ?[  ?] )
-        (latitude-mode--font-lock-search-string lim "#{"  ?{  ?} ))))
+    (let ((matched (search-forward start lim t))
+          (nests 0))
+      (while (and matched
+                  check
+                  (equal (char-before (- (point) 2)) ?#))
+        (setq matched (search-forward start lim t)))
+      (when matched
+        (while (and (>= nests 0)
+                    (< (point) lim)
+                    (not (eobp)))
+          (let ((ch (following-char)))
+            (cond
+             ((equal ch ?\\) (forward-char))
+             ((equal ch lhs) (setq nests (1+ nests)))
+             ((equal ch rhs) (setq nests (1- nests)))
+             (t))
+            (forward-char)))
+        (set-match-data (list (- matched 2)
+                              (point)))
+        t))))
 
 (defvar latitude-mode-font-lock-keywords
   (list `(latitude-mode--forward-string-check
           . font-lock-string-face)
-        `(latitude-mode--font-lock-literal-string
+        `(,(lambda (lim) (latitude-mode--font-lock-search-string lim "#(" ?( ?)))
+          . font-lock-string-face)
+        `(,(lambda (lim) (latitude-mode--font-lock-search-string lim "#[" ?[ ?]))
+          . font-lock-string-face)
+        `(,(lambda (lim) (latitude-mode--font-lock-search-string lim "#{" ?{ ?}))
+          . font-lock-string-face)
+        `(,(lambda (lim) (latitude-mode--font-lock-search-string lim "'(" ?( ?) t))
           . font-lock-string-face)
         `("^#![^\n]*"
           . font-lock-comment-face)
