@@ -49,7 +49,9 @@ designated for output, or an `IOError` will be raised.
 
 Calls `obj` (a proc-like object) with `args...` as arguments. The
 resulting string is sent to the stream. The stream must be designated
-for output, or an `IOError` will be raised.
+for output, or an `IOError` will be raised. This method works on any
+proc-like object but is most often used
+with [`FormatString`](format.md#the-format-string-object).
 
 ### `Stream readln.`
 
