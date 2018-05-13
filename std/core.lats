@@ -104,6 +104,18 @@ Symbol toProc := {
     (obj send (obj slot: sym)) call.
   }.
 }.
+Proc apply := {
+  arg := #'($1).
+  target := $dynamic.
+  Slots delete: target, '$1.
+  i := 1.
+  assignable 'i.
+  #'(arg) visit {
+    target slot (("$" ++ i) intern) = #'($1).
+    i = i + 1.
+  }.
+  self call.
+}.
 
 ;; Cached Procedures
 global Cached := Proc clone.

@@ -19,6 +19,12 @@ Calling the root `Proc` object has no effect and returns
 `Nil`. However, this method is frequently overriden in subobjects to
 have more specific effects.
 
+### `Proc apply (args).`
+
+Calls the procedure object, as though by `call`. `args` should be
+a [collection](collection.md), and its constituents will be placed in
+the appropriate argument variables.
+
 ### `Proc =~ (args ...).`
 
 Equivalent to `call`.
