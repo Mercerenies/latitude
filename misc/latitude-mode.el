@@ -106,7 +106,7 @@
                          "downto" "mod" "is?" "dup" "send" "tap" "stringify" "assign" "assignable"
                          "missing" "falsify" "println" "printf" "putln" "puts" "print" "dump"
                          "dumpObject" "printObject" "intern" "toProc" "sys" "escapable" "cond" "use"
-                         "breakable" "return" "break" "$break" "read" "readln")
+                         "breakable" "return" "break" "$break" "read" "readln" "apply")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
