@@ -26,9 +26,13 @@ well.
 
 Returns an array of strings indicating where on the file system the
 module loader should search for imports. The built-in module loader
-searches in the `std` directory of the Latitude executable path, as
-well as in any paths in the `LATITUDE_PATH` environment variable, if
-such a variable exists.
+searches the following directories.
+ * The `std` directory of the Latitude executable path.
+ * The current working directory (`Kernel cwd`).
+ * Any paths in the `LATITUDE_PATH` environment variable, if such a
+   variable exists.
+ * The directory containing the script file, if the Latitude
+   interpreter was invoked with a script file as an argument.
 
 ### `ModuleLoader resolveImport (path).`
 

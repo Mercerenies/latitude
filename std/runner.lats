@@ -3,6 +3,7 @@ meta sys kernelLoad0#: "std/latitude.lats", global.
 
 {
   $whereAmI := $argv $0.
+  $moduleLoader loadPath pushBack: FilePath directory ($whereAmI).
   Kernel evalFile: $argv $0, global clone.
 } resolve (True) do {
   exception := $1.
