@@ -114,6 +114,11 @@ makes a new array with the same internal memory as the original.
 
 Complexity: `O(1)`
 
+### `Array remove (f).`
+
+Returns a new array, consisting of all of the elements of `self` for
+which `f` returns falsy.
+
 ### `Array iterator.`
 
 Returns an [`ArrayIterator`](iterator.md#arrayiterator) object which

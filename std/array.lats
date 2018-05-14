@@ -171,6 +171,16 @@ Array < := {
     this size < arr size.
   }.
 }.
+Array remove := {
+  pred := #'($1) shield.
+  arr := [].
+  self visit {
+    curr := #'($1).
+    pred call #'(curr) ifFalse {
+      arr pushBack #'(curr).
+    }.
+  }.
+}.
 
 ;; This is a fix for a problem with `map` from `Collection`
 Array clone := {
