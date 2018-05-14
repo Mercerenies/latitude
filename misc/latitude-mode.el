@@ -97,7 +97,7 @@
         `(,(regexp-opt '("clone" "toString" "pretty" "meta" "global" "parent"
                          "here" "again" "self" "invoke" "slot" "callCC"
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
-                         "catch" "handle" "rethrow" "inject" "iterator"
+                         "catch" "handle" "rethrow" "inject" "iterator" "throwWith"
                          "$dynamic" "cons" "car" "cdr" "proc" "memo"
                          "member?" "takes" "localize" "this" "resolve"
                          "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?"
@@ -105,8 +105,9 @@
                          "interface" "import" "importAll" "importAllSigils" "times" "upto"
                          "downto" "mod" "is?" "dup" "send" "tap" "stringify" "assign" "assignable"
                          "missing" "falsify" "println" "printf" "putln" "puts" "print" "dump"
-                         "dumpObject" "printObject" "intern" "toProc" "sys" "escapable" "cond" "use"
-                         "breakable" "return" "break" "$break" "read" "readln" "apply")
+                         "dumpObject" "printObject" "intern" "toProc" "sys" "escapable" "cond"
+                         "case" "use" "breakable" "return" "break" "$break" "read" "readln"
+                         "apply")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"

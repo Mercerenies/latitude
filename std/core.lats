@@ -64,6 +64,10 @@ Exception throw := {
   self stack := currentStackTrace parent.
   self send (Object slot 'throw) call.
 }.
+Exception throwWith := {
+  self message := $1.
+  self throw.
+}.
 Method protect := {
   thunk: { }, #'self, #'$1.
 }.

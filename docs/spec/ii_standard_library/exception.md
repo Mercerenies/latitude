@@ -25,6 +25,11 @@ assigns a `stack` slot to the curent object, which contains the
 current stack trace at the time the exception was thrown, as per
 [`currentStackTrace`](global.md#global-currentstacktrace).
 
+### `Exception throwWith (message).`
+
+Throws the current object, as though by `throw`. Before throwing, the
+exception object's `message` slot is set to the `throwWith` argument.
+
 ### `Exception pretty.`
 
 Produces a string represent of the exception which consists of its
