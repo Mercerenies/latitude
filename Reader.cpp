@@ -1,6 +1,7 @@
 extern "C" {
     #include "lex.yy.h"
     extern int line_num;
+    extern char* filename;
     extern int comments;
     extern int hash_parens;
 }
@@ -152,10 +153,16 @@ void clearCurrentLine() noexcept {
     currentLine.reset();
 }
 
-std::list< std::unique_ptr<Stmt> > parse(std::string str) {
+std::list< std::unique_ptr<Stmt> > parse(std::string filename, std::string str) {
     const char* buffer = str.c_str();
     auto curr = yy_scan_string(buffer);
+    auto& g_filename = ::filename;
     line_num = 1;
+    if (g_filename != nullptr)
+        delete[] g_filename;
+    g_filename = new char[filename.length() + 1];
+    g_filename[filename.length()] = 0;
+    strcpy(g_filename, filename.c_str());
     comments = 0;
     hash_parens = 0;
     yyparse();
@@ -167,7 +174,7 @@ std::list< std::unique_ptr<Stmt> > parse(std::string str) {
 
 bool eval(IntState& state, const ReadOnlyState& reader, string str) {
     try {
-        auto result = parse(str);
+        auto result = parse("(eval)", str);
         if (!result.empty()) {
             TranslationUnitPtr unit = make_shared<TranslationUnit>();
             InstrSeq toplevel;
@@ -203,7 +210,7 @@ bool readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
         stringstream str;
         while ((file >> str.rdbuf()).good());
         try {
-            auto stmts = parse(str.str());
+            auto stmts = parse(fname, str.str());
             for (auto& stmt : stmts)
                 stmt->propogateFileName(fname);
             list< shared_ptr<Stmt> > stmts1;
@@ -351,7 +358,7 @@ bool compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
         stringstream str;
         while ((file >> str.rdbuf()).good());
         try {
-            auto stmts = parse(str.str());
+            auto stmts = parse(fname, str.str());
             for (auto& stmt : stmts)
                 stmt->propogateFileName(fname);
             list< shared_ptr<Stmt> > stmts1;

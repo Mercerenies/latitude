@@ -44,7 +44,7 @@ void clearCurrentLine() noexcept;
  * to use `eval`, which captures these parse errors and rethrows them
  * as `ProtoError` objects.
  */
-std::list< std::unique_ptr<Stmt> > parse(std::string str);
+std::list< std::unique_ptr<Stmt> > parse(std::string filename, std::string str);
 
 bool eval(IntState& state, const ReadOnlyState& reader, std::string str);
 

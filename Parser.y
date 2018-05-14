@@ -8,15 +8,19 @@
     #include "Reader.hpp"
     #include "Standard.hpp"
     #ifdef __cplusplus
-    extern "C" int yylex();
-    extern "C" int yyparse();
-    extern "C" FILE *yyin;
-    extern "C" int line_num;
+    extern "C" {
+        int yylex();
+        int yyparse();
+        extern FILE *yyin;
+        extern int line_num;
+        char* filename = NULL;
+    }
     #else
     int yylex();
     int yyparse();
-    FILE *yyin;
-    int line_num;
+    extern FILE *yyin;
+    char* filename = NULL;
+    extern int line_num;
     #endif
     void yyerror(const char*);
 }
@@ -321,7 +325,7 @@ extern "C" {
 
 void yyerror(const char* str) {
     std::ostringstream oss;
-    oss << "Error on line " << line_num << "! " << str;
+    oss << "Error in file " << filename << " on line " << line_num << "! " << str;
     throw oss.str();
 }
 
