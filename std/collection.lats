@@ -8,6 +8,28 @@ Iterator element= := {
   err ReadOnlyError clone tap { self message := "Immutable iterator". } throw.
 }.
 
+global FilterIterator ::= Iterator clone.
+FilterIterator impl := Nil.
+FilterIterator pred := Nil.
+FilterIterator clone := {
+  self send #'(Object clone) call tap {
+    self impl := self impl clone.
+  }.
+}.
+FilterIterator end? := { self impl end?. }.
+FilterIterator element := { self impl element. }.
+FilterIterator element= := { self impl element=. }.
+FilterIterator next := {
+  self impl next.
+  self check.
+}.
+FilterIterator check := {
+  localize.
+  { this impl end?. } or { this pred call (this impl element). } ifFalse {
+    this next.
+  }.
+}.
+
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
 ;; for example the `size` method. The iterator returned by `iterator` must support the following:
@@ -25,7 +47,7 @@ global Collection ::= Mixin clone.
 Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any,
                           notAll, notAny, detect, countIf, count, find, containsIf, contains,
                           zip, zip!, take, drop, maximum, minimum, <>, sum, product, append,
-                          empty?, flatten].
+                          empty?, flatten, filter].
 Collection map! := {
   func := #'$1 shield.
   iter := self iterator.
@@ -337,6 +359,16 @@ Collection flatten := {
   localize.
   Chain clone tap {
     self data := this.
+  }.
+}.
+
+Collection filter := {
+  curr := self.
+  f := #'($1) shield.
+  FilterIterator clone tap {
+    self pred := f.
+    self impl := curr iterator.
+    self check.
   }.
 }.
 

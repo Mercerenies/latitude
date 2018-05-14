@@ -28,7 +28,7 @@ object can be passed as a function, even an evaluating object.
     Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all,
                               any, notAll, notAny, detect, countIf, count, find, containsIf,
                               contains, zip, zip!, take, drop, maximum, minimum, <>, sum,
-                              product, append, empty?].
+                              product, append, empty?, flatten, filter].
 
 ## Methods
 
@@ -253,6 +253,11 @@ even for infinite collections.
 Flattens one layer of the collection, which should consist entirely of
 iterable collections. Returns a `Chain` which iterates over the
 elements *of* the elements of the collection.
+
+### `Collection filter (f).`
+
+Returns a [`FilterIterator`](iterator.md#filteriterator) which
+includes only the elements of `self` for which `f` returns truthy.
 
 [[up](.)]
 <br/>[[prev - The Chain Object](chain.md)]

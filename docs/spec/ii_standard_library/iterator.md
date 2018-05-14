@@ -105,6 +105,12 @@ immutable iterator. However, the cons objects returned by `element`
 are specialized so that modifications to their `cdr` cell (via `cdr=`)
 will affect the original value in the dictionary as well.
 
+### `FilterIterator.`
+
+This iterator is returned by calls to `filter` and iterates over
+collections while skipping certain elements. `FilterIterator` is
+mutable if and only if the underlying iterator is mutable.
+
 [[up](.)]
 <br/>[[prev - The FilePath Object](filepath.md)]
 <br/>[[next - The Kernel Object](kernel.md)]
