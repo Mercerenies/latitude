@@ -265,9 +265,14 @@ Kernel directKeys := {
 }.
 Kernel keys := {
   arr := [].
+  check := [=>].
   Parents hierarchy #'$1 visit {
     meta sys objectKeys#: #'$1, {
-      arr pushBack ($1).
+      key := $1.
+      check has? (key) ifFalse {
+        arr pushBack (key).
+        check get (key) = Nil.
+      }.
     }.
   }.
   arr.
