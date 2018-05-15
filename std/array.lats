@@ -180,6 +180,7 @@ Array remove := {
       arr pushBack #'(curr).
     }.
   }.
+  arr.
 }.
 
 ;; This is a fix for a problem with `map` from `Collection`
