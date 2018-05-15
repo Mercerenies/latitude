@@ -341,6 +341,12 @@ ChainIterator next := {
   self curr next.
   self check.
 }.
+ChainIterator clone := {
+  self send #'(Object clone) call tap {
+    self iter := self iter clone.
+    self curr := self curr clone.
+  }.
+}.
 ChainIterator end? := { self iter end?. }.
 
 Collection <> := {
