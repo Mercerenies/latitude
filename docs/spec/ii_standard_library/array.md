@@ -119,6 +119,15 @@ Complexity: `O(1)`
 Returns a new array, consisting of all of the elements of `self` for
 which `f` returns falsy.
 
+Complexity: `O(n)`
+
+### `Array removeOnce (f).`
+
+Returns a new array, consisting of all of the elements of `self`
+except the first for which `f` returns truthy.
+
+Complexity: `O(n)`
+
 ### `Array iterator.`
 
 Returns an [`ArrayIterator`](iterator.md#arrayiterator) object which

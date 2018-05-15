@@ -182,6 +182,19 @@ Array remove := {
   }.
   arr.
 }.
+Array removeOnce := {
+  pred := #'($1) shield.
+  check := True.
+  assignable 'check.
+  self remove {
+    takes '[arg].
+    {
+      check.
+    } and {
+      check = pred call #'(arg).
+    }.
+  }.
+}.
 
 ;; This is a fix for a problem with `map` from `Collection`
 Array clone := {
