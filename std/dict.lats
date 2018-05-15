@@ -69,10 +69,10 @@ Dict has? := {
   ;; Messy hack >.<
   cond {
     when (key == 'missing) do {
-      True.
+      this slot? 'impl0.
     }.
     when (key == 'parent) do {
-      True.
+      this slot? 'impl1.
     }.
     else {
       meta sys slotCheck#: this &impl, key.
