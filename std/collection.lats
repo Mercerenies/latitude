@@ -412,7 +412,7 @@ DictIterator element := {
   key := this keys element.
   cons (key, this dict get (key)) tap {
     self cdr= := {
-      Parents above (self, 'cdr=) call.
+      Parents above (parent self, 'cdr=) call.
       this dict get (key) = #'$1.
     }.
   }.
