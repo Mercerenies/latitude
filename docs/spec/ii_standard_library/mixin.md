@@ -40,6 +40,9 @@ Additionally, the newly constructed object will have a `toString`
 field which delegates to `toString` on the mixin object, as well as a
 `mixin` slot whose value is simply the mixin object.
 
+The object which was injected into the inheritance hierarchy is
+returned.
+
 ### `Mixin member? (obj)`.
 
 Returns true if `obj` has had `self` injected into its
