@@ -2449,6 +2449,42 @@ void spawnSystemCallsNew(ObjectPtr global,
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::CPP, CPP_PANIC))));
 
+     // CPP_HAS_SLOT (checks whether %slf has %sym as a slot, without checking `missing`)
+     // slotCheck#: obj, slot.
+     assert(reader.cpp.size() == CPP_HAS_SLOT);
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+        auto sym = Symbols::parent();
+        list<ObjectPtr> parents;
+        ObjectPtr curr = state0.slf;
+        Symbolic name = state0.sym;
+        // Try to find the value itself
+        while (find(parents.begin(), parents.end(), curr) == parents.end()) {
+            parents.push_back(curr);
+            ObjectPtr slot = (*curr)[name];
+            if (slot != nullptr) {
+                state0.ret = garnishObject(reader0, true);
+                return;
+            }
+            curr = (*curr)[ sym ];
+        }
+                state0.ret = garnishObject(reader0, false);
+     });
+     sys->put(Symbols::get()["slotCheck#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                   makeAssemblerLine(Instr::THROA, "Symbol expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::CPP, CPP_HAS_SLOT))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library

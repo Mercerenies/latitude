@@ -66,11 +66,17 @@ Dict get= := {
 Dict has? := {
   localize.
   key := $1.
-  {
-    this get (key).
-    True.
-  } catch (err SlotError) do {
-    False.
+  ;; Messy hack >.<
+  cond {
+    when (key == 'missing) do {
+      True.
+    }.
+    when (key == 'parent) do {
+      True.
+    }.
+    else {
+      meta sys slotCheck#: this &impl, key.
+    }.
   }.
 }.
 Dict delete := {
