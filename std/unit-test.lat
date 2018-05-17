@@ -1,0 +1,77 @@
+;;* MODULE unit-test
+;;* PACKAGE base
+
+use 'format importAllSigils.
+
+unit-test := $whereAmI.
+
+TestModule ::= Mixin clone.
+TestModule interface := '[clone, addTest, runTests].
+TestModule unitTests := [].
+TestModule clone := {
+  self send #'(Object clone) call tap {
+    self unitTests := self unitTests dup.
+  }.
+}.
+TestModule inject := {
+  Parents above (TestModule, 'inject) call tap {
+    localize.
+    this unitTests := [].
+    this toString := {
+      super := Parents above (this, 'toString).
+      if (self === this) then {
+        "TestModule".
+      } else {
+        super call.
+      }.
+    }.
+  }.
+}.
+TestModule addTest := {
+  localize.
+  name := $1.
+  Object clone tap {
+    self do := {
+      UnitTest make #'($1) tap {
+        self name := name.
+        this unitTests pushBack: self.
+      }.
+    }.
+  }.
+}.
+TestModule runTests := {
+  localize.
+  total := this unitTests length.
+  fails := 0.
+  assignable 'fails.
+  this unitTests visit {
+    curr := $1.
+    { curr call. } default { False. } ifFalse {
+      fails = fails + 1.
+      stderr printf: ~fmt "~A (from ~A) failed!", curr, this.
+    }.
+  }.
+  stderr putln: "Passes: " ++ (total - fails).
+  stderr putln: "Fails: " ++ fails.
+}.
+unit-test TestModule := TestModule.
+
+UnitTest := Proc clone.
+UnitTest toString := {
+  if (self === UnitTest) then {
+    "UnitTest".
+  } else {
+    parent self name.
+  }.
+}.
+UnitTest name := Nil.
+UnitTest call := True.
+UnitTest make := {
+  takes '[block].
+  self clone tap {
+    self call := #'(block).
+  }.
+}.
+unit-test UnitTest := UnitTest.
+
+unit-test.
