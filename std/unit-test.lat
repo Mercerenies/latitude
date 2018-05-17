@@ -74,4 +74,6 @@ TestResult passes := 0.
 TestResult fails := 0.
 unit-test TestResult := TestResult.
 
+;; ///// Pretty up the results (so that it prints better output on failure, indicating what was not equal or what was raised / not raised), then document the module.
+
 unit-test.
