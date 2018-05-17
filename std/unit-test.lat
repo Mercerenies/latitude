@@ -42,28 +42,23 @@ TestModule addTest := {
 TestModule runTests := {
   localize.
   total := this unitTests length.
-  fails := 0.
-  assignable 'fails.
+  result := TestResult clone.
   this unitTests visit {
     curr := $1.
     { curr call. } default { False. } ifFalse {
-      fails = fails + 1.
+      result fails := result fails + 1.
       stderr printf: ~fmt "~A (from ~A) failed!", curr, this.
     }.
   }.
-  stderr putln: "Passes: " ++ (total - fails).
-  stderr putln: "Fails: " ++ fails.
+  result passes := total - result fails.
+  stderr putln: "Passes: " ++ result passes.
+  stderr putln: "Fails: " ++ result fails.
+  result.
 }.
 unit-test TestModule := TestModule.
 
 UnitTest := Proc clone.
-UnitTest toString := {
-  if (self === UnitTest) then {
-    "UnitTest".
-  } else {
-    parent self name.
-  }.
-}.
+UnitTest pretty := { self name. }.
 UnitTest name := Nil.
 UnitTest call := True.
 UnitTest make := {
@@ -73,5 +68,10 @@ UnitTest make := {
   }.
 }.
 unit-test UnitTest := UnitTest.
+
+TestResult ::= Object clone.
+TestResult passes := 0.
+TestResult fails := 0.
+unit-test TestResult := TestResult.
 
 unit-test.
