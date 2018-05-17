@@ -125,7 +125,11 @@ global use := {
     mod = Module clone tap { self header := header. }.
     do {
       $whereAmI := mod.
-      mod = Kernel evalFile: fname, global clone.
+      scope := global clone.
+      scope meta := scope meta clone.
+      scope meta meta := scope meta.
+      scope meta sigil := scope meta sigil clone.
+      mod = Kernel evalFile: fname, scope.
     }.
     Slots put: $moduleLoader &loaded, name, mod.
   }.
