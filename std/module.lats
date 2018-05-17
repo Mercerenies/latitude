@@ -1,6 +1,6 @@
 
 ;; Modules
-Module := global clone.
+Module := Object clone.
 Module header := Nil.
 Module sigils := Object clone.
 Module toString := {

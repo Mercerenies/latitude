@@ -1,11 +1,11 @@
 
 # The Module Object
 
-    Module := global clone.
+    Module := Object clone.
 
-A module object, which is also a scope object, encapsulates the notion
-of a loaded module. When a module is loaded into Latitude, it is
-provided a module object through the `$whereAmI` variable.
+A module object encapsulates the notion of a loaded module. When a
+module is loaded into Latitude, it is provided a module object through
+the `$whereAmI` variable.
 
 ## Methods
 
