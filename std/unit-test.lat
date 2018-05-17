@@ -42,7 +42,7 @@ TestModule addTest := {
 TestModule runTests := {
   localize.
   total := this unitTests length.
-  result := TestResult clone.
+  result := TestSummary clone.
   this unitTests visit {
     curr := $1.
     { curr call. } default { False. } ifFalse {
@@ -69,10 +69,10 @@ UnitTest make := {
 }.
 unit-test UnitTest := UnitTest.
 
-TestResult ::= Object clone.
-TestResult passes := 0.
-TestResult fails := 0.
-unit-test TestResult := TestResult.
+TestSummary ::= Object clone.
+TestSummary passes := 0.
+TestSummary fails := 0.
+unit-test TestSummary := TestSummary.
 
 ;; ///// Pretty up the results (so that it prints better output on failure, indicating what was not equal or what was raised / not raised), then document the module.
 
