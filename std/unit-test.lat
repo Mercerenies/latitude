@@ -45,9 +45,14 @@ TestModule runTests := {
   result := TestSummary clone.
   this unitTests visit {
     curr := $1.
-    { curr call. } default { False. } ifFalse {
+    res := {
+      curr call.
+    } default {
+      Failedtest make: "Unexpected exception: " ++ $1.
+    }.
+    res ifFalse {
       result fails := result fails + 1.
-      stderr printf: ~fmt "~A (from ~A) failed!", curr, this.
+      stderr printf: ~fmt "~A (from ~A) failed: ~A!", curr, this, res.
     }.
   }.
   result passes := total - result fails.
@@ -74,6 +79,47 @@ TestSummary passes := 0.
 TestSummary fails := 0.
 unit-test TestSummary := TestSummary.
 
-;; ///// Pretty up the results (so that it prints better output on failure, indicating what was not equal or what was raised / not raised), then document the module.
+FailedTest ::= Object clone.
+FailedTest toBool := False.
+FailedTest message := "FailedTest".
+FailedTest pretty := { self toString ++ " - " ++ self message. }.
+FailedTest make := {
+  message := $1.
+  self clone tap {
+    self message := message.
+  }.
+}.
+unit-test FailedTest := FailedTest.
+
+unit-test truthy := {
+  $1 or {
+    FailedTest make: "Truthy expression expected".
+  }.
+}.
+
+unit-test eq := {
+  a := #'$1.
+  b := #'$2.
+  (a == b) or {
+    FailedTest make: a toString ++ " and " ++ b toString ++ " are not equal".
+  }.
+}.
+
+unit-test throws := {
+  exc := $1.
+  result := FailedTest make: "Exception " ++ exc ++ " was not thrown".
+  assignable 'result.
+  Object clone tap {
+    self do := {
+      block := #'($1) shield.
+      {
+        block call.
+      } catch (exc) do {
+        result = True.
+      }.
+      result.
+    }.
+  }.
+}.
 
 unit-test.
