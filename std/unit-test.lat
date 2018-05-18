@@ -122,4 +122,6 @@ unit-test throws := {
   }.
 }.
 
+;; ///// Still some problems when exceptions are raised (expected and unexpected)
+
 unit-test.
