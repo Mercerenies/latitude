@@ -200,9 +200,16 @@ invokes the caller, then pops the argument back off the handler stack.
 Any object can be thrown as an exception. When an object is thrown,
 usually through the `throw` method on the root object, the exception
 handler stack is checked. Then, in order from top to bottom, each
-method on the exception handler stack is called in the scope of the
-`throw` invocation. Each method is called with one argument: the
-object that was thrown. After this, the VM performs a panic.
+method on the exception handler stack is called. Each method is called
+with one argument: the object that was thrown. After this, the VM
+performs a panic.
+
+The exception handlers are each called in their own constructed
+lexical scope, based on their closure. The dynamic scope is a clone of
+the dynamic scope at the time of the `throw` call. Every handler will
+be executed in a scope in which all of the outer handlers still exist
+on the exception handler stack, but the current handler and any inner
+handlers do not exist.
 
 In the ideal case, one of the exception handlers will perform a
 continuation jump which escapes from the panic. This is how the
