@@ -48,7 +48,7 @@ TestModule runTests := {
     res := {
       curr call.
     } default {
-      Failedtest make: "Unexpected exception: " ++ $1.
+      FailedTest make: "Unexpected exception: " ++ $1.
     }.
     res ifFalse {
       result fails := result fails + 1.
@@ -121,7 +121,5 @@ unit-test throws := {
     }.
   }.
 }.
-
-;; ///// Still some problems when exceptions are raised (expected and unexpected)
 
 unit-test.
