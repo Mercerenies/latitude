@@ -2517,7 +2517,8 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(temp.index == GTU_TERMINATE);
 
      // GTU_HANDLER
-     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::ARG),
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::HAND),
+                                           makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::ARG),
                                            makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                            makeAssemblerLine(Instr::CALL, 1L)));
      assert(temp.index == GTU_HANDLER);
