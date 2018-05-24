@@ -6,7 +6,7 @@ use 'format importAllSigils.
 unit-test := $whereAmI.
 
 TestModule ::= Mixin clone.
-TestModule interface := '[clone, addTest, runTests].
+TestModule interface := '[clone, addTest, importTestsFrom, runTests].
 TestModule unitTests := [].
 TestModule clone := {
   self send #'(Object clone) call tap {
@@ -37,6 +37,12 @@ TestModule addTest := {
         this unitTests pushBack: self.
       }.
     }.
+  }.
+}.
+TestModule importTestsFrom := {
+  localize.
+  $1 unitTests visit {
+    this unitTests pushBack: $1.
   }.
 }.
 TestModule runTests := {
