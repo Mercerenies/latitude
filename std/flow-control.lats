@@ -95,8 +95,7 @@ Object not := {
 global loop := {
   content := #'$1.
   callCC {
-    escapable.
-    $break := proc { return. }.
+    $break := #'$1.
     meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
   }.
 }.
