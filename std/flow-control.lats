@@ -95,8 +95,9 @@ Object not := {
 global loop := {
   content := #'$1.
   callCC {
-    escapable.
-    $break := proc { return. }.
+    $break := $1.
+    continue0 := callCC { $1. }.
+    $continue := proc { continue0 call: continue0. }.
     meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
   }.
 }.
@@ -120,13 +121,12 @@ Number times := {
   localize.
   block0 := #'$1.
   block := { Kernel invoke #'(block0) on (Conditional) call. }.
-  i := 0.
+  i := -1.
   incr := {
     parent i := i + 1.
   }.
-  while { (i) < (this floor). } do {
+  while { incr. (i) < (this floor). } do {
     block (i).
-    incr.
   }.
 }.
 Number upto := {
@@ -136,11 +136,10 @@ Number upto := {
     self do := {
       block0 := #'$1.
       block := { Kernel invoke #'(block0) on (Conditional) call. }.
-      i := this floor.
+      i := this floor - 1.
       incr := { parent i := i + 1. }.
-      while { (i) < (n floor). } do {
+      while { incr. (i) < (n floor). } do {
         block (i).
-        incr.
       }.
     }.
   }.
@@ -152,13 +151,12 @@ Number downto := {
     self do := {
       block0 := #'$1.
       block := { Kernel invoke #'(block0) on (Conditional) call. }.
-      i := this floor.
+      i := this floor + 1.
       decr := {
         parent i := i - 1.
       }.
-      while { (i) > (n floor). } do {
+      while { decr. (i) > (n floor). } do {
         block (i).
-        decr.
       }.
     }.
   }.
