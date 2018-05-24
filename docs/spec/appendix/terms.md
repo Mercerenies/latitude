@@ -36,5 +36,16 @@ the end index is not. If the end index points to a position at or
 before the start index, the result will be the empty sequence or
 string.
 
+## Loop Macros
+
+In many loop-like constructs in Latitude, there are a few standard
+(dynamically-scoped) macros defined, as follows.
+
+ * `$break` is a (non-evaluating) procedure object which, when called
+   with one argument, will exit the loop, providing its argument as
+   the return value of the loop.
+ * `$continue` is a (non-evaluating) procedure object which, when
+   called, will jump to the next iteration of the loop.
+
 [[up](.)]
 <br/>[[next - Definitions](definitions.md)]

@@ -157,9 +157,8 @@ if-statement.
 Loops infinitely, calling `block` at every iteration of the
 loop. `mthd` will be called on the `Conditional` object.
 
-Inside the block body, a `$break` procedure is defined, which takes a
-single argument and will exit the loop immediately, returning the
-argument.
+`loop` supports
+the [standard loop macros](../appendix/terms.md#loop-macros).
 
 ### `global while (cond) do (block).`
 
@@ -171,9 +170,8 @@ exited and `Nil` is returned. The block will be executed with
 `Conditional` as the caller, but `cond` will be called as a method
 with an undefined caller.
 
-Inside the block body, a `$break` procedure is defined, which takes a
-single argument and will exit the loop immediately, returning the
-argument.
+`while` supports
+the [standard loop macros](../appendix/terms.md#loop-macros).
 
 Remember that `cond` should probably be a method, for if it is not
 then its truthiness will be evaluated immediately and never re-checked

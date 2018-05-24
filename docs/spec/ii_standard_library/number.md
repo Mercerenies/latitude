@@ -71,10 +71,9 @@ rounded down to the nearest integer before executing the block. Each
 time the block is executed, it is passed an argument, where the
 argument ranges from `0` up to, but not including, `self`.
 
-Inside of the block, a dynamic variable named `$break` will be bound
-to a procedure which, if called with an argument, will immediately
-exit the loop and return the given value. If the loop exits normally,
-the returned value is `Nil`.
+`times` supports
+the [standard loop macros](../appendix/terms.md#loop-macros). If the
+loop exits normally, the returned value is `Nil`.
 
 Note that `n times (block).` is equivalent to `0 upto n do (block).`
 
@@ -85,10 +84,9 @@ including, `n`, passing the current integer value as an argument to
 the block. If either of `self` or `n` is a non-integer, they will be
 rounded down to the nearest integer before the loop begins.
 
-Inside of the block, a dynamic variable named `$break` will be bound
-to a procedure which, if called with an argument, will immediately
-exit the loop and return the given value. If the loop exits normally,
-the returned value is `Nil`.
+`upto` supports
+the [standard loop macros](../appendix/terms.md#loop-macros). If the
+loop exits normally, the returned value is `Nil`.
 
 ### `Number downto (n) do (block).`
 
@@ -97,10 +95,9 @@ including, `n`, passing the current integer value as an argument to the
 block. If either of `self` or `n` is a non-integer, they will be
 rounded down to the nearest integer before the loop begins.
 
-Inside of the block, a dynamic variable named `$break` will be bound
-to a procedure which, if called with an argument, will immediately exit
-the loop and return the given value. If the loop exits normally, the
-returned value is `Nil`.
+`downto` supports
+the [standard loop macros](../appendix/terms.md#loop-macros). If the
+loop exits normally, the returned value is `Nil`.
 
 ### `Number asciiChr.`
 
