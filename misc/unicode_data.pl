@@ -16,7 +16,7 @@ my %classes;
 my @data;
 my @char_data;
 
-open my $fh, '<', './misc/uni/UnicodeData.txt';
+open my $fh, '<', '../misc/uni/UnicodeData.txt';
 while (<$fh>) {
     my @line = split /;/;
     if ($curr ne $line[2]) {
