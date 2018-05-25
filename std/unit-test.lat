@@ -52,6 +52,8 @@ TestModule runTests := {
   this unitTests visit {
     curr := $1.
     res := {
+      ;; TODO Once Issue #34 is resolved, protect this so that a
+      ;; warning message is printed if the block is exited abnormally.
       curr call.
     } default {
       FailedTest make: "Unexpected exception: " ++ $1.
@@ -106,8 +108,8 @@ unit-test truthy := {
 unit-test eq := {
   a := #'$1.
   b := #'$2.
-  (a == b) or {
-    FailedTest make: a toString ++ " and " ++ b toString ++ " are not equal".
+  (#'a == #'b) or {
+    FailedTest make: #'a toString ++ " and " ++ #'b toString ++ " are not equal".
   }.
 }.
 
