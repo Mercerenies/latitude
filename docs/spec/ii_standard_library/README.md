@@ -140,6 +140,7 @@ scope.
  * [sequence](sequence.md)
  * [time](time.md)
  * [unicode](unicode.md)
+ * [unit-test](unit-test.md)
 
 [[up](..)]
 <br/>[[prev - Section I - Syntax and Semantics](../i_syntax_and_semantics/)]
