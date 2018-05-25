@@ -68,7 +68,7 @@ TestModule runTests := {
 }.
 unit-test TestModule := TestModule.
 
-UnitTest := Proc clone.
+UnitTest ::= Proc clone.
 UnitTest pretty := { self name. }.
 UnitTest name := Nil.
 UnitTest call := True.
