@@ -1454,6 +1454,14 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         }
     }
         break;
+    case Instr::GOTO: {
+#if DEBUG_INSTR > 0
+        cout << "GOTO" << endl;
+#endif
+        state.stack = pushNode(state.stack, state.cont);
+        state.cont = state.mthd;
+    }
+        break;
     }
 }
 

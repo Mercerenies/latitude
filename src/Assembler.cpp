@@ -166,6 +166,10 @@ std::vector<AsmType> argPush(Instr instr) {
         break;
     case Instr::XXX:
         _V::ArgPush<typename _V::Necessary<Instr::XXX>::type>::push(vec);
+        break;
+    case Instr::GOTO:
+        _V::ArgPush<typename _V::Necessary<Instr::GOTO>::type>::push(vec);
+            break;
     }
     return vec;
 }
