@@ -34,6 +34,8 @@ public:
     static Symbolic natural(int n);
     static Symbols& get() noexcept;
     static SymbolType symbolType(Symbolic sym);
+    /// \deprecated use symbolType instead
+    [[deprecated("use symbolType instead")]]
     static bool isUninterned(const std::string& str);
     static bool requiresEscape(const std::string& str);
     static Symbolic parent();
