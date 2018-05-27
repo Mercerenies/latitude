@@ -75,7 +75,7 @@ Symbolic Symbols::parent() {
 }
 
 Symbolic Symbols::operator[](const std::string& str) {
-    if (isUninterned(str)) {
+    if (hasGeneratedName(str)) {
         syms.emplace_back(str);
         ++index;
         assert((size_t)index == syms.size());
