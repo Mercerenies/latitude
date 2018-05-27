@@ -66,7 +66,7 @@ Symbolic Symbols::operator[](const std::string& str) {
         syms.emplace_back(str);
         ++index;
         assert((size_t)index == syms.size());
-        return { index };
+        return { index - 1 };
     } else {
         if (names.find(str) == names.end()) {
             syms.emplace_back(str);
