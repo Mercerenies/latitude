@@ -14,6 +14,12 @@ Symbols::Symbols()
     parentIndex = (*this)["parent"].index;
 }
 
+bool Symbols::hasGeneratedName(const std::string& str) {
+    if (str == "")
+        return false;
+    return (str[0] == '~');
+}
+
 Symbolic Symbols::gensym() {
     return gensym("G");
 }
@@ -37,10 +43,17 @@ Symbols& Symbols::get() noexcept {
     return instance;
 }
 
+SymbolType Symbols::symbolType(Symbolic sym) {
+    if (sym.index < 0)
+        return SymbolType::NATURAL;
+    std::string name = get()[sym];
+    if (get().hasGeneratedName(name))
+        return SymbolType::GENERATED;
+    return SymbolType::STANDARD;
+};
+
 bool Symbols::isUninterned(const std::string& str) {
-    if (str == "")
-        return false;
-    return (str[0] == '~');
+    return get().hasGeneratedName(str);
 }
 
 bool Symbols::requiresEscape(const std::string& str){

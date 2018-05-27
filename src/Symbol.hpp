@@ -8,6 +8,10 @@
 
 struct Symbolic;
 
+enum class SymbolType {
+    STANDARD, GENERATED, NATURAL
+};
+
 /*
  * A singleton which keeps a list of language symbols and internal numerical
  * identifiers to allow constant-time comparison.
@@ -23,11 +27,13 @@ private:
     index_t index;
     index_t parentIndex;
     Symbols();
+    bool hasGeneratedName(const std::string& str);
 public:
     static Symbolic gensym();
     static Symbolic gensym(std::string prefix);
     static Symbolic natural(int n);
     static Symbols& get() noexcept;
+    static SymbolType symbolType(Symbolic sym);
     static bool isUninterned(const std::string& str);
     static bool requiresEscape(const std::string& str);
     static Symbolic parent();
