@@ -2,6 +2,7 @@
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <cassert>
 
 using namespace std;
 
@@ -9,7 +10,7 @@ Symbols Symbols::instance = Symbols();
 long Symbols::gensymIndex = 100L;
 
 Symbols::Symbols()
-    : syms(), index(0), parentIndex(0) {
+    : syms(), names(), index(0), parentIndex(0) {
     parentIndex = (*this)["parent"].index;
 }
 
@@ -62,28 +63,31 @@ Symbolic Symbols::parent() {
 
 Symbolic Symbols::operator[](const std::string& str) {
     if (isUninterned(str)) {
-        index_t curr = index++;
-        syms.insert(bimap_t::value_type(curr, str));
-        return { curr };
+        syms.emplace_back(str);
+        ++index;
+        assert((size_t)index == syms.size());
+        return { index };
     } else {
-        auto& data = syms.right;
-        if (data.find(str) == data.end())
-            syms.insert(bimap_t::value_type(index++, str));
-        Symbolic sym = { (*data.find(str)).second };
+        if (names.find(str) == names.end()) {
+            syms.emplace_back(str);
+            names.emplace(str, index);
+            ++index;
+            assert((size_t)index == syms.size());
+        }
+        Symbolic sym = { names.find(str)->second };
         return sym;
     }
 }
 
 std::string Symbols::operator[](const Symbolic& str) {
-    auto& data = syms.left;
     if (str.index < 0) { // "Natural" symbol
         ostringstream str0;
         str0 << "~NAT" << abs(str.index);
         return str0.str();
     }
-    if (data.find(str.index) == data.end())
+    if ((size_t)str.index >= syms.size())
         return "";
-    return (*data.find(str.index)).second;
+    return syms[str.index];
 }
 
 bool operator ==(const Symbolic& a, const Symbolic& b) noexcept {
