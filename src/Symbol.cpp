@@ -63,10 +63,6 @@ SymbolType Symbols::symbolType(Symbolic sym) {
     return SymbolType::STANDARD;
 };
 
-bool Symbols::isUninterned(const std::string& str) {
-    return get().hasGeneratedName(str);
-}
-
 bool Symbols::requiresEscape(const std::string& str){
     string str0(str); // Need a copy
     if ((str0 == "") || (str0 == "~"))
