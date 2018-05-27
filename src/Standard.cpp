@@ -284,7 +284,7 @@ void spawnSystemCallsNew(ObjectPtr global,
                 }
                 oss << ")";
             } else {
-                if (!Symbols::isUninterned(str))
+                if (Symbols::symbolType(state0.sym) != SymbolType::GENERATED)
                     oss << '\'';
                 oss << str;
             }
