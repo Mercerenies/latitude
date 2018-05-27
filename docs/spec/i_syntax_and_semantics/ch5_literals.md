@@ -15,9 +15,9 @@ A quasi-literal has one of three forms.
    evaluated according to the rules of literals.
  * A quasi-literal could be a statement enclosed in parentheses. In
    this case, the inner statement is evaluated.
- * A quasi-literal could be an uninterned symbol name (a tilde
-   followed by a name), followed by another quasi-literal. This form
-   is called a sigil expression.
+ * A quasi-literal could be a sequence consisting of a tilde (`~`),
+   then a name, then another quasi-literal. This form is called a
+   sigil expression.
 
 ## Sigil Expressions
 
@@ -116,8 +116,8 @@ literal that begins with a tilde (`~`) also results in a clone of the
 symbol object with an appropriately set primitive field, but in this
 case the tilde *is* included in the symbol's name. As a consequence,
 the literals `'~abc` and `~abc` evaluate to symbols with the same name
-(although they will evaluate to different symbols as the names are
-uninterned).
+(although they will evaluate to different symbols as the resulting
+symbols will be generated, rather than standard, symbols).
 
 A held value consists of a hash-quote (`#'`) followed by a literal
 expression or a name. The expression following the hash-quote is

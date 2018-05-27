@@ -29,32 +29,30 @@ The Latitude memory model is organized into four parts.
 
 ## Symbol Table
 
-Each Latitude process maintains a global symbol table. The symbol
-table is a bidirectional map with keys being integers and values being
-strings. The term "symbol" refers to the underlying numerical value
-which maps to the corresponding string of text. Every symbol which
-exists in the symbol table has a unique string of text which
-designates its name. However, a given name may have multiple distinct
-symbols which correspond to it, such as in the case of uninterned
-symbols. There are several types of symbols.
+Each Latitude process maintains a global symbol table. There are three
+types of symbols, each of which is stored in the symbol table in a
+slightly different way. The three types of symbols are: standard,
+generated, and natural.
 
- * A symbol whose name begins with a tilde (`~`) is an uninterned
-   symbol. Whenever an uninterned symbol is looked up by name, it is
-   given a new, unique entry in the symbol table, which is then
-   returned.
- * A symbol which is not uninterned is called an interned
-   symbol. Interned symbols always have at most one symbol index
-   corresponding to the given name. When an interned symbol is looked
-   up by name, it always returns the unique entry in the symbol table
-   corresponding to the name.
-
-Additionally, the symbol table contains entries corresponding to any
-positive integer. Given any positive integer, there is a unique,
-uninterned symbol associated with that positive integer, and there is
-a special lookup function which returns that symbol, given a positive
-integer. A symbol that is associated with a positive integer is called
-an ordinal symbol, and it is frequently used for indexing in data
-structures such as arrays.
+ * A standard symbol is any symbol which does not satisfy the
+   requirements of either a generated symbol or a natural symbol.
+   Standard symbols are stored in the symbol table with both the index
+   and the name as keys, so that looking up a standard symbol with the
+   same name will always yield the same symbol.
+ * A generated symbol is a symbol whose name begins with a tilde
+   (`~`). Generated symbols are stored in the symbol table with only
+   the index as a key and the name as a value. Thus, looking up the
+   same name for a generated symbol will produce a *distinct* symbol
+   each time it is looked up, but looking up a generated symbol by
+   index will produce the same name.
+ * A natural symbol is a symbol whose name is nonempty and consists
+   only of ASCII digits (`0` through `9`). Natural symbols correspond
+   to positive integers and are not stored in the symbol table at all.
+   Looking up a natural symbol by name or by index will always produce
+   the same natural symbol, computed via a simple but
+   implementation-dependent mapping. Natural symbols are frequently
+   used for indexing in data structures such as arrays, since symbols
+   can be used as slot keys but integers cannot.
 
 ## Objects
 

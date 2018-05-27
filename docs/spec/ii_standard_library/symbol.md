@@ -32,9 +32,9 @@ following two calls are equivalent in behavior.
 ### `Symbol asText.`
 
 Returns the name of the symbol, as a string. Remember that the tilde
-at the start of an uninterned symbol is a part of its name but the
-single quote at the start of an interned symbol is not. So `'foo
-asText` returns `"foo"` but `~foo asText` returns `"~foo"`.
+at the start of a generated symbol is a part of its name but the
+single quote at the start of a standard or natural symbol is not. So
+`'foo asText` returns `"foo"` but `~foo asText` returns `"~foo"`.
 
 ### `Symbol toString.`
 
@@ -68,7 +68,7 @@ table.
 
 ### `Symbol gensym.`
 
-Returns a new uninterned symbol. This method is a useful way to
+Returns a new generated symbol. This method is a useful way to
 generate new unique symbols for use as keys in data structures. The
 name of the generated symbol shall begin with `~G`, followed by an
 arbitrary numeral. An invocation of this method is equivalent to
@@ -76,7 +76,7 @@ arbitrary numeral. An invocation of this method is equivalent to
 
 ### `Symbol gensymOf (prefix).`
 
-Returns a new uninterned symbol, like `gensym`. The name of the
+Returns a new generated symbol, like `gensym`. The name of the
 generated symbol shall begin with `~`, followed by the prefix,
 followed by an arbitrary numeral. The prefix value must be a string.
 

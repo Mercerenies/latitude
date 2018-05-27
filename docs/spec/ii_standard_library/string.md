@@ -12,9 +12,10 @@ contain a sequence of bytes that is not valid UTF-8.
 
 ### `String intern.`
 
-Returns a symbol whose name is `self`. Note that if `self` begins with
-a tilde, an uninterned symbol will be returned, so `("~a" intern) ==
-("~a" intern)` is false.
+Returns a symbol whose name is `self`. If `self` begins with a tilde
+then the returned symbol will be a generated symbol. If `self` is
+nonempty and consists only of digits then the returned symbol will be
+a natural symbol.
 
 ### `String stringify.`
 
