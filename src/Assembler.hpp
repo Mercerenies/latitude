@@ -180,6 +180,8 @@ namespace _V {
     struct Necessary<Instr::XXX> { typedef std::tuple<VLong> type; };
     template <>
     struct Necessary<Instr::GOTO> { typedef std::tuple<> type; };
+    template <>
+    struct Necessary<Instr::MSWAP> { typedef std::tuple<> type; };
 
     template <typename T>
     struct ArgToEnum;

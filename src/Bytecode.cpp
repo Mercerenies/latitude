@@ -1462,6 +1462,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         state.cont = state.mthd;
     }
         break;
+    case Instr::MSWAP: {
+#if DEBUG_INSTR > 0
+        cout << "MSWAP" << endl;
+#endif
+        swap(state.mthd, state.mthdz);
+    }
+        break;
     }
 }
 
