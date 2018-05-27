@@ -43,10 +43,10 @@ Symbolic Symbols::gensym(std::string prefix) {
 }
 
 Symbolic Symbols::natural(int n) {
-    if (n <= 0)
+    if (n < 0)
         return get()[""];
     Symbolic sym;
-    sym.index = - n;
+    sym.index = - n - 1;
     return sym;
 }
 
@@ -88,7 +88,7 @@ Symbolic Symbols::operator[](const std::string& str) {
         assert((size_t)index == syms.size());
         return { index - 1 };
     } else if (hasNumericalName(str)) {
-        return { - stoi(str) };
+        return { - stoi(str) - 1 };
     } else {
         if (names.find(str) == names.end()) {
             syms.emplace_back(str);
@@ -103,7 +103,7 @@ Symbolic Symbols::operator[](const std::string& str) {
 
 std::string Symbols::operator[](const Symbolic& str) {
     if (str.index < 0) { // "Natural" symbol
-        return to_string(abs(str.index));
+        return to_string(- str.index - 1);
     }
     if ((size_t)str.index >= syms.size())
         return "";
