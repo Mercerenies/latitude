@@ -28,6 +28,7 @@ private:
     index_t parentIndex;
     Symbols();
     bool hasGeneratedName(const std::string& str);
+    bool hasNumericalName(const std::string& str);
 public:
     static Symbolic gensym();
     static Symbolic gensym(std::string prefix);

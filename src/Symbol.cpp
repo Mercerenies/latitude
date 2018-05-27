@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iterator>
 #include <cassert>
+#include <cctype>
 
 using namespace std;
 
@@ -18,6 +19,16 @@ bool Symbols::hasGeneratedName(const std::string& str) {
     if (str == "")
         return false;
     return (str[0] == '~');
+}
+
+bool Symbols::hasNumericalName(const std::string& str) {
+    if (str == "")
+        return false;
+    for (char ch : str) {
+        if (!isdigit(ch))
+            return false;
+    }
+    return true;
 }
 
 Symbolic Symbols::gensym() {
@@ -80,6 +91,8 @@ Symbolic Symbols::operator[](const std::string& str) {
         ++index;
         assert((size_t)index == syms.size());
         return { index - 1 };
+    } else if (hasNumericalName(str)) {
+        return { - stoi(str) };
     } else {
         if (names.find(str) == names.end()) {
             syms.emplace_back(str);
@@ -94,9 +107,7 @@ Symbolic Symbols::operator[](const std::string& str) {
 
 std::string Symbols::operator[](const Symbolic& str) {
     if (str.index < 0) { // "Natural" symbol
-        ostringstream str0;
-        str0 << "~NAT" << abs(str.index);
-        return str0.str();
+        return to_string(abs(str.index));
     }
     if ((size_t)str.index >= syms.size())
         return "";
