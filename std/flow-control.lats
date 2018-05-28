@@ -90,9 +90,7 @@ Object not := {
 ;; Loops
 global loop := {
   content := #'$1.
-  callCC {
-    meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
-  }.
+  meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
 }.
 global while := {
   cond0 := #'$1.
