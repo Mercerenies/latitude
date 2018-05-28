@@ -166,9 +166,10 @@ Executes a while-loop statement. `while` returns an intermediate
 object, and `do` executes the statement. In one iteration, first
 `cond` is checked for truthiness. If it is true, then `block` will be
 run and these two steps repeated. If it is false, then the loop is
-exited and `Nil` is returned. The block will be executed with
-`Conditional` as the caller, but `cond` will be called as a method
-with an undefined caller.
+exited. Both the block and the conditional methods will be executed
+with `Conditional` as the caller. The return value of the loop will be
+the return value of `block` on its last iteration. If `block` never
+executed, then `Nil` is returned.
 
 `while` supports
 the [standard loop macros](../appendix/terms.md#loop-macros).
