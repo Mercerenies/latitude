@@ -2507,6 +2507,8 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
                                    makeAssemblerLine(Instr::RTRV),
                                    makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::SLF),
+                                   makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
                                    makeAssemblerLine(Instr::CPP, CPP_WHILE_REGS_ZERO),
                                    makeAssemblerLine(Instr::GOTO))));
 
@@ -2635,9 +2637,11 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(temp.index == GTU_PANIC);
 
      // GTU_WHILE_DO
-     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO),
+                                           makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                            makeAssemblerLine(Instr::PEEK, Reg::PTR, Reg::STO),
                                            makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                            makeAssemblerLine(Instr::CALL, 0L),
                                            makeAssemblerLine(Instr::YLD, Lit::TRUE, Reg::PTR),
                                            makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
@@ -2647,14 +2651,17 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(temp.index == GTU_WHILE_DO);
 
      // GTU_POP_TWO
-     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO),
+                                           makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
                                            makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)));
      assert(temp.index == GTU_POP_TWO);
 
      // GTU_WHILE_AGAIN
-     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO),
+                                           makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
                                            makeAssemblerLine(Instr::PEEK, Reg::PTR, Reg::STO),
                                            makeAssemblerLine(Instr::CALL, 0L),
+                                           makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                            makeAssemblerLine(Instr::CPP, CPP_WHILE_REGS_ZERO),
                                            makeAssemblerLine(Instr::GOTO)));
 
