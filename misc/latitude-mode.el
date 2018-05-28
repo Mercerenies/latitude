@@ -27,6 +27,8 @@
      (modify-syntax-entry ?\< "_" st)
      (modify-syntax-entry ?\> "_" st)
      (modify-syntax-entry ?\| "_" st)
+     (modify-syntax-entry ?\* "_" st)
+     (modify-syntax-entry ?\+ "_" st)
      (modify-syntax-entry ?\$ "w" st)
      (modify-syntax-entry ?\& "w" st)
      st))
