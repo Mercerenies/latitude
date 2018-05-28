@@ -41,11 +41,7 @@ string.
 In many loop-like constructs in Latitude, there are a few standard
 (dynamically-scoped) macros defined, as follows.
 
- * `$break` is a (non-evaluating) procedure object which, when called
-   with one argument, will exit the loop, providing its argument as
-   the return value of the loop.
- * `$continue` is a (non-evaluating) procedure object which, when
-   called, will jump to the next iteration of the loop.
+[TBA]
 
 [[up](.)]
 <br/>[[next - Definitions](definitions.md)]

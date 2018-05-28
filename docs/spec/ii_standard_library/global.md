@@ -42,14 +42,6 @@ with an argument, this method will invoke the continuation `cont`,
 jumping to the point of the continuation and passing its argument
 onward.
 
-### `global breakable.`
-
-Defines a `break` slot on `self` which contains a method. When called
-with an argument, this method will invoke the value of `$break` at the
-time `breakable` was called. It is usually used inside of loops to
-convert the default dynamic `$break` procedure into a lexical `break`
-method.
-
 ### `global $moduleLoader.`
 
 This slot contains the current [`ModuleLoader`](moduleloader.md). It
