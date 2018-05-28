@@ -291,6 +291,7 @@ Kernel invoke := {
   mthd := #'$1.
   procd := Proc clone.
   procd target := Nil.
+  procd handlers := [].
   procd call := {
     meta sys invoke#: #'(self target), #'(mthd).
   }.
@@ -299,9 +300,14 @@ Kernel invoke := {
     self.
   }.
   procd by := {
-    self handler := #'$1.
+    self handlers pushBack #'$1.
     self call := {
-      meta sys doWithCallback#: #'(self target), #'(mthd), #'(self handler).
+      localize.
+      meta sys doWithCallback#: #'(this target), #'(mthd), {
+        lex := $1.
+        dyn := $2.
+        this handlers visit { $1 (lex, dyn). }.
+      }.
     }.
     self.
   }.
