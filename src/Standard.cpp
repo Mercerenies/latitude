@@ -2485,6 +2485,31 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
                                    makeAssemblerLine(Instr::CPP, CPP_HAS_SLOT))));
 
+     // CPP_WHILE_REGS
+     // CPP_WHILE_REGS_ZERO
+     // whileDo#: cond, block.
+     assert(reader.cpp.size() == CPP_WHILE_REGS);
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         state0.mthd = Method(reader0.gtu, { GTU_WHILE_AGAIN });
+         state0.mthdz = Method(reader0.gtu, { GTU_POP_TWO });
+     });
+     assert(reader.cpp.size() == CPP_WHILE_REGS_ZERO);
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         state0.mthd = Method(reader0.gtu, { GTU_WHILE_DO });
+     });
+     sys->put(Symbols::get()["whileDo#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::CPP, CPP_WHILE_REGS_ZERO),
+                                   makeAssemblerLine(Instr::GOTO))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
@@ -2608,6 +2633,30 @@ void spawnSystemCallsNew(ObjectPtr global,
      // GTU_PANIC
      temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::CPP, CPP_PANIC)));
      assert(temp.index == GTU_PANIC);
+
+     // GTU_WHILE_DO
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::PEEK, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::PUSH, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::CALL, 0L),
+                                           makeAssemblerLine(Instr::YLD, Lit::TRUE, Reg::PTR),
+                                           makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                           makeAssemblerLine(Instr::TEST),
+                                           makeAssemblerLine(Instr::CPP, CPP_WHILE_REGS),
+                                           makeAssemblerLine(Instr::BRANCH)));
+     assert(temp.index == GTU_WHILE_DO);
+
+     // GTU_POP_TWO
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)));
+     assert(temp.index == GTU_POP_TWO);
+
+     // GTU_WHILE_AGAIN
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO),
+                                           makeAssemblerLine(Instr::PEEK, Reg::PTR, Reg::STO),
+                                           makeAssemblerLine(Instr::CALL, 0L),
+                                           makeAssemblerLine(Instr::CPP, CPP_WHILE_REGS_ZERO),
+                                           makeAssemblerLine(Instr::GOTO)));
 
 }
 

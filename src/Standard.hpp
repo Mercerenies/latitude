@@ -64,7 +64,9 @@ namespace Table {
         CPP_UNI_CASE = 53,
         CPP_RANDOM = 54,
         CPP_PANIC = 55,
-        CPP_HAS_SLOT = 56;
+        CPP_HAS_SLOT = 56,
+        CPP_WHILE_REGS = 57,
+        CPP_WHILE_REGS_ZERO = 58;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,
@@ -83,7 +85,10 @@ namespace Table {
         GTU_KEYS = 14,
         GTU_KEY_TERM = 15,
         GTU_THROW_OBJ = 16,
-        GTU_PANIC = 17;
+        GTU_PANIC = 17,
+        GTU_WHILE_DO = 18,
+        GTU_POP_TWO = 19,
+        GTU_WHILE_AGAIN = 20;
 
 }
 
