@@ -151,6 +151,13 @@ meta sigil star := {
     cap := Object clone tap {
       self loop := { self loop*. }.
       self while := { self while*. }.
+      self loopCall := {
+        $1 by {
+          ; ///// Need to get the actual scope I care about here... somehow...
+          $1 next := #'(lexical () caller () next).
+          $1 last := #'(lexical () caller () last).
+        }.
+      }.
     }.
     Kernel invoke #'(arg) on #'(self) by {
       cap parent := $1 parent.
@@ -158,11 +165,17 @@ meta sigil star := {
     } call.
   }.
 }.
+global loopCall := {
+  ;; This method does nothing by default. It will be "overridden" in
+  ;; the star-loop cases.
+  $1.
+}.
 
 Number times := {
   localize.
   block0 := #'$1.
   block := Kernel invoke #'(block0) on (Conditional).
+  loopCall (block).
   i := -1.
   incr := {
     parent i := i + 1.
@@ -178,6 +191,7 @@ Number upto := {
     self do := {
       block0 := #'$1.
       block := Kernel invoke #'(block0) on (Conditional).
+      loopCall (block).
       i := this floor - 1.
       incr := { parent i := i + 1. }.
       while { incr. (i) < (n floor). } do {
@@ -193,6 +207,7 @@ Number downto := {
     self do := {
       block0 := #'$1.
       block := Kernel invoke #'(block0) on (Conditional).
+      loopCall (block).
       i := this floor + 1.
       decr := {
         parent i := i - 1.
@@ -204,9 +219,9 @@ Number downto := {
   }.
 }.
 ;; ///// Need to explicitly pass 'next' and 'last' with this macro somehow... :/
-Number times* := ~star { self times. }.
-Number upto* := ~star { self upto. }.
-Number downto* := ~star { self downto. }.
+Number times* := ~star #'(Number times).
+Number upto* := ~star #'(Number upto).
+Number downto* := ~star #'(Number downto).
 
 global Ellipsis ::= Object clone.
 global ... := Ellipsis.
