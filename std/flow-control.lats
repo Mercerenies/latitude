@@ -90,17 +90,72 @@ Object not := {
 ;; Loops
 global loop := {
   content := #'$1.
-  meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
+  meta sys loopDo#: {
+    Kernel invoke #'(content) on (Conditional) call.
+  }.
 }.
 global while := {
   cond0 := #'$1.
-  cond := { Kernel invoke #'(cond0) on (Conditional) call toBool. }.
+  cond := Kernel invoke #'(cond0) on (Conditional).
   Object clone tap {
     self do := {
       stmt0 := #'$1.
-      stmt := { Kernel invoke #'(stmt0) on (Conditional) call. }.
-      meta sys whileDo#: #'(cond), #'(stmt).
+      stmt := Kernel invoke #'(stmt0) on (Conditional).
+      meta sys whileDo#: { cond call toBool. }, { stmt call. }.
     }.
+  }.
+}.
+global loop* := {
+  content := #'$1.
+  callCC {
+    escapable.
+    breaker := Object clone.
+    breaker last := { return. }.
+    next0 := callCC { $1. }.
+    breaker next := { next0 call: next0. }.
+    meta sys loopDo#: {
+      Kernel invoke #'(content) on (Conditional) by {
+        breaker parent := $1 parent.
+        $1 parent := breaker.
+      } call.
+    }.
+  }.
+}.
+global while* := {
+  cond0 := #'$1.
+  cond := Kernel invoke #'(cond0) on (Conditional).
+  Object clone tap {
+    self do := {
+      stmt0 := #'$1.
+      stmt := Kernel invoke #'(stmt0) on (Conditional).
+      callCC {
+        escapable.
+        breaker := Object clone.
+        breaker last := { return. }.
+        next0 := callCC { $1. }.
+        breaker next := { next0 call: next0. }.
+        chunk := {
+          breaker parent := $1 parent.
+          $1 parent := breaker.
+        }.
+        cond by #'chunk.
+        stmt by #'chunk.
+        meta sys whileDo#: { cond call toBool. }, { stmt call. }.
+      }.
+    }.
+  }.
+}.
+meta sigil star := {
+  arg := #'($1).
+  {
+    cap := Object clone tap {
+      self loop := { self loop*. }.
+      self while := { self while*. }.
+    }.
+    Kernel invoke #'(arg) on #'(self) by {
+      cap parent := $1 parent.
+      $1 parent := cap.
+    } call.
   }.
 }.
 
@@ -148,6 +203,10 @@ Number downto := {
     }.
   }.
 }.
+;; ///// Need to explicitly pass 'next' and 'last' with this macro somehow... :/
+Number times* := ~star { self times. }.
+Number upto* := ~star { self upto. }.
+Number downto* := ~star { self downto. }.
 
 global Ellipsis ::= Object clone.
 global ... := Ellipsis.
