@@ -103,16 +103,12 @@ global loop := {
 }.
 global while := {
   cond0 := #'$1.
-  cond := { Kernel invoke #'(cond0) on (Conditional) call. }.
+  cond := { Kernel invoke #'(cond0) on (Conditional) call toBool. }.
   Object clone tap {
     self do := {
       stmt0 := #'$1.
       stmt := { Kernel invoke #'(stmt0) on (Conditional) call. }.
-      loop {
-        if (cond)
-          then { stmt. }
-          else { $break call: Nil. }.
-      }.
+      meta sys whileDo#: #'(cond), #'(stmt).
     }.
   }.
 }.
