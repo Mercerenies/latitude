@@ -110,13 +110,18 @@ global loop* := {
   callCC {
     escapable.
     breaker := Object clone.
+    $breaker := Object clone.
     breaker last := { return. }.
+    $breaker $last := #'(breaker last).
     next0 := callCC { $1. }.
     breaker next := { next0 call: next0. }.
+    $breaker $next := #'(breaker next).
     meta sys loopDo#: {
       Kernel invoke #'(content) on (Conditional) by {
         breaker parent := $1 parent.
         $1 parent := breaker.
+        $breaker parent := $2 parent.
+        $2 parent := $breaker.
       } call.
     }.
   }.
@@ -131,16 +136,21 @@ global while* := {
       callCC {
         escapable.
         breaker := Object clone.
+        $breaker := Object clone.
         breaker last := { return. }.
+        $breaker $last := #'(breaker last).
         next0 := callCC {
           breaker next := { next0 call: next0. }.
+          $breaker $next := #'(breaker next).
           chunk := {
             breaker parent := $1 parent.
             $1 parent := breaker.
+            $breaker parent := $2 parent.
+            $2 parent := $breaker.
           }.
           cond by #'chunk.
           stmt by #'chunk.
-          $1. ; ///// Need to check and make sure handlers aren't getting added multiple times
+          $1.
         }.
         meta sys whileDo#: { cond call toBool. }, { stmt call. }.
       }.
@@ -153,6 +163,15 @@ meta sigil star := {
     cap := Object clone tap {
       self loop := { self loop*. }.
       self while := { self while*. }.
+      self loopCall := {
+        breaker := Object clone.
+        breaker next := { $next. }.
+        breaker last := { $last. }.
+        $1 by {
+          breaker parent := $1 parent.
+          $1 parent := breaker.
+        }.
+      }.
     }.
     Kernel invoke #'(arg) on #'(self) by {
       cap parent := $1 parent.
@@ -160,11 +179,17 @@ meta sigil star := {
     } call.
   }.
 }.
+global loopCall := {
+  ;; This method does nothing by default. It will be "overridden" in
+  ;; the star-loop cases.
+  $1.
+}.
 
 Number times := {
   localize.
   block0 := #'$1.
   block := Kernel invoke #'(block0) on (Conditional).
+  loopCall (block).
   i := -1.
   incr := {
     parent i := i + 1.
@@ -180,6 +205,7 @@ Number upto := {
     self do := {
       block0 := #'$1.
       block := Kernel invoke #'(block0) on (Conditional).
+      loopCall (block).
       i := this floor - 1.
       incr := { parent i := i + 1. }.
       while { incr. (i) < (n floor). } do {
@@ -195,6 +221,7 @@ Number downto := {
     self do := {
       block0 := #'$1.
       block := Kernel invoke #'(block0) on (Conditional).
+      loopCall (block).
       i := this floor + 1.
       decr := {
         parent i := i - 1.
@@ -205,9 +232,9 @@ Number downto := {
     }.
   }.
 }.
-;; Number times* := ~star #'(Number times).
-;; Number upto* := ~star #'(Number upto).
-;; Number downto* := ~star #'(Number downto).
+Number times* := ~star #'(Number times).
+Number upto* := ~star #'(Number upto).
+Number downto* := ~star #'(Number downto).
 
 global Ellipsis ::= Object clone.
 global ... := Ellipsis.
