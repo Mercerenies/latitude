@@ -109,7 +109,7 @@ unit-test eq := {
   a := #'$1.
   b := #'$2.
   (#'a == #'b) or {
-    FailedTest make: #'a toString ++ " and " ++ #'b toString ++ " are not equal".
+    FailedTest make: (#'a toString) ++ " and " ++ (#'b toString) ++ " are not equal".
   }.
 }.
 
