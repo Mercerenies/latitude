@@ -159,7 +159,9 @@ modified to have a handler method. This adds an additional step to the
 call. When the procedure is invoked, after the new lexical and dynamic
 scopes are constructed, the handler will be called with two arguments:
 the lexical and dynamic scopes. The handler method is free to modify
-these scopes for metaprogramming purposes.
+these scopes for metaprogramming purposes. `by` can be called multiple
+times, and if multiple handlers are supplied then they will each be
+executed in the order they were added.
 
 Example use:
 

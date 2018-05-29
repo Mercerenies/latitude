@@ -9,10 +9,6 @@ global escapable := {
   cont := $1.
   self return := { cont call. }.
 }.
-global breakable := {
-  breakBlock := $break.
-  self break := { breakBlock call. }.
-}.
 
 ;; Booleans
 Object toBool := True.
@@ -94,39 +90,112 @@ Object not := {
 ;; Loops
 global loop := {
   content := #'$1.
-  callCC {
-    $break := $1.
-    continue0 := callCC { $1. }.
-    $continue := proc { continue0 call: continue0. }.
-    meta sys loopDo#: { Kernel invoke #'(content) on (Conditional) call. }.
+  meta sys loopDo#: {
+    Kernel invoke #'(content) on (Conditional) call.
   }.
 }.
 global while := {
   cond0 := #'$1.
-  cond := { Kernel invoke #'(cond0) on (Conditional) call. }.
+  cond := Kernel invoke #'(cond0) on (Conditional).
   Object clone tap {
     self do := {
       stmt0 := #'$1.
-      stmt := { Kernel invoke #'(stmt0) on (Conditional) call. }.
-      loop {
-        if (cond)
-          then { stmt. }
-          else { $break call: Nil. }.
+      stmt := Kernel invoke #'(stmt0) on (Conditional).
+      meta sys whileDo#: { cond call toBool. }, { stmt call. }.
+    }.
+  }.
+}.
+global loop* := {
+  content := #'$1.
+  callCC {
+    escapable.
+    breaker := Object clone.
+    $breaker := Object clone.
+    breaker last := { return. }.
+    $breaker $last := #'(breaker last).
+    next0 := callCC { $1. }.
+    breaker next := { next0 call: next0. }.
+    $breaker $next := #'(breaker next).
+    meta sys loopDo#: {
+      Kernel invoke #'(content) on (Conditional) by {
+        breaker parent := $1 parent.
+        $1 parent := breaker.
+        $breaker parent := $2 parent.
+        $2 parent := $breaker.
+      } call.
+    }.
+  }.
+}.
+global while* := {
+  cond0 := #'$1.
+  cond := Kernel invoke #'(cond0) on (Conditional).
+  Object clone tap {
+    self do := {
+      stmt0 := #'$1.
+      stmt := Kernel invoke #'(stmt0) on (Conditional).
+      callCC {
+        escapable.
+        breaker := Object clone.
+        $breaker := Object clone.
+        breaker last := { return. }.
+        $breaker $last := #'(breaker last).
+        next0 := callCC {
+          breaker next := { next0 call: next0. }.
+          $breaker $next := #'(breaker next).
+          chunk := {
+            breaker parent := $1 parent.
+            $1 parent := breaker.
+            $breaker parent := $2 parent.
+            $2 parent := $breaker.
+          }.
+          cond by #'chunk.
+          stmt by #'chunk.
+          $1.
+        }.
+        meta sys whileDo#: { cond call toBool. }, { stmt call. }.
       }.
     }.
   }.
+}.
+meta sigil star := {
+  arg := #'($1).
+  {
+    cap := Object clone tap {
+      self loop := { self loop*. }.
+      self while := { self while*. }.
+      self loopCall := {
+        breaker := Object clone.
+        breaker next := { $next. }.
+        breaker last := { $last. }.
+        $1 by {
+          breaker parent := $1 parent.
+          $1 parent := breaker.
+        }.
+      }.
+    }.
+    Kernel invoke #'(arg) on #'(self) by {
+      cap parent := $1 parent.
+      $1 parent := cap.
+    } call.
+  }.
+}.
+global loopCall := {
+  ;; This method does nothing by default. It will be "overridden" in
+  ;; the star-loop cases.
+  $1.
 }.
 
 Number times := {
   localize.
   block0 := #'$1.
-  block := { Kernel invoke #'(block0) on (Conditional) call. }.
+  block := Kernel invoke #'(block0) on (Conditional).
+  loopCall (block).
   i := -1.
   incr := {
     parent i := i + 1.
   }.
   while { incr. (i) < (this floor). } do {
-    block (i).
+    (block) call (i).
   }.
 }.
 Number upto := {
@@ -135,11 +204,12 @@ Number upto := {
   Object clone tap {
     self do := {
       block0 := #'$1.
-      block := { Kernel invoke #'(block0) on (Conditional) call. }.
+      block := Kernel invoke #'(block0) on (Conditional).
+      loopCall (block).
       i := this floor - 1.
       incr := { parent i := i + 1. }.
       while { incr. (i) < (n floor). } do {
-        block (i).
+        (block) call (i).
       }.
     }.
   }.
@@ -150,17 +220,21 @@ Number downto := {
   Object clone tap {
     self do := {
       block0 := #'$1.
-      block := { Kernel invoke #'(block0) on (Conditional) call. }.
+      block := Kernel invoke #'(block0) on (Conditional).
+      loopCall (block).
       i := this floor + 1.
       decr := {
         parent i := i - 1.
       }.
       while { decr. (i) > (n floor). } do {
-        block (i).
+        (block) call (i).
       }.
     }.
   }.
 }.
+Number times* := ~star #'(Number times).
+Number upto* := ~star #'(Number upto).
+Number downto* := ~star #'(Number downto).
 
 global Ellipsis ::= Object clone.
 global ... := Ellipsis.

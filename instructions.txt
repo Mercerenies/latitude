@@ -131,6 +131,10 @@ dict INT (35 INT) - Construct a dictionary by drawing the top INT * 2 values off
 
 xxx INT (36 INT) - This instruction is used for several purposes, depending on the argument. See below.
 
+goto (37) - Pushes %cont onto %stack then %mthd onto %cont, unconditionally.
+
+mswap (38) - Swaps %mthd and %mthdz.
+
 ((( The call instructions )))
 1. Check for `closure`; if no `closure`, simply move %ptr to %ret and do not perform any other actions
 2. Clone the top of %dyn and put it on %dyn (%err0 and continue with no stack if empty)

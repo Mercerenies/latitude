@@ -42,14 +42,6 @@ with an argument, this method will invoke the continuation `cont`,
 jumping to the point of the continuation and passing its argument
 onward.
 
-### `global breakable.`
-
-Defines a `break` slot on `self` which contains a method. When called
-with an argument, this method will invoke the value of `$break` at the
-time `breakable` was called. It is usually used inside of loops to
-convert the default dynamic `$break` procedure into a lexical `break`
-method.
-
 ### `global $moduleLoader.`
 
 This slot contains the current [`ModuleLoader`](moduleloader.md). It
@@ -157,7 +149,9 @@ if-statement.
 Loops infinitely, calling `block` at every iteration of the
 loop. `mthd` will be called on the `Conditional` object.
 
-`loop` supports
+### `global loop* (block).`
+
+Equivalent to `loop` except that it supports
 the [standard loop macros](../appendix/terms.md#loop-macros).
 
 ### `global while (cond) do (block).`
@@ -166,16 +160,25 @@ Executes a while-loop statement. `while` returns an intermediate
 object, and `do` executes the statement. In one iteration, first
 `cond` is checked for truthiness. If it is true, then `block` will be
 run and these two steps repeated. If it is false, then the loop is
-exited and `Nil` is returned. The block will be executed with
-`Conditional` as the caller, but `cond` will be called as a method
-with an undefined caller.
-
-`while` supports
-the [standard loop macros](../appendix/terms.md#loop-macros).
+exited. Both the block and the conditional methods will be executed
+with `Conditional` as the caller. The return value of the loop will be
+the return value of `block` on its last iteration. If `block` never
+executed, then `Nil` is returned.
 
 Remember that `cond` should probably be a method, for if it is not
 then its truthiness will be evaluated immediately and never re-checked
 during later iterations.
+
+### `global while* (cond) do (block).`
+
+Equivalent to `while` except that it supports
+the [standard loop macros](../appendix/terms.md#loop-macros).
+
+### `global loopCall (obj).`
+
+By default, this method returns `obj` without doing any work. It is
+useful in looping macros, where it may be overriden locally.
+See [`~star`](meta.md#star-method) for details.
 
 ### `global cond (body).`
 
