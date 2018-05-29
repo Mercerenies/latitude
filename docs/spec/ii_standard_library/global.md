@@ -149,7 +149,9 @@ if-statement.
 Loops infinitely, calling `block` at every iteration of the
 loop. `mthd` will be called on the `Conditional` object.
 
-`loop` supports
+### `global loop* (block).`
+
+Equivalent to `loop` except that it supports
 the [standard loop macros](../appendix/terms.md#loop-macros).
 
 ### `global while (cond) do (block).`
@@ -163,12 +165,20 @@ with `Conditional` as the caller. The return value of the loop will be
 the return value of `block` on its last iteration. If `block` never
 executed, then `Nil` is returned.
 
-`while` supports
-the [standard loop macros](../appendix/terms.md#loop-macros).
-
 Remember that `cond` should probably be a method, for if it is not
 then its truthiness will be evaluated immediately and never re-checked
 during later iterations.
+
+### `global while* (cond) do (block).`
+
+Equivalent to `while` except that it supports
+the [standard loop macros](../appendix/terms.md#loop-macros).
+
+### `global loopCall (obj).`
+
+By default, this method returns `obj` without doing any work. It is
+useful in looping macros, where it may be overriden locally.
+See [`~star`](meta.md#star-method) for details.
 
 ### `global cond (body).`
 

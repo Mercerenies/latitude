@@ -59,6 +59,48 @@ sigil wraps this in a method, so that the returned value is
 automatically called when the variable is accessed later. In this way,
 `~l` can be used to simulate lazy-evaluated values in Latitude.
 
+### `~star (method).`
+
+This sigil provides a convenient way to convert a looping construct
+into its starred form. That is, assuming the looping method is written
+in the correct way, this method will take an ordinary loop and convert
+it to the specialized form which supports
+the [standard loop macros](../appendix/terms.md#loop-macros).
+
+Specifically, `~star` constructs a wrapper around `method` which calls
+`method` in a specialized environment. In this environment, three
+global methods are overridden.
+
+ * `loop` is overridden so that it delegates to `loop*`.
+ * `while` is overridden so that it delegates to `while*`.
+ * `loopCall` is overridden to perform the proper delegations itself.
+
+The new implementation of `loopCall` expects a `Kernel invoke` or
+`Object send` partial object (that is, the procedure object returns by
+these methods before `call` is invoked on them). `loopCall` will add a
+handler to this partial object which defines the appropriate macros
+`next` and `last` to delegate to `$next` and `$last`, respectively.
+
+`loopCall` should be called on the partial invocation object which
+will become the loop body and will be executed inside a `while` or
+`loop` body.
+
+For example, suppose we wanted to define a loop which runs until the
+world ends.
+
+    untilWorldEnds := {
+      body := Conditional send #'($1).
+      loopCall (body). ; Tell the macro that this is the loop block object.
+      while { worldEnded? not. } do {
+        loopCall call.
+      }.
+    }.
+
+    ;; Now we want to define a * form for the loop. Since we used loopCall
+    ;; (which does no actual work in the original), we can use the ~star
+    ;; sigil here.
+    untilWorldEnds* := ~star #'(untilWorldEnds).
+
 [[up](.)]
 <br/>[[prev - The Global Object](global.md)]
 <br/>[[next - The Cell Module](cell.md)]

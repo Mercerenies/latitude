@@ -38,10 +38,21 @@ string.
 
 ## Loop Macros
 
-In many loop-like constructs in Latitude, there are a few standard
-(dynamically-scoped) macros defined, as follows.
+Many loop-like constructs in Latitude define specialized versions
+ending in a `*`. The specialized loop versions add special flow
+control tools for exiting the loop abnormally or jumping ahead to the
+next iteration, at the cost of a performance penalty over using the
+un-specialized version. For instance, `global loop` is a loop which
+will run forever; `global loop*` behaves the same way but with
+additionall macros defined.
 
-[TBA]
+The following macros are defined in these specialized looping
+constructs. Macros beginning with a `$` are assumed to be defined in
+the dynamic scope.
+ * `last` and `$last` are 1-ary methods which exit the loop and force
+   the return value of the loop to be the sole argument.
+ * `next` and `$next` are 0-ary methods which skip to the next
+   iteration of the loop.
 
 [[up](.)]
 <br/>[[next - Definitions](definitions.md)]
