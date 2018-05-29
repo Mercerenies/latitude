@@ -73,7 +73,8 @@ like `foo := { somethingThatMightFail. } default { 0. }`.
 This is equivalent to `thunk: { }, #'self, #'unwind`. `self` is called
 with no arguments. If it exits normally, then the return value is
 returned. If a continuation jump exits `self` artificially, then
-`unwind` is called, again with no arguments.
+`unwind` is called, in accordance with the description
+in [Thunks](../i_syntax_and_semantics/ch6_controlflow.md#thunks).
 
 ### `Method closure.`
 

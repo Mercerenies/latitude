@@ -218,9 +218,8 @@ as the "before" method, the third is referred to as the "after"
 method, and the second is the body of the thunk. When a thunk is
 entered, the before and after methods are stored on a stack in
 register memory. Then the before method is called, followed by the
-body, then the after method. Each of these is called with no
-arguments. Then the before and after methods are removed from register
-memory.
+body, then the after method. Then the before and after methods are
+removed from register memory.
 
 Thunks are useful when there is the possibility of performing
 continuation jumps which enter or exit the body of the thunk. If a
@@ -235,6 +234,12 @@ methods in one jump, they are performed in the following order. First,
 all of the required after methods are called, starting with the
 innermost thunk. Then all of the required before methods are called,
 starting with the outermost thunk.
+
+The body of a `thunk` call is always called with no arguments. The
+before and after methods are each called with one argument. That
+argument is `True` if the method is being called as a result of a
+continuation jump and `False` if the method is being called as a
+result of the normal flow of control of the program.
 
 Note that before and after methods of a thunk are invoked in a special
 context. In this context, the dynamic scope is a clone of the dynamic
@@ -269,4 +274,4 @@ are not executed. In this case, the stack is simply ignored and the VM
 exits immediately.
 
 [[up](.)]
-<br/>[[prev - Chapter 5 - Literals](ch5_literals.md)]
+    <br/>[[prev - Chapter 5 - Literals](ch5_literals.md)]
