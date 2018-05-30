@@ -110,6 +110,7 @@
 %type <exprval> rhs
 %type <exprval> rhs1
 %type <argval> shortarglist
+%type <argval> shortarglist1
 %type <argval> arglist
 %type <argval> arglist1
 %type <exprval> postarglist
@@ -184,7 +185,7 @@ rhs:
 rhs1:
     verysimplechainl { $$ = makeExpr(); $$->args = makeList(); $$->args->car = makeExpr();
                        $$->args->car = $1; $$->args->cdr = makeList(); $$->argsProvided = true; } |
-    shortarglist { $$ = makeExpr(); $$->args = $1; $$->argsProvided = true; } |
+    shortarglist1 { $$ = makeExpr(); $$->args = $1; $$->argsProvided = true; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
     ':' arglist { $$ = makeExpr(); $$->args = $2; $$->argsProvided = true; } |
@@ -216,16 +217,16 @@ arg:
                                    $$->args->cdr = makeList(); $$->argsProvided = true; } |
     simplechain STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                        $$->args = $3; $$->argsProvided = true; } |
-    chain OPNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                $$->args = $3; $$->argsProvided = true; } |
+    chain OPNAME shortarglist1 { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                                 $$->args = $3; $$->argsProvided = true; } |
     literalish
     ;
 chain:
     chain OPNAME verysimplechainl { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                    $$->args = makeList(); $$->args->car = $3;
                                    $$->args->cdr = makeList(); $$->argsProvided = true; } |
-    chain OPNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                $$->args = $3; $$->argsProvided = true; } |
+    chain OPNAME shortarglist1 { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
+                                 $$->args = $3; $$->argsProvided = true; } |
     simplechain
     ;
 simplechain:
@@ -241,6 +242,7 @@ verysimplechain:
     ;
 verysimplechainl:
     verysimplechain |
+    literal |
     /* empty */ { $$ = NULL; }
     ;
 shortarglist:
@@ -256,6 +258,17 @@ shortarglist:
                                    $$->car->argsProvided = true; } |
      literal { $$ = makeList(); $$->car = $1; $$->cdr = makeList(); }
      ;
+shortarglist1:
+    '(' arglist ')' { $$ = $2; } |
+    '(' simplechain STDNAME ':' arg ')' { $$ = makeList(); $$->car = makeExpr();
+                                          $$->car->args = makeList(); $$->car->args->car = $5;
+                                          $$->car->args->cdr = makeList(); $$->car->name = $3;
+                                          $$->car->lhs = $2; $$->cdr = makeList();
+                                          $$->car->argsProvided = true; } |
+    '(' chain OPNAME ':' arg ')' { $$ = makeList(); $$->car = makeExpr(); $$->car->args = makeList();
+                                   $$->car->args->car = $5; $$->car->args->cdr = makeList();
+                                   $$->car->name = $3; $$->car->lhs = $2; $$->cdr = makeList();
+                                   $$->car->argsProvided = true; }
 literalish:
     SYMBOL literalish { if ($1.str[0] != '~') { yyerror("Sigil name must be an interned symbol"); }
                         $$ = makeExpr(); $$->isSigil = true; $$->name = $1.str;

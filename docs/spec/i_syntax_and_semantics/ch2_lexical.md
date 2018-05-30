@@ -108,7 +108,7 @@ following grammar.
           <shortarglist> "=" <stmt> |
           "<-" <stmt>
 <rhs1> ::= <verysimplechainl> |
-           <shortarglist> |
+           <shortarglist1> |
            ":=" <stmt> |
            "::=" <stmt> |
            ":" <arglist> |
@@ -121,7 +121,7 @@ following grammar.
 <arg> ::= <chain> <stdname> |
           <chain> <opname> <name> |
           <simplechain> <stdname> <shortarglist> |
-          <chain> <opname> <shortarglist> |
+          <chain> <opname> <shortarglist1> |
           <literalish>
 <chain> ::= <chain> <opname> <name> |
             <simplechain>
@@ -132,10 +132,13 @@ following grammar.
 <verysimplechain> ::= <verysimplechainl> <stdname> |
                       <verysimplechainl> <stdname> <shortarglist> |
 <verysimplechainl> ::= <verysimplechain> |
+                       <literal> |
                        λ
 <shortarglist> ::= "(" <arglist> ")" |
                    "(" <chain> <name> ":" <arg> ")" |
                    <literal>
+<shortarglist1> ::= "(" <arglist> ")" |
+                    "(" <chain> <name> ":" <arg> ")"
 <literalish> ::= "~" <ename> <literalish> |
                  "(" <stmt> ")" |
                  <literal>
