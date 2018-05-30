@@ -25,7 +25,6 @@ access the object, so `err SystemCallError` refers to the object at
 slot `SystemCallError` within the object at slot `err` in the global
 scope object.
 
-    &LoadedModules
     Object
      +-- $argv
      +-- ArgList
@@ -91,7 +90,6 @@ scope object.
      +-- meta lang
      +-- meta sigil
 
- * [&LoadedModules](loadedmodules.md)
  * [Arglist](arglist.md)
  * [Array](array.md)
  * [Booleans and Nil](boolnil.md)

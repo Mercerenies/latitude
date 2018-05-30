@@ -76,5 +76,4 @@ arguments from the argument list into the slots `$1`, `$2`, ... of the
 `arg` object.
 
 [[up](.)]
-<br/>[[prev - The Loaded Modules Object](loadedmodules.md)]
 <br/>[[next - The Array Object](array.md)]

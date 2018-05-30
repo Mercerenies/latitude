@@ -12,10 +12,10 @@ loaded modules.
 
 ## Methods
 
-### `ModuleLoader &loaded.`
+### `ModuleLoader loaded.`
 
-This non-traditional subobject of [`&LoadedModules`](loadedmodules.md)
-stores the actual modules that have been loaded.
+Returns a dictionary detailing all of the modules which have been
+loaded.
 
 ### `ModuleLoader clone.`
 
