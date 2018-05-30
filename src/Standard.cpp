@@ -2512,6 +2512,21 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::CPP, CPP_WHILE_REGS_ZERO),
                                    makeAssemblerLine(Instr::GOTO))));
 
+     // CPP_FRESH (allocates a fresh object with *no* slots into %ret; BE CAREFUL!)
+     // freshObject#.
+     assert(reader.cpp.size() == CPP_FRESH);
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         // WARNING: This bypasses the protection to delete the parent
+         // slot. This is a bad idea. Don't do this. Seriously. Like,
+         // the VM uses it for certain optimizations in careful cases
+         // only; NEVER call this.
+         state0.ret = clone(reader0.lit[Lit::OBJECT]);
+         state0.ret->remove(Symbols::parent());
+     });
+     sys->put(Symbols::get()["freshObject#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::CPP, CPP_FRESH))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
