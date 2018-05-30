@@ -243,30 +243,33 @@ Ellipsis =~ := True.
 ;; Cond Statement
 global cond := {
   takes '[block].
-  callCC {
-    finished := $1.
-    whenProc := proc {
-      if (Kernel invoke #'($1) on (Conditional) call)
-        then {
-          Object clone tap {
-            self do := { finished call: (Kernel invoke #'($1) on (Conditional) call). }.
-          }.
-        } else {
-          Object clone tap {
-            self do := { }.
-          }.
-        }.
-    }.
-    procd := $dynamic send #'(block) by {
-      $1 when := { whenProc call. }.
-      $1 else := {
-        body := #'$1.
-        self when (True) do { (Kernel invoke #'(body) on (Conditional) call). }.
+  tripped := False.
+  result := Nil.
+  trip := {
+    parent tripped := True.
+    parent result := #'$1.
+  }.
+  whenProc := proc {
+    block := #'($1).
+    if { tripped not. } and { Kernel invoke #'(block) on (Conditional) call. } then {
+      Object clone tap {
+        self do := { trip: Kernel invoke #'($1) on (Conditional) call. }.
+      }.
+    } else {
+      Object clone tap {
+        self do := { }.
       }.
     }.
-    procd call.
-    Nil.
   }.
+  procd := $dynamic send #'(block) by {
+    $1 when := { whenProc call. }.
+    $1 else := {
+      body := #'$1.
+      self when (True) do { (Kernel invoke #'(body) on (Conditional) call). }.
+    }.
+  }.
+  procd call.
+  #'(result).
 }.
 
 ;; Case Statement
