@@ -57,17 +57,11 @@ Module importAllSigils := {
 }.
 global Module := Module.
 
-global &LoadedModules := Object clone tap {
-  self parent := self.
-  self toString := "&LoadedModules".
-  self missing := Object slot 'missing.
-}.
-
 global ModuleLoader ::= Object clone.
-ModuleLoader &loaded := &LoadedModules.
+ModuleLoader loaded := [=>].
 ModuleLoader clone := {
   self send (Object slot 'clone) call tap {
-    self &loaded := Kernel cloneObject: self &loaded.
+    self loaded := self loaded dup.
   }.
 }.
 ModuleLoader loadPath := do {
@@ -119,8 +113,8 @@ global use := {
   name := ((header packageName) ++ " " ++ (header moduleName)) intern.
   mod := Nil.
   assignable 'mod.
-  if (Slots has? ($moduleLoader &loaded, name)) then {
-    mod = Slots hold ($moduleLoader &loaded, name).
+  if ($moduleLoader loaded has? (name)) then {
+    mod = $moduleLoader loaded get (name).
   } else {
     mod = Module clone tap { self header := header. }.
     do {
@@ -131,7 +125,7 @@ global use := {
       scope meta sigil := scope meta sigil clone.
       mod = Kernel evalFile: fname, scope.
     }.
-    Slots put: $moduleLoader &loaded, name, mod.
+    $moduleLoader loaded get (name) = mod.
   }.
   target slot (header moduleName intern) = mod.
   mod.
