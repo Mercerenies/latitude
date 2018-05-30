@@ -1058,6 +1058,8 @@ void spawnSystemCallsNew(ObjectPtr global,
                 break;
             }
             curr = (*curr)[ Symbols::parent() ];
+            if (curr == nullptr)
+                break;
         }
         if (value == nullptr) {
             throwError(state0, reader0, "SlotError", "Cannot find origin of nonexistent slot");
@@ -2466,8 +2468,10 @@ void spawnSystemCallsNew(ObjectPtr global,
                 return;
             }
             curr = (*curr)[ sym ];
+            if (curr == nullptr)
+                break;
         }
-                state0.ret = garnishObject(reader0, false);
+        state0.ret = garnishObject(reader0, false);
      });
      sys->put(Symbols::get()["slotCheck#"],
               defineMethod(unit, global, method,

@@ -173,6 +173,8 @@ ObjectPtr clone(ObjectPtr obj) {
 }
 
 void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
+    if (obj == nullptr)
+        return;
     if (find_if(parents.begin(), parents.end(), [&obj](auto xx){
                 return xx == obj;
             }) != parents.end())
@@ -198,6 +200,8 @@ list<ObjectPtr> hierarchy(ObjectPtr obj) {
             }) == parents.end()) {
         parents.push_back(obj);
         obj = (*obj)[ Symbols::parent() ];
+        if (obj == nullptr)
+            break;
     }
     return parents;
 }

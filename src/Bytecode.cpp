@@ -648,6 +648,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                 break;
             }
             curr = (*curr)[ sym ];
+            if (curr == nullptr)
+                break;
         }
         if (value == nullptr) {
 #if DEBUG_INSTR > 2
@@ -671,6 +673,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                     break;
                 }
                 curr = (*curr)[ sym ];
+                if (curr == nullptr)
+                    break;
             }
             state.ret = value;
 #if DEBUG_INSTR > 1
@@ -694,6 +698,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                             break;
                         }
                         curr = (*curr)[ sym ];
+                        if (curr == nullptr)
+                            break;
                     }
                     state.ret = value;
                 }
@@ -711,6 +717,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                             break;
                         }
                         curr = (*curr)[ sym ];
+                        if (curr == nullptr)
+                            break;
                     }
                     state.ret = value;
                 }

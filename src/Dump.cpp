@@ -67,6 +67,8 @@ std::string toStringInfo(ObjectPtr obj) {
             break;
         }
         curr = (*curr)[ sym ];
+        if (curr == nullptr)
+            break;
     }
     if (value == nullptr) {
         return "";
