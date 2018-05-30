@@ -2531,6 +2531,24 @@ void spawnSystemCallsNew(ObjectPtr global,
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::CPP, CPP_FRESH))));
 
+     // directly#: obj, slot.
+     sys->put(Symbols::get()["directly#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                   makeAssemblerLine(Instr::THROA, "Symbol expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::RTRVD),
+                                   makeAssemblerLine(Instr::THROA, "Slot not found"))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
