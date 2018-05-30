@@ -1401,7 +1401,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "DICT " << val << endl;
 #endif
         ObjectPtr dict = reader.lit.at(Lit::DICT);
-        ObjectPtr impl = clone((*dict)[Symbols::get()["&impl"]]);
+        ObjectPtr impl0 = (*dict)[Symbols::get()["&impl"]];
+        ObjectPtr impl = clone(impl0);
+        (*impl) = (*impl0);
         dict = clone(dict);
         dict->put(Symbols::get()["&impl"], impl);
         for (long i = 0; i < val; i++) {
@@ -1411,13 +1413,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             state.arg.pop();
             auto key0 = boost::get<Symbolic>(&key->prim());
             if (key0) {
-                if (*key0 == Symbols::get()["missing"]) {
-                    dict->put(Symbols::get()["impl0"], value);
-                } else if (*key0 == Symbols::get()["parent"]) {
-                    dict->put(Symbols::get()["impl1"], value);
-                } else {
-                    impl->put(*key0, value);
-                }
+                impl->put(*key0, value);
             } else {
                 throwError(state, reader, "TypeError", "Symbol expected");
                 return;
