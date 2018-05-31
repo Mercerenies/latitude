@@ -72,6 +72,7 @@
         bool argsProvided;
         bool isDict; // Check args (in expressions, check lhs and rhs)
         bool isWrapper; // Check lhs
+        bool isOperator; // Like a call, but will use the precedence table
     };
 
     struct List {
@@ -185,8 +186,10 @@ rhs:
     ;
 rhs1:
     verysimplechainl { $$ = makeExpr(); $$->args = makeList(); $$->args->car = makeExpr();
-                       $$->args->car = $1; $$->args->cdr = makeList(); $$->argsProvided = true; } |
-    shortarglist1 { $$ = makeExpr(); $$->args = $1; $$->argsProvided = true; } |
+                       $$->args->car = $1; $$->args->cdr = makeList(); $$->argsProvided = true;
+                       $$->isOperator = true; } |
+    shortarglist1 { $$ = makeExpr(); $$->args = $1; $$->argsProvided = true;
+                       $$->isOperator = true; } |
     CEQUALS stmt { $$ = makeExpr(); $$->equals = true; $$->rhs = $2; } |
     DCEQUALS stmt { $$ = makeExpr(); $$->equals2 = true; $$->rhs = $2; } |
     ':' arglist { $$ = makeExpr(); $$->args = $2; $$->argsProvided = true; } |
@@ -215,19 +218,23 @@ arg:
     simplechain STDNAME { $$ = makeExpr(); $$->lhs = $1; $$->name = $2; } |
     chain OPNAME verysimplechainl { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                    $$->args = makeList(); $$->args->car = $3;
-                                   $$->args->cdr = makeList(); $$->argsProvided = true; } |
+                                   $$->args->cdr = makeList(); $$->argsProvided = true;
+                                   $$->isOperator = true; } |
     simplechain STDNAME shortarglist { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                        $$->args = $3; $$->argsProvided = true; } |
     chain OPNAME shortarglist1 { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                 $$->args = $3; $$->argsProvided = true; } |
+                                 $$->args = $3; $$->argsProvided = true;
+                                 $$->isOperator = true; } |
     literalish
     ;
 chain:
     chain OPNAME verysimplechainl { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
                                    $$->args = makeList(); $$->args->car = $3;
-                                   $$->args->cdr = makeList(); $$->argsProvided = true; } |
+                                   $$->args->cdr = makeList(); $$->argsProvided = true;
+                                   $$->isOperator = true; } |
     chain OPNAME shortarglist1 { $$ = makeExpr(); $$->lhs = $1; $$->name = $2;
-                                 $$->args = $3; $$->argsProvided = true; } |
+                                 $$->args = $3; $$->argsProvided = true;
+                                 $$->isOperator = true; } |
     simplechain
     ;
 simplechain:
