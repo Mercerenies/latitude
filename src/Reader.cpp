@@ -52,7 +52,10 @@ list< unique_ptr<Stmt> > translateList(List* list, bool held);
 
 unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
     int line = expr->line;
-    if (expr->isSymbol) {
+    if (expr->isWrapper) {
+        // Has no actual effect; blocks parsing of operator table in parenthesized cases
+        return translateStmt(expr->lhs, held);
+    } else if (expr->isSymbol) {
         assert(expr->namelen >= 0);
         return unique_ptr<Stmt>(new StmtSymbol(line, { expr->name, (unsigned long)expr->namelen }));
     } else if (expr->isString) {

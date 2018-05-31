@@ -71,6 +71,7 @@
         bool isHashQuote; // Check lhs
         bool argsProvided;
         bool isDict; // Check args (in expressions, check lhs and rhs)
+        bool isWrapper; // Check lhs
     };
 
     struct List {
@@ -273,7 +274,7 @@ literalish:
     SYMBOL literalish { if ($1.str[0] != '~') { yyerror("Sigil name must be an interned symbol"); }
                         $$ = makeExpr(); $$->isSigil = true; $$->name = $1.str;
                         $$->namelen = $1.length; $$->rhs = $2; } |
-    '(' stmt ')' { $$ = $2; } |
+    '(' stmt ')' { $$ = makeExpr(); $$->lhs = $2; $$->isWrapper = true; } |
     literal
     ;
 literal:
