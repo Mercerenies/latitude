@@ -10,6 +10,7 @@
 #include "Unicode.hpp"
 #include "Platform.hpp"
 #include "Dump.hpp"
+#include "Parents.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -1046,21 +1047,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // origin#: self, sym.
     assert(reader.cpp.size() == CPP_ORIGIN);
     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
-        list<ObjectPtr> parents;
-        ObjectPtr curr = state0.slf;
-        Symbolic name = state0.sym;
-        ObjectPtr value = nullptr;
-        while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-            parents.push_back(curr);
-            ObjectPtr slot = (*curr)[name];
-            if (slot != nullptr) {
-                value = curr;
-                break;
-            }
-            curr = (*curr)[ Symbols::parent() ];
-            if (curr == nullptr)
-                break;
-        }
+        ObjectPtr value = origin(state0.slf, state0.sym);
         if (value == nullptr) {
             throwError(state0, reader0, "SlotError", "Cannot find origin of nonexistent slot");
         } else {
@@ -2451,27 +2438,13 @@ void spawnSystemCallsNew(ObjectPtr global,
               defineMethod(unit, global, method,
                            asmCode(makeAssemblerLine(Instr::CPP, CPP_PANIC))));
 
-     // CPP_HAS_SLOT (checks whether %slf has %sym as a slot, without checking `missing`)
+     // CPP_HAS_SLOT (checks whether %slf has %sym as a slot directly, without checking `missing` or parents)
      // slotCheck#: obj, slot.
      assert(reader.cpp.size() == CPP_HAS_SLOT);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
-        auto sym = Symbols::parent();
-        list<ObjectPtr> parents;
-        ObjectPtr curr = state0.slf;
-        Symbolic name = state0.sym;
-        // Try to find the value itself
-        while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-            parents.push_back(curr);
-            ObjectPtr slot = (*curr)[name];
-            if (slot != nullptr) {
-                state0.ret = garnishObject(reader0, true);
-                return;
-            }
-            curr = (*curr)[ sym ];
-            if (curr == nullptr)
-                break;
-        }
-        state0.ret = garnishObject(reader0, false);
+        ObjectPtr value = (*state0.slf)[state0.sym];
+        bool result = (value != nullptr);
+        state0.ret = garnishObject(reader0, result);
      });
      sys->put(Symbols::get()["slotCheck#"],
               defineMethod(unit, global, method,

@@ -172,24 +172,13 @@ ObjectPtr clone(ObjectPtr obj) {
     return ptr;
 }
 
-void _keys(list<ObjectPtr>& parents, set<Symbolic>& result, ObjectPtr obj) {
-    if (obj == nullptr)
-        return;
-    if (find_if(parents.begin(), parents.end(), [&obj](auto xx){
-                return xx == obj;
-            }) != parents.end())
-        return;
-    parents.push_back(obj);
-    auto curr = obj->directKeys();
-    for (auto elem : curr)
-        result.insert(elem);
-    _keys(parents, result, (*obj)[ Symbols::parent() ]);
-}
-
 set<Symbolic> keys(ObjectPtr obj) {
     set<Symbolic> result;
-    list<ObjectPtr> parents;
-    _keys(parents, result, obj);
+    for (ObjectPtr curr : hierarchy(obj)) {
+        for (auto elem : curr->directKeys()) {
+            result.insert(elem);
+        }
+    }
     return result;
 }
 
