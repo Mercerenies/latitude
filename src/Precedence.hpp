@@ -2,15 +2,27 @@
 #define PRECEDENCE_HPP
 
 #include "Proto.hpp"
+#include "Reader.hpp"
 
 constexpr int DEFAULT_PRECEDENCE = 0;
+
+enum class Associativity {
+    LEFT,
+    RIGHT,
+    NONE
+};
+
+struct OperatorData {
+    int precedence;
+    Associativity associativity;
+};
 
 class OperatorTable {
 private:
     ObjectPtr impl;
 public:
     explicit OperatorTable(ObjectPtr table);
-    int precedence(std::string op) const;
+    OperatorData lookup(std::string op) const;
 };
 
 #endif // PRECEDENCE_HPP
