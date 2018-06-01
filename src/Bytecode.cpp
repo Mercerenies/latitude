@@ -3,6 +3,7 @@
 #include "Garnish.hpp"
 #include "Standard.hpp"
 #include "Assembler.hpp"
+#include "Parents.hpp"
 #include "GC.hpp"
 
 //#define DEBUG_INSTR 1
@@ -633,24 +634,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "RTRV (" << Symbols::get()[state.sym] << ")" << endl;
 #endif
-        auto sym = Symbols::parent();
-        list<ObjectPtr> parents;
-        ObjectPtr curr = state.slf;
-        Symbolic name = state.sym;
-        Symbolic backup = state.sym;
-        ObjectPtr value = nullptr;
-        // Try to find the value itself
-        while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-            parents.push_back(curr);
-            ObjectPtr slot = (*curr)[name];
-            if (slot != nullptr) {
-                value = slot;
-                break;
-            }
-            curr = (*curr)[ sym ];
-            if (curr == nullptr)
-                break;
-        }
+        // Try to find the value itsel
+        ObjectPtr value = objectGet(state.slf, state.sym);
         if (value == nullptr) {
 #if DEBUG_INSTR > 2
             cout << "* Looking for missing" << endl;
@@ -662,21 +647,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #endif
 #endif
             // Now try for missing
-            name = Symbols::get()["missing"];
-            parents.clear();
-            curr = state.slf;
-            while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-                parents.push_back(curr);
-                ObjectPtr slot = (*curr)[name];
-                if (slot != nullptr) {
-                    value = slot;
-                    break;
-                }
-                curr = (*curr)[ sym ];
-                if (curr == nullptr)
-                    break;
-            }
-            state.ret = value;
+            value = objectGet(state.slf, Symbols::get()["missing"]);
 #if DEBUG_INSTR > 1
             if (value == nullptr)
                 cout << "* Found no missing" << endl;
@@ -686,42 +657,12 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             if (value == nullptr) {
                 ObjectPtr meta = nullptr;
                 // If there is no `missing` either, fall back to the last resort
-                name = Symbols::get()["meta"];
-                parents.clear();
                 if (!state.lex.empty()) {
-                    curr = state.lex.top();
-                    while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-                        parents.push_back(curr);
-                        ObjectPtr slot = (*curr)[name];
-                        if (slot != nullptr) {
-                            value = slot;
-                            break;
-                        }
-                        curr = (*curr)[ sym ];
-                        if (curr == nullptr)
-                            break;
-                    }
-                    state.ret = value;
-                }
-                if (value != nullptr) {
-                    curr = value;
+                    value = objectGet(state.lex.top(), Symbols::get()["meta"]);
                     meta = value;
-                    value = nullptr;
-                    parents.clear();
-                    name = Symbols::get()["missed"];
-                    while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-                        parents.push_back(curr);
-                        ObjectPtr slot = (*curr)[name];
-                        if (slot != nullptr) {
-                            value = slot;
-                            break;
-                        }
-                        curr = (*curr)[ sym ];
-                        if (curr == nullptr)
-                            break;
-                    }
-                    state.ret = value;
                 }
+                if (value != nullptr)
+                    value = objectGet(value, Symbols::get()["missed"]);
 #if DEBUG_INSTR > 1
                 if (value == nullptr)
                     cout << "* Found no missed" << endl;
@@ -739,7 +680,9 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
                     state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ZERO }));
                 }
             } else {
-                state.sym = backup;
+                //state.sym = backup;
+                state.ret = value;
+                //state.slf = state.slf;
                 state.stack = pushNode(state.stack, state.cont);
                 state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_MISSING }));
             }

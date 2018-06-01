@@ -1,5 +1,6 @@
 
 #include "Dump.hpp"
+#include "Parents.hpp"
 #include <boost/variant.hpp>
 #include <list>
 
@@ -54,22 +55,7 @@ struct DebugPrimVisitor : boost::static_visitor<std::string> {
 };
 
 std::string toStringInfo(ObjectPtr obj) {
-    auto sym = Symbols::parent();
-    std::list<ObjectPtr> parents;
-    ObjectPtr curr = obj;
-    Symbolic name = Symbols::get()["toString"];
-    ObjectPtr value = nullptr;
-    while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-        parents.push_back(curr);
-        ObjectPtr slot = (*curr)[name];
-        if (slot != nullptr) {
-            value = slot;
-            break;
-        }
-        curr = (*curr)[ sym ];
-        if (curr == nullptr)
-            break;
-    }
+    ObjectPtr value = objectGet(obj, Symbols::get()["toString"]);
     if (value == nullptr) {
         return "";
     } else if (std::string* curr = boost::get<std::string>(&value->prim())) {
