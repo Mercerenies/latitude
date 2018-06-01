@@ -10,6 +10,7 @@
 #include "Unicode.hpp"
 #include "Platform.hpp"
 #include "Dump.hpp"
+#include "Parents.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -1046,21 +1047,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     // origin#: self, sym.
     assert(reader.cpp.size() == CPP_ORIGIN);
     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
-        list<ObjectPtr> parents;
-        ObjectPtr curr = state0.slf;
-        Symbolic name = state0.sym;
-        ObjectPtr value = nullptr;
-        while (find(parents.begin(), parents.end(), curr) == parents.end()) {
-            parents.push_back(curr);
-            ObjectPtr slot = (*curr)[name];
-            if (slot != nullptr) {
-                value = curr;
-                break;
-            }
-            curr = (*curr)[ Symbols::parent() ];
-            if (curr == nullptr)
-                break;
-        }
+        ObjectPtr value = origin(state0.slf, state0.sym);
         if (value == nullptr) {
             throwError(state0, reader0, "SlotError", "Cannot find origin of nonexistent slot");
         } else {
