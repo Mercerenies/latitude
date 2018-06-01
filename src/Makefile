@@ -1,5 +1,5 @@
 
-FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o Optimizer.o CUnicode.o Protection.o Dump.o Parents.o
+FILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o Optimizer.o CUnicode.o Protection.o Dump.o Parents.o Precedence.o
 
 all:	Project
 
@@ -107,6 +107,9 @@ Protection.o:	Protection.cpp Protection.hpp
 
 Parents.o:	Parents.cpp Parents.hpp Proto.hpp Symbol.hpp
 	$(CXX) $(CXXFLAGS) Parents.cpp
+
+Precedence.o:	Precedence.cpp Precedence.hpp Proto.hpp Symbol.hpp
+	$(CXX) $(CXXFLAGS) Precedence.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp Protection.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
