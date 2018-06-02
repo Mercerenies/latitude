@@ -27,6 +27,25 @@ meta sigil := Object clone.
 meta operators := [=>].
 meta toString := "meta".
 
+;; Operator type
+global Operator := Object clone.
+Operator prec := 0.
+Operator assoc := 'left.
+Operator toString := {
+  curr := self.
+  if (curr === Operator) then {
+    "Operator".
+  } else {
+    "operator (" ++ curr prec ++ ", " ++ curr assoc ++ ")".
+  }.
+}.
+global operator := {
+  curr := Operator clone.
+  curr prec := $1.
+  curr assoc := $2.
+  curr.
+}.
+
 ;; Basics of exception handling
 Method handle := {
   meta sys handler#: #'$1.

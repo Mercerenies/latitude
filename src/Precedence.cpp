@@ -23,28 +23,54 @@ OperatorTable::OperatorTable(ObjectPtr table)
     : impl(table) {}
 
 OperatorData OperatorTable::lookup(std::string op) const {
+
     Symbolic name = Symbols::get()[op];
-    ObjectPtr result = objectGet(impl, name);
+    ObjectPtr val = objectGet(impl, name);
+
     // Doesn't exist? Fine, just use the default.
-    if (result == nullptr)
+    if (val == nullptr)
         return { DEFAULT_PRECEDENCE, Associativity::LEFT };
-    // We have the object; it had better be a small number in the range now.
-    if (auto value = boost::get<Number>(&result->prim())) {
+
+    // We have the object; it had better be what we're looking for.
+    OperatorData result;
+
+    // Let's find precedence
+    ObjectPtr prec = objectGet(val, Symbols::get()["prec"]);
+    if (prec == nullptr) {
+        result.precedence = DEFAULT_PRECEDENCE;
+    } else if (auto value = boost::get<Number>(&prec->prim())) {
         if (value->hierarchyLevel() > 0)
             throw std::string("Invalid operator table at " + op);
         auto value1 = value->asSmallInt();
         if ((value1 < MIN_PRECEDENCE) || (value1 > MAX_PRECEDENCE))
             throw std::string("Invalid operator table at " + op);
-        OperatorData result;
         result.precedence = (int)value1;
-        // Note: Everything is left associative at the moment. That
-        // may (will?) change in the future.
-        result.associativity = Associativity::LEFT;
-        return result;
     } else {
         // Not a number
         throw std::string("Invalid operator table at " + op);
     }
+
+    // Now associativity
+    ObjectPtr assoc = objectGet(val, Symbols::get()["assoc"]);
+    if (assoc == nullptr) {
+        result.associativity = Associativity::LEFT;
+    } else if (auto value = boost::get<Symbolic>(&assoc->prim())) {
+        std::string name = Symbols::get()[*value];
+        if (name == "left")
+            result.associativity = Associativity::LEFT;
+        else if (name == "right")
+            result.associativity = Associativity::RIGHT;
+        else if (name == "none")
+            result.associativity = Associativity::NONE;
+        else
+            throw std::string("Invalid operator table at " + op);
+    } else {
+        // Not a symbol
+        throw std::string("Invalid operator table at " + op);
+    }
+
+    return result;
+
 }
 
 std::list<op_pair_t> exprToSeq(Expr* expr) {
