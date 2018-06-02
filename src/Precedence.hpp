@@ -27,4 +27,6 @@ public:
 
 Expr* reorganizePrecedence(const OperatorTable& table, Expr* expr);
 
+OperatorTable getTable(ObjectPtr lex);
+
 #endif // PRECEDENCE_HPP

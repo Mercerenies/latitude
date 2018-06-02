@@ -148,3 +148,17 @@ Expr* reorganizePrecedence(const OperatorTable& table, Expr* expr) {
     // Dummy function for now
     return expr;
 } // Note: Please, please, please don't forget to set isOperator to false :)
+
+OperatorTable getTable(ObjectPtr lex) {
+
+    ObjectPtr meta = objectGet(lex, Symbols::get()["meta"]);
+    if (meta == nullptr)
+        throw "Could not find operator table";
+    ObjectPtr table = objectGet(meta, Symbols::get()["operators"]);
+    if (table == nullptr)
+        throw "Could not find operator table";
+    ObjectPtr impl = objectGet(meta, Symbols::get()["&impl"]);
+    if (impl == nullptr)
+        throw "Could not find operator table";
+    return OperatorTable(impl);
+}
