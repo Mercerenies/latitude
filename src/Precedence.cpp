@@ -59,9 +59,15 @@ std::list<op_pair_t> exprToSeq(Expr* expr) {
         temp->args = nullptr;
         cleanupE(temp);
     }
+    if (expr == nullptr) {
+        expr = makeExpr();
+        expr->isDummy = true;
+    }
     List* dummy = makeList();
     dummy->car = expr;
-    dummy->cdr = nullptr;
+    dummy->cdr = makeList();
+    dummy->cdr->car = nullptr;
+    dummy->cdr->cdr = nullptr;
     result.push_front({ dummy, op });
     return result;
 }
@@ -155,11 +161,11 @@ List* treeToList(OpTree* tree) {
         List* args = tree->leaf;
         delete tree;
         tree = nullptr;
-        if ((args != nullptr) && (args->car == nullptr)) {
-            // So I think this could maybe be an assertion failure. I
-            // don't think it should ever happen in the course of
-            // Latitude execution, whereas the equivalent error in
-            // treeToExpr could very well occur in normal use.
+        // So I think this could maybe be an assertion failure. I
+        // don't think it should ever happen in the course of
+        // Latitude execution, whereas the equivalent error in
+        // treeToExpr could very well occur in normal use.
+        if ((args->car) && (args->car->isDummy)) {
             throw std::string("Invalid implied argument on right-hand-side of operator");
         }
         return args;
@@ -168,7 +174,9 @@ List* treeToList(OpTree* tree) {
         Expr* expr = treeToExpr(tree);
         List* list = makeList();
         list->car = expr;
-        list->cdr = nullptr;
+        list->cdr = makeList();
+        list->cdr->car = nullptr;
+        list->cdr->cdr = nullptr;
         return list;
     }
 }
@@ -180,11 +188,17 @@ Expr* treeToExpr(OpTree* tree) {
         delete tree;
         tree = nullptr;
         // Must be of length 1
-        if ((args == nullptr) || (args->cdr != nullptr))
+        if ((!args->car) && (!args->cdr))
+            throw std::string("Invalid argument list on left-hand-side of operator");
+        if ((args->cdr->car) || (args->cdr->cdr))
             throw std::string("Invalid argument list on left-hand-side of operator");
         Expr* result = args->car;
         args->car = nullptr;
         cleanupL(args);
+        if (result->isDummy) {
+            cleanupE(result);
+            result = nullptr;
+        }
         return result;
     } else {
         // Branch
@@ -199,9 +213,11 @@ Expr* treeToExpr(OpTree* tree) {
 }
 
 Expr* reorganizePrecedence(const OperatorTable& table, Expr* expr) {
-    // Dummy function for now
-    return expr;
-} // Note: Please, please, please don't forget to set isOperator to false :)
+    auto seq = exprToSeq(expr);
+    auto tree = seqToTree(seq, table);
+    auto result = treeToExpr(tree);
+    return result;
+}
 
 OperatorTable getTable(ObjectPtr lex) {
 
