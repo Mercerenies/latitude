@@ -5,6 +5,16 @@
 #include "Parents.hpp"
 #include "Reader.hpp"
 
+// Simple binary tree data structure for intermediate results.
+// Branches do not have data, so a node will either have a List* OR a
+// left/right, not both.
+struct OpTree {
+    List* leaf;
+    std::string name;
+    OpTree* left;
+    OpTree* right;
+};
+
 // An empty string signals the end of input
 using op_pair_t = std::pair<List*, std::string>;
 
@@ -54,3 +64,87 @@ std::list<op_pair_t> exprToSeq(Expr* expr) {
     result.push_front({ dummy, op });
     return result;
 }
+
+bool shouldPop(const std::stack< std::pair<std::string, OperatorData> >& ops,
+               const std::pair<std::string, OperatorData>& curr) {
+    if (ops.empty())
+        return false;
+    auto& top = ops.top();
+    if (top.second.precedence > curr.second.precedence) {
+        return true;
+    } else if (top.second.precedence < curr.second.precedence) {
+        return false;
+    } else {
+        if (top.second.associativity != curr.second.associativity) {
+            std::ostringstream err;
+            err << "Operators " << top.first << " and " << curr.first
+                << " have contradictory associativity";
+            throw err.str();
+        } else {
+            switch (top.second.associativity) {
+            case Associativity::LEFT:
+                return true;
+            case Associativity::RIGHT:
+                return false;
+            case Associativity::NONE:
+                {
+                    std::ostringstream err;
+                    err << "Operators " << top.first << " and " << curr.first
+                        << " do not associate";
+                    throw err.str();
+                }
+            default:
+                assert(false); // Pleeeeeeeease don't run this line of code :)
+            }
+        }
+    }
+}
+
+void doPop(std::stack< std::pair<std::string, OperatorData> >& ops,
+           std::stack<OpTree*>& nodes) {
+    assert(!ops.empty());
+    std::string popped = ops.top().first;
+    ops.pop();
+    assert(!nodes.empty());
+    OpTree* rhs = nodes.top();
+    nodes.pop();
+    assert(!nodes.empty());
+    OpTree* lhs = nodes.top();
+    nodes.pop();
+    OpTree* node = new OpTree();
+    node->name = popped;
+    node->left = lhs;
+    node->right = rhs;
+    nodes.push(node);
+}
+
+OpTree* seqToTree(std::list<op_pair_t>& seq, const OperatorTable& table) {
+    std::stack<OpTree*> nodes;
+    std::stack< std::pair<std::string, OperatorData> > ops;
+    for (auto& elem : seq) {
+        OpTree* op = new OpTree();
+        op->leaf = elem.first;
+        nodes.push(op);
+        if (elem.second != "") {
+            std::pair<std::string, OperatorData> curr = { elem.second, table.lookup(elem.second) };
+            while (shouldPop(ops, curr)) {
+                doPop(ops, nodes);
+            }
+            ops.push(curr);
+        }
+    }
+    while (!ops.empty()) {
+        doPop(ops, nodes);
+    }
+    // By this point, we should have exactly one node: the expression node.
+    assert(nodes.size() == 1);
+    // Great! Then pop it.
+    OpTree* result = nodes.top();
+    nodes.pop();
+    return result;
+}
+
+Expr* reorganizePrecedence(const OperatorTable& table, Expr* expr) {
+    // Dummy function for now
+    return expr;
+} // Note: Please, please, please don't forget to set isOperator to false :)

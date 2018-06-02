@@ -108,7 +108,7 @@ Protection.o:	Protection.cpp Protection.hpp
 Parents.o:	Parents.cpp Parents.hpp Proto.hpp Symbol.hpp
 	$(CXX) $(CXXFLAGS) Parents.cpp
 
-Precedence.o:	Precedence.cpp Precedence.hpp Proto.hpp Symbol.hpp
+Precedence.o:	Precedence.cpp Precedence.hpp Proto.hpp Symbol.hpp Parser.tab.c
 	$(CXX) $(CXXFLAGS) Precedence.cpp
 
 main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp Protection.hpp
