@@ -53,6 +53,7 @@ list< unique_ptr<Stmt> > translateList(const OperatorTable& table, List* list, b
 
 unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr* expr, bool held) {
     int line = expr->line;
+    assert(!expr->isDummy);
     if (expr->isWrapper) {
         // Has no actual effect; blocks parsing of operator table in parenthesized cases
         return translateStmt(table, expr->lhs, held);

@@ -73,6 +73,7 @@
         bool isDict; // Check args (in expressions, check lhs and rhs)
         bool isWrapper; // Check lhs
         bool isOperator; // Like a call, but will use the precedence table
+        bool isDummy; // Check nothing (used in operator resolution; should not hit the parser)
     };
 
     struct List {
