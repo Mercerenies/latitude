@@ -157,7 +157,7 @@ OperatorTable getTable(ObjectPtr lex) {
     ObjectPtr table = objectGet(meta, Symbols::get()["operators"]);
     if (table == nullptr)
         throw "Could not find operator table";
-    ObjectPtr impl = objectGet(meta, Symbols::get()["&impl"]);
+    ObjectPtr impl = objectGet(table, Symbols::get()["&impl"]);
     if (impl == nullptr)
         throw "Could not find operator table";
     return OperatorTable(impl);

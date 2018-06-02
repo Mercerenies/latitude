@@ -5,6 +5,7 @@ extern "C" {
 }
 #include "Bytecode.hpp"
 #include "Proto.hpp"
+#include "Precedence.hpp"
 #include <memory>
 #include <functional>
 #include <list>
@@ -35,7 +36,7 @@ struct Scope {
 
 extern "C" void setCurrentLine(List* stmt);
 PtrToList getCurrentLine();
-std::list< std::unique_ptr<Stmt> > translateCurrentLine();
+std::list< std::unique_ptr<Stmt> > translateCurrentLine(const OperatorTable& table);
 void clearCurrentLine() noexcept;
 
 /*
@@ -44,15 +45,30 @@ void clearCurrentLine() noexcept;
  * to use `eval`, which captures these parse errors and rethrows them
  * as `ProtoError` objects.
  */
-std::list< std::unique_ptr<Stmt> > parse(std::string filename, std::string str);
+std::list< std::unique_ptr<Stmt> > parse(const OperatorTable& table, std::string filename, std::string str);
 
-bool eval(IntState& state, const ReadOnlyState& reader, std::string str);
+bool eval(IntState& state,
+          const ReadOnlyState& reader,
+          const OperatorTable& table,
+          std::string str);
 
-bool readFileSource(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
+bool readFileSource(std::string fname,
+                    Scope defScope,
+                    IntState& state,
+                    const ReadOnlyState& reader,
+                    const OperatorTable& table);
 
-bool compileFile(std::string fname, std::string fname1, IntState& state, const ReadOnlyState& reader);
+bool compileFile(std::string fname,
+                 std::string fname1,
+                 IntState& state,
+                 const ReadOnlyState& reader,
+                 const OperatorTable& table);
 
-bool readFile(std::string fname, Scope defScope, IntState& state, const ReadOnlyState& reader);
+bool readFile(std::string fname,
+              Scope defScope,
+              IntState& state,
+              const ReadOnlyState& reader,
+              const OperatorTable& table);
 
 /*
  * A statement. Defines only one method, which executes

@@ -48,14 +48,14 @@ PtrToList getCurrentLine() {
     return std::move(currentLine);
 }
 
-unique_ptr<Stmt> translateStmt(Expr* expr, bool held);
-list< unique_ptr<Stmt> > translateList(List* list, bool held);
+unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr* expr, bool held);
+list< unique_ptr<Stmt> > translateList(const OperatorTable& table, List* list, bool held);
 
-unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
+unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr* expr, bool held) {
     int line = expr->line;
     if (expr->isWrapper) {
         // Has no actual effect; blocks parsing of operator table in parenthesized cases
-        return translateStmt(expr->lhs, held);
+        return translateStmt(table, expr->lhs, held);
     } else if (expr->isSymbol) {
         assert(expr->namelen >= 0);
         return unique_ptr<Stmt>(new StmtSymbol(line, { expr->name, (unsigned long)expr->namelen }));
@@ -69,13 +69,13 @@ unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
     } else if (expr->isBigInt) {
         return unique_ptr<Stmt>(new StmtBigInteger(line, expr->name));
     } else if (expr->isList) {
-        auto args = expr->args ? translateList(expr->args, held) : list< unique_ptr<Stmt> >();
+        auto args = expr->args ? translateList(table, expr->args, held) : list< unique_ptr<Stmt> >();
         return unique_ptr<Stmt>(new StmtList(line, args));
     } else if (expr->isSigil) {
         // Recall that sigil names are verified to start with a ~ in the parser
         assert(expr->name[0] == '~');
         std::string name = expr->name + 1;
-        return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(expr->rhs, held)));
+        return unique_ptr<Stmt>(new StmtSigil(line, name, translateStmt(table, expr->rhs, held)));
     } else if (expr->isZeroDispatch) {
         const char* name = expr->name;
         if (name[0] == '0')
@@ -83,13 +83,13 @@ unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
         else
             return unique_ptr<Stmt>(new StmtZeroDispatch(line, name[2], name[0], name + 3));
     } else if (expr->isMethod) {
-        auto contents0 = translateList(expr->args, held);
+        auto contents0 = translateList(table, expr->args, held);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
         transform(contents0.begin(), contents0.end(), contents1.begin(),
                   [](auto& cc) { return move(cc); });
         return unique_ptr<Stmt>(new StmtMethod(line, contents1));
     } else if (expr->isSpecialMethod) {
-        auto contents0 = translateList(expr->args, held);
+        auto contents0 = translateList(table, expr->args, held);
         list< shared_ptr<Stmt> > contents1( contents0.size() );
         transform(contents0.begin(), contents0.end(), contents1.begin(),
                   [](auto& cc) { return move(cc); });
@@ -97,58 +97,59 @@ unique_ptr<Stmt> translateStmt(Expr* expr, bool held) {
     } else if (expr->isComplex) {
         return unique_ptr<Stmt>(new StmtComplex(line, expr->number, expr->number1));
     } else if (expr->equals) {
-        auto rhs = translateStmt(expr->rhs, held);
+        auto rhs = translateStmt(table, expr->rhs, held);
         auto func = expr->name;
-        auto lhs = expr->lhs ? translateStmt(expr->lhs, held) : unique_ptr<Stmt>();
+        auto lhs = expr->lhs ? translateStmt(table, expr->lhs, held) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtEqual(line, lhs, func, rhs));
     } else if (expr->equals2) {
-        auto rhs = translateStmt(expr->rhs, held);
+        auto rhs = translateStmt(table, expr->rhs, held);
         auto func = expr->name;
-        auto lhs = expr->lhs ? translateStmt(expr->lhs, held) : unique_ptr<Stmt>();
+        auto lhs = expr->lhs ? translateStmt(table, expr->lhs, held) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtDoubleEqual(line, lhs, func, rhs));
     } else if (expr->isHashQuote) {
-        return translateStmt(expr->lhs, true);
+        return translateStmt(table, expr->lhs, true);
     } else if (expr->isDict) {
         auto list = expr->args;
         StmtDict::KVList res;
         while ((list->car != nullptr) && (list->cdr != nullptr)) {
-            res.emplace_back(std::move(translateStmt(list->car->lhs, held)), std::move(translateStmt(list->car->rhs, held)));
+            res.emplace_back(std::move(translateStmt(table, list->car->lhs, held)),
+                             std::move(translateStmt(table, list->car->rhs, held)));
             list = list->cdr;
         }
         return unique_ptr<Stmt>(new StmtDict(line, res));
     } else {
-        auto args = expr->args ? translateList(expr->args, held) : list< unique_ptr<Stmt> >();
+        auto args = expr->args ? translateList(table, expr->args, held) : list< unique_ptr<Stmt> >();
         string func;
         if (expr->isBind) {
             func = "<-";
-            args.push_front(translateStmt(expr->rhs, held));
+            args.push_front(translateStmt(table, expr->rhs, held));
             args.push_front(unique_ptr<Stmt>(new StmtSymbol(line, expr->name)));
         } else {
             func = expr->name;
             if (expr->isEquality) {
-                args.push_back(translateStmt(expr->rhs, held));
+                args.push_back(translateStmt(table, expr->rhs, held));
                 func = func + "=";
             }
         }
-        auto lhs = expr->lhs ? translateStmt(expr->lhs, held) : unique_ptr<Stmt>();
+        auto lhs = expr->lhs ? translateStmt(table, expr->lhs, held) : unique_ptr<Stmt>();
         return unique_ptr<Stmt>(new StmtCall(line, lhs, func, args, expr->argsProvided || !held));
     }
 }
 
-list< unique_ptr<Stmt> > translateList(List* lst, bool held) {
+list< unique_ptr<Stmt> > translateList(const OperatorTable& table, List* lst, bool held) {
     if ((lst->car == nullptr) || (lst->cdr == nullptr)) {
         return list< unique_ptr<Stmt> >();
     } else {
-        auto head = translateStmt(lst->car, held);
-        auto tail = translateList(lst->cdr, held);
+        auto head = translateStmt(table, lst->car, held);
+        auto tail = translateList(table, lst->cdr, held);
         tail.push_front(move(head));
         return tail;
     }
 }
 
-list< unique_ptr<Stmt> > translateCurrentLine() {
+list< unique_ptr<Stmt> > translateCurrentLine(const OperatorTable& table) {
     if (currentLine)
-        return translateList(currentLine.get(), false);
+        return translateList(table, currentLine.get(), false);
     else
         return list< unique_ptr<Stmt> >();
 }
@@ -157,7 +158,9 @@ void clearCurrentLine() noexcept {
     currentLine.reset();
 }
 
-std::list< std::unique_ptr<Stmt> > parse(std::string filename, std::string str) {
+std::list< std::unique_ptr<Stmt> > parse(const OperatorTable& table,
+                                         std::string filename,
+                                         std::string str) {
     const char* buffer = str.c_str();
     auto curr = yy_scan_string(buffer);
     auto& g_filename = ::filename;
@@ -171,14 +174,17 @@ std::list< std::unique_ptr<Stmt> > parse(std::string filename, std::string str) 
     hash_parens = 0;
     yyparse();
     yy_delete_buffer(curr);
-    auto result = translateCurrentLine();
+    auto result = translateCurrentLine(table);
     clearCurrentLine();
     return result;
 }
 
-bool eval(IntState& state, const ReadOnlyState& reader, string str) {
+bool eval(IntState& state,
+          const ReadOnlyState& reader,
+          const OperatorTable& table,
+          string str) {
     try {
-        auto result = parse("(eval)", str);
+        auto result = parse(table, "(eval)", str);
         if (!result.empty()) {
             TranslationUnitPtr unit = make_shared<TranslationUnit>();
             InstrSeq toplevel;
@@ -200,7 +206,11 @@ bool eval(IntState& state, const ReadOnlyState& reader, string str) {
     return true;
 }
 
-bool readFileSource(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
+bool readFileSource(string fname,
+                    Scope defScope,
+                    IntState& state,
+                    const ReadOnlyState& reader,
+                    const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Loading " << fname << "..." << endl;
 #endif
@@ -214,7 +224,7 @@ bool readFileSource(string fname, Scope defScope, IntState& state, const ReadOnl
         stringstream str;
         while ((file >> str.rdbuf()).good());
         try {
-            auto stmts = parse(fname, str.str());
+            auto stmts = parse(table, fname, str.str());
             for (auto& stmt : stmts)
                 stmt->propogateFileName(fname);
             list< shared_ptr<Stmt> > stmts1;
@@ -348,7 +358,11 @@ TranslationUnitPtr loadFromFile(ifstream& file) {
     return result;
 }
 
-bool compileFile(string fname, string fname1, IntState& state, const ReadOnlyState& reader) {
+bool compileFile(string fname,
+                 string fname1,
+                 IntState& state,
+                 const ReadOnlyState& reader,
+                 const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
 #endif
@@ -362,7 +376,7 @@ bool compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
         stringstream str;
         while ((file >> str.rdbuf()).good());
         try {
-            auto stmts = parse(fname, str.str());
+            auto stmts = parse(table, fname, str.str());
             for (auto& stmt : stmts)
                 stmt->propogateFileName(fname);
             list< shared_ptr<Stmt> > stmts1;
@@ -393,7 +407,11 @@ bool compileFile(string fname, string fname1, IntState& state, const ReadOnlySta
     return true;
 }
 
-bool readFileComp(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
+bool readFileComp(string fname,
+                  Scope defScope,
+                  IntState& state,
+                  const ReadOnlyState& reader,
+                  const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Loading (compiled) " << fname << "..." << endl;
 #endif
@@ -451,15 +469,19 @@ bool needsRecompile(string fname, string cname) {
 
 }
 
-bool readFile(string fname, Scope defScope, IntState& state, const ReadOnlyState& reader) {
+bool readFile(string fname,
+              Scope defScope,
+              IntState& state,
+              const ReadOnlyState& reader,
+              const OperatorTable& table) {
     bool okay = true;
     string cname = fname + "c";
     if (needsRecompile(fname, cname)) {
-        okay &= compileFile(fname, cname, state, reader);
+        okay &= compileFile(fname, cname, state, reader, table);
     }
     // readFileSource(fname, defScope, state, reader);
     if (okay)
-        okay &= readFileComp(cname, defScope, state, reader);
+        okay &= readFileComp(cname, defScope, state, reader, table);
     return okay;
 }
 

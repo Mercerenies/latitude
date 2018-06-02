@@ -5,14 +5,17 @@
 #include "Standard.hpp"
 #include "Reader.hpp"
 #include "Pathname.hpp"
+#include "Precedence.hpp"
 #include <string>
 
 using namespace std;
 
 void runREPL(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
 
+    OperatorTable table = getTable(global);
+
     string pathname = stripFilename(getExecutablePathname());
-    readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, state, reader);
+    readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, state, reader, table);
 
     while (!isIdling(state))
         doOneStep(state, reader);
@@ -20,8 +23,10 @@ void runREPL(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
 
 void runRunner(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
 
+    OperatorTable table = getTable(global);
+
     string pathname = stripFilename(getExecutablePathname());
-    readFile(pathname + "std/runner.lats", { clone(global), clone(global) }, state, reader);
+    readFile(pathname + "std/runner.lats", { clone(global), clone(global) }, state, reader, table);
 
     while (!isIdling(state))
         doOneStep(state, reader);
@@ -29,8 +34,10 @@ void runRunner(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
 
 void runCompiler(ObjectPtr global, IntState& state, ReadOnlyState& reader) {
 
+    OperatorTable table = getTable(global);
+
     string pathname = stripFilename(getExecutablePathname());
-    readFile(pathname + "std/compiler.lats", { clone(global), clone(global) }, state, reader);
+    readFile(pathname + "std/compiler.lats", { clone(global), clone(global) }, state, reader, table);
 
     while (!isIdling(state))
         doOneStep(state, reader);
