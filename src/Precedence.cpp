@@ -153,6 +153,8 @@ List* treeToList(OpTree* tree) {
     if (tree->isLeaf) {
         // Leaf node
         List* args = tree->leaf;
+        delete tree;
+        tree = nullptr;
         if ((args != nullptr) && (args->car == nullptr)) {
             // So I think this could maybe be an assertion failure. I
             // don't think it should ever happen in the course of
@@ -175,6 +177,8 @@ Expr* treeToExpr(OpTree* tree) {
     if (tree->isLeaf) {
         // Leaf node
         List* args = tree->leaf;
+        delete tree;
+        tree = nullptr;
         // Must be of length 1
         if ((args == nullptr) || (args->cdr != nullptr))
             throw "Invalid argument list on left-hand-side of operator";
@@ -189,6 +193,7 @@ Expr* treeToExpr(OpTree* tree) {
         expr->args = treeToList(tree->right);
         expr->name = (char*)malloc(tree->name.length() + 1);
         strcpy(expr->name, tree->name.c_str());
+        delete tree;
         return expr;
     }
 }
