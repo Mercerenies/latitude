@@ -24,6 +24,7 @@ global $whereAmI := Nil.
 
 ;; Stuff that needs to exist in `meta`
 meta sigil := Object clone.
+meta operators := [=>].
 meta toString := "meta".
 
 ;; Basics of exception handling

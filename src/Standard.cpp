@@ -2724,6 +2724,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     ObjectPtr false_(clone(boolean));
 
     ObjectPtr argv_(clone(object));
+    ObjectPtr fresh(clone(object));
 
     // Global calls for basic types
     global->put(Symbols::get()["Object"], object);
@@ -2756,12 +2757,17 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     object->put(Symbols::get()["meta"], meta);
     meta->put(Symbols::get()["sys"], sys);
     global->put(Symbols::get()["err"], err);
+    // (This one will be replaced fairly early in the load process but
+    // needs to have a value at least)
+    meta->put(Symbols::get()["operators"], dict);
 
     // Meta Protection
     meta->addProtection(Symbols::get()["meta"], Protection::PROTECT_DELETE);
     object->addProtection(Symbols::get()["meta"], Protection::PROTECT_DELETE);
     meta->addProtection(Symbols::get()["sys"],
                         Protection::PROTECT_DELETE | Protection::PROTECT_ASSIGN);
+    meta->addProtection(Symbols::get()["operators"],
+                        Protection::PROTECT_DELETE);
 
     // Global variables not accessible in meta
     global->put(Symbols::get()["stdin"], stdin_);
@@ -2788,6 +2794,10 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
     // argv
     global->put(Symbols::get()["$argv"], argv_);
     bindArgv(argv_, string, argc, argv);
+
+    // Dictionary setup
+    fresh->remove(Symbols::parent());
+    dict->put(Symbols::get()["&impl"], fresh);
 
     // Spawn the literal objects table
     assert(reader.lit.size() == Lit::NIL   );

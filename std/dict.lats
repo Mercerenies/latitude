@@ -10,7 +10,6 @@ Dict toString := {
     "[" ++ content ++ "]".
   }.
 }.
-Dict &impl := meta sys freshObject#.
 
 Dict empty := {
   self clone.
