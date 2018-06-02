@@ -2,7 +2,6 @@
 #define PRECEDENCE_HPP
 
 #include "Proto.hpp"
-#include "Reader.hpp"
 
 constexpr int DEFAULT_PRECEDENCE = 0;
 

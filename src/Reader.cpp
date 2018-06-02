@@ -13,6 +13,7 @@ extern "C" {
 #include "Assembler.hpp"
 #include "Optimizer.hpp"
 #include "Pathname.hpp"
+#include "Precedence.hpp"
 #include <cstdio>
 #include <cctype>
 #include <list>

@@ -1,6 +1,12 @@
 
+#include <utility>
+#include <list>
 #include "Precedence.hpp"
 #include "Parents.hpp"
+#include "Reader.hpp"
+
+// An empty string signals the end of input
+using op_pair_t = std::pair<List*, std::string>;
 
 OperatorTable::OperatorTable(ObjectPtr table)
     : impl(table) {}
@@ -28,4 +34,23 @@ OperatorData OperatorTable::lookup(std::string op) const {
         // Not a number
         throw ("Invalid operator table at " + op);
     }
+}
+
+std::list<op_pair_t> exprToSeq(Expr* expr) {
+    std::list<op_pair_t> result;
+    std::string op = "";
+    while ((expr != nullptr) && (expr->isOperator)) {
+        result.push_front({ expr->args, op });
+        op = std::string(expr->name);
+        Expr* temp = expr;
+        expr = expr->lhs;
+        temp->lhs = nullptr;
+        temp->args = nullptr;
+        cleanupE(temp);
+    }
+    List* dummy = makeList();
+    dummy->car = expr;
+    dummy->cdr = nullptr;
+    result.push_front({ dummy, op });
+    return result;
 }
