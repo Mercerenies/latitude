@@ -31,10 +31,10 @@ OperatorData OperatorTable::lookup(std::string op) const {
     // We have the object; it had better be a small number in the range now.
     if (auto value = boost::get<Number>(&result->prim())) {
         if (value->hierarchyLevel() > 0)
-            throw ("Invalid operator table at " + op);
+            throw std::string("Invalid operator table at " + op);
         auto value1 = value->asSmallInt();
         if ((value1 < 0) || (value1 >= 256))
-            throw ("Invalid operator table at " + op);
+            throw std::string("Invalid operator table at " + op);
         OperatorData result;
         result.precedence = (int)value1;
         // Note: Everything is left associative at the moment. That
@@ -43,7 +43,7 @@ OperatorData OperatorTable::lookup(std::string op) const {
         return result;
     } else {
         // Not a number
-        throw ("Invalid operator table at " + op);
+        throw std::string("Invalid operator table at " + op);
     }
 }
 
@@ -160,7 +160,7 @@ List* treeToList(OpTree* tree) {
             // don't think it should ever happen in the course of
             // Latitude execution, whereas the equivalent error in
             // treeToExpr could very well occur in normal use.
-            throw "Invalid implied argument on right-hand-side of operator";
+            throw std::string("Invalid implied argument on right-hand-side of operator");
         }
         return args;
     } else {
@@ -181,7 +181,7 @@ Expr* treeToExpr(OpTree* tree) {
         tree = nullptr;
         // Must be of length 1
         if ((args == nullptr) || (args->cdr != nullptr))
-            throw "Invalid argument list on left-hand-side of operator";
+            throw std::string("Invalid argument list on left-hand-side of operator");
         Expr* result = args->car;
         args->car = nullptr;
         cleanupL(args);
@@ -207,12 +207,12 @@ OperatorTable getTable(ObjectPtr lex) {
 
     ObjectPtr meta = objectGet(lex, Symbols::get()["meta"]);
     if (meta == nullptr)
-        throw "Could not find operator table";
+        throw std::string("Could not find operator table");
     ObjectPtr table = objectGet(meta, Symbols::get()["operators"]);
     if (table == nullptr)
-        throw "Could not find operator table";
+        throw std::string("Could not find operator table");
     ObjectPtr impl = objectGet(table, Symbols::get()["&impl"]);
     if (impl == nullptr)
-        throw "Could not find operator table";
+        throw std::string("Could not find operator table");
     return OperatorTable(impl);
 }
