@@ -6,6 +6,9 @@
 
 constexpr int DEFAULT_PRECEDENCE = 0;
 
+constexpr int MIN_PRECEDENCE = 0;
+constexpr int MAX_PRECEDENCE = 255;
+
 enum class Associativity {
     LEFT,
     RIGHT,

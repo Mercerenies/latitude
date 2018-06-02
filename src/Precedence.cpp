@@ -33,7 +33,7 @@ OperatorData OperatorTable::lookup(std::string op) const {
         if (value->hierarchyLevel() > 0)
             throw std::string("Invalid operator table at " + op);
         auto value1 = value->asSmallInt();
-        if ((value1 < 0) || (value1 >= 256))
+        if ((value1 < MIN_PRECEDENCE) || (value1 > MAX_PRECEDENCE))
             throw std::string("Invalid operator table at " + op);
         OperatorData result;
         result.precedence = (int)value1;
