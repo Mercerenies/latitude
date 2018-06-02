@@ -9,6 +9,7 @@
 // Branches do not have data, so a node will either have a List* OR a
 // left/right, not both.
 struct OpTree {
+    bool isLeaf;
     List* leaf;
     std::string name;
     OpTree* left;
@@ -123,6 +124,7 @@ OpTree* seqToTree(std::list<op_pair_t>& seq, const OperatorTable& table) {
     std::stack< std::pair<std::string, OperatorData> > ops;
     for (auto& elem : seq) {
         OpTree* op = new OpTree();
+        op->isLeaf = true;
         op->leaf = elem.first;
         nodes.push(op);
         if (elem.second != "") {
@@ -142,6 +144,53 @@ OpTree* seqToTree(std::list<op_pair_t>& seq, const OperatorTable& table) {
     OpTree* result = nodes.top();
     nodes.pop();
     return result;
+}
+
+List* treeToList(OpTree* tree);
+Expr* treeToExpr(OpTree* tree);
+
+List* treeToList(OpTree* tree) {
+    if (tree->isLeaf) {
+        // Leaf node
+        List* args = tree->leaf;
+        if ((args != nullptr) && (args->car == nullptr)) {
+            // So I think this could maybe be an assertion failure. I
+            // don't think it should ever happen in the course of
+            // Latitude execution, whereas the equivalent error in
+            // treeToExpr could very well occur in normal use.
+            throw "Invalid implied argument on right-hand-side of operator";
+        }
+        return args;
+    } else {
+        // Branch
+        Expr* expr = treeToExpr(tree);
+        List* list = makeList();
+        list->car = expr;
+        list->cdr = nullptr;
+        return list;
+    }
+}
+
+Expr* treeToExpr(OpTree* tree) {
+    if (tree->isLeaf) {
+        // Leaf node
+        List* args = tree->leaf;
+        // Must be of length 1
+        if ((args == nullptr) || (args->cdr != nullptr))
+            throw "Invalid argument list on left-hand-side of operator";
+        Expr* result = args->car;
+        args->car = nullptr;
+        cleanupL(args);
+        return result;
+    } else {
+        // Branch
+        Expr* expr = makeExpr();
+        expr->lhs = treeToExpr(tree->left);
+        expr->args = treeToList(tree->right);
+        expr->name = (char*)malloc(tree->name.length() + 1);
+        strcpy(expr->name, tree->name.c_str());
+        return expr;
+    }
 }
 
 Expr* reorganizePrecedence(const OperatorTable& table, Expr* expr) {
