@@ -71,3 +71,5 @@ meta operators get '-   = operator (35, 'left ).
 meta operators get '/   = operator (40, 'left ).
 meta operators get '*   = operator (45, 'left ).
 meta operators get '^   = operator (50, 'right).
+
+;; ///// Need to document all this, then merge
