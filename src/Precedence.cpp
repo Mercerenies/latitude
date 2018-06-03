@@ -5,19 +5,24 @@
 #include "Parents.hpp"
 #include "Reader.hpp"
 
+struct ListElem {
+    List* list;
+    bool provided;
+};
+
 // Simple binary tree data structure for intermediate results.
 // Branches do not have data, so a node will either have a List* OR a
 // left/right, not both.
 struct OpTree {
     bool isLeaf;
-    List* leaf;
+    ListElem leaf;
     std::string name;
     OpTree* left;
     OpTree* right;
 };
 
 // An empty string signals the end of input
-using op_pair_t = std::pair<List*, std::string>;
+using op_pair_t = std::pair<ListElem, std::string>;
 
 OperatorTable::OperatorTable(ObjectPtr table)
     : impl(table) {}
@@ -77,13 +82,14 @@ std::list<op_pair_t> exprToSeq(Expr* expr) {
     std::list<op_pair_t> result;
     std::string op = "";
     while ((expr != nullptr) && (expr->isOperator)) {
-        result.push_front({ expr->args, op });
+        result.push_front({ { expr->args, expr->argsProvided }, op });
         op = std::string(expr->name);
         Expr* temp = expr;
         expr = expr->lhs;
+        assert(temp->rhs == nullptr);
         temp->lhs = nullptr;
         temp->args = nullptr;
-        cleanupE(temp);
+        //cleanupE(temp);
     }
     if (expr == nullptr) {
         expr = makeExpr();
@@ -94,7 +100,7 @@ std::list<op_pair_t> exprToSeq(Expr* expr) {
     dummy->cdr = makeList();
     dummy->cdr->car = nullptr;
     dummy->cdr->cdr = nullptr;
-    result.push_front({ dummy, op });
+    result.push_front({ { dummy, true }, op });
     return result;
 }
 
@@ -178,20 +184,20 @@ OpTree* seqToTree(std::list<op_pair_t>& seq, const OperatorTable& table) {
     return result;
 }
 
-List* treeToList(OpTree* tree);
-Expr* treeToExpr(OpTree* tree);
+ListElem treeToList(OpTree* tree);
+Expr*    treeToExpr(OpTree* tree);
 
-List* treeToList(OpTree* tree) {
+ListElem treeToList(OpTree* tree) {
     if (tree->isLeaf) {
         // Leaf node
-        List* args = tree->leaf;
+        ListElem args = tree->leaf;
         delete tree;
         tree = nullptr;
         // So I think this could maybe be an assertion failure. I
         // don't think it should ever happen in the course of
         // Latitude execution, whereas the equivalent error in
         // treeToExpr could very well occur in normal use.
-        if ((args->car) && (args->car->isDummy)) {
+        if ((args.list->car) && (args.list->car->isDummy)) {
             throw std::string("Invalid implied argument on right-hand-side of operator");
         }
         return args;
@@ -203,14 +209,14 @@ List* treeToList(OpTree* tree) {
         list->cdr = makeList();
         list->cdr->car = nullptr;
         list->cdr->cdr = nullptr;
-        return list;
+        return { list, true };
     }
 }
 
 Expr* treeToExpr(OpTree* tree) {
     if (tree->isLeaf) {
         // Leaf node
-        List* args = tree->leaf;
+        List* args = tree->leaf.list; // Don't care if args provided because we're a LHS, not a RHS
         delete tree;
         tree = nullptr;
         // Must be of length 1
@@ -230,7 +236,9 @@ Expr* treeToExpr(OpTree* tree) {
         // Branch
         Expr* expr = makeExpr();
         expr->lhs = treeToExpr(tree->left);
-        expr->args = treeToList(tree->right);
+        auto temp = treeToList(tree->right);
+        expr->args = temp.list;
+        expr->argsProvided = temp.provided;
         expr->name = (char*)malloc(tree->name.length() + 1);
         strcpy(expr->name, tree->name.c_str());
         delete tree;
