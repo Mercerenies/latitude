@@ -45,5 +45,5 @@ returns whether `object` contains `target` in its inheritance
 hierarchy.
 
 [[up](.)]
-<br/>[[prev - The Root Object](object.md)]
+<br/>[[prev - The Operator Object](operator.md)]
 <br/>[[next - The Procedure Object](proc.md)]

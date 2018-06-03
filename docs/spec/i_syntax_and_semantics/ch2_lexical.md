@@ -266,6 +266,36 @@ Finally, an additional type of line comment is allowed. If a line
 begins with `#!` then that entire line will be ignored by the parser.
 This allows Unix-style shebang lines at the start of the file.
 
+## Operator Precedence
+
+Latitude has a notion of operator precedence which can be customized
+at runtime. When a new file is loaded or a string is evaluated, the
+current operator table is accessed through the `operators` slot on the
+current lexical meta object. This slot should contain a dictionary.
+Each value of this dictionary shall have slots `prec` and `assoc`
+defined on it, to the specification of
+the [`Operator`](../ii_standard_library/operator.md) object.
+
+Whenever a chain of operators is encountered, the precedence rules are
+considered. Operators with higher precedence will bind more tightly
+than those with low precedence. Operators with the same precedence and
+the same associativity will associate together, and those with the
+same precedence but no associativity or differing associativity will
+trigger a `ParseError`. The built-in precedence rules are as follows.
+
+| Operator(s)            | Precedence | Associativity |
+| ---------------------- | ---------- | ------------- |
+| =~ == === < <= > >= /= | 5          | None          |
+| ++                     | 10         | Left          |
+| <>                     | 15         | Left          |
+| <\|                    | 20         | Right         |
+| \|>                    | 25         | Left          |
+| (new operators)        | 30         | Left          |
+| + -                    | 35         | Left          |
+| /                      | 40         | Left          |
+| *                      | 45         | Left          |
+| ^                      | 50         | Right         |
+
 [[up](.)]
 <br/>[[prev - Chapter 1 - Introduction](ch1_intro.md)]
 <br/>[[next - Chapter 3 - Object Model](ch3_object.md)]

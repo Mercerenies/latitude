@@ -73,6 +73,7 @@ scope object.
      +-- ModuleLoader
      +-- Nil
      +-- Number
+     +-- Operator
      +-- Parents
      +-- Proc
      |    +-- Cached
@@ -87,7 +88,7 @@ scope object.
      +-- err
      +-- global
      +-- meta
-     +-- meta lang
+     +-- meta operators
      +-- meta sigil
 
  * [Arglist](arglist.md)
@@ -112,6 +113,7 @@ scope object.
  * [ModuleLoader](moduleloader.md)
  * [Number](number.md)
  * [Object](object.md)
+ * [Operator](operator.md)
  * [Parents](parents.md)
  * [Proc](proc.md)
  * [Process](process.md)

@@ -337,4 +337,4 @@ returned. Otherwise, the true value is returned.
 
 [[up](.)]
 <br/>[[prev - The Number Object](number.md)]
-<br/>[[next - The Parents Object](parents.md)]
+<br/>[[next - The Operator Object](operator.md)]

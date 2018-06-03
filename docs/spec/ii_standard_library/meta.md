@@ -48,6 +48,15 @@ objects, which might not have a `missing` slot. The built-in meta
 object has a `missed` method which throws a `SystemError` object with
 a generic message.
 
+### `meta operators.`
+
+A dictionary mapping symbols to [`Operator`](operator.md) objects.
+This slot is used to determine operator precedence when parsing files.
+
+For more details on how this slot is used,
+see
+[Operator Precedence](../i_syntax_and_semantics/ch2_lexical.md#operator-precedence).
+
 ## Sigils
 
 ### `~l (method).`

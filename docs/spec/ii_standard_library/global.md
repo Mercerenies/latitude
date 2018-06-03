@@ -258,6 +258,11 @@ protected environment, so that even in the case of continuation jumps,
 nature of this function,
 see [Thunks](../i_syntax_and_semantics/ch6_controlflow.md#thunks).
 
+### `global operator (prec, assoc).`
+
+Constructs an [`Operator`](operator.md) object with the given
+precedence and associativity.
+
 ### `global proc (block).`
 
 Constructs a [`Proc`](proc.md) object which, when called, executes
