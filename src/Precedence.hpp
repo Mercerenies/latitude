@@ -4,7 +4,7 @@
 #include "Proto.hpp"
 #include "Parser.tab.h"
 
-constexpr int DEFAULT_PRECEDENCE = 0;
+constexpr int DEFAULT_PRECEDENCE = 30;
 
 constexpr int MIN_PRECEDENCE = 0;
 constexpr int MAX_PRECEDENCE = 255;

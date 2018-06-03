@@ -29,7 +29,7 @@ meta toString := "meta".
 
 ;; Operator type
 global Operator := Object clone.
-Operator prec := 0.
+Operator prec := 30.
 Operator assoc := 'left.
 Operator toString := {
   curr := self.

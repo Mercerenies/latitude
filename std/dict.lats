@@ -51,3 +51,23 @@ Dict == := {
     True.
   }.
 }.
+
+;; Now we have dictionaries; let's define some precedence rules
+meta operators get '=~  = operator ( 5, 'none ).
+meta operators get '==  = operator ( 5, 'none ).
+meta operators get '=== = operator ( 5, 'none ).
+meta operators get '<   = operator ( 5, 'none ).
+meta operators get '<=  = operator ( 5, 'none ).
+meta operators get '>   = operator ( 5, 'none ).
+meta operators get '>=  = operator ( 5, 'none ).
+meta operators get '/=  = operator ( 5, 'none ).
+meta operators get '++  = operator (10, 'left ).
+meta operators get '<>  = operator (15, 'left ).
+meta operators get '<|  = operator (20, 'right).
+meta operators get '|>  = operator (25, 'left ).
+;; 30 is the default for new operators
+meta operators get '+   = operator (35, 'left ).
+meta operators get '-   = operator (35, 'left ).
+meta operators get '/   = operator (40, 'left ).
+meta operators get '*   = operator (45, 'left ).
+meta operators get '^   = operator (50, 'right).
