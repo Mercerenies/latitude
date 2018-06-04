@@ -102,6 +102,20 @@ Flushes the stream, forcing any buffered output to be written to the
 stream's target. If the stream is not designated for output, an
 `IOError` will be raised.
 
+### `Stream dump (obj).`
+
+Prints all slots on the object to the stream. For each slot (obtained
+via `Kernel keys`), the slot's name and value will be printed, as well
+as a signaling character (`!`) if the slot has protection.
+
+It is possible for objects to override this behavior. If an object has
+a `dumpHandler` slot defined on it, then that slot should contain a
+dictionary. For each slot on the object whose name is a valid key in
+the `dumpHandler` dictionary, the value in the dictionary will be
+called instead of printing the standard line. The call will be made
+(via the `call` method) with the stream object `self` as the only
+argument.
+
 ## Static Methods
 
 ### `Stream open (filename, mode).`

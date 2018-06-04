@@ -210,10 +210,16 @@ Stream toString := "Stream".
 Stream dump := {
   streamObj := self. ; Would use `localize` here but the core functions should be very low-dependency
   obj := #'$1.
+  handler := { #'obj dumpHandler. } catch (err SlotError) do { [=>]. }.
   streamObj println: #'obj.
   Kernel keys #'obj visit {
-    p := if (Slots protected? (#'obj, $1)) then "! " else "  ".
-    streamObj putln: p ++ $1 asText ++ ": " ++ Slots hold (#'obj, $1) toString.
+    key := $1.
+    if (handler has? (key)) then {
+      handler get (key) call (streamObj).
+    } else {
+      p := if (Slots protected? (#'obj, key)) then "! " else "  ".
+      streamObj putln: p ++ key asText ++ ": " ++ Slots hold (#'obj, key) toString.
+    }.
   }.
   Nil.
 }.
