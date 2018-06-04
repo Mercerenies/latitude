@@ -191,7 +191,7 @@ bool isAsmRegisterArg(const RegisterArg& arg);
 
 /// This is the general error class for exceptions in the VM system,
 /// usually with the integrity of a VM instruction.
-class AssemblerError {
+class AssemblerError : public std::exception {
 private:
     std::string message;
 public:
@@ -203,6 +203,7 @@ public:
     ///
     /// \return the message
     std::string getMessage();
+    virtual const char* what();
 };
 
 /// Appends an argument to a serialized instruction sequence, as a

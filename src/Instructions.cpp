@@ -126,6 +126,10 @@ string AssemblerError::getMessage() {
     return message;
 }
 
+const char* AssemblerError::what() {
+    return message.c_str();
+}
+
 struct AppendVisitor {
     SerialInstrSeq* instructions;
 
