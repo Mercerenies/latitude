@@ -45,14 +45,14 @@ OperatorData OperatorTable::lookup(std::string op) const {
         result.precedence = DEFAULT_PRECEDENCE;
     } else if (auto value = boost::get<Number>(&prec->prim())) {
         if (value->hierarchyLevel() > 0)
-            throw std::string("Invalid operator table at " + op);
+            throw ParseError("Invalid operator table at " + op);
         auto value1 = value->asSmallInt();
         if ((value1 < MIN_PRECEDENCE) || (value1 > MAX_PRECEDENCE))
-            throw std::string("Invalid operator table at " + op);
+            throw ParseError("Invalid operator table at " + op);
         result.precedence = (int)value1;
     } else {
         // Not a number
-        throw std::string("Invalid operator table at " + op);
+        throw ParseError("Invalid operator table at " + op);
     }
 
     // Now associativity
@@ -68,10 +68,10 @@ OperatorData OperatorTable::lookup(std::string op) const {
         else if (name == "none")
             result.associativity = Associativity::NONE;
         else
-            throw std::string("Invalid operator table at " + op);
+            throw ParseError("Invalid operator table at " + op);
     } else {
         // Not a symbol
-        throw std::string("Invalid operator table at " + op);
+        throw ParseError("Invalid operator table at " + op);
     }
 
     return result;
@@ -118,7 +118,7 @@ bool shouldPop(const std::stack< std::pair<std::string, OperatorData> >& ops,
             std::ostringstream err;
             err << "Operators " << top.first << " and " << curr.first
                 << " have contradictory associativity";
-            throw err.str();
+            throw ParseError(err.str());
         } else {
             switch (top.second.associativity) {
             case Associativity::LEFT:
@@ -130,7 +130,7 @@ bool shouldPop(const std::stack< std::pair<std::string, OperatorData> >& ops,
                     std::ostringstream err;
                     err << "Operators " << top.first << " and " << curr.first
                         << " do not associate";
-                    throw err.str();
+                    throw ParseError(err.str());
                 }
             default:
                 assert(false); // Pleeeeeeeease don't run this line of code :)
@@ -198,7 +198,7 @@ ListElem treeToList(OpTree* tree) {
         // Latitude execution, whereas the equivalent error in
         // treeToExpr could very well occur in normal use.
         if ((args.list->car) && (args.list->car->isDummy)) {
-            throw std::string("Invalid implied argument on right-hand-side of operator");
+            throw ParseError("Invalid implied argument on right-hand-side of operator");
         }
         return args;
     } else {
@@ -221,9 +221,9 @@ Expr* treeToExpr(OpTree* tree) {
         tree = nullptr;
         // Must be of length 1
         if ((!args->car) && (!args->cdr))
-            throw std::string("Invalid argument list on left-hand-side of operator");
+            throw ParseError("Invalid argument list on left-hand-side of operator");
         if ((args->cdr->car) || (args->cdr->cdr))
-            throw std::string("Invalid argument list on left-hand-side of operator");
+            throw ParseError("Invalid argument list on left-hand-side of operator");
         Expr* result = args->car;
         args->car = nullptr;
         cleanupL(args);
@@ -257,12 +257,12 @@ OperatorTable getTable(ObjectPtr lex) {
 
     ObjectPtr meta = objectGet(lex, Symbols::get()["meta"]);
     if (meta == nullptr)
-        throw std::string("Could not find operator table");
+        throw ParseError("Could not find operator table");
     ObjectPtr table = objectGet(meta, Symbols::get()["operators"]);
     if (table == nullptr)
-        throw std::string("Could not find operator table");
+        throw ParseError("Could not find operator table");
     ObjectPtr impl = objectGet(table, Symbols::get()["&impl"]);
     if (impl == nullptr)
-        throw std::string("Could not find operator table");
+        throw ParseError("Could not find operator table");
     return OperatorTable(impl);
 }

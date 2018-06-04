@@ -203,8 +203,8 @@ bool eval(IntState& state,
         } else {
             state.ret = garnishObject(reader, boost::blank());
         }
-    } catch (std::string str) {
-        throwError(state, reader, "ParseError", str);
+    } catch (ParseError& e) {
+        throwError(state, reader, "ParseError", e.getMessage());
         return false;
     }
     return true;
@@ -257,11 +257,11 @@ bool readFileSource(string fname,
             state.cont = MethodSeek(Method(unit, { 0 }));
             pushTrace(state);
             state.trns.push(unit);
-        } catch (std::string parseException) {
+        } catch (ParseError& e) {
 #ifdef DEBUG_LOADS
             std::cout << parseException << std::endl;
 #endif
-            throwError(state, reader, "ParseError", parseException);
+            throwError(state, reader, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
@@ -400,8 +400,8 @@ bool compileFile(string fname,
             } BOOST_SCOPE_EXIT_END;
             unit->instructions() = toplevel;
             saveToFile(file1, unit);
-        } catch (std::string parseException) {
-            throwError(state, reader, "ParseError", parseException);
+        } catch (ParseError& e) {
+            throwError(state, reader, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
@@ -443,8 +443,8 @@ bool readFileComp(string fname,
             state.cont = MethodSeek(Method(unit, { 0 }));
             pushTrace(state);
             state.trns.push(unit);
-        } catch (std::string parseException) {
-            throwError(state, reader, "ParseError", parseException);
+        } catch (ParseError& e) {
+            throwError(state, reader, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {

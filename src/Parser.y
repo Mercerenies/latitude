@@ -348,7 +348,7 @@ extern "C" {
 void yyerror(const char* str) {
     std::ostringstream oss;
     oss << "Error in file " << filename << " on line " << line_num << "! " << str;
-    throw oss.str();
+    throw ParseError(oss.str());
 }
 
 void cleanupE(struct Expr* stmt) {

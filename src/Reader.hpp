@@ -40,10 +40,8 @@ std::list< std::unique_ptr<Stmt> > translateCurrentLine(const OperatorTable& tab
 void clearCurrentLine() noexcept;
 
 /*
- * Parses the string. Will throw an std::string as an exception
- * if a parse error occurs. For this reason, it is often desirable
- * to use `eval`, which captures these parse errors and rethrows them
- * as `ProtoError` objects.
+ * Parses the string. Will throw a ParseError as an exception if a
+ * parse error occurs.
  */
 std::list< std::unique_ptr<Stmt> > parse(const OperatorTable& table, std::string filename, std::string str);
 
