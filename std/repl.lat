@@ -41,7 +41,7 @@ REPL eof? := {
 REPL counter := 0.
 REPL read := {
   stdout puts: "lat(" ++ self counter ++ ")% ".
-  stdin readln.
+  meta sys streamReadSpec#: Nil.
 }.
 REPL eval := {
   Kernel eval: self scope, self $scope, $1.
