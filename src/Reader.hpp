@@ -70,6 +70,16 @@ bool readFile(std::string fname,
               const ReadOnlyState& reader,
               const OperatorTable& table);
 
+class ParseError : public std::exception {
+private:
+    std::string message;
+public:
+    ParseError();
+    ParseError(std::string message);
+    std::string getMessage();
+    virtual const char* what();
+};
+
 /*
  * A statement. Defines only one method, which executes
  * the statement in a given context.
