@@ -11,6 +11,7 @@ checked with `in?` and `out?`.
 ## Simple Slots
 
     Stream toString := "String".
+    Stream dumpHandler := ~DUMP.
 
 ## Methods
 
@@ -109,12 +110,12 @@ via `Kernel keys`), the slot's name and value will be printed, as well
 as a signaling character (`!`) if the slot has protection.
 
 It is possible for objects to override this behavior. If an object has
-a `dumpHandler` slot defined on it, then that slot should contain a
-dictionary. For each slot on the object whose name is a valid key in
-the `dumpHandler` dictionary, the value in the dictionary will be
-called instead of printing the standard line. The call will be made
-(via the `call` method) with the stream object `self` as the only
-argument.
+a slot with the generated name `Stream dumpHandler` defined on it,
+then that slot should contain a dictionary. For each slot on the
+object whose name is a valid key in the `dumpHandler` dictionary, the
+value in the dictionary will be called instead of printing the
+standard line. The call will be made (via the `call` method) with the
+stream object `self` as the only argument.
 
 ## Static Methods
 

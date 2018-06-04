@@ -52,7 +52,8 @@ Dict == := {
   }.
 }.
 
-Dict dumpHandler := [
+Dict slot (Stream dumpHandler) = [
+  Stream dumpHandler => { },
   '&impl => { $1 putln: "  &impl: #<...>". }
 ].
 

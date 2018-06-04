@@ -207,10 +207,11 @@ Stream flush := {
 Stream toString := "Stream".
 
 ; Dumping and Printing Convenience Functions
+Stream dumpHandler := ~DUMP.
 Stream dump := {
   streamObj := self. ; Would use `localize` here but the core functions should be very low-dependency
   obj := #'$1.
-  handler := { #'obj dumpHandler. } catch (err SlotError) do { [=>]. }.
+  handler := { #'obj slot (streamObj dumpHandler). } catch (err SlotError) do { [=>]. }.
   streamObj println: #'obj.
   Kernel keys #'obj visit {
     key := $1.
