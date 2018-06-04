@@ -52,6 +52,10 @@ Dict == := {
   }.
 }.
 
+Dict dumpHandler := [
+  '&impl => { $1 putln: "  &impl: #<...>". }
+].
+
 ;; Now we have dictionaries; let's define some precedence rules
 meta operators get '=~  = operator ( 5, 'none ).
 meta operators get '==  = operator ( 5, 'none ).

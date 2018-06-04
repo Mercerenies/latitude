@@ -84,6 +84,12 @@ Returns true if and only if the dictionaries have the same keys and
 each key corresponds to an equivalent (by `==`) value in both
 dictionaries.
 
+### `Dict dumpHandler.`
+
+A dictionary which is used to prevent printing of the `&impl` fresh
+object slot, as such printing would cause an error in lookup of the
+`toString` slot.
+
 ## Static Methods
 
 ### `Dict empty.`
