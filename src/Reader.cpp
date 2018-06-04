@@ -48,10 +48,10 @@ PtrToList getCurrentLine() {
     return std::move(currentLine);
 }
 
-unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr* expr, bool held);
+unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr*& expr, bool held);
 list< unique_ptr<Stmt> > translateList(const OperatorTable& table, List* list, bool held);
 
-unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr* expr, bool held) {
+unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr*& expr, bool held) {
     int line = expr->line;
     assert(!expr->isDummy);
     if (expr->isOperator) {

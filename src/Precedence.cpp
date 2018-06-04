@@ -89,7 +89,7 @@ std::list<op_pair_t> exprToSeq(Expr* expr) {
         assert(temp->rhs == nullptr);
         temp->lhs = nullptr;
         temp->args = nullptr;
-        //cleanupE(temp);
+        cleanupE(temp);
     }
     if (expr == nullptr) {
         expr = makeExpr();
