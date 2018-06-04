@@ -264,7 +264,7 @@ bool readFileSource(string fname,
             throwError(state, reader, "ParseError", parseException);
             return false;
         }
-    } catch (ios_base::failure err) {
+    } catch (ios_base::failure& err) {
         throwError(state, reader, "IOError", err.what());
         return false;
     }
@@ -404,7 +404,7 @@ bool compileFile(string fname,
             throwError(state, reader, "ParseError", parseException);
             return false;
         }
-    } catch (ios_base::failure err) {
+    } catch (ios_base::failure& err) {
         throwError(state, reader, "IOError", err.what());
         return false;
     }
@@ -447,7 +447,7 @@ bool readFileComp(string fname,
             throwError(state, reader, "ParseError", parseException);
             return false;
         }
-    } catch (ios_base::failure err) {
+    } catch (ios_base::failure& err) {
         throwError(state, reader, "IOError", err.what());
         return false;
     }
