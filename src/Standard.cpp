@@ -12,6 +12,7 @@
 #include "Dump.hpp"
 #include "Parents.hpp"
 #include "Precedence.hpp"
+#include "Input.hpp"
 #include <list>
 #include <sstream>
 #include <fstream>
@@ -563,24 +564,33 @@ void spawnSystemCallsNew(ObjectPtr global,
     // CPP_STREAM_READ ($1 = stream) (constructs and stores the resulting string in %ret, uses %num0 for mode)
     // - 0 - Read a line
     // - 1 - Read a single character
+    // - 2 - (Ignores the stream) Special read; using REPL history, etc
     // streamRead#: stream.
+    // streamReadChar#: stream.
+    // streamReadSpec#: stream.
     assert(reader.cpp.size() == CPP_STREAM_READ);
     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         ObjectPtr dyn = state0.dyn.top();
         ObjectPtr stream = (*dyn)[ Symbols::get()["$1"] ];
-        if (stream != NULL) {
-            auto stream0 = boost::get<StreamPtr>(&stream->prim());
-            if (stream0) {
-                if ((*stream0)->hasIn()) {
-                    if (state0.num0.asSmallInt() == 0)
-                        state0.ret = garnishObject(reader0, (*stream0)->readLine());
-                    else
-                        state0.ret = garnishObject(reader0, (*stream0)->readText(1));
+        if (state0.num0.asSmallInt() == 2) {
+            // Special read
+            state0.ret = garnishObject(reader0, ReadLine::readRich());
+        } else {
+            // Normal read
+            if (stream != NULL) {
+                auto stream0 = boost::get<StreamPtr>(&stream->prim());
+                if (stream0) {
+                    if ((*stream0)->hasIn()) {
+                        if (state0.num0.asSmallInt() == 0)
+                            state0.ret = garnishObject(reader0, (*stream0)->readLine());
+                        else
+                            state0.ret = garnishObject(reader0, (*stream0)->readText(1));
+                    } else {
+                        throwError(state0, reader0, "IOError", "Stream not designated for input");
+                    }
                 } else {
-                    throwError(state0, reader0, "IOError", "Stream not designated for input");
+                    throwError(state0, reader0, "TypeError", "Stream expected");
                 }
-            } else {
-                throwError(state0, reader0, "TypeError", "Stream expected");
             }
         }
     });
@@ -591,6 +601,10 @@ void spawnSystemCallsNew(ObjectPtr global,
     sys->put(Symbols::get()["streamReadChar#"],
              defineMethod(unit, global, method,
                           asmCode(makeAssemblerLine(Instr::INT, 1L),
+                                  makeAssemblerLine(Instr::CPP, CPP_STREAM_READ))));
+    sys->put(Symbols::get()["streamReadSpec#"],
+             defineMethod(unit, global, method,
+                          asmCode(makeAssemblerLine(Instr::INT, 2L),
                                   makeAssemblerLine(Instr::CPP, CPP_STREAM_READ))));
 
     // CPP_EVAL (where %str0 is a string to evaluate; throws if something goes wrong)
