@@ -18,21 +18,26 @@ global operator := {
   curr.
 }.
 
-meta operators get '=~  = operator ( 5, 'none ).
-meta operators get '==  = operator ( 5, 'none ).
-meta operators get '=== = operator ( 5, 'none ).
-meta operators get '<   = operator ( 5, 'none ).
-meta operators get '<=  = operator ( 5, 'none ).
-meta operators get '>   = operator ( 5, 'none ).
-meta operators get '>=  = operator ( 5, 'none ).
-meta operators get '/=  = operator ( 5, 'none ).
-meta operators get '++  = operator (10, 'left ).
-meta operators get '<>  = operator (15, 'left ).
-meta operators get '<|  = operator (20, 'right).
-meta operators get '|>  = operator (25, 'left ).
+global Associativity ::= Enumeration of '[Left, Right, None].
+Associativity Left  inner := 'left.
+Associativity Right inner := 'right.
+Associativity None  inner := 'none.
+
+meta operators get '=~  = operator ( 5, Associativity None ).
+meta operators get '==  = operator ( 5, Associativity None ).
+meta operators get '=== = operator ( 5, Associativity None ).
+meta operators get '<   = operator ( 5, Associativity None ).
+meta operators get '<=  = operator ( 5, Associativity None ).
+meta operators get '>   = operator ( 5, Associativity None ).
+meta operators get '>=  = operator ( 5, Associativity None ).
+meta operators get '/=  = operator ( 5, Associativity None ).
+meta operators get '++  = operator (10, Associativity Left ).
+meta operators get '<>  = operator (15, Associativity Left ).
+meta operators get '<|  = operator (20, Associativity Right).
+meta operators get '|>  = operator (25, Associativity Left ).
 ;; 30 is the default for new operators
-meta operators get '+   = operator (35, 'left ).
-meta operators get '-   = operator (35, 'left ).
-meta operators get '/   = operator (40, 'left ).
-meta operators get '*   = operator (45, 'left ).
-meta operators get '^   = operator (50, 'right).
+meta operators get '+   = operator (35, Associativity Left ).
+meta operators get '-   = operator (35, Associativity Left ).
+meta operators get '/   = operator (40, Associativity Left ).
+meta operators get '*   = operator (45, Associativity Left ).
+meta operators get '^   = operator (50, Associativity Right).

@@ -20,8 +20,8 @@ default value on the `Operator` object itself is 30.
 ### `Operator assoc.`
 
 Returns the associativity. This slot is usually overridden in
-instances. The associativity should be one of three standard symbols:
-`'left`, `'right`, or `'none`.
+instances. The associativity should be an element of the
+`Associativity` enumeration.
 
 ### `Operator toString.`
 
@@ -30,6 +30,13 @@ Otherwise, returns an expression which produces an identical operator,
 by means of
 the [`global operator`](global.md#global-operator-prec-assoc)
 constructor.
+
+## The Associativity Object
+
+    Associativity := Enumeration clone.
+
+Closely related to the `Operator` object is the `Associativity`
+enumeration object, defining the values `Left`, `Right`, and `None`.
 
 [[up](.)]
 <br/>[[prev - The Root Object](object.md)]

@@ -57,6 +57,8 @@ OperatorData OperatorTable::lookup(std::string op) const {
 
     // Now associativity
     ObjectPtr assoc = objectGet(val, Symbols::get()["assoc"]);
+    if (assoc != nullptr)
+        assoc = objectGet(assoc, Symbols::get()["inner"]);
     if (assoc == nullptr) {
         result.associativity = Associativity::LEFT;
     } else if (auto value = boost::get<Symbolic>(&assoc->prim())) {
