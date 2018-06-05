@@ -77,7 +77,7 @@ value.
 
     Month := Enumeration clone.
 
-`Month` is an [enumeration object](enum.md) with the following
+`Month` is an [enumeration object](enumeration.md) with the following
 values: `January`, `February`, `March`, `April`, `May`, `June`,
 `July`, `August`, `September`, `October`, `November`, `December`. It
 also defines a `toString` which evaluates to `"Month"`.
@@ -86,7 +86,7 @@ also defines a `toString` which evaluates to `"Month"`.
 
     Weekday := Enumeration clone.
 
-`Weekday` is an [enumeration object](enum.md) with the following
+`Weekday` is an [enumeration object](enumeration.md) with the following
 values: `Sunday`, `Monday`, `Tuesday`, `Wednesday`, `Thursday`,
 `Friday`, `Saturday`. It also defines a `toString` which evaluates to
 `"Weekday"`. Note that the week begins on Sunday, not Monday.
