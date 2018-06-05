@@ -2008,7 +2008,6 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::EXPD, Reg::SYM),
                                    makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                    makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
-                                   makeAssemblerLine(Instr::INT, 3),
                                    makeAssemblerLine(Instr::CPP, CPP_PROT_VAR),
                                    makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET))));
 

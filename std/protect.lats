@@ -1,0 +1,10 @@
+
+global Protection ::= Enumeration of '[Assign, Delete].
+Protection Assign inner := 1.
+Protection Delete inner := 2.
+
+Slots protect := {
+  value := $3 map { $1 inner. } foldl (0, 'bitOr toProc).
+  meta sys protectVar#: #'$1, $2, value.
+}.
+Slots protected? := { meta sys protectIs#: #'$1, $2. }.

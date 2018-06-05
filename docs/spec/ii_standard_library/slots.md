@@ -48,15 +48,24 @@ the access is successful, the return value is true. If the access
 attempt throws a `SlotError`, the return value is false. Any other
 exceptions or thrown objects are propogated.
 
-### `Slots protect (object, slotName).`
+### `Slots protect (object, slotName, prot).`
 
-Adds assignment and delete protection to the given slot on the
-supplied object. If the slot does not exist, a `SlotError` is raised.
+Adds protection to the given slot on the supplied object. `prot`
+should be a list of `Protection` instances specifying the
+protection(s) to apply. If the slot does not exist, a `SlotError` is
+raised.
 
 ### `Slots protected? (object, slotName).`
 
 Returns whether the given slot on the supplied object has any
 protections applied to it.
+
+## The Protection Object
+
+    Protection := Enumeration clone.
+
+Used in the protection interface is the `Protection` enumeration
+object, defining the values `Assign` and `Delete`.
 
 [[up](.)]
 <br/>[[prev - The Process Object](process.md)]
