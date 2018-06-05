@@ -81,10 +81,12 @@ namespace ReadLine {
             }
             break;
         case '\n':
-            // TODO Handle EOT (0x04)
             std::cout << std::endl;
             history.front() = *input;
             return false;
+        case 0x04: // EOT
+            // TODO Handle EOT (0x04) correctly (Currently just ignored)
+            break;
         default:
             input->push_back(ch);
             std::cout << ch;
