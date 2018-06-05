@@ -174,5 +174,5 @@ This exception is thrown if an object whose type or characteristics
 are not what are expected is passed to a method.
 
 [[up](.)]
-<br/>[[prev - The Ellipsis Object](ellipsis.md)]
+<br/>[[prev - The Enumeration Object](enumeration.md)]
 <br/>[[next - The FileHeader Object](fileheader.md)]

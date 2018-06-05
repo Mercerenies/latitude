@@ -6,7 +6,6 @@ meta sys kernelLoad0#: "std/latitude.lats", global.
   ;; system doesn't try to recompile it in a directory to which
   ;; non-sudoers can't write.
   use 'cell.
-  use 'enum.
   use 'format.
   use 'os.
   use 'random.

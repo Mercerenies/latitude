@@ -1,8 +1,6 @@
 ;;* MODULE unicode
 ;;* PACKAGE base
 
-use 'enum import '[Enumeration].
-
 unicode := $whereAmI.
 
 Category ::= Enumeration of '[

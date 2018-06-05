@@ -37,6 +37,7 @@ scope object.
      +-- Cons
      +-- Dict
      +-- Ellipsis
+     +-- Enumeration
      +-- Exception
      |    +-- SystemError
      |    |    +-- err ArgError
@@ -102,6 +103,7 @@ scope object.
  * [Cont](cont.md)
  * [Dict](dict.md)
  * [Ellipsis](ellipsis.md)
+ * [Enumeration](enumeration.md)
  * [Exception and Exceptions](exception.md)
  * [FileHeader](fileheader.md)
  * [FilePath](filepath.md)
@@ -132,7 +134,6 @@ are several standard modules which can be imported explicitly into
 scope.
 
  * [cell](cell.md)
- * [enum](enum.md)
  * [format](format.md)
  * [os](os.md)
  * [random](random.md)

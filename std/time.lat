@@ -1,8 +1,6 @@
 ;;* MODULE time
 ;;* PACKAGE base
 
-use 'enum import '[Enumeration].
-
 time := $whereAmI.
 
 Month ::= Enumeration of '[January, February, March, April, May, June, July,

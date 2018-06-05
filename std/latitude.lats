@@ -13,6 +13,7 @@ Kernel loadRaw: "std/exception.lats".
 Kernel loadRaw: "std/flow-control.lats".
 Kernel loadRaw: "std/arithmetic.lats".
 Kernel loadRaw: "std/array.lats".
+Kernel loadRaw: "std/enum.lats".
 Kernel loadRaw: "std/mixin.lats".
 Kernel loadRaw: "std/dict.lats".
 Kernel loadRaw: "std/collection.lats".
