@@ -259,7 +259,7 @@ bool readFileSource(string fname,
             state.trns.push(unit);
         } catch (ParseError& e) {
 #ifdef DEBUG_LOADS
-            std::cout << parseException << std::endl;
+            std::cout << e.getMessage() << std::endl;
 #endif
             throwError(state, reader, "ParseError", e.getMessage());
             return false;
