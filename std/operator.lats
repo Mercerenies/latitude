@@ -1,0 +1,38 @@
+
+;; Operator type
+global Operator := Object clone.
+Operator prec := 30.
+Operator assoc := 'left.
+Operator toString := {
+  curr := self.
+  if (curr === Operator) then {
+    "Operator".
+  } else {
+    "operator (" ++ curr prec ++ ", " ++ curr assoc ++ ")".
+  }.
+}.
+global operator := {
+  curr := Operator clone.
+  curr prec := $1.
+  curr assoc := $2.
+  curr.
+}.
+
+meta operators get '=~  = operator ( 5, 'none ).
+meta operators get '==  = operator ( 5, 'none ).
+meta operators get '=== = operator ( 5, 'none ).
+meta operators get '<   = operator ( 5, 'none ).
+meta operators get '<=  = operator ( 5, 'none ).
+meta operators get '>   = operator ( 5, 'none ).
+meta operators get '>=  = operator ( 5, 'none ).
+meta operators get '/=  = operator ( 5, 'none ).
+meta operators get '++  = operator (10, 'left ).
+meta operators get '<>  = operator (15, 'left ).
+meta operators get '<|  = operator (20, 'right).
+meta operators get '|>  = operator (25, 'left ).
+;; 30 is the default for new operators
+meta operators get '+   = operator (35, 'left ).
+meta operators get '-   = operator (35, 'left ).
+meta operators get '/   = operator (40, 'left ).
+meta operators get '*   = operator (45, 'left ).
+meta operators get '^   = operator (50, 'right).

@@ -16,6 +16,7 @@ Kernel loadRaw: "std/array.lats".
 Kernel loadRaw: "std/enum.lats".
 Kernel loadRaw: "std/mixin.lats".
 Kernel loadRaw: "std/dict.lats".
+Kernel loadRaw: "std/operator.lats".
 Kernel loadRaw: "std/collection.lats".
 Kernel loadRaw: "std/args.lats".
 Kernel loadRaw: "std/string.lats".
