@@ -86,6 +86,7 @@ delegate to the appropriate system-level calls.
  * `Platform.hpp`
  * `Process.cpp`
  * `Environment.cpp`
+ * `Input.cpp`
 
 Provided that you have a working, up-to-date C++ compiler and the
 necessary dependencies, Latitude should now build. If you can
