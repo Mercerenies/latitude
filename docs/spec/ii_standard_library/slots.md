@@ -60,6 +60,12 @@ raised.
 Returns whether the given slot on the supplied object has any
 protections applied to it.
 
+### `Slots hasProtection? (object, slotName, prot).`
+
+Returns whether the given slot on the supplied object has the given
+protection(s) applied to it, where `prot` is a list of `Protection`
+instances.
+
 ## The Protection Object
 
     Protection := Enumeration clone.

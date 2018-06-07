@@ -38,6 +38,15 @@ ObjectPtr defineMethodNoRet(TranslationUnitPtr unit, ObjectPtr global, ObjectPtr
     return obj;
 }
 
+Protection numToProtection(long num) {
+    Protection prot = Protection::NO_PROTECTION;
+    if (num & 1)
+        prot |= Protection::PROTECT_ASSIGN;
+    if (num & 2)
+        prot |= Protection::PROTECT_DELETE;
+    return prot;
+}
+
 void spawnSystemCallsNew(ObjectPtr global,
                          ObjectPtr method,
                          ObjectPtr sys,
@@ -1971,11 +1980,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(reader.cpp.size() == CPP_PROT_VAR);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          long num = state0.num0.asSmallInt();
-         Protection prot = Protection::NO_PROTECTION;
-         if (num & 1)
-             prot |= Protection::PROTECT_ASSIGN;
-         if (num & 2)
-             prot |= Protection::PROTECT_DELETE;
+         Protection prot = numToProtection(num);
          bool result = state0.slf->addProtection(state0.sym, prot);
          if (!result) {
              ObjectPtr err = reader0.lit[Lit::ERR];
@@ -2012,10 +2017,24 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET))));
 
      // CPP_PROT_IS (check protection of the variable named %sym in the object %slf, returning %ret)
+     // - %num0 (0) - Check for *any* protections
+     // - %num0 (1) - Check specifically for %num1 protections
      // protectIs#: obj, var.
+     // protectIsThis#: obj, var, prot.
      assert(reader.cpp.size() == CPP_PROT_IS);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
-         state0.ret = garnishObject(reader0, state0.slf->hasAnyProtection(state0.sym));
+         long param = state0.num0.asSmallInt();
+         switch (param) {
+         case 0:
+             state0.ret = garnishObject(reader0, state0.slf->hasAnyProtection(state0.sym));
+             break;
+         case 1:
+             {
+                 Protection prot = numToProtection(state0.num1.asSmallInt());
+                 state0.ret = garnishObject(reader0, state0.slf->isProtected(state0.sym, prot));
+                 break;
+             }
+         }
      });
      sys->put(Symbols::get()["protectIs#"],
               defineMethod(unit, global, method,
@@ -2031,6 +2050,31 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::EXPD, Reg::SYM),
                                    makeAssemblerLine(Instr::THROA, "Symbol expected"),
                                    makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::INT, 0),
+                                   makeAssemblerLine(Instr::CPP, CPP_PROT_IS))));
+     sys->put(Symbols::get()["protectIsThis#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$2"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
+                                   makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$3"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM1),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::SYM),
+                                   makeAssemblerLine(Instr::THROA, "Symbol expected"),
+                                   makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO),
+                                   makeAssemblerLine(Instr::INT, 1),
                                    makeAssemblerLine(Instr::CPP, CPP_PROT_IS))));
 
      // CPP_STR_NEXT (given %str0 and %num0, put next byte index in %ret, or Nil on failure)

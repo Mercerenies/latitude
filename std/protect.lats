@@ -8,3 +8,7 @@ Slots protect := {
   meta sys protectVar#: #'$1, $2, value.
 }.
 Slots protected? := { meta sys protectIs#: #'$1, $2. }.
+Slots hasProtection? := {
+  value := $3 map { $1 inner. } foldl (0, 'bitOr toProc).
+  meta sys protectIsThis#: #'$1, $2, value.
+}.
