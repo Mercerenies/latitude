@@ -171,7 +171,7 @@ long popLong(SerialInstrSeq& state) {
     return sign * value;
 }
 
-string popString(SerialInstrSeq& state) { // TODO Null-safety here (null characters will confuse it)
+string popString(SerialInstrSeq& state) {
     string str;
     unsigned char ch;
     while (true) {
