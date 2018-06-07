@@ -31,7 +31,7 @@ struct AppendVisitor {
     template <typename T>
     void operator()(const T& val) {
         auto temp = std::back_inserter(*instructions);
-        serialize_t<T>().serialize(val, temp);
+        serialize<T>(val, temp);
     }
 
 };
@@ -48,30 +48,30 @@ void appendInstruction(const Instr& instr, SerialInstrSeq& seq) {
 
 unsigned char popChar(SerialInstrSeq& state) {
     auto temp = popIterator(state);
-    return (unsigned char)serialize_t<char>().deserialize(temp);
+    return (unsigned char)deserialize<char>(temp);
 }
 
 long popLong(SerialInstrSeq& state) {
     auto temp = popIterator(state);
-    return serialize_t<long>().deserialize(temp);
+    return deserialize<long>(temp);
 }
 
 std::string popString(SerialInstrSeq& state) {
     auto temp = popIterator(state);
-    return serialize_t<std::string>().deserialize(temp);
+    return deserialize<std::string>(temp);
 }
 
 Reg popReg(SerialInstrSeq& state) {
     auto temp = popIterator(state);
-    return serialize_t<Reg>().deserialize(temp);
+    return deserialize<Reg>(temp);
 }
 
 Instr popInstr(SerialInstrSeq& state) {
     auto temp = popIterator(state);
-    return serialize_t<Instr>().deserialize(temp);
+    return deserialize<Instr>(temp);
 }
 
 FunctionIndex popFunction(SerialInstrSeq& state) {
     auto temp = popIterator(state);
-    return serialize_t<FunctionIndex>().deserialize(temp);
+    return deserialize<FunctionIndex>(temp);
 }

@@ -78,6 +78,16 @@ struct serialize_t<FunctionIndex> {
 
 };
 
+template <typename T, typename OutputIterator>
+void serialize(const T& arg, OutputIterator& iter) {
+    serialize_t<T>().serialize(arg, iter);
+}
+
+template <typename T, typename OutputIterator>
+T deserialize(OutputIterator& iter) {
+    return serialize_t<T>().deserialize(arg, iter);
+}
+
 /// Appends an argument to a serialized instruction sequence, as a
 /// sequence of characters.
 ///
