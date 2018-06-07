@@ -30,7 +30,8 @@ struct AppendVisitor {
 
     template <typename T>
     void operator()(const T& val) {
-        serialize_t<T>().serialize(val, std::back_inserter(*instructions));
+        auto temp = std::back_inserter(*instructions);
+        serialize_t<T>().serialize(val, temp);
     }
 
 };
@@ -46,25 +47,31 @@ void appendInstruction(const Instr& instr, SerialInstrSeq& seq) {
 }
 
 unsigned char popChar(SerialInstrSeq& state) {
-    return (unsigned char)serialize_t<char>().deserialize(popIterator(state));
+    auto temp = popIterator(state);
+    return (unsigned char)serialize_t<char>().deserialize(temp);
 }
 
 long popLong(SerialInstrSeq& state) {
-    return serialize_t<long>().deserialize(popIterator(state));
+    auto temp = popIterator(state);
+    return serialize_t<long>().deserialize(temp);
 }
 
 std::string popString(SerialInstrSeq& state) {
-    return serialize_t<std::string>().deserialize(popIterator(state));
+    auto temp = popIterator(state);
+    return serialize_t<std::string>().deserialize(temp);
 }
 
 Reg popReg(SerialInstrSeq& state) {
-    return serialize_t<Reg>().deserialize(popIterator(state));
+    auto temp = popIterator(state);
+    return serialize_t<Reg>().deserialize(temp);
 }
 
 Instr popInstr(SerialInstrSeq& state) {
-    return serialize_t<Instr>().deserialize(popIterator(state));
+    auto temp = popIterator(state);
+    return serialize_t<Instr>().deserialize(temp);
 }
 
 FunctionIndex popFunction(SerialInstrSeq& state) {
-    return serialize_t<FunctionIndex>().deserialize(popIterator(state));
+    auto temp = popIterator(state);
+    return serialize_t<FunctionIndex>().deserialize(temp);
 }
