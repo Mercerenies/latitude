@@ -206,20 +206,6 @@ public:
     virtual const char* what();
 };
 
-/// Appends an argument to a serialized instruction sequence, as a
-/// sequence of characters.
-///
-/// \param arg the instruction argument
-/// \param seq the serialized instruction sequence
-void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq);
-
-/// Appends an opcode to a serialized instruction sequence, as a
-/// sequence of characters.
-///
-/// \param instr the instruction
-/// \param seq the serialized instruction sequence
-void appendInstruction(const Instr& instr, SerialInstrSeq& seq);
-
 class AssemblerLineArgs;
 
 /// An AssemblerLine is a single instruction as it is being built

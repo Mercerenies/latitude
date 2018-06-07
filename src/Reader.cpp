@@ -14,6 +14,7 @@ extern "C" {
 #include "Optimizer.hpp"
 #include "Pathname.hpp"
 #include "Precedence.hpp"
+#include "Serialize.hpp"
 #include <cstdio>
 #include <cctype>
 #include <list>

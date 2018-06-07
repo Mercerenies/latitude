@@ -150,65 +150,6 @@ void popTrace(IntState& state) {
     state.file = std::get<1>(curr);
 }
 
-unsigned char popChar(SerialInstrSeq& state) {
-    if (state.empty())
-        return 0;
-    char val = state.front();
-    state.pop_front();
-    return val;
-}
-
-long popLong(SerialInstrSeq& state) {
-    int sign = 1;
-    if (popChar(state) > 0)
-        sign *= -1;
-    long value = 0;
-    long pow = 1;
-    for (int i = 0; i < 4; i++) {
-        value += pow * (long)popChar(state);
-        pow <<= 8;
-    }
-    return sign * value;
-}
-
-string popString(SerialInstrSeq& state) {
-    string str;
-    unsigned char ch;
-    while (true) {
-        ch = popChar(state);
-        if (ch == '\0') {
-            ch = popChar(state);
-            if (ch == '.')
-                str += '\0';
-            else if (ch == '\0')
-                break;
-        } else {
-            str += ch;
-        }
-    }
-    return str;
-}
-
-Reg popReg(SerialInstrSeq& state) {
-    unsigned char ch = popChar(state);
-    return (Reg)ch;
-}
-
-Instr popInstr(SerialInstrSeq& state) {
-    unsigned char ch = popChar(state);
-    return (Instr)ch;
-}
-
-FunctionIndex popFunction(SerialInstrSeq& state) {
-    int value = 0;
-    int pow = 1;
-    for (int i = 0; i < 4; i++) {
-        value += pow * (long)popChar(state);
-        pow <<= 8;
-    }
-    return { value };
-}
-
 void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     switch (instr) {
     case Instr::MOV: {

@@ -1,5 +1,6 @@
 
 #include "Instructions.hpp"
+#include "Serialize.hpp"
 #include <utility>
 #include <memory>
 
@@ -128,59 +129,6 @@ string AssemblerError::getMessage() {
 
 const char* AssemblerError::what() {
     return message.c_str();
-}
-
-struct AppendVisitor {
-    SerialInstrSeq* instructions;
-
-    void operator()(const Reg& reg) {
-        instructions->push_back((unsigned char)reg);
-    }
-
-    void operator()(const std::string& str) {
-        for (char ch : str) {
-            if (ch == 0) {
-                instructions->push_back('\0');
-                instructions->push_back('.');
-            } else {
-                instructions->push_back(ch);
-            }
-        }
-        instructions->push_back('\0');
-        instructions->push_back('\0');
-    }
-
-    void operator()(const long& val) {
-        long val1 = val;
-        if (val1 < 0)
-            instructions->push_back(0xFF);
-        else
-            instructions->push_back(0x00);
-        val1 = abs(val1);
-        for (int i = 0; i < 4; i++) {
-            instructions->push_back((unsigned char)(val1 % 256));
-            val1 /= 256;
-        }
-    }
-
-    void operator()(const FunctionIndex& ind) {
-        // No need for a sign bit; this is an index so it's always nonnegative
-        int val1 = ind.index;
-        for (int i = 0; i < 4; i++) {
-            instructions->push_back((unsigned char)(val1 % 256));
-            val1 /= 256;
-        }
-    }
-
-};
-
-void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq) {
-    AppendVisitor visitor { &seq };
-    boost::apply_visitor(visitor, arg);
-}
-
-void appendInstruction(const Instr& instr, SerialInstrSeq& seq) {
-    seq.push_back((unsigned char)instr);
 }
 
 AssemblerLineArgs::AssemblerLineArgs(const AssemblerLine& inner)
