@@ -83,6 +83,7 @@ struct serialize_t<FunctionIndex> {
 ///
 /// \param arg the instruction argument
 /// \param seq the serialized instruction sequence
+[[deprecated]]
 void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq);
 
 /// Appends an opcode to a serialized instruction sequence, as a
@@ -90,6 +91,7 @@ void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq);
 ///
 /// \param instr the instruction
 /// \param seq the serialized instruction sequence
+[[deprecated]]
 void appendInstruction(const Instr& instr, SerialInstrSeq& seq);
 
 /// Given a serial instruction sequence, pops a single character off
@@ -97,6 +99,7 @@ void appendInstruction(const Instr& instr, SerialInstrSeq& seq);
 ///
 /// \param state a serial instruction sequence
 /// \return the first character, or 0 if there is no character
+[[deprecated]]
 unsigned char popChar(SerialInstrSeq& state);
 
 /// Given a serial instruction sequence, pops a long integer off the
@@ -104,6 +107,7 @@ unsigned char popChar(SerialInstrSeq& state);
 ///
 /// \param state a serial instruction sequence
 /// \return a long integer
+[[deprecated]]
 long popLong(SerialInstrSeq& state);
 
 /// Given a serial instruction sequence, pops a string off the front
@@ -112,6 +116,7 @@ long popLong(SerialInstrSeq& state);
 ///
 /// \param state a serial instruction sequence
 /// \return a string
+[[deprecated]]
 std::string popString(SerialInstrSeq& state);
 
 /// Given a serial instruction sequence, pops a single character off
@@ -119,6 +124,7 @@ std::string popString(SerialInstrSeq& state);
 ///
 /// \param state a serial instruction sequence
 /// \return a register
+[[deprecated]]
 Reg popReg(SerialInstrSeq& state);
 
 /// Given a serial instruction sequence, pops a single character off
@@ -126,6 +132,7 @@ Reg popReg(SerialInstrSeq& state);
 ///
 /// \param state a serial instruction sequence
 /// \return an instruction
+[[deprecated]]
 Instr popInstr(SerialInstrSeq& state);
 
 /// Given a serial instruction sequence, pops off enough bytes to
@@ -133,6 +140,7 @@ Instr popInstr(SerialInstrSeq& state);
 ///
 /// \param state a serial instruction sequence
 /// \return a function index
+[[deprecated]]
 FunctionIndex popFunction(SerialInstrSeq& state);
 
 // ----
