@@ -205,9 +205,8 @@ void AssemblerLine::appendOnto(InstrSeq& seq) const {
 // We may rename this function to overload with the above function in the future.
 // Just using a different name now to avoid implicit casts messing us up.
 void AssemblerLine::appendOntoSerial(SerialInstrSeq& seq) const {
-    appendInstruction(command, seq);
-    for (auto& arg : args)
-        appendRegisterArg(arg, seq);
+    auto iter = std::back_inserter(seq);
+    serialize<AssemblerLine>(*this, iter);
 }
 
 TranslationUnit::TranslationUnit()

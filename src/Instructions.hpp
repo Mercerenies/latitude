@@ -268,7 +268,10 @@ public:
     /// \brief Appends the assembler line onto a serialized
     /// instruction sequence.
     ///
+    /// \deprecated Use ::serialize instead
+    ///
     /// \param seq the serialized instruction sequence
+    [[deprecated]]
     void appendOntoSerial(SerialInstrSeq& seq) const;
 
 };
