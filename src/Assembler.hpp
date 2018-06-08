@@ -344,7 +344,7 @@ auto callOnAsmArgType(Visitor& visitor, AsmType type)
     case AsmType::REG:
         return visitor(Proxy<Reg>());
     case AsmType::ASM:
-        return visitor(Proxy<AsmType>());
+        return visitor(Proxy<FunctionIndex>());
     default:
         assert(false);
     }
