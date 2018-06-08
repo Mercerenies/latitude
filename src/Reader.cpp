@@ -290,7 +290,8 @@ void saveInstrs(ofstream& file, const InstrSeq& seq) {
     }
 }
 
-void saveToFile(ofstream& file, TranslationUnitPtr unit) {
+void saveToFile(ofstream& file, const Header& header, TranslationUnitPtr unit) {
+    saveFileHeader(file, header);
     saveInstrs(file, unit->instructions());
     for (int i = 1; i < unit->methodCount(); i++) {
         saveInstrs(file, unit->method(i));
@@ -332,6 +333,7 @@ void parseSeq(InputIterator begin, InputIterator end, OutputIterator& seqOut) {
 
 TranslationUnitPtr loadFromFile(ifstream& file) {
     TranslationUnitPtr result = make_shared<TranslationUnit>();
+    getFileHeaderComp(file); // Ignore it; we don't need it right now
     {
         unsigned long length = loadAsNumber(file);
         SerialInstrSeq seq = loadSeq(file, length);
@@ -358,6 +360,7 @@ bool compileFile(string fname,
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
 #endif
+    Header header = getFileHeaderSource(fname);
     ifstream file;
     file.exceptions(ifstream::failbit | ifstream::badbit);
     try {
@@ -387,7 +390,7 @@ bool compileFile(string fname,
                 file1.close();
             } BOOST_SCOPE_EXIT_END;
             unit->instructions() = toplevel;
-            saveToFile(file1, unit);
+            saveToFile(file1, header, unit);
         } catch (ParseError& e) {
             throwError(state, reader, "ParseError", e.getMessage());
             return false;

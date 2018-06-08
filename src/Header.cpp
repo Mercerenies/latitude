@@ -39,14 +39,14 @@ Header getFileHeaderSource(std::string filename) {
     return header;
 }
 
-Header getFileHeaderComp(std::ifstream file) {
+Header getFileHeaderComp(std::ifstream& file) {
     std::istream_iterator<unsigned char> iter { file };
     Header value = deserialize<Header>(iter);
-    file.ignore(1);
+    // file.ignore(1); // Don't do this; the iterator already kinda sorta did this
     return value;
 }
 
-void saveFileHeader(std::ofstream file, const Header& header) {
+void saveFileHeader(std::ofstream& file, const Header& header) {
     std::vector<unsigned char> bytestream;
     bytestream.reserve(256);
     std::ostream_iterator<unsigned char> iter { file };

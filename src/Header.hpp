@@ -43,9 +43,9 @@ struct Header {
 /// \return the file header
 Header getFileHeaderSource(std::string filename);
 
-Header getFileHeaderComp(std::ifstream file);
+Header getFileHeaderComp(std::ifstream& file);
 
-void saveFileHeader(std::ofstream file, const Header& header);
+void saveFileHeader(std::ofstream& file, const Header& header);
 
 // ----
 
@@ -86,6 +86,8 @@ auto serialize_t<Header>::serialize(const type& arg, OutputIterator& iter) const
         serialize('$', iter);
         serialize(arg.package, iter);
     }
+
+    serialize('.', iter);
 
 }
 
