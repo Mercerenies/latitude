@@ -2,6 +2,7 @@
 #define SERIALIZE_HPP
 
 #include "Instructions.hpp"
+#include "Assembler.hpp"
 
 template <typename T>
 struct serialize_t;
@@ -78,15 +79,26 @@ struct serialize_t<FunctionIndex> {
 
 };
 
-template <typename T, typename OutputIterator>
-void serialize(const T& arg, OutputIterator& iter) {
-    serialize_t<T>().serialize(arg, iter);
-}
+template <>
+struct serialize_t<AssemblerLine> {
+
+    using type = AssemblerLine;
+
+    template <typename OutputIterator>
+    void serialize(const type& arg, OutputIterator& iter) const;
+    template <typename InputIterator>
+    type deserialize(InputIterator& iter) const;
+
+};
 
 template <typename T, typename OutputIterator>
-T deserialize(OutputIterator& iter) {
-    return serialize_t<T>().deserialize(arg, iter);
-}
+void serialize(const T& arg, OutputIterator& iter);
+
+template <typename T, typename OutputIterator>
+T deserialize(OutputIterator& iter);
+
+template <typename OutputIterator, typename... Ts>
+void serializeVariant(const boost::variant<Ts...>& arg, OutputIterator& iter);
 
 /// Appends an argument to a serialized instruction sequence, as a
 /// sequence of characters.
@@ -276,6 +288,65 @@ auto serialize_t<FunctionIndex>::deserialize(InputIterator& iter) const -> type 
         pow <<= 8;
     }
     return { value };
+}
+
+template <typename OutputIterator>
+auto serialize_t<AssemblerLine>::serialize(const type& instr, OutputIterator& iter) const -> void {
+    ::serialize<Instr>(instr.getCommand(), iter);
+    for (const auto& arg : instr.arguments()) {
+        serializeVariant(arg, iter);
+    }
+}
+
+template <typename InputIterator>
+struct _AsmArgDeserializeVisitor {
+    InputIterator& iter;
+
+    template <typename T>
+    RegisterArg operator()(Proxy<T>) {
+        return deserialize<T>(iter);
+    }
+
+};
+
+template <typename InputIterator>
+auto serialize_t<AssemblerLine>::deserialize(InputIterator& iter) const -> type {
+    Instr instr = deserialize<Instr>(iter);
+    AssemblerLine instruction { instr };
+    _AsmArgDeserializeVisitor<InputIterator> visitor { iter };
+    for (const auto& arg : getAsmArguments(instr)) {
+        instruction.addRegisterArg(callOnAsmArgType(visitor, arg));
+    }
+    return instruction;
+}
+
+template <typename T, typename OutputIterator>
+void serialize(const T& arg, OutputIterator& iter) {
+    serialize_t<T>().serialize(arg, iter);
+}
+
+template <typename T, typename OutputIterator>
+T deserialize(OutputIterator& iter) {
+    return serialize_t<T>().deserialize(iter);
+}
+
+template <typename OutputIterator>
+struct _VariantSerializeVisitor : boost::static_visitor<void> {
+    OutputIterator& iter;
+
+    _VariantSerializeVisitor(OutputIterator& iter) : iter(iter) {}
+
+    template <typename T>
+    void operator()(const T& arg) {
+        serialize(arg, iter);
+    }
+
+};
+
+template <typename OutputIterator, typename... Ts>
+void serializeVariant(const boost::variant<Ts...>& arg, OutputIterator& iter) {
+    _VariantSerializeVisitor<OutputIterator> visitor { iter };
+    boost::apply_visitor(visitor, arg);
 }
 
 #endif // SERIALIZE_HPP

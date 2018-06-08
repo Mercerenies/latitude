@@ -274,10 +274,10 @@ bool readFileSource(string fname,
 
 void saveInstrs(ofstream& file, const InstrSeq& seq) {
     SerialInstrSeq compiled;
-    for (const auto& instr : seq) {
-        appendInstruction(instr.getCommand(), compiled);
-        for (const auto& arg : instr.arguments()) {
-            appendRegisterArg(arg, compiled);
+    {
+        auto iter = std::back_inserter(compiled);
+        for (const auto& instr : seq) {
+            serialize<AssemblerLine>(instr, iter);
         }
     }
     unsigned long length = compiled.size();
