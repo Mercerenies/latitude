@@ -100,7 +100,7 @@ auto serialize_t<Header>::deserialize(InputIterator& iter) const -> type{
 
     header.version = deserialize<long>(iter);
     // TODO Err if the version is not valid
-    header.fields &= (unsigned int)HeaderField::VERSION;
+    header.fields |= (unsigned int)HeaderField::VERSION;
 
     char field = deserialize<char>(iter);
     while (field != '.') {
@@ -109,12 +109,12 @@ auto serialize_t<Header>::deserialize(InputIterator& iter) const -> type{
         case 'M':
             // Assume it's a string
             header.module = deserialize<std::string>(iter);
-            header.fields &= (unsigned int)HeaderField::MODULE;
+            header.fields |= (unsigned int)HeaderField::MODULE;
             break;
         case 'P':
             // Assume it's a string
             header.package = deserialize<std::string>(iter);
-            header.fields &= (unsigned int)HeaderField::PACKAGE;
+            header.fields |= (unsigned int)HeaderField::PACKAGE;
             break;
         default:
             // Unknown so ignore it
