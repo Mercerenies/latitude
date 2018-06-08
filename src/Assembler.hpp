@@ -1,6 +1,7 @@
 #ifndef ASSEMBLER_HPP
 #define ASSEMBLER_HPP
 #include "Instructions.hpp"
+#include "Base.hpp"
 #include <type_traits>
 #include <tuple>
 #include <vector>
@@ -318,5 +319,35 @@ InstrSeq asmCode(Ts... args) {
 /// \param instr the instruction
 /// \return a list of arguments
 std::vector<AsmType> getAsmArguments(Instr instr);
+
+/// Given an AsmType as an argument, calls the visitor with the
+/// appropriate type passed as a template argument.
+///
+/// The visitor should have an operator() which takes a proxy argument
+/// for each of the following proxy types.
+///
+/// * Proxy<long>
+/// * Proxy<std::string>
+/// * Proxy<Reg>
+/// * Proxy<FunctionIndex>
+///
+/// \param visitor the visitor
+/// \param type the type of argument
+template <typename Visitor>
+auto callOnAsmArgType(Visitor& visitor, AsmType type)
+    -> decltype(visitor(Proxy<long>())) {
+    switch (type) {
+    case AsmType::LONG:
+        return visitor(Proxy<long>());
+    case AsmType::STRING:
+        return visitor(Proxy<std::string>());
+    case AsmType::REG:
+        return visitor(Proxy<Reg>());
+    case AsmType::ASM:
+        return visitor(Proxy<AsmType>());
+    default:
+        assert(false);
+    }
+}
 
 #endif // ASSEMBLER_HPP
