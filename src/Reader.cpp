@@ -477,6 +477,10 @@ bool readFile(string fname,
     return okay;
 }
 
+Header getFileHeader(std::string filename) {
+    return getFileHeaderSource(filename);
+}
+
 ParseError::ParseError()
     : ParseError("Parse error!") {}
 

@@ -35,6 +35,6 @@ struct Header {
 ///
 /// \param filename the file name
 /// \return the file header
-Header getFileHeader(std::string filename);
+Header getFileHeaderSource(std::string filename);
 
 #endif // HEADER_HPP

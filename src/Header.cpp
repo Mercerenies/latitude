@@ -6,7 +6,7 @@
 
 using namespace std;
 
-Header getFileHeader(std::string filename) {
+Header getFileHeaderSource(std::string filename) {
     Header header;
     header.fields = 0;
     ifstream file(filename);

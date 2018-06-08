@@ -6,6 +6,7 @@ extern "C" {
 #include "Bytecode.hpp"
 #include "Proto.hpp"
 #include "Precedence.hpp"
+#include "Header.hpp"
 #include <memory>
 #include <functional>
 #include <list>
@@ -67,6 +68,8 @@ bool readFile(std::string fname,
               IntState& state,
               const ReadOnlyState& reader,
               const OperatorTable& table);
+
+Header getFileHeader(std::string filename);
 
 class ParseError : public std::exception {
 private:
