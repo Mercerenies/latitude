@@ -100,55 +100,6 @@ T deserialize(OutputIterator& iter);
 template <typename OutputIterator, typename... Ts>
 void serializeVariant(const boost::variant<Ts...>& arg, OutputIterator& iter);
 
-/// Given a serial instruction sequence, pops a single character off
-/// the front and returns it.
-///
-/// \param state a serial instruction sequence
-/// \return the first character, or 0 if there is no character
-[[deprecated]]
-unsigned char popChar(SerialInstrSeq& state);
-
-/// Given a serial instruction sequence, pops a long integer off the
-/// front and returns it.
-///
-/// \param state a serial instruction sequence
-/// \return a long integer
-[[deprecated]]
-long popLong(SerialInstrSeq& state);
-
-/// Given a serial instruction sequence, pops a string off the front
-/// and returns it. Note that these strings are 8-bit clean and can
-/// contain nulls.
-///
-/// \param state a serial instruction sequence
-/// \return a string
-[[deprecated]]
-std::string popString(SerialInstrSeq& state);
-
-/// Given a serial instruction sequence, pops a single character off
-/// the front and reads it as a register reference.
-///
-/// \param state a serial instruction sequence
-/// \return a register
-[[deprecated]]
-Reg popReg(SerialInstrSeq& state);
-
-/// Given a serial instruction sequence, pops a single character off
-/// the front and reads it as an instruction.
-///
-/// \param state a serial instruction sequence
-/// \return an instruction
-[[deprecated]]
-Instr popInstr(SerialInstrSeq& state);
-
-/// Given a serial instruction sequence, pops off enough bytes to
-/// parse as a function reference.
-///
-/// \param state a serial instruction sequence
-/// \return a function index
-[[deprecated]]
-FunctionIndex popFunction(SerialInstrSeq& state);
-
 // ----
 
 template <typename OutputIterator>
