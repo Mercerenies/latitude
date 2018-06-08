@@ -25,27 +25,6 @@ PopIterator<Container> popIterator(Container& container) {
     return { container };
 }
 
-struct AppendVisitor {
-    SerialInstrSeq* instructions;
-
-    template <typename T>
-    void operator()(const T& val) {
-        auto temp = std::back_inserter(*instructions);
-        serialize<T>(val, temp);
-    }
-
-};
-
-void appendRegisterArg(const RegisterArg& arg, SerialInstrSeq& seq) {
-    AppendVisitor visitor { &seq };
-    boost::apply_visitor(visitor, arg);
-}
-
-void appendInstruction(const Instr& instr, SerialInstrSeq& seq) {
-    AppendVisitor visitor { &seq };
-    visitor(instr);
-}
-
 unsigned char popChar(SerialInstrSeq& state) {
     auto temp = popIterator(state);
     return (unsigned char)deserialize<char>(temp);
