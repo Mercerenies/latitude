@@ -295,7 +295,7 @@ struct _AsmArgDeserializeVisitor {
 
 template <typename InputIterator>
 auto serialize_t<AssemblerLine>::deserialize(InputIterator& iter) const -> type {
-    Instr instr = deserialize<Instr>(iter);
+    Instr instr = ::deserialize<Instr>(iter);
     AssemblerLine instruction { instr };
     _AsmArgDeserializeVisitor<InputIterator> visitor { iter };
     for (const auto& arg : getAsmArguments(instr)) {
