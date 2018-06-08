@@ -57,7 +57,7 @@ Process.o:	Process.cpp Process.hpp Stream.hpp Platform.hpp
 Bytecode.o:	Bytecode.cpp Bytecode.hpp Symbol.hpp Number.hpp Proto.hpp Protection.hpp Reader.hpp Garnish.hpp Header.hpp Instructions.hpp Instructions.hpp Assembler.hpp Stack.hpp GC.hpp Base.hpp Serialize.hpp
 	$(CXX) $(CXXFLAGS) Bytecode.cpp
 
-Header.o:	Header.cpp Header.hpp
+Header.o:	Header.cpp Header.hpp Serialize.hpp
 	$(CXX) $(CXXFLAGS) Header.cpp
 
 Instructions.o:	Instructions.cpp Instructions.hpp Serialize.hpp

@@ -1,3 +1,4 @@
+
 #include "Header.hpp"
 #include <sstream>
 #include <fstream>
@@ -36,4 +37,19 @@ Header getFileHeaderSource(std::string filename) {
     }
     file.close();
     return header;
+}
+
+Header getFileHeaderComp(std::ifstream file) {
+    std::istream_iterator<unsigned char> iter { file };
+    Header value = deserialize<Header>(iter);
+    file.ignore(1);
+    return value;
+}
+
+void saveFileHeader(std::ofstream file, const Header& header) {
+    std::vector<unsigned char> bytestream;
+    bytestream.reserve(256);
+    std::ostream_iterator<unsigned char> iter { file };
+    serialize(header, iter);
+    file << '.';
 }
