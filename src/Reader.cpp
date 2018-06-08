@@ -481,7 +481,16 @@ bool readFile(string fname,
 }
 
 Header getFileHeader(std::string filename) {
-    return getFileHeaderSource(filename);
+    std::string cname = filename + "c";
+    if (needsRecompile(filename, cname)) {
+        return getFileHeaderSource(filename);
+    } else {
+        std::ifstream file { cname };
+        BOOST_SCOPE_EXIT(&file) {
+            file.close();
+        } BOOST_SCOPE_EXIT_END;
+        return getFileHeaderComp(file);
+    }
 }
 
 ParseError::ParseError()
