@@ -322,43 +322,30 @@ SerialInstrSeq loadSeq(ifstream& file, unsigned long length) {
     return result;
 }
 
-void parseSeq(InstrSeq& seqOut, SerialInstrSeq& seqIn) {
-    // Note: Destroys the sequence as it reads it
-    while (!seqIn.empty()) {
-        Instr instr = popInstr(seqIn);
-        AssemblerLine instruction { instr };
-        for (const auto& arg : getAsmArguments(instr)) {
-            switch (arg) {
-            case AsmType::LONG:
-                instruction.addRegisterArg(popLong(seqIn));
-                break;
-            case AsmType::STRING:
-                instruction.addRegisterArg(popString(seqIn));
-                break;
-            case AsmType::REG:
-                instruction.addRegisterArg(popReg(seqIn));
-                break;
-            case AsmType::ASM:
-                instruction.addRegisterArg(popFunction(seqIn));
-                break;
-            }
-        }
-        seqOut.push_back(instruction);
+template <typename InputIterator, typename OutputIterator>
+void parseSeq(InputIterator begin, InputIterator end, OutputIterator& seqOut) {
+    while (begin != end) {
+        AssemblerLine instruction = deserialize<AssemblerLine>(begin);
+        *seqOut++ = instruction;
     }
 }
 
 TranslationUnitPtr loadFromFile(ifstream& file) {
     TranslationUnitPtr result = make_shared<TranslationUnit>();
-    unsigned long length = loadAsNumber(file);
-    SerialInstrSeq seq = loadSeq(file, length);
-    parseSeq(result->instructions(), seq);
+    {
+        unsigned long length = loadAsNumber(file);
+        SerialInstrSeq seq = loadSeq(file, length);
+        auto outputIter = std::back_inserter(result->instructions());
+        parseSeq(seq.begin(), seq.end(), outputIter);
+    }
     while (true) {
         unsigned long mlength = loadAsNumber(file);
         if (file.eof())
             break;
         SerialInstrSeq mseq = loadSeq(file, mlength);
         auto curr = result->pushMethod(InstrSeq());
-        parseSeq(result->method(curr.index), mseq);
+        auto outputIter = std::back_inserter(result->method(curr.index));
+        parseSeq(mseq.begin(), mseq.end(), outputIter);
     }
     return result;
 }
