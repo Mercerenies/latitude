@@ -117,20 +117,6 @@ bool isAsmRegisterArg(const RegisterArg& arg) {
     return (bool)(boost::get<FunctionIndex>(&arg));
 }
 
-AssemblerError::AssemblerError()
-    : AssemblerError("Assembler error") {}
-
-AssemblerError::AssemblerError(string message)
-    : message(message) {}
-
-string AssemblerError::getMessage() {
-    return message;
-}
-
-const char* AssemblerError::what() {
-    return message.c_str();
-}
-
 AssemblerLineArgs::AssemblerLineArgs(const AssemblerLine& inner)
     : impl(inner) {}
 

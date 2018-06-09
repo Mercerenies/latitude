@@ -189,23 +189,6 @@ bool isLongRegisterArg(const RegisterArg& arg);
 /// \return whether the argument is a function
 bool isAsmRegisterArg(const RegisterArg& arg);
 
-/// This is the general error class for exceptions in the VM system,
-/// usually with the integrity of a VM instruction.
-class AssemblerError : public std::exception {
-private:
-    std::string message;
-public:
-    /// \brief Constructs an assembler error with a generic message.
-    AssemblerError();
-    /// \brief Constructs an assembler error with a specific message.
-    AssemblerError(std::string message);
-    /// \brief Returns the error's message.
-    ///
-    /// \return the message
-    std::string getMessage();
-    virtual const char* what();
-};
-
 class AssemblerLineArgs;
 
 /// An AssemblerLine is a single instruction as it is being built

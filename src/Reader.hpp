@@ -71,16 +71,6 @@ bool readFile(std::string fname,
 
 Header getFileHeader(std::string filename);
 
-class ParseError : public std::exception {
-private:
-    std::string message;
-public:
-    ParseError();
-    ParseError(std::string message);
-    std::string getMessage();
-    virtual const char* what();
-};
-
 /*
  * A statement. Defines only one method, which executes
  * the statement in a given context.

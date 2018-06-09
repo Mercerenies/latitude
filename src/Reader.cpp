@@ -504,20 +504,6 @@ Header getFileHeader(std::string filename) {
     }
 }
 
-ParseError::ParseError()
-    : ParseError("Parse error!") {}
-
-ParseError::ParseError(std::string message)
-    : message(message) {}
-
-std::string ParseError::getMessage() {
-    return message;
-}
-
-const char* ParseError::what() {
-    return message.c_str();
-}
-
 Stmt::Stmt(int line_no)
     : file_name("(eval)"), line_no(line_no), location(true) {}
 
