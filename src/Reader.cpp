@@ -331,6 +331,7 @@ void parseSeq(InputIterator begin, InputIterator end, OutputIterator& seqOut) {
     }
 }
 
+// Throws HeaderError
 TranslationUnitPtr loadFromFile(ifstream& file) {
     TranslationUnitPtr result = make_shared<TranslationUnit>();
     getFileHeaderComp(file); // Ignore it; we don't need it right now
@@ -442,6 +443,9 @@ bool readFileComp(string fname,
             pushTrace(state);
             state.trns.push(unit);
         } catch (ParseError& e) {
+            throwError(state, reader, "ParseError", e.getMessage());
+            return false;
+        } catch (HeaderError& e) {
             throwError(state, reader, "ParseError", e.getMessage());
             return false;
         }

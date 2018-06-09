@@ -69,6 +69,7 @@ bool readFile(std::string fname,
               const ReadOnlyState& reader,
               const OperatorTable& table);
 
+// Throws HeaderError
 Header getFileHeader(std::string filename);
 
 /*

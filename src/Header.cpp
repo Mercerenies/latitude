@@ -35,6 +35,7 @@ Header getFileHeaderSource(std::ifstream& file) {
     return header;
 }
 
+// Throws HeaderError
 Header getFileHeaderComp(std::ifstream& file) {
     std::istream_iterator<unsigned char> iter { file };
     Header value = deserialize<Header>(iter);

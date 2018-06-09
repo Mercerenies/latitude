@@ -1,30 +1,31 @@
 
 #include "Base.hpp"
 
+LatitudeError::LatitudeError(std::string message)
+    : message(message) {}
+
+std::string LatitudeError::getMessage() {
+    return message;
+}
+
+const char* LatitudeError::what() {
+    return message.c_str();
+}
+
 AssemblerError::AssemblerError()
     : AssemblerError("Assembler error") {}
 
 AssemblerError::AssemblerError(std::string message)
-    : message(message) {}
-
-std::string AssemblerError::getMessage() {
-    return message;
-}
-
-const char* AssemblerError::what() {
-    return message.c_str();
-}
+    : LatitudeError(message) {}
 
 ParseError::ParseError()
     : ParseError("Parse error!") {}
 
 ParseError::ParseError(std::string message)
-    : message(message) {}
+    : LatitudeError(message) {}
 
-std::string ParseError::getMessage() {
-    return message;
-}
+HeaderError::HeaderError()
+    : HeaderError("Header error!") {}
 
-const char* ParseError::what() {
-    return message.c_str();
-}
+HeaderError::HeaderError(std::string message)
+    : LatitudeError(message) {}

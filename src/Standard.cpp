@@ -1505,14 +1505,19 @@ void spawnSystemCallsNew(ObjectPtr global,
      assert(reader.cpp.size() == CPP_FILE_HEADER);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
          ObjectPtr obj = clone(reader0.lit.at(Lit::FHEAD));
-         Header header = getFileHeader(state0.str0);
-         if (header.fields & (unsigned int)HeaderField::MODULE) {
-             obj->put(Symbols::get()["moduleName"], garnishObject(reader0, header.module));
+         try {
+             Header header = getFileHeader(state0.str0);
+             if (header.fields & (unsigned int)HeaderField::MODULE) {
+                 obj->put(Symbols::get()["moduleName"], garnishObject(reader0, header.module));
+             }
+             if (header.fields & (unsigned int)HeaderField::PACKAGE) {
+                 obj->put(Symbols::get()["packageName"], garnishObject(reader0, header.package));
+             }
+             state0.ret = obj;
+         } catch (HeaderError& e) {
+             throwError(state0, reader0, "ParseError",
+                        "File " + state0.str0 + " has invalid Latitude header");
          }
-         if (header.fields & (unsigned int)HeaderField::PACKAGE) {
-             obj->put(Symbols::get()["packageName"], garnishObject(reader0, header.package));
-         }
-         state0.ret = obj;
      });
      sys->put(Symbols::get()["fileHeader#"],
               defineMethod(unit, global, method,

@@ -3,6 +3,7 @@
 
 #include <string>
 #include "Serialize.hpp"
+#include "Base.hpp"
 
 /// \file
 ///
@@ -91,6 +92,7 @@ auto serialize_t<Header>::serialize(const type& arg, OutputIterator& iter) const
 
 }
 
+// Throws HeaderError
 template <typename InputIterator>
 auto serialize_t<Header>::deserialize(InputIterator& iter) const -> type{
     using ::deserialize;
@@ -99,7 +101,8 @@ auto serialize_t<Header>::deserialize(InputIterator& iter) const -> type{
     header.fields = 0;
 
     header.version = deserialize<long>(iter);
-    // TODO Err if the version is not valid
+    if (header.version != 1000)
+        throw HeaderError("Unrecognized compilation version " + std::to_string(header.version));
     header.fields |= (unsigned int)HeaderField::VERSION;
 
     char field = deserialize<char>(iter);
