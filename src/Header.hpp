@@ -35,13 +35,13 @@ struct Header {
     int version;
 };
 
-/// Given a filename, this function reads just enough of the file to
+/// Given a file, this function reads just enough of the file to
 /// access its header and returns a Header instance detailing the
 /// information that was acquired.
 ///
-/// \param filename the file name
+/// \param file the file stream
 /// \return the file header
-Header getFileHeaderSource(std::string filename);
+Header getFileHeaderSource(std::ifstream& file);
 
 Header getFileHeaderComp(std::ifstream& file);
 

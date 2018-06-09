@@ -360,7 +360,14 @@ bool compileFile(string fname,
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
 #endif
-    Header header = getFileHeaderSource(fname);
+    Header header;
+    {
+        ifstream file0 { fname };
+        BOOST_SCOPE_EXIT(&file0) {
+            file0.close();
+        } BOOST_SCOPE_EXIT_END;
+        header = getFileHeaderSource(file0);
+    }
     ifstream file;
     file.exceptions(ifstream::failbit | ifstream::badbit);
     try {
@@ -483,7 +490,11 @@ bool readFile(string fname,
 Header getFileHeader(std::string filename) {
     std::string cname = filename + "c";
     if (needsRecompile(filename, cname)) {
-        return getFileHeaderSource(filename);
+        std::ifstream file { filename };
+        BOOST_SCOPE_EXIT(&file) {
+            file.close();
+        } BOOST_SCOPE_EXIT_END;
+        return getFileHeaderSource(file);
     } else {
         std::ifstream file { cname };
         BOOST_SCOPE_EXIT(&file) {

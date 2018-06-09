@@ -7,12 +7,9 @@
 
 using namespace std;
 
-Header getFileHeaderSource(std::string filename) {
+Header getFileHeaderSource(std::ifstream& file) {
     Header header;
     header.fields = 0;
-    ifstream file(filename);
-    if (!file)
-        return header;
     auto is_blank_line = [](string line) {
         return all_of<string::iterator, int(*)(int)>(line.begin(), line.end(), isspace);
     };
@@ -35,7 +32,6 @@ Header getFileHeaderSource(std::string filename) {
         }
         getline(file, curr);
     }
-    file.close();
     return header;
 }
 
