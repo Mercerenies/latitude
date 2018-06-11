@@ -468,6 +468,13 @@ Object assign= := {
 Object assignable := {
   #'self assign ($1) = { #'$1. }.
 }.
+global local= := {
+  self assignable ($1).
+  self slot ($1) = #'($2).
+}.
+global local := {
+  self local ($1) = Nil.
+}.
 
 ;; Method cloning
 Method clone := {
