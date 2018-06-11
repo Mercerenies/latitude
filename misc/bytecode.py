@@ -223,12 +223,35 @@ class BytecodeFile:
             block.append(self.read_instruction())
         return block
 
+    def read_checked(self):
+        nature = self.read_byte()
+        return {
+            ord('#'): self.read_long,
+            ord('$'): self.read_string
+        }[nature]()
+
+def read_header(file):
+    version = file.read_long()
+    curr = file.read_byte()
+    while curr != ord('.'):
+        file.read_checked()
+        curr = file.read_byte()
+    # Additional sentinel bit; ignore
+    file.read_byte()
+    # For now, we just read the header and ignore everything except
+    # the version. We'll properly read the header in the future
+    return {'version': version}
+
 if len(sys.argv) <= 1:
     print("Usage: ./bytecode.py <filename>", file=sys.stderr)
     exit()
 
 with closing(BytecodeFile(sys.argv[1])) as file:
     try:
+        header = read_header(file)
+        if header['version'] != 1000:
+            print("Unknown file version!", file=stderr)
+            exit(1)
         for i in count(0):
             curr = file.read_block()
             print("<<{}>>".format(i))
