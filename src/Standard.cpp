@@ -69,6 +69,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     //  * Checks %num0 (if 0, then standard load; if 1, then raw load; if 2, then compile only)
     // kernelLoad#: filename, global.
     // kernelLoad0#: filename, global.
+    // kernelComp#: filename, global.
     assert(reader.cpp.size() == CPP_KERNEL_LOAD);
     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         ObjectPtr dyn = state0.dyn.top();

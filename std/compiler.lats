@@ -13,6 +13,8 @@ meta sys kernelLoad0#: "std/latitude.lats", global.
   use 'sequence.
   use 'time.
   use 'unicode.
+  Kernel compileFile: FilePath directory (Kernel executablePath) ++ "std/runner.lats", global clone.
+  Kernel compileFile: FilePath directory (Kernel executablePath) ++ "std/repl.lats", global clone.
   $argv slot? '$0 ifTrue {
     $whereAmI := $argv $0.
     Kernel compileFile: $argv $0, global clone.
