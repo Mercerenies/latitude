@@ -252,6 +252,8 @@ with closing(BytecodeFile(sys.argv[1])) as file:
         if header['version'] != 1000:
             print("Unknown file version!", file=stderr)
             exit(1)
+        print("File:", sys.argv[1])
+        print("Version:", header['version'])
         for i in count(0):
             curr = file.read_block()
             print("<<{}>>".format(i))
