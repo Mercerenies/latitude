@@ -95,3 +95,4 @@ consider making a pull request to the project on Github, as your
 changes may be incorporated officially.
 
 [[up](.)]
+<br/>[[next - The Basics](basics.md)]
