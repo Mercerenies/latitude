@@ -1,9 +1,14 @@
 #!/usr/bin/python3
 
+# Note: Depends on Alakazam (pip install alakazam)
+
 import sys
 from contextlib import closing
 from enum import Enum
 from itertools import count
+
+import alakazam as zz
+from alakazam import _1, _2, _3, _4, _5
 
 ArgType = Enum('ArgType', "LONG STRING REG ASM")
 
@@ -147,6 +152,14 @@ class WrappedStr(str):
                 a += x
         return '"' + a + '"'
 
+class Header:
+
+    def __init__(self, version):
+        self.version = version
+        self.module_name = None
+        self.package_name = None
+
+
 class BytecodeFile:
 
     def __init__(self, filename):
@@ -227,20 +240,34 @@ class BytecodeFile:
         nature = self.read_byte()
         return {
             ord('#'): self.read_long,
-            ord('$'): self.read_string
+            ord('$'): self.read_string,
         }[nature]()
 
 def read_header(file):
     version = file.read_long()
+    header = Header(version)
+
     curr = file.read_byte()
     while curr != ord('.'):
-        file.read_checked()
+        value = file.read_checked()
+        {
+            ord('M'): zz.set(_1.module_name, _2),
+            ord('P'): zz.set(_1.package_name, _2),
+        }[curr](header, value)
         curr = file.read_byte()
+
     # Additional sentinel bit; ignore
     file.read_byte()
-    # For now, we just read the header and ignore everything except
-    # the version. We'll properly read the header in the future
-    return {'version': version}
+
+    return header
+
+def print_header_info(filename, header):
+    print("File:", sys.argv[1])
+    print("Version:", header.version)
+    if header.module_name:
+        print("Module:", header.module_name)
+    if header.package_name:
+        print("Package:", header.package_name)
 
 if len(sys.argv) <= 1:
     print("Usage: ./bytecode.py <filename>", file=sys.stderr)
@@ -249,11 +276,10 @@ if len(sys.argv) <= 1:
 with closing(BytecodeFile(sys.argv[1])) as file:
     try:
         header = read_header(file)
-        if header['version'] != 1000:
+        if header.version != 1000:
             print("Unknown file version!", file=stderr)
             exit(1)
-        print("File:", sys.argv[1])
-        print("Version:", header['version'])
+        print_header_info(filename=sys.argv[1], header=header)
         for i in count(0):
             curr = file.read_block()
             print("<<{}>>".format(i))
