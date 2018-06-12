@@ -14,6 +14,11 @@ being called with a single argument: a literal string. In Latitude,
 statements always end in a dot `.`, and our `putln` statement is no
 exception.
 
+## Comments
+
+Line comments in Latitude begin with a semicolon `;`. Block comments
+are enclosed in `{*` and `*}`. Block comments will nest correctly.
+
 ## Object Orientation
 
 Now, Latitude is a prototype-oriented programming language. We'll get
