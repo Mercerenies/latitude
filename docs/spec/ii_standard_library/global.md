@@ -42,6 +42,18 @@ with an argument, this method will invoke the continuation `cont`,
 jumping to the point of the continuation and passing its argument
 onward.
 
+### `global local (name) = (value).`
+
+Defines a new variable in the current scope. The variable's name is
+`name` and its initial value is `value` (not evaluated). Additionally,
+an accessor is defined for the name, as though by `self assignable
+(name)`.
+
+### `global local (name).`
+
+Defines a new variable in the current scope with a value of `Nil`.
+Equivalent to `self local (name) = Nil`.
+
 ### `global $moduleLoader.`
 
 This slot contains the current [`ModuleLoader`](moduleloader.md). It
