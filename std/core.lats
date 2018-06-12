@@ -187,6 +187,12 @@ Stream flush := {
 }.
 Stream toString := "Stream".
 
+;; Stream delegation
+global puts    := { stdout puts.    }.
+global putln   := { stdout putln.   }.
+global print   := { stdout print.   }.
+global println := { stdout println. }.
+
 ; Dumping and Printing Convenience Functions
 Stream dumpHandler := ~DUMP.
 Stream dump := {

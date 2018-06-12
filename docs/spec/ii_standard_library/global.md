@@ -305,6 +305,22 @@ Returns `block`, evaluating it if it is a method.
 Returns a [`StackFrame`](stackframe.md) object representing the point
 of execution at which this method was called.
 
+### `global puts (str).`
+
+Delegates directly to `stdout puts (str)`.
+
+### `global putln (str).`
+
+Delegates directly to `stdout putln (str)`.
+
+### `global print (str).`
+
+Delegates directly to `stdout print (str)`.
+
+### `global println (str).`
+
+Delegates directly to `stdout println (str)`.
+
 ## Inner Object Methods
 
 ### `global $argv.`
