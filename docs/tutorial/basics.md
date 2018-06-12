@@ -208,8 +208,8 @@ looks on `Object`.
 ## Summary
 
 Congratulations! You now know the basics of object orientation in
-Latitude. In the next chapter, we'll talk about some basic control
-flow structures.
+Latitude. In the next chapter, we'll talk about variables.
 
 [[up](.)]
 <br/>[[prev - Installation](installing.md)]
+<br/>[[next - Variables](vars.md)]
