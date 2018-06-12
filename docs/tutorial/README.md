@@ -1,7 +1,7 @@
 
 # Getting Started
 
-(Coming soon)
+ * [Installation](installing.md)
 
 [[up](..)]
 <br/>[[next - Latitude Specification](../spec/)]

@@ -94,4 +94,4 @@ successfully get Latitude to build on a non-supported OS, please
 consider making a pull request to the project on Github, as your
 changes may be incorporated officially.
 
-[[up](..)]
+[[up](.)]
