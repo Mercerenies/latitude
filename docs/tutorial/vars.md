@@ -293,10 +293,98 @@ which forwards most of its methods calls to an inner object. It is
 never necessary to explicitly forward the arguments, as they are
 always implicitly passed onward.
 
+## Argument Renaming
+
 Unless your method is exceedingly short (like our `addTwoNumbers`
 above), you will likely be giving lexical names to these dynamic
-variables, to make them self-documenting. We will discuss an automated
-way to do this later in the next chapter.
+variables, to make them self-documenting and also to prevent them from
+getting corrupted in inner scopes. This pattern is so common that
+Latitude provides automatic techniques for doing so.
+
+First, note that all of the basic control flow techniques in Latitude
+take a method as an argument. We will discuss these techniques in
+detail in the next chapter, but it is worth noting that Latitude has
+no explicit notion of a "block", so any time a control structure or
+similar method requires user-customizable behavior, that method will
+take another method as an argument. As such, it is fairly common to
+end up nested several methods deep.
+
+First, since the name `self` is bound *every* time a method is called,
+it is difficult to access the `self` value from several layers out.
+
+    someMethod := {
+      if (blah) then {
+        someBehavior {
+          ;; Would like to access someMethod's self
+          parent parent self. ; Ugly, but works
+        }.
+      } else {
+        doNothing.
+      }.
+    }.
+
+Since it is reasonably common to have several nested methods within
+one another and only care about one of the `self` values, Latitude
+offers the `localize` method. `localize` is a method called on the
+lexical scope which, when called, sets `this` equal to `self`. `this`
+is not rebound at every scope, so if it is used in an inner scope, it
+will still have the same value it did before.
+
+    someMethod := {
+      localize.
+      if (blah) then {
+        someBehavior {
+          ;; Would like to access someMethod's self
+          this. ; self at the time of the localize call
+        }.
+      } else {
+        doNothing.
+      }.
+    }.
+
+As for non-`self` arguments, the primary concern with those is that,
+being dynamically scoped, they can very easily be corrupted by inner
+scopes.
+
+    someMethod := {
+      if (blah) then {
+        $1 toString.
+      } else {
+        doNothing.
+      }.
+    }.
+
+The `$1` in the if-statement does not refer to the first argument of
+`someMethod`. It likely refers to the `{ $1 toString. }` method
+itself, the first argument of `then`, but this is unspecified. As
+such, for any nontrivial methods, it is desirable to convert these
+dynamic argument variables into lexical names. This is done with the
+`takes` primitive.
+
+    someMethod := {
+      takes '[n].
+      if (blah) then {
+        n toString.
+      } else {
+        doNothing.
+      }.
+    }.
+
+`takes` takes an array of symbols and binds each of the arguments to
+the corresponding (lexical) symbol. We haven't discussed arrays or the
+"literal array" syntax used in the example, but for now that syntax
+can be regarded as a "special" part of the `takes` call, and we can
+learn what it actually is later.
+
+    takes '[var1, var2, var3].
+
+It is relatively common, at the beginning of any substantial Latitude
+method, to see a `takes` call and a `localize` call. By convention,
+`localize` and `takes` should always be used at the very beginning of
+a method, and, if both are present, `localize` should be listed first.
+This makes it easy to read off, at a glance, the number and names of
+the formal arguments expected by the method, by looking for a `takes`
+call at the top of the method.
 
 ## Summary
 
