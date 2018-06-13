@@ -77,10 +77,10 @@ Object ifFalse := {
   #'self.
 }.
 Object and := {
-  if (self) then #'$1 else { False. }.
+  if (Conditional send #'(self) call) then #'$1 else { False. }.
 }.
 Object or := {
-  fst := self.
+  fst := (Conditional send #'(self) call).
   if (fst) then { fst. } else #'$1.
 }.
 Object not := {
