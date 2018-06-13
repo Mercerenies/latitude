@@ -216,6 +216,25 @@ dynamic scope is the caller's dynamic scope. Additionally, the
 lexical scope, allowing methods to define variables lexically within
 their caller.
 
+To belabor the point, there is *no* distinction between a slot on the
+scope object and a "local" variable. The two concepts are one and the
+same in Latitude, and to access a local variable, we send a message
+with the variable's name to the scope object. This is also why we can
+call variables containing a method by just using the name.
+
+    foo := { putln "It works!". }.
+    ;; We are sending the message foo to the lexical scope object, which calls the
+    ;; method stored at that slot.
+    foo.
+    ;; Output: It works!
+
+As before, if we wish to retrieve the actual method object rather than
+the result of evaluation, we place the expression in a quoted block.
+
+    foo := { putln "It works!". }.
+    #'(foo).
+    ;; No output
+
 ## Method Arguments
 
 Up until this point, the only methods we have written have taken zero
