@@ -45,7 +45,8 @@ following is a perfectly valid Latitude script.
 
 Now, while we could define all of our variables using `:=` and be
 perfectly happy, it does create some difficulties when it comes to
-inner scopes. Consider the following script.
+inner scopes. Consider the following script.<sup><a
+name="footnote-01a" href="#user-content-footnote-01f">1</a></sup>
 
     i := 1.
     addOne := {
@@ -54,10 +55,6 @@ inner scopes. Consider the following script.
     println (i).
     addOne.
     println (i).
-
-*(Aside: We use `println` rather than `putln` here. `putln` always
-prints a string, verbatim, whereas `println` calls `toString`. We
-can't do `putln` because `i` is a number, not a string)*
 
 `addOne` is a method which, we would hope, adds one to the variable
 `i`. Intuitively, one might think that this would print `1` and then
@@ -415,3 +412,10 @@ flow control tools.
 [[up](.)]
 <br/>[[prev - The Basics](basics.md)]
 <br/>[[next - Simple Flow Control](flow.md)]
+
+<hr/>
+
+<a name="footnote-01f" href="#user-content-footnote-01a"><sup>1</sup></a> We use
+`println` rather than `putln` here. `putln` always prints a string,
+verbatim, whereas `println` calls `toString`. We can't do `putln`
+because `i` is a number, not a string

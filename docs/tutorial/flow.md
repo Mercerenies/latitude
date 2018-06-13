@@ -46,19 +46,15 @@ numbers, strings, symbols, and methods are truthy (this includes 0 and
 is, the portion of the standard library that does not require imports)
 are the `False` value itself and the special `Nil` object.
 
-`Nil` is a relatively simple object, cloned directly from `Object`. It
-behaves as an "empty" or "nullary" object, in the cases where you need
-to show that a slot or a value is well-defined but empty. When
-checking whether an object is `Nil`, prefer passing the `nil?` method
-rather than checking for equality against the `Nil` object. The reason
-for this is that it is possible for programmers to clone `Nil` and
-make their own nil-like objects.
-
-*(Aside: If you happen to run `Parents hierarchy (Nil)` or `Nil
-parent`, you will likely notice that there is in fact a third object
-in the inheritance hierarchy. The statement above, that `Nil` is
-cloned from `Object`, is true. The third object you see there is a
-mixin object, which will be discussed later.)*
+`Nil` is a relatively simple object, cloned directly from
+`Object`.<sup><a name="footnote-01a"
+href="#user-content-footnote-01f">1</a></sup> It behaves as an "empty"
+or "nullary" object, in the cases where you need to show that a slot
+or a value is well-defined but empty. When checking whether an object
+is `Nil`, prefer passing the `nil?` method rather than checking for
+equality against the `Nil` object. The reason for this is that it is
+possible for programmers to clone `Nil` and make their own nil-like
+objects.
 
 By convention, Latitude objects are truthy unless they represent
 failure in some sense. `False` is falsy for obvious reasons. `Nil`
@@ -117,3 +113,12 @@ if-statement. No language would be complete without it.
 
 [[up](.)]
 <br/>[[prev - Variables](vars.md)]
+
+<hr/>
+
+<a name="footnote-01f"
+href="#user-content-footnote-01a"><sup>1</sup></a> If you happen to
+run `Parents hierarchy (Nil)` or `Nil parent`, you will likely notice
+that there is in fact a third object in the inheritance hierarchy.
+`Nil` is in fact cloned from `Object`; that is still true. The third
+object you see there is a mixin object, which will be discussed later.
