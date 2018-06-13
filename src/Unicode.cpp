@@ -5,7 +5,7 @@
 UniChar::UniChar(long cp)
     : codepoint(cp) {}
 
-UniChar::operator std::string() {
+UniChar::operator std::string() const {
     long value = codePoint();
     std::string result;
     int n = 0;
@@ -29,23 +29,23 @@ UniChar::operator std::string() {
     return result;
 }
 
-long UniChar::codePoint() {
+long UniChar::codePoint() const noexcept {
     return codepoint;
 }
 
-uni_class_t UniChar::genCat() {
+uni_class_t UniChar::genCat() const {
     return get_class(codepoint);
 }
 
-UniChar UniChar::toUpper() {
+UniChar UniChar::toUpper() const {
     return UniChar(to_upper(codepoint));
 }
 
-UniChar UniChar::toLower() {
+UniChar UniChar::toLower() const {
     return UniChar(to_lower(codepoint));
 }
 
-UniChar UniChar::toTitle() {
+UniChar UniChar::toTitle() const {
     return UniChar(to_title(codepoint));
 }
 

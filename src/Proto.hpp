@@ -149,12 +149,20 @@ using Prim = boost::variant<boost::blank, Number, std::string,
 /// directly instead
 enum class [[deprecated]] SlotType { PTR, INH };
 
-/// A slot of an object, which may or may not exist. If it does not
-/// exist, the type of the slot is INH, which indicates that it may
-/// exist in a parent or that it may not exist at all. If the type is
-/// PTR, the slot contains an object pointer directly.
+/// A slot of an object, which may or may not exist.
+///
+/// *Note:* It used to be necessary to interface directly with this
+/// class, when accessing slots on Latitude objects. This class has
+/// since become an internal detail not exposed in the public API of
+/// the Object class, so it should seldom, if ever, be necessary for
+/// external users to interface directly with this class. It is
+/// provided here, rather than privately, for legacy reasons.
 struct Slot {
+
+    /// The object in the slot, possibly null.
     ObjectPtr obj;
+
+    /// The slot's protection, undefined if obj is null.
     Protection protection;
 
     /// Constructs an empty slot with no protection.
@@ -187,10 +195,9 @@ struct Slot {
 /// directly accessible using the syntax of the language. The slots
 /// are used to store information, like instance variables in C++. The
 /// `prim` field can be used to store a C++ construct, such as a
-/// `double` or an `std::string`, in an object in the
-/// language. Internally, the core libraries use this `prim` field to
-/// implement many of the built-in numerical, string, and symbol
-/// methods.
+/// `double` or an `std::string`, in an object in the language.
+/// Internally, the core libraries use this `prim` field to implement
+/// many of the built-in numerical, string, and symbol methods.
 class Object {
 private:
     std::unordered_map<Symbolic, Slot> slots;
