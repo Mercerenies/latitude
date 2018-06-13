@@ -68,12 +68,12 @@ Conditional if := {
 global if := { Conditional if. }.
 Object ifTrue := {
   content := #'$1.
-  if (self) then { Kernel invoke #'(content) on #'(parent self) call. } else { Nil. }.
+  if #'(self) then { Kernel invoke #'(content) on #'(parent self) call. } else { Nil. }.
   #'self.
 }.
 Object ifFalse := {
   content := #'$1.
-  if (self) then { Nil. } else { Kernel invoke #'(content) on #'(parent self) call. }.
+  if #'(self) then { Nil. } else { Kernel invoke #'(content) on #'(parent self) call. }.
   #'self.
 }.
 Object and := {
