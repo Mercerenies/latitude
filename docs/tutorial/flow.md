@@ -107,9 +107,67 @@ method you're calling.
 ## Conditionals
 
 After all that build-up, let's discuss the most basic conditional: the
-if-statement. No language would be complete without it.
+if-statement. No language would be complete without it. In Latitude,
+an if-statement looks like this.<sup><a name="footnote-02a"
+href="#user-content-footnote-02f">2</a></sup>
 
-...
+    if (conditional) then {
+      trueCase.
+    } else {
+      falseCase.
+    }.
+
+This may look quite a bit like a special syntactic form, but it is
+not. If-statements are methods like any other. In this case, we are
+passing the `if` message to the global scope. The `if` message always
+returns a conditional object, on which we then send the `then` message
+(which returns the same object) and, subsequently, the `else` message.
+However, we don't have to worry about those details most of the time;
+we just think of it as a single statement and move on.
+
+The actual behavior of the if-statement is reasonably simple. If the
+conditional form is truthy then the true case is returned; otherwise,
+the false case is returned. The `else` block is *required* for this
+form of conditional.
+
+Latitude also provides single-branch suffix forms called `ifTrue` and
+`ifFalse`, which behave in the way you might expect.
+
+    obj ifTrue { body. }.
+    obj ifFalse { body. }.
+
+In the first case, the body is called if `obj` is truthy, and no
+action is performed otherwise. In the second case, the body is called
+if `obj` is falsy, and no action is performed otherwise. `ifTrue` and
+`ifFalse` always return the object `obj` which was initially checked
+for truthiness.
+
+These suffix forms make it possible to write Smalltalk-style
+conditionals, provided the return value is not used. It would,
+however, be relatively unusual to see Latitude code written in this
+way.
+
+    obj ifTrue {
+      putln "It's true".
+    } ifFalse {
+      putln "It's false".
+    }.
+
+In addition to the if-statement, Latitude provides a `cond` form that
+should be familiar to Lisp coders.
+
+    cond {
+      when (cond1) do { body1. }.
+      when (cond2) do { body2. }.
+      else { body3. }.
+    }.
+
+A `cond` form is the equivalent to a chain of if-else-if calls. The
+first `when` which has a truthy conditional will have its body
+evaluated and returned. `else`, in this context, is roughly equivalent
+to `when (True) do`.
+
+... ///// case
 
 [[up](.)]
 <br/>[[prev - Variables](vars.md)]
@@ -122,3 +180,12 @@ run `Parents hierarchy (Nil)` or `Nil parent`, you will likely notice
 that there is in fact a third object in the inheritance hierarchy.
 `Nil` is in fact cloned from `Object`; that is still true. The third
 object you see there is a mixin object, which will be discussed later.
+
+<a name="footnote-02f"
+href="#user-content-footnote-02a"><sup>2</sup></a> Sometimes, you will
+see the conditional block enclosed in braces as a method as well, like
+`if { conditional. } then ...`. This works fine as well, since `if`
+follows the same rules as `or` and `and` with regard to methods. In
+fact, the `trueCase` and `falseCase` don't even strictly have to be
+methods, but then both would be evaluated and (in most cases) that
+would defeat the purpose of the if-statement.
