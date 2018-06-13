@@ -144,7 +144,10 @@ using Prim = boost::variant<boost::blank, Number, std::string,
                             Method, StatePtr>;
 
 /// A Slot is either empty (INH) or has contents (PTR).
-enum class SlotType { PTR, INH };
+///
+/// \deprecated This enum is now a glorified Boolean; use Booleans
+/// directly instead
+enum class [[deprecated]] SlotType { PTR, INH };
 
 /// A slot of an object, which may or may not exist. If it does not
 /// exist, the type of the slot is INH, which indicates that it may
