@@ -170,7 +170,7 @@ As you can see, it definitely generates a new value each time.
 
 As alluded to before, *everything* is Latitude is an object. This
 includes methods. If we want to get the method object rather than
-calling it, we use a special "hold" block denoted by `#'`.
+calling it, we use a special "quoted" block denoted by `#'`.
 
     % #'(foo randomly).
     Method
