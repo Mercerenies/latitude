@@ -243,7 +243,7 @@ Specifically, two additional methods become available: `next` and
 loop body. `last` takes a single argument and exits the loop, using
 the argument as the loop's return value.
 
-    loop {
+    loop* {
       putln "This will print forever".
       next.
       putln "This one will never print".
@@ -251,10 +251,15 @@ the argument as the loop's return value.
 
 &nbsp;
 
-    loop {
+    loop* {
       putln "This will now only print once".
       last (Nil).
     }.
+
+Keep in mind that the starred forms of the loops are slightly less
+efficient than their simpler equivalents. It shouldn't make much of a
+difference, but it is ideal to omit the star unless the additional
+functionality is actually needed.
 
 ## Summary
 
