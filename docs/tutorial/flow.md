@@ -265,6 +265,7 @@ discuss this structure and a few other tools that augment it.
 
 [[up](.)]
 <br/>[[prev - Variables](vars.md)]
+<br/>[[next - Advanced Flow Control](cont.md)]
 
 <hr/>
 
