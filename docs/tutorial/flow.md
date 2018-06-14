@@ -167,7 +167,101 @@ first `when` which has a truthy conditional will have its body
 evaluated and returned. `else`, in this context, is roughly equivalent
 to `when (True) do`.
 
-... ///// case
+Finally, Latitude supports a `case` statement that behaves similarly
+to the `cond` form.
+
+    case (obj) do {
+      when (test1) do { body1. }.
+      when (test2) do { body2. }.
+      else { body3. }.
+    }.
+
+Like `cond`, the `case` statement will perform the body associated
+with the first matching `when` form. For a statement of the form `when
+(test) do { body. }.`, the test `test =~ obj` will be performed to
+determine whether the match was successful. `=~` defaults to behaving
+just like `==` but can be overridden. In particular, `else` is
+equivalent to `when (...) do`, where `...` is the global `Ellipsis`
+object, for whom `=~` always returns true.
+
+## Loops
+
+Latitude has two basic looping "primitives", and then several more
+abstract constructs are built on top of them. The most basic looping
+construct in Latitude is `loop`, which performs its body forever,
+unconditionally. If you run the below snippet, just make sure you know
+how to exit it. On Unix-like operating systems, an interrupt signal
+(CTRL+C) will work.
+
+    loop {
+      putln "This will never stop printing".
+    }.
+
+However, more commonly, we would like our loops to terminate at some
+point. While it is possible to break from an infinite loop (we will
+see a very powerful construct in the next chapter that allows this),
+usually we want to terminate the loop normally when some condition is
+met. Latitude has a typical while-loop for those purposes.
+
+    while { condition. } do {
+      body.
+    }.
+
+Note that the condition is enclosed in braces. This is because, like
+all of these constructs, `while` is just a method in Latitude. If we
+failed to put our condition in braces, then it would be evaluated
+once, and the result of that evaluation would be passed to `while`,
+whereas with braces the method body will be evaluated at every loop
+iteration.
+
+Latitude also provides several abstract looping constructs. There are
+too many to cover in this chapter, but here are a few of the basic
+ones.
+
+    10 times { putln "This will print ten times.". }
+    1 upto 11 do { putln "This will also print ten times.". }.
+    11 downto 1 do { putln "This prints ten times as well.". }.
+
+In all three cases, the current iteration will be passed as an
+argument to the loop body and can therefore be accessed with `$1`.
+
+    10 times {
+      putln: "Iteration number " ++ $1.
+    }.
+
+Many of the other looping constructs rely on iterators and
+collections, which will be discussed later.
+
+Each of the looping constructs described here (but, for efficiency
+reasons, *not* the collection ones which will be described later) has
+a variant which ends in an asterisk: `loop*`, `while*`, `times*`,
+`upto*`, and `downto*`. This variant behaves like the original
+construct except that it also enables exiting the loop prematurely.
+
+Specifically, two additional methods become available: `next` and
+`last`. `next` takes no arguments and jumps back to the start of the
+loop body. `last` takes a single argument and exits the loop, using
+the argument as the loop's return value.
+
+    loop {
+      putln "This will print forever".
+      next.
+      putln "This one will never print".
+    }.
+
+&nbsp;
+
+    loop {
+      putln "This will now only print once".
+      last (Nil).
+    }.
+
+## Summary
+
+We've discussed the basic looping and conditional structures in
+Latitude. But we haven't even touched on the most powerful control
+structure available to Latitude programmers yet. Next chapter, we'll
+discuss this structure and a few other tools that augment it.
 
 [[up](.)]
 <br/>[[prev - Variables](vars.md)]
