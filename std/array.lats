@@ -198,6 +198,33 @@ Array removeOnce := {
   }.
 }.
 
+Array remove! := {
+  localize.
+  pred := #'($1) shield.
+  index := 0.
+  assignable 'index.
+  this visit {
+    curr := #'($1).
+    { pred call #'(curr). } ifFalse {
+      this nth (index) = #'(curr).
+      index = index + 1.
+    }.
+  }.
+  this upperBound := this lowerBound + index.
+  this.
+}.
+Array removeOnce! := {
+  pred := #'($1) shield.
+  check := True.
+  assignable 'check.
+  self remove! {
+    takes '[arg].
+    {
+      check.
+    } and {
+      res := pred call #'(arg).
+      check = res not.
+      res.
     }.
   }.
 }.
