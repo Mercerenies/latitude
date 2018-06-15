@@ -410,6 +410,9 @@ ArrayBuilder append := {
 ArrayBuilder finish := {
   self array.
 }.
+Array builder := {
+  ArrayBuilder clone.
+}.
 
 Collection inject: Nil.
 
@@ -467,6 +470,9 @@ DictBuilder append := {
 }.
 DictBuilder finish := {
   self dict.
+}.
+Dict builder := {
+  DictBuilder clone.
 }.
 
 ;; Immutable iterator; needs map override
