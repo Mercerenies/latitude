@@ -261,4 +261,4 @@ includes only the elements of `self` for which `f` returns truthy.
 
 [[up](.)]
 <br/>[[prev - The Chain Object](chain.md)]
-<br/>[[next - The Conditional Object](conditional.md)]
+<br/>[[next - The Collection Builder Object and Builders](collbuilder.md)]

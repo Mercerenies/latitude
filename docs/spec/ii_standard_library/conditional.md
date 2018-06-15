@@ -47,5 +47,5 @@ on the conditional value.
 Example usage: `Conditional if (obj) then { case1. } else { case2. }.`
 
 [[up](.)]
-<br/>[[prev - The Collection Mixin Object](collection.md)]
+<br/>[[prev - The Collection Builder Object and Builders](collbuilder.md)]
 <br/>[[next - The Cons Object](cons.md)]

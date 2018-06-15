@@ -33,6 +33,7 @@ scope object.
      |    +-- False
      |    +-- True
      +-- Chain
+     +-- CollectionBuilder
      +-- Conditional
      +-- Cons
      +-- Dict
@@ -98,6 +99,7 @@ scope object.
  * [Cached](cached.md)
  * [Chain](chain.md)
  * [Collection](collection.md)
+ * [CollectionBuilder and Builders](collbuilder.md)
  * [Conditional](conditional.md)
  * [Cons](cons.md)
  * [Cont](cont.md)

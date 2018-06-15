@@ -8,6 +8,10 @@ Iterator element= := {
   err ReadOnlyError clone tap { self message := "Immutable iterator". } throw.
 }.
 
+global CollectionBuilder ::= Object clone.
+CollectionBuilder append := { }.
+CollectionBuilder finish := Nil.
+
 global FilterIterator ::= Iterator clone.
 FilterIterator impl := Nil.
 FilterIterator pred := Nil.
