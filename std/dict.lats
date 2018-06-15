@@ -19,6 +19,11 @@ Dict clone := {
     self &impl := Kernel dupObject #'(self &impl).
   }.
 }.
+Dict dup := {
+  Kernel dupObject (self) tap {
+    self &impl := Kernel dupObject #'(self &impl).
+  }.
+}.
 Dict get := {
   meta sys directly#: self &impl, $1.
 }.

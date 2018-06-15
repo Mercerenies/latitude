@@ -32,6 +32,10 @@ object.
 
 Returns a clone of the current dictionary object.
 
+### `Dict dup.`
+
+Returns a duplicate of the current dictionary object.
+
 ### `Dict get (key).`
 
 Returns the value at the given key in the dictionary, without
