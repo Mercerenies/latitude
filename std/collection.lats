@@ -395,7 +395,7 @@ Array iterator := {
 
 Collection inject: Nil.
 
-DictIterator ::= Object clone.
+global DictIterator ::= Object clone.
 DictIterator keys := Nil iterator.
 DictIterator dict := Nil.
 DictIterator end? := { self keys end?. }.
