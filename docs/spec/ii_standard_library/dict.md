@@ -94,6 +94,11 @@ dictionaries.
 
 Returns a fresh empty dictionary.
 
+### `Dict builder.`
+
+Returns an [`DictBuilder`](collbuilder.md#dictbuilder) object which
+will construct a new dictionary.
+
 [[up](.)]
 <br/>[[prev - The Continuation Object](cont.md)]
 <br/>[[next - The Ellipsis Object](ellipsis.md)]

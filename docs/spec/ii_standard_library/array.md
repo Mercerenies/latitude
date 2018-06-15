@@ -156,6 +156,13 @@ invalidated if the size of the array is altered (usually via push or
 pop operations) but remains valid if individual elements are changed
 without changing the size.
 
+## Static Methods
+
+### `Array builder.`
+
+Returns an [`ArrayBuilder`](collbuilder.md#arraybuilder) object which
+will construct a new array.
+
 [[up](.)]
 <br/>[[prev - The Argument List Object](arglist.md)]
 <br/>[[next - Booleans and the Nil Object](boolnil.md)]
