@@ -128,6 +128,26 @@ except the first for which `f` returns truthy.
 
 Complexity: `O(n)`
 
+### `Array remove! (f).`
+
+Removes all elements for which `f` returns truthy from the array.
+Returns `self`.
+
+Complexity: `O(n)`
+
+### `Array removeOnce! (f).`
+
+Removes an element from the array, the first for which `f` returns
+truthy. Returns `self`.
+
+Complexity: `O(n)`
+
+### `Array insert (n, elem).`
+
+Adds `elem` to the array at the nth position. Returns `self`.
+
+Complexity: `O(n)`
+
 ### `Array iterator.`
 
 Returns an [`ArrayIterator`](iterator.md#arrayiterator) object which

@@ -229,6 +229,25 @@ Array removeOnce! := {
   }.
 }.
 
+Array insert := {
+  takes '[index, elem].
+  arr := self.
+  index isInteger? ifFalse {
+    err ArgError clone tap { self message := "Non-integer indices are not valid". } throw.
+  }.
+  pos := if (index < 0) then {
+    index + arr size.
+  } else {
+    index.
+  }.
+  arr pushBack (Nil). ; Dummy value
+  (arr size - 1) downto (pos) do {
+    arr nth ($1) = arr nth ($1 - 1).
+  }.
+  arr nth (pos) = #'(elem).
+  arr.
+}.
+
 ;; This is a fix for a problem with `map` from `Collection`
 Array clone := {
   self send (Object slot 'clone) call tap {
