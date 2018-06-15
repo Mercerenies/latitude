@@ -27,9 +27,12 @@ appear in the middle of one.
 
     ~#@0123456789
 
-Aside from these two rules, any nonempty string of printable,
-non-whitespace Unicode characters is a valid identifier. All of the
-following are valid variable names.
+Aside from these two rules, almost any nonempty string of printable,
+non-whitespace Unicode characters is a valid identifier. There are a
+few small exceptions, which are detailed in the language specification
+at [Identifiers](/spec/i_syntax_and_semantics/ch2_lexical.md), but it
+is not necessary to know them all. All of the following are valid
+variable names.
 
     myShinyNewObject
     isInteger?
