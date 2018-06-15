@@ -48,7 +48,7 @@ FilterIterator check := {
 ;; *  `clone` - Iterators must be cloneable at any intermediate point in their iteration
 ;; () `toString` - Although not strictly required, it is recommended that this exist for convenience
 global Collection ::= Mixin clone.
-Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all, any,
+Collection interface := '[map!, visit, map, foldl, foldr, size, length, to, all, any,
                           notAll, notAny, detect, countIf, count, find, containsIf, contains,
                           zip, zip!, take, drop, maximum, minimum, <>, sum, product, append,
                           empty?, flatten, filter].
@@ -106,10 +106,10 @@ Collection foldr := {
 }.
 Collection size := { self foldl: 0, { $1 + 1. }. }.
 Collection length := { self size. }.
-Collection toArray := {
-  arr := Array clone.
-  self visit: { arr pushBack. }.
-  arr.
+Collection to := {
+  builder := $1 builder.
+  self visit { builder append. }.
+  builder finish.
 }.
 Collection all := {
   func := #'$1 shield.

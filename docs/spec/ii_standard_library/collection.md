@@ -25,7 +25,7 @@ object can be passed as a function, even an evaluating object.
 ## Simple Slots
 
     Collection toString := "Collection".
-    Collection interface := '[map!, visit, map, foldl, foldr, size, length, toArray, all,
+    Collection interface := '[map!, visit, map, foldl, foldr, size, length, to, all,
                               any, notAll, notAny, detect, countIf, count, find, containsIf,
                               contains, zip, zip!, take, drop, maximum, minimum, <>, sum,
                               product, append, empty?, flatten, filter].
@@ -91,11 +91,15 @@ overriden.
 If the collection contains infinite elements, this method will not
 terminate.
 
-### `Collection toArray.`
+### `Collection to (type).`
 
-Returns an array containing all of the elements of the collection.
+Converts the collection to a given type. The type must be an object
+which has a `builder` method returning
+a [collection builder](collbuilder.md) object. That builder will be
+used, in conjunction with the iterator on `self`, to iterate and
+produce a new structure.
 
-`toArray` will not terminate on infinite collections.
+`to` will not terminate on infinite collections.
 
 ### `Collection all (f).`
 

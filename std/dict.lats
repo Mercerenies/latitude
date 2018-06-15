@@ -4,7 +4,7 @@ Dict toString := {
   if (this empty?) then {
     "[=>]".
   } else {
-    content := this toArray map {
+    content := this to (Array) map {
       $1 car toString ++ " => " ++ $1 cdr toString.
     } joinText ", ".
     "[" ++ content ++ "]".
