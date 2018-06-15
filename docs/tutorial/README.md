@@ -5,6 +5,7 @@
  * [The Basics](basics.md)
  * [Variables](vars.md)
  * [Simple Flow Control](flow.md)
+ * [Collections](arrays.md)
  * [Advanced Flow Control](cont.md)
 
 [[up](..)]

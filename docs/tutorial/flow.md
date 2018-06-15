@@ -264,13 +264,12 @@ functionality is actually needed.
 ## Summary
 
 We've discussed the basic looping and conditional structures in
-Latitude. But we haven't even touched on the most powerful control
-structure available to Latitude programmers yet. Next chapter, we'll
-discuss this structure and a few other tools that augment it.
+Latitude. In the next chapter, we'll discuss iterable collections and
+several of the looping constructs available on them.
 
 [[up](.)]
 <br/>[[prev - Variables](vars.md)]
-<br/>[[next - Advanced Flow Control](cont.md)]
+<br/>[[next - Collections](arrays.md)]
 
 <hr/>
 

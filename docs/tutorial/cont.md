@@ -20,5 +20,7 @@ continuation as its argument.
     }.
     putln (foo). ; Prints "Result of callCC"
 
+...
+
 [[up](.)]
-<br/>[[prev - Simple Flow Control](flow.md)]
+<br/>[[prev - Collections](arrays.md)]
