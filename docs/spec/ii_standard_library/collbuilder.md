@@ -36,7 +36,17 @@ semantics on the builder object anymore.
 
 ## Collection Builders
 
-(stub)
+### `ArrayBuilder.`
+
+Constructs an array, using `pushBack`.
+
+### `DictBuilder.`
+
+Constructs a dictionary. The `append` method on `DictBuilder` expects
+to be given a cons cell, whose car is a symbol. The car is used as the
+key and the cdr as the value. If the same key is provided to `append`
+multiple times, the subsequent invocations will overwrite the
+original.
 
 [[up](.)]
 <br/>[[prev - The Collection Mixin Object](collection.md)]

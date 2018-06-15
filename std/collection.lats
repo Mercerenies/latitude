@@ -397,6 +397,20 @@ Array iterator := {
   }.
 }.
 
+global ArrayBuilder ::= CollectionBuilder clone.
+ArrayBuilder array := [].
+ArrayBuilder clone := {
+  Parents above (ArrayBuilder, 'clone) call tap {
+    self array := self array dup.
+  }.
+}.
+ArrayBuilder append := {
+  self array pushBack.
+}.
+ArrayBuilder finish := {
+  self array.
+}.
+
 Collection inject: Nil.
 
 global DictIterator ::= Object clone.
@@ -439,6 +453,20 @@ Dict values := {
   this iterator keys map {
     this get.
   }.
+}.
+
+global DictBuilder ::= CollectionBuilder clone.
+DictBuilder dict := [=>].
+DictBuilder clone := {
+  Parents above (DictBuilder, 'clone) call tap {
+    self dict := self dict dup.
+  }.
+}.
+DictBuilder append := {
+  self dict get ($1 car) = $1 cdr.
+}.
+DictBuilder finish := {
+  self dict.
 }.
 
 ;; Immutable iterator; needs map override
