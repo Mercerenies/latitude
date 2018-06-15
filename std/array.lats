@@ -191,7 +191,13 @@ Array removeOnce := {
     {
       check.
     } and {
-      check = pred call #'(arg).
+      res := pred call #'(arg).
+      check = res not.
+      res.
+    }.
+  }.
+}.
+
     }.
   }.
 }.
