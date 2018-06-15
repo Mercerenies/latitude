@@ -178,6 +178,21 @@ calling it, we use a special "quoted" block denoted by `#'`.
 There isn't a whole lot we can do with this method object right now.
 But we'll learn some new neat things to do with it later.
 
+## Accessor Syntax
+
+Sometimes, we want to write our own "assignment" operator. In
+Latitude, it is impossible to override the `:=` operator, but we can
+do the next best thing by overriding the `=` operator. An expression
+of the form `foo bar = baz` will internally be translated to `foo bar=
+(baz)`. That is, the message `bar=` will be sent to `foo`, along with
+the argument `baz`. A method whose name ends in an `=` is called an
+accessor method, and accessor methods can take any number of
+arguments.
+
+    ;; These expressions are equivalent
+    foo bar (1, 2, 3) = 4.
+    foo bar= (1, 2, 3, 4).
+
 ## Respecting your Parents
 
 We've glossed over the inheritance model a bit, but now we will go
