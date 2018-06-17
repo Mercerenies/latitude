@@ -157,10 +157,78 @@ equivalently to the above snippet.
 
     arr := [1, 2, 3, 4, 5].
     arr visit {
-        println: $1.
+      println: $1.
     }.
 
-...
+Iterating over a dictionary will yield key-value pairs as cons cells.
+The key is stored immutably in the car cell, and the value is stored
+mutably in the cdr cell, so that changes to the cdr will be reflected
+in the dictionary.
+
+    dict := [ 'foo => 1, 'bar => 2 ].
+    dict visit {
+      $1 cdr = $1 cdr + 1.
+    }.
+    println: dict. ; [ 'foo => 2, 'bar => 3 ] (order may vary)
+
+The usual functional stream operations, such as folding and mapping,
+are available and work as expected.
+
+    arr := [1, 2, 3, 4, 5].
+    println: arr foldl (0, { $1 + $2. }). ; 15
+    println: arr map { $1 * $1. }. ; [1, 4, 9, 16, 25]
+
+`filter` returns an iterator, which can be converted back into an
+array with `to`.
+
+    arr := [1, 2, 3, 4, 5].
+    filtered := arr filter { $1 mod 2 == 0. }.
+    println: filtered. ; FilterIterator
+    println: filtered to (Array). ; [2, 4]
+
+A full list of the collection methods can be found
+at [Collection](/spec/ii_standard_library/collection.md).
+
+## Other Collections
+
+In addition to arrays and dictionaries, several other Latitude objects
+are iterable. For one thing, strings are iterable by character.
+Latitude strings are always encoded in UTF-8 and will iterate
+character-by-character.
+
+    "Hello!" visit {
+      putln: $1.
+    }.
+    "Unicode works too! αβγ" visit {
+      putln: $1.
+    }.
+
+`Nil` is an iterable object and always acts as an empty collection.
+
+Finally, `$*` is a method which returns an argument list object. An
+argument list object is a collection which contains all of the
+arguments currently in scope.
+
+    test := {
+      $* visit {
+        println: $1.
+      }.
+    }.
+    test: 1, 2, 3, 4, 5. ; Prints each argument on a separate line
+
+Remember that arguments in Latitude are inherited from parent scopes,
+so when iterating over `$*`, you may find that there are more
+arguments than you expect. Generally, if you write a method which
+expects N arguments, you should generally assume that `$*` might
+contain additional arguments, and so you should only utilize the
+first N.
+
+## Summary
+
+This is not all of the collections in Latitude, but arrays and
+dictionaries are among the most commonly used. In the next chapter, we
+will discuss a very powerful control construct which can be used to
+implement many others.
 
 [[up](.)]
 <br/>[[prev - Simple Flow Control](flow.md)]
