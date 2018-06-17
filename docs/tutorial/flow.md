@@ -194,7 +194,7 @@ how to exit it. On Unix-like operating systems, an interrupt signal
 (CTRL+C) will work.
 
     loop {
-      putln "This will never stop printing".
+      putln: "This will never stop printing".
     }.
 
 However, more commonly, we would like our loops to terminate at some
