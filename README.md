@@ -25,25 +25,20 @@ From Wikipedia:
 > performed via a process of cloning existing objects that serve as
 > prototypes.
 
-The fundamental idea behind a language like Latitude is that classes
-are too strict. In traditional class-based languages, it is easy for
-programmers to get caught up in a strict idea of what a specific
-object is, by matching it up to its type. In a prototype language,
-everybody is special. The notion that an object can't do something
-just because its class says it can't is not a notion that makes sense
-in a prototype language.
+In a class-based language, the programmer writes classes and then
+constructs objects which belong to those classes. In contract, a
+prototype-oriented language provides only objects, not classes. The
+programmer writes objects and then constructs additional objects which
+behave like the originals. This eliminates a dichotomy between classes
+and objects and allows for greater flexibility in programming.
 
-Rather than using inheritance, Latitude uses a special `clone` method
-to create new objects.
-
-    myCat := Cat clone.
-
-Now the object `myCat` is a new object whose parent object is `Cat`.
-If `myCat` doesn't know what to do when it receives a specific
-message, it will delegate automatically to its parent, but any changes
-made to `myCat` are individual to that object. That is, a programmer
-can override parent methods on individual objects, not just on whole
-classes at once.
+For example, suppose you wanted to have a random number generator.
+Since Latitude has no notion of static classes, you might write a
+singleton object to contain the random number functionality. Later on,
+if you decide that you want to have multiple random number generators
+(for thread safety, perhaps), it is trivial to convert this singleton
+object into a "class-like" object, from which other objects can be
+made.
 
 ## Dependencies
 
