@@ -2836,9 +2836,9 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
                         Protection::PROTECT_DELETE);
 
     // Global variables not accessible in meta
-    global->put(Symbols::get()["stdin"], stdin_);
-    global->put(Symbols::get()["stderr"], stderr_);
-    global->put(Symbols::get()["stdout"], stdout_);
+    global->put(Symbols::get()["$stdin"], stdin_);
+    global->put(Symbols::get()["$stderr"], stderr_);
+    global->put(Symbols::get()["$stdout"], stdout_);
     global->put(Symbols::get()["global"], global);
 
     state.lex.push(global);

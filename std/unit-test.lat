@@ -59,17 +59,17 @@ TestModule runTests := {
       }.
     } protect {
       $1 ifTrue {
-        stderr putln: "WARNING: Unit test exited via unexpected continuation!".
+        $stderr putln: "WARNING: Unit test exited via unexpected continuation!".
       }.
     }.
     res ifFalse {
       result fails := result fails + 1.
-      stderr printf: ~fmt "~A (from ~A) failed: ~A!", curr, this, res.
+      $stderr printf: ~fmt "~A (from ~A) failed: ~A!", curr, this, res.
     }.
   }.
   result passes := total - result fails.
-  stderr putln: "Passes: " ++ result passes.
-  stderr putln: "Fails: " ++ result fails.
+  $stderr putln: "Passes: " ++ result passes.
+  $stderr putln: "Fails: " ++ result fails.
   result.
 }.
 unit-test TestModule := TestModule.

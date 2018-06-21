@@ -35,19 +35,19 @@ global $except := { self REPL exception. }.
 global $it := { self REPL lastResult. }.
 
 REPL eof? := {
-  stdin eof?.
+  $stdin eof?.
 }.
 
 REPL counter := 0.
 REPL read := {
-  stdout puts: "lat(" ++ self counter ++ ")% ".
+  $stdout puts: "lat(" ++ self counter ++ ")% ".
   meta sys streamReadSpec#: Nil.
 }.
 REPL eval := {
   Kernel eval: self scope, self $scope, $1.
 }.
 REPL print := {
-  stdout println: #'$1.
+  $stdout println: #'$1.
 }.
 REPL loop := {
   localize.
@@ -58,7 +58,7 @@ REPL loop := {
       counter := this counter + 1.
       expr := this read.
       (expr == "") and (this eof?) ifTrue {
-        stdout putln "".
+        $stdout putln "".
         this quit.
       }.
       this lastResult := this eval: expr.
@@ -66,8 +66,8 @@ REPL loop := {
       this counter := counter.
     } resolve (True) do {
       this exception := $1.
-      stderr putln: "***** EXCEPTION *****".
-      stderr putln: this exception pretty.
+      $stderr putln: "***** EXCEPTION *****".
+      $stderr putln: this exception pretty.
       {
         this exception slot? 'printStackTrace.
       } ifTrue {

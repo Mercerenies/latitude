@@ -134,7 +134,7 @@ modifying the thrown object's stack trace.
 Prints the object to the screen, by invoking the `toString` method on
 it. This is equivalent to
 
-    stdout println: Object.
+    $stdout println: Object.
 
 ### `Object dumpObject.`
 
@@ -142,7 +142,7 @@ Prints the object to the screen, as well as all slots that are
 accessible from it. The exact format of this output is unspecified, so
 it should be used for debugging and testing only. This is equivalent to
 
-    stdout dump: Object.
+    $stdout dump: Object.
 
 ### `Object me.`
 
@@ -233,7 +233,7 @@ This method invokes `stringify` on the caller and the target and
 concatenates the resulting strings. As such, it is a convenient way to
 join together strings and other values in preparation for printing.
 
-    stdout println: "Good morning, " ++ userName ++ ". It is " ++ currentTime ++ " right now.".
+    $stdout println: "Good morning, " ++ userName ++ ". It is " ++ currentTime ++ " right now.".
 
 ### `Object assign (symbol) = mthd.`
 

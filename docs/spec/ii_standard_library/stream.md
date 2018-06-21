@@ -72,8 +72,8 @@ then this function may block. If the stream is not designated for
 input, then an `IOError` will be raised.
 
 Note carefully that, when calling this on the standard input stream
-`stdin` in the REPL, the REPL shares the same input stream. So if
-`stdin read` is called and more than one character is entered, the
+`$stdin` in the REPL, the REPL shares the same input stream. So if
+`$stdin read` is called and more than one character is entered, the
 remaining characters will be treated as a line of Latitude code by the
 REPL.
 

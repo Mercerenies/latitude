@@ -211,9 +211,9 @@ If no case triggers, `Nil` is returned.
 Example usage:
 
     cond {
-      when (x > 10) do { stdout putln: "X is large". }.
-      when (x > 0) do { stdout putln: "X is positive". }.
-      else { stdout putln: "X is not positive". }.
+      when (x > 10) do { $stdout putln: "X is large". }.
+      when (x > 0) do { $stdout putln: "X is positive". }.
+      else { $stdout putln: "X is not positive". }.
     }.
 
 ### `global case (expr) do (body).`
@@ -237,10 +237,10 @@ evaluated exactly once.
 Example usage:
 
     case (x) do {
-      when 1 do { stdout putln: "one". }.
-      when 2 do { stdout putln: "two". }.
-      when 3 do { stdout putln: "three". }.
-      else { stdout putln: "What is this strange number?". }.
+      when 1 do { $stdout putln: "one". }.
+      when 2 do { $stdout putln: "two". }.
+      when 3 do { $stdout putln: "three". }.
+      else { $stdout putln: "What is this strange number?". }.
     }.
 
 ### `global use (name).`
@@ -307,19 +307,19 @@ of execution at which this method was called.
 
 ### `global puts (str).`
 
-Delegates directly to `stdout puts (str)`.
+Delegates directly to `$stdout puts (str)`.
 
 ### `global putln (str).`
 
-Delegates directly to `stdout putln (str)`.
+Delegates directly to `$stdout putln (str)`.
 
 ### `global print (str).`
 
-Delegates directly to `stdout print (str)`.
+Delegates directly to `$stdout print (str)`.
 
 ### `global println (str).`
 
-Delegates directly to `stdout println (str)`.
+Delegates directly to `$stdout println (str)`.
 
 ## Inner Object Methods
 

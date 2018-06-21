@@ -188,10 +188,10 @@ Stream flush := {
 Stream toString := "Stream".
 
 ;; Stream delegation
-global puts    := { stdout puts.    }.
-global putln   := { stdout putln.   }.
-global print   := { stdout print.   }.
-global println := { stdout println. }.
+global puts    := { $stdout puts.    }.
+global putln   := { $stdout putln.   }.
+global print   := { $stdout print.   }.
+global println := { $stdout println. }.
 
 ; Dumping and Printing Convenience Functions
 Stream dumpHandler := ~DUMP.
@@ -211,8 +211,8 @@ Stream dump := {
   }.
   Nil.
 }.
-Object printObject := { stdout println: #'self. }.
-Object dumpObject := { stdout dump: #'self. }.
+Object printObject := { $stdout println: #'self. }.
+Object dumpObject := { $stdout dump: #'self. }.
 
 ;; Process basics
 Process toString := "Process".
@@ -503,7 +503,7 @@ StackFrame dumpObject := {
   if { (parent self) === (StackFrame). }
     then { Nil. }
     else {
-      stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
+      $stderr putln: (parent self file) ++ ": " ++ (parent self line toString).
       parent self parent dumpObject.
     }.
 }.

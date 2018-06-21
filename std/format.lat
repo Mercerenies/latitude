@@ -15,7 +15,7 @@ FormatString call := {
 }.
 FormatString printf := {
   result := self call.
-  stdout putln: result.
+  $stdout putln: result.
 }.
 format FormatString := FormatString.
 

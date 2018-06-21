@@ -44,12 +44,12 @@ returned.
 #### `REPL eof?.`
 
 Returns whether the standard input stream has reached its end.
-Equivalent to `stdin eof?`.
+Equivalent to `$stdin eof?`.
 
 #### `REPL read.`
 
-Prints an appropriate prompt to `stdout` and reads a line of input
-from `stdin`. The string entered by the user is returned.
+Prints an appropriate prompt to `$stdout` and reads a line of input
+from `$stdin`. The string entered by the user is returned.
 
 #### `REPL eval (text).`
 
@@ -59,7 +59,7 @@ outward.
 
 #### `REPL print (arg).`
 
-Prints the argument. Equivalent to `stdout println (arg)`.
+Prints the argument. Equivalent to `$stdout println (arg)`.
 
 #### `REPL loop.`
 
