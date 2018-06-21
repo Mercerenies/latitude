@@ -243,5 +243,13 @@ Finally, if only the "after" method is needed, `protect` can be used.
       putln: "Will be run unconditionally after the body".
     }.
 
+## Summary
+
+Now we have explored continuations and the two accompanying features:
+handlers and thunks. You have all of the major control flow tools you
+need to implement your own control structures now. In the next
+chapter, we'll discuss input/output and files.
+
 [[up](.)]
 <br/>[[prev - Collections](arrays.md)]
+<br/>[[next - Input and Output](io.md)]
