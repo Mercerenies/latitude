@@ -187,6 +187,21 @@ Stream flush := {
 }.
 Stream toString := "Stream".
 
+Stream null := Stream clone.
+Stream null toString := "#<NullStream>".
+Stream null in? := True.
+Stream null out? := True.
+Stream null flush := { }.
+Stream null puts := { }.
+Stream null putln := { }.
+Stream null print := { }.
+Stream null println := { }.
+Stream null printf := { }.
+Stream null readln := { "". }.
+Stream null read := { "". }.
+Stream null eof? := True.
+Stream null close := { }.
+
 ;; Stream delegation
 global puts    := { $stdout puts.    }.
 global putln   := { $stdout putln.   }.

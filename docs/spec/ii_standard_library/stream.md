@@ -138,6 +138,11 @@ Note that some operating systems may disregard the binary flag.
 
 Returns whether or not a file with the given name exists.
 
+### `Stream null.`
+
+Returns a special input-output stream object which ignores anything
+written to it and returns `""` whenever it is read from.
+
 [[up](.)]
 <br/>[[prev - The Stack Frame Object](stackframe.md)]
 <br/>[[next - The String Object](string.md)]
