@@ -71,6 +71,16 @@ invalid, an `ArgError` is raised. If the string cannot be parsed in
 the given radix, an `InputError` is raised. Otherwise, the integer
 value is returned.
 
+### `String toInt.`
+
+Parses the string as an integer in radix 10. Equivalent to `self radix
+10`. Raises `InputError` if the text cannot be parsed as an integer.
+
+### `String toDouble.`
+
+Parses the string as a floating-point value. Raises `InputError` if
+the text cannot be parsed as a number.
+
 ### `String findBytes (substr, index).`
 
 Finds the first occurence of `substr` within `self`, starting at
