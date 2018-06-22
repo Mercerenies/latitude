@@ -103,6 +103,21 @@ itself, whereas `toString` will place quotes around it. In general,
 `toString` should produce relatively machine-readable output, whereas
 `pretty` is free to make its output more user-friendly.
 
+Remember that `printf` simply sends the `call` message to the
+formatting object. So if you wish to format a string but not print it,
+you may send `call` directly to the object to get a formatted string
+as the return value.
+
+    use 'format importAllSigils.
+    message := ~fmt "Hello, ~A!" call ("John Doe"). ; ==> Hello, John Doe!
+
+## Summary
+
+You have now had an introduction to most of the `Stream` object
+functionality, as well as construction of formatted strings. In the
+next chapter, we'll formally discuss modules and Latitude's import
+system.
+
 [[up](.)]
 <br/>[[prev - Advanced Flow Control](cont.md)]
 
