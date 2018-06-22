@@ -27,6 +27,12 @@ If called on the `Module` object itself, returns `"Module"`.
 Otherwise, returns the module's name. In the latter case, equivalent
 to `self header moduleName`.
 
+### `Module as (name).`
+
+This metamethod binds the name `name` in the lexical scope at the call
+site to be the module `self`. Effectively, this defines an alias
+`name` which refers to the module. Returns `self`.
+
 ### `Module import (names).`
 
 For each name in the iterable `names`, (shallow-) copies the value at
