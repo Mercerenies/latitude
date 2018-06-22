@@ -38,9 +38,9 @@ like
 
     Kernel.getGC().total();
 
-In Latitude, methods are automatically called, even if no argument
-list is provided. This implies that an empty argument list `()` can be
-omitted.
+In Latitude, methods are automatically called when referenced, even if
+no argument list is provided. This implies that an empty argument list
+`()` can be omitted.
 
 It's also important to note that Latitude is *purely* object-oriented.
 This means that everything in Latitude is an object. There are no
