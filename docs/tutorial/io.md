@@ -120,6 +120,7 @@ system.
 
 [[up](.)]
 <br/>[[prev - Advanced Flow Control](cont.md)]
+<br/>[[next - Modules](modules.md)]
 
 <hr/>
 

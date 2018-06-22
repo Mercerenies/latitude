@@ -8,6 +8,7 @@
  * [Collections](arrays.md)
  * [Advanced Flow Control](cont.md)
  * [Input and Output](io.md)
+ * [Modules](modules.md)
 
 [[up](..)]
 <br/>[[next - Latitude Specification](../spec/)]
