@@ -5,6 +5,10 @@ Latitude is a work-in-progress prototype-oriented programming language
 that sports a dynamic type system, a reflexive runtime with plenty of
 metaprogramming opportunities, and first-class scoping objects.
 
+*Note: For installation instructions, a "Getting Started" guide, and
+the standard library documentation, refer
+to [the documentation page](https://mercerenies.github.io/latitude/).*
+
 ## Benefits
 
  * Simple syntax borrowing from Ruby, Smalltalk, and Erlang
