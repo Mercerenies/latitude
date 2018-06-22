@@ -70,6 +70,39 @@ to specify that it is a binary file; this may cause the operating
 system to treat new lines differently. So the four valid mode strings
 are: `r`, `w`, `rb`, `wb`.
 
+## Formatted Printing
+
+Output stream objects also provide a `printf` method, for formatted
+printing. The stream `printf` method takes a formatter as its first
+argument, followed by any arguments to be forwarded to the formatter.
+The formatter can be any procedure-like object: that is, any object
+which responds to the `call` message.<sup><a name="footnote-02a"
+href="#user-content-footnote-02f">2</a></sup> However, most likely we
+will be using the `FormatString` object from the `'format` module,
+which was built for this purpose.
+
+    use 'format importAllSigils.
+
+    $stdout puts: "Name: ".
+    yourName := $stdin readln.
+    $stdout puts: "Age: ".
+    yourAge := { $stdin readln toInt. } catch (err InputError) do { "<unknown>". }.
+    $stdout printf: ~fmt "Hello, ~A! (age ~A)", yourName, yourAge.
+
+The `~fmt` bit begins a sigil expression, which in this case is simply
+a concise shortcut to constructing a `FormatString` object. The format
+string object supports the following directives.
+
+ * `~S` consumes one argument and calls `toString` on it.
+ * `~A` consumes one argument and calls `pretty` on it.
+ * `~~` prints a literal tilde.
+
+In this case, we use the second variant. `pretty` delegates to
+`toString` in most cases; for strings, `pretty` will return the string
+itself, whereas `toString` will place quotes around it. In general,
+`toString` should produce relatively machine-readable output, whereas
+`pretty` is free to make its output more user-friendly.
+
 [[up](.)]
 <br/>[[prev - Advanced Flow Control](cont.md)]
 
@@ -81,3 +114,10 @@ may behave strangely at the REPL. This is because the REPL shares the
 same input stream and uses `readln` internally, so after you `read`
 one character, the REPL will immediately consume the rest of the line
 and try to run it as a command.
+
+<a name="footnote-02f"
+href="#user-content-footnote-02a"><sup>2</sup></a> By convention, the
+parent of all procedure-like objects is the global `Proc` object. You
+can construct these objects explicitly from a method with `proc { ...
+}`. Additionally, methods themselves are (indirect) subobjects of
+`Proc`. Likewise, continuation objects are also subobjects of `Proc`.
