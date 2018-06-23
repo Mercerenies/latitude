@@ -189,8 +189,7 @@ global namespace. Constructing your own exception types is no
 different from constructing any other object "type"; simply clone the
 `Exception` object and make any modifications you please.
 
-    MyException := Exception clone.
-    MyException toString := "MyException".
+    MyException ::= Exception clone.
     MyException message := "Some useful error message".
 
 ## Thunks
