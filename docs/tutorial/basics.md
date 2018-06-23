@@ -134,6 +134,16 @@ the root object.
     % foo.
     foo
 
+Note that this particular pattern, overriding an object's `toString`
+to be the name of the variable, is very common in Latitude, so it has
+specialized syntax. Using `::=` rather than `:=` in assignment will
+override the `toString` method automatically.
+
+    % bar ::= Object clone.
+    bar
+    % bar.
+    bar
+
 So far, we've only defined slots that have a constant value. When a
 slot has a constant value and an object receives the corresponding
 message, that constant value is simply returned. However, frequently,
