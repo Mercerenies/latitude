@@ -63,7 +63,7 @@ overriden for mocking and testing purposes.
 ### `global $whereAmI.`
 
 This slot could have one of several values, informing the programmer
-of what sort of code is being run. It's intended use is similar to
+of what sort of code is being run. Its intended use is similar to
 that of the Python `if __name__ == "__main__"` idiom.
 
  * If the current file is being loaded as a module, then `$whereAmI`
