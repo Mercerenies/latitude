@@ -184,6 +184,7 @@
   ;;
   (setq major-mode 'latitude-mode)
   (setq mode-name "Latitude")
+  (setq-local require-final-newline t)
   ;;
   (run-hooks 'latitude-mode-hook))
 
