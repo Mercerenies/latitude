@@ -15,13 +15,17 @@ consist of a key and a value, separated by spaces. A file header can
 contain the following keys.
 
  * `MODULE` The name of the module, usually the same as the file name
-   without the extension.
+   without the extension. Valid Latitude module names are a subset of
+   the valid Latitude identifiers consisting of identifiers which
+   contain only alphanumeric characters, as well as `/_-`.
  * `PACKAGE` The name of the containing package. Modules that are
    released together in a single library should share a package name.
+   Package names consist of multiple segments separated by `.`, and
+   each segment must be a nonempty sequence of alphanumeric or `-`
+   characters which does not begin with a number or `-` and does not
+   end with a `-`.
 
-Module and package names in Latitude can contain alphanumeric
-characters, as well as any of the characters `-_/`, provided that the
-resulting name is a valid Latitude identifier. The order of the lines
+The order of the lines
 in a header does not matter, but each key can appear at most once in a
 header.
 
@@ -30,7 +34,7 @@ Every Latitude module is required to have a module and package name.
 Example header:
 
     ;;* MODULE kinematics
-    ;;* PACKAGE physics
+    ;;* PACKAGE com.example.physics
 
 ## Simple Slots
 
