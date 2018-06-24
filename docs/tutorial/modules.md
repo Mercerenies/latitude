@@ -39,9 +39,19 @@ always have a header. The header of a module consists of lines
 beginning with `;;*` and containing information about the module.
 
     ;;* MODULE example-module-name
-    ;;* PACKAGE latitude-tutorial
+    ;;* PACKAGE com.example.latitude.tutorial
 
-...
+Latitude package names use a reverse domain name scheme. The module
+name should normally be the filename without the extension. If the
+module is in a subfolder, then the module name should include forward
+slashes `/` to indicate the path from the package's root directory. So
+if a file named `foo.lat` was located in the folder `examples` within
+`util`, an appropriate header might be
+
+    ;;* MODULE util/examples/foo
+    ;;* PACKAGE com.example.latitude.tutorial
+
+
 
 [[up](.)]
 <br/>[[prev - Input and Output](io.md)]
