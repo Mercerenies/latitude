@@ -262,6 +262,33 @@ is evaluated as a Latitude script. The returned value from the file
 (usually, but not necessarily the constructed module) is placed in
 `&loaded` for later access and returned.
 
+If multiple candidate modules have the name `name`, a `ModuleError`
+will be raised. In this case, use the full `fromPackage ...` form.
+
+### `global fromPackage (pkg) use (name).`
+
+This is the full form of the `use` method, which imports the module
+with the given name from a known package. `pkg` and `name` should both
+be symbols. The lookup for the name is done via `resolveImport`, with
+the exception that only modules whose package name is equal to `pkg`
+will be considered. This is used to disambiguate modules from
+different packages which happen to share a name.
+
+Additionally, if several modules are needed from the same package,
+`fromPackage` can also take a `do` block, which contains multiple
+`use` statements. Within the `do` block, these `use` statements will
+only consider modules with a matching name.
+
+Example usage:
+
+    ;; Short form
+    fromPackage '(com.example.project) use 'addition.
+    ;; Long form
+    fromPackage '(com.example.project) do {
+      use 'addition.
+      use 'multiplication.
+    }.
+
 ### `global thunk (before, during, after).`
 
 Runs `before`, then `during`, then `after`. `during` is run in a

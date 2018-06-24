@@ -81,56 +81,94 @@ ModuleLoader loadPath := do {
   arr.
 }.
 ModuleLoader resolveImport := {
-  takes '[imp].
+  takes '[pkg, imp].
   localize.
+  matchPackage := {
+    filename := $1.
+    if (pkg nil?) then {
+      True.
+    } else {
+      header := Kernel readHeader (filename).
+      header packageName intern == pkg.
+    }.
+  }.
   if (imp is? (String)) then {
     imp.
   } else {
-    callCC {
-      escapable.
-      this loadPath visit {
-        curr := $1 ++ (imp asText) ++ ".lat".
-        { Stream exists? (curr). } or { Stream exists? (curr ++ "c"). } ifTrue {
-          return: curr.
+    candidates := [].
+    this loadPath visit {
+      curr := $1 ++ (imp asText) ++ ".lat".
+      { Stream exists? (curr). } or { Stream exists? (curr ++ "c"). } ifTrue {
+        matchPackage (curr) ifTrue {
+          candidates pushBack: curr.
         }.
       }.
+    }.
+    candidates empty? ifTrue {
       err ModuleError clone tap {
         self message := "Cannot find module " ++ (imp).
       } throw.
     }.
+    (candidates size > 1) ifTrue {
+      err ModuleError clone tap {
+        self message := "Ambiguous module name " ++ (imp).
+      } throw.
+    }.
+    candidates nth (0).
   }.
 }.
 
 global $moduleLoader := ModuleLoader clone.
 
-global use := {
+global fromPackage := {
   takes '[pname].
-  target := lexical caller.
-  fname := $moduleLoader resolveImport: pname.
-  header := Kernel readHeader: fname.
-  (header moduleName) ifFalse {
-    err ModuleError clone tap { self message := "Module has no name". } throw.
-  }.
-  (header packageName) ifFalse {
-    err ModuleError clone tap { self message := "Module has no package". } throw.
-  }.
-  name := ((header packageName) ++ " " ++ (header moduleName)) intern.
-  mod := Nil.
-  assignable 'mod.
-  if ($moduleLoader loaded has? (name)) then {
-    mod = $moduleLoader loaded get (name).
-  } else {
-    mod = Module clone tap { self header := header. }.
-    do {
-      $whereAmI := mod.
-      scope := global clone.
-      scope meta := scope meta clone.
-      scope meta meta := scope meta.
-      scope meta sigil := scope meta sigil clone.
-      mod = Kernel evalFile: fname, scope.
+  Object clone tap {
+    localize.
+    this useInto := {
+      takes '[target, mname].
+      fname := $moduleLoader resolveImport: pname, mname.
+      header := Kernel readHeader: fname.
+      (header moduleName) ifFalse {
+        err ModuleError clone tap { self message := "Module has no name". } throw.
+      }.
+      (header packageName) ifFalse {
+        err ModuleError clone tap { self message := "Module has no package". } throw.
+      }.
+      name := ((header packageName) ++ " " ++ (header moduleName)) intern.
+      mod := Nil.
+      assignable 'mod.
+      if ($moduleLoader loaded has? (name)) then {
+        mod = $moduleLoader loaded get (name).
+      } else {
+        mod = Module clone tap { self header := header. }.
+        do {
+          $whereAmI := mod.
+          scope := global clone.
+          scope meta := scope meta clone.
+          scope meta meta := scope meta.
+          scope meta sigil := scope meta sigil clone.
+          mod = Kernel evalFile: fname, scope.
+        }.
+        $moduleLoader loaded get (name) = mod.
+      }.
+      target slot (header moduleName intern) = mod.
+      mod.
     }.
-    $moduleLoader loaded get (name) = mod.
+    this use := {
+      self useInto (lexical caller, $1).
+    }.
+    this do := {
+      scope := lexical caller.
+      global send #'($1) by {
+        $1 use := {
+          this useInto (scope, $1).
+        }.
+      } call.
+      Nil.
+    }.
   }.
-  target slot (header moduleName intern) = mod.
-  mod.
+}.
+
+global use := {
+  self fromPackage (Nil) useInto (lexical caller, $1).
 }.
