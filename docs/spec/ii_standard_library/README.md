@@ -133,7 +133,8 @@ scope object.
 
 In addition to the core library, which is imported by default, there
 are several standard modules which can be imported explicitly into
-scope.
+scope. All of the modules listed here fall under the `'(latitude)`
+package.
 
  * [cell](cell.md)
  * [format](format.md)
