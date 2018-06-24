@@ -1,5 +1,5 @@
 ;;* MODULE unicode
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 unicode := $whereAmI.
 

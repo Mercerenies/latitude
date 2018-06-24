@@ -1,5 +1,5 @@
 ;;* MODULE unit-test
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 use 'format importAllSigils.
 

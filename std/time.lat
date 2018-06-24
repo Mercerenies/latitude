@@ -1,5 +1,5 @@
 ;;* MODULE time
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 time := $whereAmI.
 

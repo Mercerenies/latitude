@@ -1,5 +1,5 @@
 ;;* MODULE format
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 format := $whereAmI.
 

@@ -1,5 +1,5 @@
 ;;* MODULE sequence
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 sequence := $whereAmI.
 

@@ -1,5 +1,5 @@
 ;;* MODULE cell
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 cell := $whereAmI.
 

@@ -1,5 +1,5 @@
 ;;* MODULE random
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 {*
  * w = 32

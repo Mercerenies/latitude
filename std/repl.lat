@@ -1,5 +1,5 @@
 ;;* MODULE repl
-;;* PACKAGE base
+;;* PACKAGE latitude
 
 repl := $whereAmI.
 
