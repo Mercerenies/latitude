@@ -100,7 +100,7 @@
                          "here" "again" "self" "invoke" "slot" "callCC"
                          "call" "if" "while" "ifTrue" "ifFalse" "not" "or" "and" "loop" "throw"
                          "catch" "handle" "rethrow" "inject" "iterator" "throwWith"
-                         "$dynamic" "cons" "car" "cdr" "proc" "memo"
+                         "lexical" "$dynamic" "cons" "car" "cdr" "proc" "memo"
                          "member?" "takes" "localize" "this" "resolve"
                          "protect" "thunk" "sigil" "do" "err" "then" "else" "when" "slot?"
                          "caller" "nth" "size" "length" "toBool" "catchAll" "closure" "shield"
@@ -109,7 +109,7 @@
                          "missing" "falsify" "println" "printf" "putln" "puts" "print" "dump"
                          "dumpObject" "printObject" "intern" "toProc" "sys" "escapable" "cond"
                          "case" "use" "breakable" "return" "break" "$break" "read" "readln"
-                         "apply")
+                         "apply" "fromPackage")
                        'symbols)
           . font-lock-builtin-face)
         `(,(regexp-opt '("Object" "True" "False" "Nil" "Symbol" "String" "Number" "Boolean" "Method"
