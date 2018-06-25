@@ -87,7 +87,97 @@ Latitude module is
 
 ## Importing Modules
 
-...
+The simplest and most common way to import a module is with a `use`
+statement.
+
+    use 'my-module.
+
+This will define the name `my-module` in the current lexical scope.
+The value of that name will be the object returned from the module
+file, usually the module object. Thus, any methods or values attached
+to the module object can now be accessed via the `my-module` object.
+
+    use 'my-module.
+
+    my-module someFunctionality (100).
+
+If you use a particular function frequently, you may import it
+explicitly.
+
+    use 'my-module import '[someFunctionality].
+
+    someFunctionality (100).
+
+You may also import all names from the module, although this is not
+recommended as it can very easily become confusing to determine which
+names came from which modules.
+
+    use 'my-module import '[*].
+
+    someFunctionality (100).
+
+Modules can also be aliased with `as`. This, in particular, is
+especially useful if you have a deeply nested module such as our
+`util/examples/foo` example earlier. It would be highly inconvenient
+to continue using the name `util/examples/foo` every time you need to
+reference the module.
+
+    use 'util/examples/foo as 'foo.
+
+Finally, it is always possible that the same module name could be in
+use in multiple packages. In this case, you may explicitly qualify the
+module with a package name.
+
+    ;; Short form (for one import)
+    fromPackage '(com.example.latitude.tutorial) use 'util/examples/foo.
+
+    ;; Long form (for multiple imports)
+    fromPackage '(com.example.latitude.tutorial) do {
+      use 'util/examples/foo.
+      use 'util/examples/bar.
+    }
+
+## Load Path
+
+When a module is loaded with `use` or a similar form, the module's
+name is looked up in the load path on the system. The load path is
+determined at VM startup and can be accessed via `$moduleLoader
+loadPath`. It is built from the following paths.
+
+ * A directory containing all of the standard Latitude modules, such
+   as `'format` and `'random`.
+ * The current working directory (also accessible through `Kernel
+   cwd`).
+ * The directory containing the script file, if a script file was
+   invoked from the command line (i.e., `latitude some-file.lats`)
+ * Any directories listed in the environment variable `LATITUDE_PATH`
+   (if it exists), separated by semicolons.
+
+If you install a new package in a non-standard location, the
+recommended way to inform Latitude of it is by appending the path to
+the `LATITUDE_PATH` environment variable. However, if you do not have
+permissions to change environemtn variables or for some reason do not
+want to, then you can clone the module loader within Latitude.
+
+    $moduleLoader := $moduleLoader clone.
+    $moduleLoader loadPath := $moduleLoader loadPath dup. ; Make sure we don't mess up the original
+    $moduleLoader loadPath pushBack: "/some/new/path/name/".
+
+It is good practice not to mutate the current module loader but to
+instead clone it and change the clone. In doing so, your changes will
+only affect the current file and anything imported from the command
+file. As soon as the current file finishes executing, the original
+module loader will return, so as not to disrupt any other code that
+expects the module loader to behave in the default way.
+
+## Summary
+
+You now have an understanding of the basics of creating and loading
+modules. There are more customizations you can perform on the module
+loader, but most of them are scarcely needed, as the default module
+loader suffices for many common programming tasks. In the next
+chapter, we'll discuss some of the ways Latitude allows you to use
+reflection and metaprogramming to modify the language itself.
 
 [[up](.)]
 <br/>[[prev - Input and Output](io.md)]
