@@ -519,14 +519,14 @@ void Stmt::disableLocationInformation() {
     location = false;
 }
 
-void Stmt::stateLine(InstrSeq& seq) {
+void Stmt::stateLine(InstrSeq& seq) const {
     if (!location)
         return;
     InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCLN, line_no));
     seq.insert(seq.end(), seq0.begin(), seq0.end());
 }
 
-void Stmt::stateFile(InstrSeq& seq) {
+void Stmt::stateFile(InstrSeq& seq) const {
     if (!location)
         return;
     InstrSeq seq0 = asmCode(makeAssemblerLine(Instr::LOCFN, file_name));

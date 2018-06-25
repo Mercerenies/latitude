@@ -89,8 +89,8 @@ private:
 protected:
 
     void disableLocationInformation();
-    void stateLine(InstrSeq&);
-    void stateFile(InstrSeq&);
+    void stateLine(InstrSeq&) const;
+    void stateFile(InstrSeq&) const;
 
 public:
 
