@@ -85,6 +85,13 @@ private:
     std::string file_name;
     int line_no;
     bool location;
+
+protected:
+
+    void disableLocationInformation();
+    void stateLine(InstrSeq&);
+    void stateFile(InstrSeq&);
+
 public:
 
     /// Constructs a statement, given the line number of the statement.
@@ -97,9 +104,6 @@ public:
     /// \return the line number
     int line();
 
-    void disableLocationInformation();
-    void stateLine(InstrSeq&);
-    void stateFile(InstrSeq&);
     virtual void translate(TranslationUnit&, InstrSeq&) = 0;
     virtual void propogateFileName(std::string name);
 };
