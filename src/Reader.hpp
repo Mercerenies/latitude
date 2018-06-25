@@ -88,9 +88,26 @@ private:
 
 protected:
 
+    /// Requests that the object not store location information (line
+    /// number and file name, specifically) in the compiled output.
+    /// This operation is idempotent, so calling this method on an
+    /// instance whose location information is already blocked will
+    /// have no effect.
     void disableLocationInformation();
-    void stateLine(InstrSeq&) const;
-    void stateFile(InstrSeq&) const;
+
+    /// Outputs the line number of the statement to the argument
+    /// sequence. This method has no effect if location information
+    /// has been disabled.
+    ///
+    /// \param seq the sequence to output to
+    void stateLine(InstrSeq& seq) const;
+
+    /// Outputs the file name of the statement to the argument
+    /// sequence. This method has no effect if location information
+    /// has been disabled.
+    ///
+    /// \param seq the sequence to output to
+    void stateFile(InstrSeq& seq) const;
 
 public:
 
@@ -104,8 +121,28 @@ public:
     /// \return the line number
     int line();
 
-    virtual void translate(TranslationUnit&, InstrSeq&) = 0;
+    /// Translates the current statement into a sequence of
+    /// instructions, outputting the sequence onto the sequence
+    /// argument. If necessary, the translation unit may be modified
+    /// to include new behaviors.
+    ///
+    /// \param unit the translation unit
+    /// \param seq the instruction sequence
+    virtual void translate(TranslationUnit& unit, InstrSeq& seq) = 0;
+
+    /// By default, the file name is stored only at the top-level
+    /// statement object, the root of the AST. In order to propogate
+    /// the file name downward into the AST, it is necessary to
+    /// recursively call this method on each statement to set the file
+    /// name.
+    ///
+    /// This method should be overridden on any statement which stores
+    /// other statements and should propogate the file name downward
+    /// recursively.
+    ///
+    /// \param name the file name
     virtual void propogateFileName(std::string name);
+
 };
 
 /*
