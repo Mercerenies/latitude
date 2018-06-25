@@ -4,6 +4,31 @@
 #include "Instructions.hpp"
 #include "Assembler.hpp"
 
+/// \file
+///
+/// \brief Serialization structures and helpers.
+
+/// serialize_t, on its own, is an incomplete type. Any type which is
+/// serializable should implement a partial specialization of
+/// serialize_t for its particular type. The specialization should
+/// define, publicly, a typedef and two methods.
+///
+/// * `using type = ...` should be defined to be the type parameter
+///   `T`.
+///
+/// * `void serialize(const type&, OutputIterator&)` should, for any
+///   output iterator type, serialize a value of the type to the
+///   iterator.
+///
+/// * `type deserialize(InputIterator&)` should, for any input
+///   iterator type, deserialize a value of the type to out of the
+///   iterator.
+///
+/// Serializers are allowed to assume the iterators are valid and, in
+/// the input case, that the iterator contains a value of the
+/// appropriate type. Additionally, if the type is small (such as an
+/// arithmetic type), serializers may replace `const type&` with
+/// simply `type`.
 template <typename T>
 struct serialize_t;
 
@@ -91,12 +116,31 @@ struct serialize_t<AssemblerLine> {
 
 };
 
+/// Serializes the argument into the output iterator.
+///
+/// \pre A partial specialization `serialize_t<T>` must be in scope
+/// \param arg the value to serialize
+/// \param iter an output iterator
 template <typename T, typename OutputIterator>
 void serialize(const T& arg, OutputIterator& iter);
 
-template <typename T, typename OutputIterator>
-T deserialize(OutputIterator& iter);
+/// Deserializes a value of the given type from the iterator.
+///
+/// \pre A partial specialization `serialize_t<T>` must be in scope
+/// \param iter an input iterator
+/// \return the value
+template <typename T, typename InputIterator>
+T deserialize(InputIterator& iter);
 
+/// Serializes the value within the variant structure. The
+/// serialization does not mark which variant was saved, so the value
+/// must be deserialized with ::deserialize<T> (for the appropriate type
+/// `T`).
+///
+/// \pre A partial specialization `serialize_t<T>` must be in scope,
+///      for each `T` in `Ts...`
+/// \param arg the variant
+/// \param iter an output iterator
 template <typename OutputIterator, typename... Ts>
 void serializeVariant(const boost::variant<Ts...>& arg, OutputIterator& iter);
 
@@ -233,6 +277,8 @@ auto serialize_t<AssemblerLine>::serialize(const type& instr, OutputIterator& it
     }
 }
 
+/// \cond
+
 template <typename InputIterator>
 struct _AsmArgDeserializeVisitor {
     InputIterator& iter;
@@ -243,6 +289,8 @@ struct _AsmArgDeserializeVisitor {
     }
 
 };
+
+/// \endcond
 
 template <typename InputIterator>
 auto serialize_t<AssemblerLine>::deserialize(InputIterator& iter) const -> type {
@@ -260,10 +308,12 @@ void serialize(const T& arg, OutputIterator& iter) {
     serialize_t<T>().serialize(arg, iter);
 }
 
-template <typename T, typename OutputIterator>
-T deserialize(OutputIterator& iter) {
+template <typename T, typename InputIterator>
+T deserialize(InputIterator& iter) {
     return serialize_t<T>().deserialize(iter);
 }
+
+/// \cond
 
 template <typename OutputIterator>
 struct _VariantSerializeVisitor : boost::static_visitor<void> {
@@ -277,6 +327,8 @@ struct _VariantSerializeVisitor : boost::static_visitor<void> {
     }
 
 };
+
+/// \endcond
 
 template <typename OutputIterator, typename... Ts>
 void serializeVariant(const boost::variant<Ts...>& arg, OutputIterator& iter) {

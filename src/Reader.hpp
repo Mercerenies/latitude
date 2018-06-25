@@ -72,18 +72,31 @@ bool readFile(std::string fname,
 // Throws HeaderError
 Header getFileHeader(std::string filename);
 
-/*
- * A statement. Defines only one method, which executes
- * the statement in a given context.
- */
+/// This is the base class of all statement classes in Latitude.
+/// Statements are expected to store basic information about the
+/// location (line number and file name) of the original statement in
+/// the Latitude source, and they are expected to be able to translate
+/// statements into a sequence of VM instructions.
+///
+/// The statement class itself is abstract. Its only pure virtual
+/// method is Stmt::translate.
 class Stmt {
 private:
     std::string file_name;
     int line_no;
     bool location;
 public:
+
+    /// Constructs a statement, given the line number of the statement.
+    ///
+    /// \param line_no the line number
     Stmt(int line_no);
+
+    /// Returns the line number, as passed into the constructor.
+    ///
+    /// \return the line number
     int line();
+
     void disableLocationInformation();
     void stateLine(InstrSeq&);
     void stateFile(InstrSeq&);
