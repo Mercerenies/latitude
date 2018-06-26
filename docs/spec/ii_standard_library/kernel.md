@@ -29,13 +29,6 @@ dynamic scopes. Note that a method call is *not* simulated; the code
 is evaluated in the scopes that are provided. `eval` returns the
 result of the execution and propogates any thrown objects.
 
-While the lexical and dynamic scope arguments are not required to be
-paired, it is generally recommended for callers to ensure that they
-are. This is for the simple reason that many methods, especially those
-that perform metaprogramming or reflection tasks, make the assumption
-that scopes in the call stack are paired and may behave strangely if
-this is untrue.
-
 ### `Kernel evalFile (filename, lexical).`
 
 Reads the entire contents of the given file and evaluates them as a
