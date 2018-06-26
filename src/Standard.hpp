@@ -67,7 +67,8 @@ namespace Table {
         CPP_HAS_SLOT = 56,
         CPP_WHILE_REGS = 57,
         CPP_WHILE_REGS_ZERO = 58,
-        CPP_FRESH = 59;
+        CPP_FRESH = 59,
+        CPP_DUMPDBG = 60;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,

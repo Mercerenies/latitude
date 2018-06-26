@@ -2588,6 +2588,20 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::RTRVD),
                                    makeAssemblerLine(Instr::THROA, "Slot not found"))));
 
+     // CPP_DUMPDBG (dumps %slf)
+     // dumpDbg#: obj.
+     assert(reader.cpp.size() == CPP_DUMPDBG);
+     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         std::cout << "Object: " << DebugObject(state0.slf) << std::endl;
+     });
+     sys->put(Symbols::get()["dumpDbg#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
+                                   makeAssemblerLine(Instr::CPP, CPP_DUMPDBG))));
+
      // GTU METHODS //
 
      // These methods MUST be pushed in the correct order or the standard library
