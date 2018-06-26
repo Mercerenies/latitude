@@ -28,9 +28,10 @@ Returns an array of strings indicating where on the file system the
 module loader should search for imports. The built-in module loader
 searches the following directories.
  * The `std` directory of the Latitude executable path.
- * The current working directory (`Kernel cwd`).
  * Any paths in the `LATITUDE_PATH` environment variable, if such a
    variable exists.
+ * The current working directory (`Kernel cwd`), if running within the
+   REPL.
  * The directory containing the script file, if the Latitude
    interpreter was invoked with a script file as an argument.
 

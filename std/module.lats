@@ -71,7 +71,6 @@ ModuleLoader clone := {
 ModuleLoader loadPath := do {
   arr := [].
   arr pushBack: FilePath directory (Kernel executablePath) ++ "std/".
-  arr pushBack: Kernel cwd ++ "/".
   path := Kernel env "LATITUDE_PATH".
   path ifTrue {
     path split ";" visit {

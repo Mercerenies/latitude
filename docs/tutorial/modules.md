@@ -147,7 +147,7 @@ loadPath`. It is built from the following paths.
  * A directory containing all of the standard Latitude modules, such
    as `'format` and `'random`.
  * The current working directory (also accessible through `Kernel
-   cwd`).
+   cwd`), if running in the REPL.
  * The directory containing the script file, if a script file was
    invoked from the command line (i.e., `latitude some-file.lats`)
  * Any directories listed in the environment variable `LATITUDE_PATH`
