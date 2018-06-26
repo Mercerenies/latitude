@@ -57,9 +57,6 @@ void Profiling::dumpData() {
 
 #endif
 
-Thunk::Thunk(Method code)
-    : Thunk(code, nullptr, nullptr) {}
-
 Thunk::Thunk(Method code, ObjectPtr lex, ObjectPtr dyn)
     : code(code), lex(lex), dyn(dyn) {}
 
@@ -993,14 +990,20 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
 #if DEBUG_INSTR > 0
         cout << "WND" << endl;
 #endif
-        auto before = boost::get<Method>(&state.slf->prim()),
-             after  = boost::get<Method>(&state.ptr->prim());
-        if (before && after) {
-            WindPtr frame = WindPtr(new WindFrame(Thunk(*before), Thunk(*after)));
-            frame->before.lex = (*state.slf)[ Symbols::get()["closure"] ];
-            frame->before.dyn = state.dyn.top();
-            frame->after.lex = (*state.ptr)[ Symbols::get()["closure"] ];
-            frame->after.dyn = state.dyn.top();
+        auto beforeMthd = boost::get<Method>(&state.slf->prim()),
+             afterMthd  = boost::get<Method>(&state.ptr->prim());
+        if (beforeMthd && afterMthd) {
+            Thunk before {
+                *beforeMthd,
+                (*state.slf)[ Symbols::get()["closure"] ],
+                state.dyn.top()
+            };
+            Thunk after {
+                *afterMthd,
+                (*state.ptr)[ Symbols::get()["closure"] ],
+                state.dyn.top()
+            };
+            WindPtr frame = WindPtr(new WindFrame(before, after));
             state.wind = pushNode(state.wind, frame);
         } else {
 #if DEBUG_INSTR > 0

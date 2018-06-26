@@ -100,11 +100,6 @@ struct Thunk {
     ObjectPtr lex;
     ObjectPtr dyn;
 
-    /// Constructs a thunk with an empty call stack.
-    ///
-    /// \param code the body of the thunk
-    explicit Thunk(Method code);
-
     /// Constructs a thunk.
     ///
     /// \param code the body of the thunk
