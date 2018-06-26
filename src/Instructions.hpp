@@ -195,12 +195,18 @@ class AssemblerLineArgs;
 /// up. Assembler lines consist of a single opcode and zero or more
 /// arguments.
 class AssemblerLine {
+public:
+    using const_iterator = std::vector<RegisterArg>::const_iterator;
 private:
     Instr command;
     std::vector<RegisterArg> args;
+
+    const_iterator iterBegin() const;
+    const_iterator iterEnd() const;
+
 public:
 
-    using const_iterator = decltype(args)::const_iterator;
+    friend class AssemblerLineArgs;
 
     /// \brief Constructs an empty assembler line.
     AssemblerLine() = default;
@@ -230,10 +236,6 @@ public:
     RegisterArg argument(int n) const;
 
     RegisterArg argumentCount() const;
-
-    const_iterator iterBegin() const;
-
-    const_iterator iterEnd() const;
 
     /// \brief Verifies the integrity of the instruction and its arguments.
     ///

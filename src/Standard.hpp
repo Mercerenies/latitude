@@ -95,10 +95,55 @@ namespace Table {
 
 }
 
+/// Spawns the standard objects needed for a Latitude VM instance to
+/// start. The global scope object will be placed onto the lexical and
+/// dynamic stack registers of the interpreter state, and the
+/// read-only state's literal object table will be filled. Various
+/// slots on the built-in objects will be constructed so that every
+/// object made in this procedure is reachable from the global scope
+/// object, and the global scope object will be the return value of
+/// this procedure.
+///
+/// \param state the interpreter state
+/// \param reader the read-only state
+/// \param argc the number of command line arguments
+/// \param argv the command line arguments
+/// \return the global scope object
 ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** argv);
 
+/// Pushes the appropriate behavior onto the call stack to throw an
+/// error of the type given by `name` (looked up in the `err` object
+/// in Latitude) with the message `msg`. After a call to this method,
+/// no further modifications should be made to the IntState object
+/// until the error-throwing code has been executed by the underlying
+/// VM.
+///
+/// \param state the interpreter state
+/// \param reader the read-only state
+/// \param name the name of the Latitude exception type
+/// \param msg the exception's message
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name, std::string msg);
+
+/// Pushes the appropriate behavior onto the call stack to throw an
+/// error of the type given by `name` (looked up in the `err` object
+/// in Latitude) with a default message. After a call to this method,
+/// no further modifications should be made to the IntState object
+/// until the error-throwing code has been executed by the underlying
+/// VM.
+///
+/// \param state the interpreter state
+/// \param reader the read-only state
+/// \param name the name of the Latitude exception type
 void throwError(IntState& state, const ReadOnlyState& reader, std::string name);
+
+/// Pushes the appropriate behavior onto the call stack to throw the
+/// given object unconditionally. After a call to this method, no
+/// further modifications should be made to the IntState object until
+/// the error-throwing code has been executed by the underlying VM.
+///
+/// \param state the interpreter state
+/// \param reader the read-only state
+/// \param obj the object to throw
 void throwError(IntState& state, const ReadOnlyState& reader, ObjectPtr obj);
 
 #endif // STANDARD_HPP

@@ -96,9 +96,9 @@ struct ReadOnlyState {
 /// A thunk contains a method and dynamic and lexical scoping
 /// information in which to execute the method.
 struct Thunk {
-    Method code;
-    ObjectPtr lex;
-    ObjectPtr dyn;
+    const Method code;
+    const ObjectPtr lex;
+    const ObjectPtr dyn;
 
     /// Constructs a thunk.
     ///
@@ -113,8 +113,8 @@ struct Thunk {
 /// when a scope is entered and when it is exited. WindFrame instances
 /// will always be respected when the VM performs a continuation jump.
 struct WindFrame {
-    Thunk before;
-    Thunk after;
+    const Thunk before;
+    const Thunk after;
 
     /// Constructs a wind frame.
     ///
