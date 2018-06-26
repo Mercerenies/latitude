@@ -9,6 +9,7 @@
  * [Advanced Flow Control](cont.md)
  * [Input and Output](io.md)
  * [Modules](modules.md)
+ * [Metaprogramming](meta.md)
 
 [[up](..)]
 <br/>[[next - Latitude Specification](../spec/)]

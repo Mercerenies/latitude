@@ -181,6 +181,7 @@ reflection and metaprogramming to modify the language itself.
 
 [[up](.)]
 <br/>[[prev - Input and Output](io.md)]
+<br/>[[next - Metaprogramming](meta.md)]
 
 <hr/>
 
