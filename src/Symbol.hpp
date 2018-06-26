@@ -23,6 +23,8 @@ enum class SymbolType {
     NATURAL
 };
 
+/// \brief A singleton containing the global symbol table.
+///
 /// A singleton which maintains an association between language
 /// symbols and internal numerical identifiers to allow constant-time
 /// comparison.
@@ -137,6 +139,8 @@ public:
 
 };
 
+/// \brief A thin wrapper for symbols in index form.
+///
 /// A thin wrapper for symbols in index form, to avoid accidental
 /// casting to and from integer types. The index of the symbol can be
 /// accessed explicitly via the `index` field of this structure, and
