@@ -2740,6 +2740,15 @@ void spawnSystemCallsNew(ObjectPtr global,
                                            makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO),
                                            makeAssemblerLine(Instr::CPP, CPP_WHILE_REGS_ZERO),
                                            makeAssemblerLine(Instr::GOTO)));
+     assert(temp.index == GTU_WHILE_AGAIN);
+
+     // GTU_STORED
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)));
+     assert(temp.index == GTU_STORED);
+
+     // GTU_UNSTORED
+     temp = reader.gtu->pushMethod(asmCode(makeAssemblerLine(Instr::POP, Reg::RET, Reg::STO)));
+     assert(temp.index == GTU_UNSTORED);
 
 }
 

@@ -126,7 +126,9 @@ void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr
         enters.pop_front();
     }
     state.stack = pushNode(state.stack, state.cont);
-    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
+    state.stack = pushNode(state.stack,
+                           MethodSeek(Method(reader.gtu, { Table::GTU_UNSTORED })));
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_STORED }));
     for (WindPtr ptr : exits) {
         state.lex.push( clone(ptr->after.lex) );
         state.dyn.push( clone(ptr->after.dyn) );

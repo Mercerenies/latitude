@@ -89,7 +89,9 @@ namespace Table {
         GTU_PANIC = 17,
         GTU_WHILE_DO = 18,
         GTU_POP_TWO = 19,
-        GTU_WHILE_AGAIN = 20;
+        GTU_WHILE_AGAIN = 20,
+        GTU_STORED = 21,
+        GTU_UNSTORED = 22;
 
 }
 
