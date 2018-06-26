@@ -93,7 +93,7 @@ scope object.
      +-- meta operators
      +-- meta sigil
 
- * [Arglist](arglist.md)
+ * [ArgList](arglist.md)
  * [Array](array.md)
  * [Booleans and Nil](boolnil.md)
  * [Cached](cached.md)

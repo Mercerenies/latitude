@@ -24,7 +24,7 @@ shallow-copied when an argument list is cloned.
 
 Stores the caller's dynamic scope in `self`'s internal memory,
 effectively filling the argument list object with the arguments of the
-caller's scope.
+caller's scope. Returns `self`.
 
 ### `ArgList fillWith (arg).`
 
@@ -34,6 +34,7 @@ argument-like object is an object which has slots of the form `$1`,
 be the argument list's elements. In particular, any dynamic scope
 object is an argument-like object,
 and [`$argv`](global.md#global-argv) is also an argument-like object.
+Returns `self`.
 
 ### `ArgList shift.`
 
