@@ -328,6 +328,10 @@ explicitly import sigils into the current meta.
 
     use 'sigil-module importAllSigils.
 
+## Sending Messages
+
+...
+
 ## Summary
 
 Latitude's strength comes in its ability to define new control
