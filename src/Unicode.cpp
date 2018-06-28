@@ -1,3 +1,6 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
+
 
 #include "Unicode.hpp"
 #include "pl_Unidata.h"

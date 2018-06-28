@@ -1,6 +1,9 @@
 ;;* MODULE repl
 ;;* PACKAGE latitude
 
+;;;; Copyright (c) 2018 Silvio Mayolo
+;;;; See LICENSE.txt for licensing details
+
 repl := $whereAmI.
 
 REPL ::= Object clone.

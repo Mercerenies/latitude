@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+### Copyright (c) 2018 Silvio Mayolo
+### See LICENSE.txt for licensing details
+
 use strict;
 use warnings;
 use 5.010;

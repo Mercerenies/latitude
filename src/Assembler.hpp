@@ -1,3 +1,6 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
+
 #ifndef ASSEMBLER_HPP
 #define ASSEMBLER_HPP
 #include "Instructions.hpp"

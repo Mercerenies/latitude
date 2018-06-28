@@ -1,3 +1,6 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
+
 extern "C" {
 #include "lex.yy.h"
 #include "Parser.tab.h"

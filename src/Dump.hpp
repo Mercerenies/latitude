@@ -1,3 +1,6 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
+
 #ifndef DUMP_HPP
 #define DUMP_HPP
 

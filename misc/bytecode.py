@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+### Copyright (c) 2018 Silvio Mayolo
+### See LICENSE.txt for licensing details
+
 # Note: Depends on Alakazam (pip install alakazam)
 
 import sys

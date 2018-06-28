@@ -1,3 +1,6 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
+
 #ifndef PRECEDENCE_HPP
 #define PRECEDENCE_HPP
 

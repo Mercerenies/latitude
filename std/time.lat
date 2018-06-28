@@ -1,6 +1,9 @@
 ;;* MODULE time
 ;;* PACKAGE latitude
 
+;;;; Copyright (c) 2018 Silvio Mayolo
+;;;; See LICENSE.txt for licensing details
+
 time := $whereAmI.
 
 Month ::= Enumeration of '[January, February, March, April, May, June, July,

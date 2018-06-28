@@ -1,6 +1,9 @@
 ;;* MODULE unicode
 ;;* PACKAGE latitude
 
+;;;; Copyright (c) 2018 Silvio Mayolo
+;;;; See LICENSE.txt for licensing details
+
 unicode := $whereAmI.
 
 Category ::= Enumeration of '[

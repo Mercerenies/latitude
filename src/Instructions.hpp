@@ -1,3 +1,6 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
+
 #ifndef INSTRUCTIONS_HPP
 #define INSTRUCTIONS_HPP
 #include <deque>

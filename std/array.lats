@@ -1,3 +1,5 @@
+;;;; Copyright (c) 2018 Silvio Mayolo
+;;;; See LICENSE.txt for licensing details
 
 ;; "Cons" objects, as in Lisp
 global Cons ::= Object clone.

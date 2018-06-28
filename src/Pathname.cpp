@@ -1,3 +1,6 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
+
 #include "Pathname.hpp"
 #include "Platform.hpp"
 #include <string>
