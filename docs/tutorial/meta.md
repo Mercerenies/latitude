@@ -336,6 +336,7 @@ many of the tools used to do so.
 
 [[up](.)]
 <br/>[[prev - Mixin Objects](mixins.md)]
+<br/>[[next - Closing Thoughts](final.md)]
 
 <hr/>
 

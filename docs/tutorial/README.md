@@ -11,6 +11,7 @@
  * [Modules](modules.md)
  * [Mixin Objects](mixins.md)
  * [Metaprogramming](meta.md)
+ * [Closing Thoughts](final.md)
 
 [[up](..)]
 <br/>[[next - Latitude Specification](../spec/)]
