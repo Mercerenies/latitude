@@ -335,7 +335,7 @@ structures and influence the language in subtle ways. Now you've seen
 many of the tools used to do so.
 
 [[up](.)]
-<br/>[[prev - Modules](modules.md)]
+<br/>[[prev - Mixin Objects](mixins.md)]
 
 <hr/>
 

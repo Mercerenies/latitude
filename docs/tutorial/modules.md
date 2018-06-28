@@ -176,12 +176,12 @@ You now have an understanding of the basics of creating and loading
 modules. There are more customizations you can perform on the module
 loader, but most of them are scarcely needed, as the default module
 loader suffices for many common programming tasks. In the next
-chapter, we'll discuss some of the ways Latitude allows you to use
-reflection and metaprogramming to modify the language itself.
+chapter, we'll discuss mixin objects, a way to implement reusable
+interfaces of Latitude objects.
 
 [[up](.)]
 <br/>[[prev - Input and Output](io.md)]
-<br/>[[next - Metaprogramming](meta.md)]
+<br/>[[next - Mixin Objects](mixins.md)]
 
 <hr/>
 

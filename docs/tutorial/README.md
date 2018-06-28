@@ -9,6 +9,7 @@
  * [Advanced Flow Control](cont.md)
  * [Input and Output](io.md)
  * [Modules](modules.md)
+ * [Mixin Objects](mixins.md)
  * [Metaprogramming](meta.md)
 
 [[up](..)]
