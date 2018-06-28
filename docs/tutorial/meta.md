@@ -330,7 +330,75 @@ explicitly import sigils into the current meta.
 
 ## Sending Messages
 
-...
+Normally, when we send a message to an object, we send a symbolic
+name, and the object chooses how to react to the message. Thus, the
+same name may behave differently depending on which object is
+receiving the message. A prime example of this is `toString`. Clearly,
+sending `toString` to a numerical object is going to have different
+behavior than sending `toString` to a string object. However,
+sometimes it can be useful to send an explicit set of instructions to
+an object, rather than a name. This can be done with `send`. `send`
+returns a procedure object which, when called, will invoke its block
+with the appropriate caller bound as `self`.
+
+    foo ::= Object clone.
+    foo send {
+      println: self. ; Prints foo
+    } call.
+
+`send` returns a procedure object so that you can explicitly pass
+arguments to the constructed procedure if you wish.
+
+    use 'format importAllSigils.
+
+    foo ::= Object clone.
+    foo send {
+      $stdout printf: ~fmt "Self is ~S and args are (~S, ~S)", self, $1, $2. ; foo, 10, 20
+    } call: 10, 20.
+
+More commonly, you will not pass an explicit block to `send` but
+rather a method passed in from a caller. For instance, `tap` is
+implemented in terms of `send`.
+
+    myTap := {
+      takes '[obj, mthd].
+      obj send #'(mthd) call.
+      obj.
+    }.
+
+It can be handy to set up a variable scope before performing a call.
+For instance, recall that `loop*` behaves like `loop` except that it
+also defines `next` and `last` in the loop body's scope. This behavior
+is also implemented in terms of `send`. By calling `by` on the
+procedure object, we can supply a setup method. This setup method will
+be called before the actual method is called, and it will take two
+arguments: the future lexical scope and the future dynamic scope. We
+can freely modify these arguments, and those changes will be reflected
+in the method call.
+
+For brevity, we'll only be implementing `last` in our loop, but `next`
+would be similar.
+
+    myLoop* := {
+      takes '[block].
+      callCC {
+        escapable.
+        loop {
+          Conditional send #'(content) by {
+            $1 last := { return. }.
+          } call.
+        }.
+      }.
+    }.
+
+We use the `Conditional` object as the target of the method. There is
+not any particular reason for this; we just need some object to be the
+receiver, and a singleton flow-control-centric object would seem to be
+a sensible candidate. Before running `content`, the call invokes our
+setup method, which defines a lexically-scoped `last` method. Remember
+that the setup method is passed two arguments: lexical scope and
+dynamic scope. So `$1` is the lexical scope argument, on which we
+define `last`.
 
 ## Summary
 
