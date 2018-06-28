@@ -217,7 +217,101 @@ failed" behavior.
     }.
     println: mySafeObject thisSlotDoesNotExist. ; Prints Nil
 
-...
+A `missing` method which does not wish to emulate the slot should call
+the parent's `missing` method explicitly, rather than raising an
+exception.
+
+    mySafeObject := Object clone tap {
+      self missing := {
+        takes '[sym].
+        if (sym == 'foo) then {
+          Nil.
+        } else {
+          Parents above (mySafeObject, 'missing) call (sym).
+        }.
+      }.
+    }.
+
+For a useful, real-world example of `missing`, we need to look no
+further than Latitude's module system. When a module's names are
+imported with `importAll`, a new object is injected into the local
+scope, and that new object has a `missing` method which forwards to
+the module.
+
+    myImportAll := {
+      takes '[module].
+
+      ;; Make a new object in the lexical scope hierarchy
+      scope := lexical caller.
+      scope parent := scope parent clone.
+      target := scope parent.
+
+      target missing := {
+        takes '[sym].
+        {
+          module slot (sym).
+        } catch (err SlotError) do {
+          Parents above (target, 'missing) call (sym).
+        }.
+      }.
+
+    }.
+
+To import all of the names into scope, we define a new object in the
+inheritance hierarchy. That new object has a `missing` method which
+explicitly delegates to the module.
+
+    +----------------------+
+    | Old lexical parent   |   +----------------------+              +----------------------+
+    +----------------------+<--| New object           |------------->| Target module        |
+               ^               +----------------------+ Delegates to +----------------------+
+               X               ^
+               X              /
+    +----------------------+ /
+    | Lexical scope        |/
+    +----------------------+
+
+## Sigils
+
+We've already briefly mentioned sigils, when using the `~fmt` sigil to
+create a format string. Now we'll discuss how to create custom sigils.
+
+The `meta` slot on a lexical scope object stores the current meta
+object. The current meta object is used for several purposes, not
+least of which is sigil lookup.<sup><a name="footnote-03a"
+href="#user-content-footnote-03f">3</a></sup> When an expression of
+the form `~name (someExpr)` is encountered, it is converted to the
+call
+
+    meta sigil name (someExpr).
+
+As with ordinary method calls, if the argument is a literal, the
+parentheses may be omitted, so `~name 1` desugars to `meta sigil name
+(1)`. Sigils desugar to ordinary method calls, so they are merely a
+syntactic convenience. Aside from `~fmt` (in the `'format` module),
+Latitude defines a few other built-in sigils. One of the most useful
+is the `~l` sigil for lazy evaluation.
+
+    value := ~l {
+      putln: "Doing some expensive calculations... :)".
+      42.
+    }.
+    putln: "Haven't done any work yet.".
+    println: value. ; Doing some expensive calculations... :) 42
+    println: value. ; 42
+
+`~l` takes a block and returns a new method. The new method will call
+the block and cache the result the first time it is invoked. When it
+is later invoked, it will return the cached value. In effect, it
+constructs a method which emulates lazy evaluation, and since Latitude
+methods are invoked the same way variables are accessed, you can treat
+it the same way you would treat a variable.
+
+## Summary
+
+Latitude's strength comes in its ability to define new control
+structures and influence the language in subtle ways. Now you've seen
+many of the tools used to do so.
 
 [[up](.)]
 <br/>[[prev - Modules](modules.md)]
@@ -238,3 +332,11 @@ href="#user-content-footnote-02a"><sup>2</sup></a> Specifically,
 `above` finds the slot with the given name on the object, ignores that
 value, and accesses the slot on that object's parent, essentially
 ignoring the first layer of lookup.
+
+<a name="footnote-03f"
+href="#user-content-footnote-03a"><sup>3</sup></a> The meta object is
+also used for operator precedence resolution. Customizing the operator
+table is not explicitly discussed in this tutorial, but you can read
+about it in the Latitude specification
+at
+[Chapter 2 - Lexical Structure](/spec/i_syntax_and_semantics/ch2_lexical.md).
