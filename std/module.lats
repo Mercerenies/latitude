@@ -36,7 +36,7 @@ Module importAll := {
     if { this is? (target) not. } and { this slot? (sym). } then {
       this slot (sym).
     } else {
-      target send (target parent slot 'missing) call: sym.
+      Parents above (target, 'missing) call: sym.
     }.
   }.
   this slot? (name) ifTrue {
