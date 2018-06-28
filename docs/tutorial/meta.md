@@ -307,6 +307,27 @@ constructs a method which emulates lazy evaluation, and since Latitude
 methods are invoked the same way variables are accessed, you can treat
 it the same way you would treat a variable.
 
+Sigils are stored in the `meta sigil` object. When importing a module,
+the `meta` object is never imported, even with `importAll`. For this
+reason, if you wish to provide sigils as part of a module, you must
+store them in a different place. Every module object has a `sigils`
+slot, to which you can attach arbitrary sigils.
+
+    ;;* MODULE sigil-module
+    ;;* PACKAGE com.example.latitude.tutorial
+
+    sigil-module := $whereAmI.
+
+    meta sigil mysigil := { ... }.
+    sigil-module sigils mysigil := #'(meta sigil mysigil).
+
+    sigil-module.
+
+Then, when importing the module, you can use `importAllSigils` to
+explicitly import sigils into the current meta.
+
+    use 'sigil-module importAllSigils.
+
 ## Summary
 
 Latitude's strength comes in its ability to define new control
