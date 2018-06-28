@@ -112,7 +112,7 @@ You may also import all names from the module, although this is not
 recommended as it can very easily become confusing to determine which
 names came from which modules.
 
-    use 'my-module import '[*].
+    use 'my-module importAll.
 
     someFunctionality (100).
 
