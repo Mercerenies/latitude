@@ -106,9 +106,9 @@ ReadOnlyState readOnlyState() {
     return reader;
 }
 
-void hardKill(IntState& state, const ReadOnlyState& reader) {
-    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
-    state.stack = NodePtr<MethodSeek>();
+void hardKill(VMState& vm) {
+    vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_EMPTY }));
+    vm.state.stack = NodePtr<MethodSeek>();
 }
 
 void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
@@ -1331,13 +1331,14 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             break;
         case 1: {
             // Compare
+            VMState vm { state, reader };
             auto temp = state.trace;
             auto curr = trace_marker.top();
             while ((curr != nullptr) && (temp != nullptr)) {
                 if (curr->get() != temp->get()) {
                     // Welp
                     cerr << "Trace assertion failure!" << endl;
-                    hardKill(state, reader);
+                    hardKill(vm);
                 }
                 curr = popNode(curr);
                 temp = popNode(temp);
@@ -1345,7 +1346,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             if (curr != temp) {
                 // Welp
                 cerr << "Trace assertion failure!" << endl;
-                hardKill(state, reader);
+                hardKill(vm);
             }
             trace_marker.pop();
         }

@@ -158,9 +158,8 @@ ReadOnlyState readOnlyState();
 /// This function leaves the interpreter in a valid but unspecified
 /// state which is guaranteed to be idling (according to #isIdling).
 ///
-/// \param state the interpreter state
-/// \param reader the read-only portion of the interpreter state
-void hardKill(IntState& state, const ReadOnlyState& reader);
+/// \param vm the virtual machine state
+void hardKill(VMState& vm);
 
 /// This function, which is called during continuation jumps, compares
 /// two wind frame stacks. Once it finds the first element that the

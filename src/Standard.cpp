@@ -65,7 +65,8 @@ void spawnSystemCallsNew(ObjectPtr global,
         // A last-resort termination of a fiber that malfunctioned; this should ONLY
         // be used as a last resort, as it does not correctly unwind the frames
         // before aborting
-        hardKill(state0, reader0);
+        VMState vm { state0, reader0 };
+        hardKill(vm);
     });
 
     // CPP_KERNEL_LOAD ($1 = filename, $2 = global)
@@ -2502,9 +2503,10 @@ void spawnSystemCallsNew(ObjectPtr global,
      // panic#.
      assert(reader.cpp.size() == CPP_PANIC);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
+         VMState vm { state0, reader0 };
          std::cerr << "Panic!" << std::endl;
          dumpEverything(std::cerr, state0);
-         hardKill(state0, reader0);
+         hardKill(vm);
      });
      sys->put(Symbols::get()["panic#"],
               defineMethod(unit, global, method,
