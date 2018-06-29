@@ -110,6 +110,8 @@ struct VMState {
     explicit VMState(const VMState&) = default;
     explicit VMState(VMState&&) = default;
 
+    static VMState createAndInit(ObjectPtr* global, int argc, char** argv);
+
 };
 
 /// A thunk contains a method and dynamic and lexical scoping

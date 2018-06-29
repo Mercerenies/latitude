@@ -69,6 +69,18 @@ WindFrame::WindFrame(const Thunk& before, const Thunk& after)
 VMState::VMState(IntState& state, const ReadOnlyState& reader)
     : state(state), reader(reader) {}
 
+VMState VMState::createAndInit(ObjectPtr* global, int argc, char** argv) {
+    IntState state;
+    ReadOnlyState reader;
+
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
+
+    *global = spawnObjects(state, reader, argc, argv);
+
+    return { state, reader };
+
+}
+
 IntState::IntState()
     : //// %cont?
       sym(Symbols::get()[""]),
