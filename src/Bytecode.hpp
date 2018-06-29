@@ -88,6 +88,17 @@ struct IntState {
     std::stack<TranslationUnitPtr> trns;
 
     IntState();
+
+};
+
+/// TransientState is a middle ground between IntState (always
+/// preserved) and ReadOnlyState (constant after initialization).
+/// TransientState can be changed freely by the VM but will be lost
+/// when a continuation jump is performed.
+struct TransientState {
+
+    TransientState();
+
 };
 
 /// In addition to an IntState instance, the VM retains a
@@ -104,6 +115,7 @@ struct ReadOnlyState {
 
 struct VMState {
     IntState state;
+    TransientState trans;
     const ReadOnlyState reader;
 
     VMState(IntState& state, const ReadOnlyState& reader);

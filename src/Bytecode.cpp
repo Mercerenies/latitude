@@ -82,9 +82,11 @@ VMState VMState::createAndInit(ObjectPtr* global, int argc, char** argv) {
 }
 
 IntState::IntState()
-    : //// %cont?
+    : // %cont?
       sym(Symbols::get()[""]),
       line(0) {}
+
+TransientState::TransientState() {}
 
 ReadOnlyState::ReadOnlyState()
     : gtu(std::make_shared<TranslationUnit>()) {}
