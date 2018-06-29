@@ -66,6 +66,9 @@ Thunk::Thunk(Method code, ObjectPtr lex, ObjectPtr dyn)
 WindFrame::WindFrame(const Thunk& before, const Thunk& after)
     : before(before), after(after) {}
 
+VMState::VMState(IntState& state, const ReadOnlyState& reader)
+    : state(state), reader(reader) {}
+
 IntState intState() {
     IntState state;
     state.ptr = state.slf = state.ret = nullptr;

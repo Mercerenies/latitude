@@ -43,30 +43,27 @@ int main(int argc, char** argv) {
     }
     }
 
+    IntState state = intState();
+    ReadOnlyState reader = readOnlyState();
+    VMState vm { state, reader };
+
+    // Overwrite the nullary register
+    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
+
+    ObjectPtr global = spawnObjects(state, reader, argc, argv);
+
     switch (args.run) {
     case RunMode::REPL: {
-        IntState state = intState();
-        ReadOnlyState reader = readOnlyState();
-        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY })); // Overwrite the nullary register
-        ObjectPtr global = spawnObjects(state, reader, argc, argv);
         outputVersion();
-        runREPL(global, state, reader);
+        runREPL(global, vm);
         break;
     }
     case RunMode::RUNNER: {
-        IntState state = intState();
-        ReadOnlyState reader = readOnlyState();
-        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY })); // Overwrite the nullary register
-        ObjectPtr global = spawnObjects(state, reader, argc, argv);
-        runRunner(global, state, reader);
+        runRunner(global, vm);
         break;
     }
     case RunMode::COMPILE: {
-        IntState state = intState();
-        ReadOnlyState reader = readOnlyState();
-        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY })); // Overwrite the nullary register
-        ObjectPtr global = spawnObjects(state, reader, argc, argv);
-        runCompiler(global, state, reader);
+        runCompiler(global, vm);
         break;
     }
     case RunMode::EXIT: {

@@ -63,6 +63,14 @@ using WindPtr = std::shared_ptr<WindFrame>;
 /// \brief A single frame of a backtrace.
 using BacktraceFrame = std::tuple<long, std::string>;
 
+struct VMState {
+    IntState& state;
+    const ReadOnlyState& reader;
+
+    VMState(IntState& state, const ReadOnlyState& reader);
+
+};
+
 /// The interpreter state consists of several mutable registers of
 /// various types.
 struct IntState {
