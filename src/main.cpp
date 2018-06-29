@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
     }
     }
 
-    IntState state = intState();
-    ReadOnlyState reader = readOnlyState();
+    IntState state {};
+    ReadOnlyState reader {};
 
     // Overwrite the nullary register
     state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));

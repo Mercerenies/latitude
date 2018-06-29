@@ -69,28 +69,13 @@ WindFrame::WindFrame(const Thunk& before, const Thunk& after)
 VMState::VMState(IntState& state, const ReadOnlyState& reader)
     : state(state), reader(reader) {}
 
-IntState intState() {
-    IntState state;
-    state.ptr = state.slf = state.ret = nullptr;
-    // lex, dyn, arg, sto default to empty
-    // cont default to empty
-    // stack default to empty
-    // err0, err1 default to false
-    state.sym = Symbols::get()[""];
-    // num0, num1 default to smallint(0)
-    // str0, str1 default to empty string
-    // mthd default to empty method
-    // strm default to null
-    // prcs default to null
-    // mthdz default to empty method
-    // flag default to false
-    // wind default to empty
-    state.line = 0;
-    // file default to empty string
-    // trace default to empty stack
-    // trns default to empty stack
-    return state;
-}
+IntState::IntState()
+    : //// %cont?
+      sym(Symbols::get()[""]),
+      line(0) {}
+
+ReadOnlyState::ReadOnlyState()
+    : gtu(std::make_shared<TranslationUnit>()) {}
 
 StatePtr statePtr(const IntState& state) {
     return make_shared<IntState>(state);
@@ -98,12 +83,6 @@ StatePtr statePtr(const IntState& state) {
 
 StatePtr statePtr(IntState&& state) {
     return make_shared<IntState>(forward<IntState&&>(state));
-}
-
-ReadOnlyState readOnlyState() {
-    ReadOnlyState reader;
-    reader.gtu = make_shared<TranslationUnit>();
-    return reader;
 }
 
 void hardKill(VMState& vm) {

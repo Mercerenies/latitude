@@ -86,6 +86,8 @@ struct IntState {
     std::string file;
     NodePtr<BacktraceFrame> trace;
     std::stack<TranslationUnitPtr> trns;
+
+    IntState();
 };
 
 /// In addition to an IntState instance, the VM retains a
@@ -95,6 +97,9 @@ struct ReadOnlyState {
     std::vector<CppFunction> cpp;
     std::vector<ObjectPtr> lit;
     TranslationUnitPtr gtu;
+
+    ReadOnlyState();
+
 };
 
 struct VMState {
@@ -137,11 +142,6 @@ struct WindFrame {
     WindFrame(const Thunk& before, const Thunk& after);
 
 };
-
-/// This pseudo-constructor creates an empty interpreter state.
-///
-/// \return an IntState instance containing no information
-IntState intState();
 
 /// Copies the interpreter state and returns a smart pointer to the copy.
 ///
