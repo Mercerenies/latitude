@@ -906,7 +906,7 @@ void executeInstr(Instr instr, VMState vm) {
 #endif
         auto func = reader.cpp.at(val);
         if (func)
-            func(state, reader);
+            func(vm);
         else
             state.err0 = true;
     }

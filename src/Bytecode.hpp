@@ -24,6 +24,7 @@
 
 struct Thunk;
 struct WindFrame;
+struct VMState;
 struct IntState;
 struct ReadOnlyState;
 
@@ -52,7 +53,7 @@ public:
 
 /// \brief A CppFunction represents a C++ function that is callable
 /// from within the Latitude VM.
-using CppFunction = std::function<void(IntState&, const ReadOnlyState&)>;
+using CppFunction = std::function<void(VMState)>;
 
 /// \brief A StatePtr is a smart pointer to an IntState instance.
 using StatePtr = std::shared_ptr<IntState>;
