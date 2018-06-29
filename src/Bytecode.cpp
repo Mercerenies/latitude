@@ -156,140 +156,136 @@ void popTrace(IntState& state) {
 }
 
 void executeInstr(Instr instr, VMState vm) {
-    // Man, I'm just too lazy to substitute all these in by hand right
-    // now. I'll do it later. Meh.
-    IntState& state = vm.state;
-    const ReadOnlyState& reader = vm.reader;
     switch (instr) {
     case Instr::MOV: {
-        Reg src = state.cont.readReg(0);
-        Reg dest = state.cont.readReg(1);
+        Reg src = vm.state.cont.readReg(0);
+        Reg dest = vm.state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "MOV " << (long)src << " " << (long)dest << endl;
 #endif
         ObjectPtr mid = nullptr;
         switch (src) {
         case Reg::PTR:
-            mid = state.ptr;
+            mid = vm.state.ptr;
             break;
         case Reg::SLF:
-            mid = state.slf;
+            mid = vm.state.slf;
             break;
         case Reg::RET:
-            mid = state.ret;
+            mid = vm.state.ret;
             break;
         default:
             mid = nullptr;
-            state.err0 = true;
+            vm.state.err0 = true;
             break;
         }
         switch (dest) {
         case Reg::PTR:
-            state.ptr = mid;
+            vm.state.ptr = mid;
             break;
         case Reg::SLF:
-            state.slf = mid;
+            vm.state.slf = mid;
             break;
         case Reg::RET:
-            state.ret = mid;
+            vm.state.ret = mid;
             break;
         default:
-            state.err0 = true;
+            vm.state.err0 = true;
             break;
         }
     }
         break;
     case Instr::PUSH: {
-        Reg src = state.cont.readReg(0);
-        Reg stack = state.cont.readReg(1);
+        Reg src = vm.state.cont.readReg(0);
+        Reg stack = vm.state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "PUSH " << (long)src << " " << (long)stack << endl;
 #endif
         ObjectPtr mid = nullptr;
         switch (src) {
         case Reg::PTR:
-            mid = state.ptr;
+            mid = vm.state.ptr;
             break;
         case Reg::SLF:
-            mid = state.slf;
+            mid = vm.state.slf;
             break;
         case Reg::RET:
-            mid = state.ret;
+            mid = vm.state.ret;
             break;
         default:
             mid = nullptr;
-            state.err0 = true;
+            vm.state.err0 = true;
             break;
         }
         switch (stack) {
         case Reg::LEX:
-            state.lex.push(mid);
+            vm.state.lex.push(mid);
             break;
         case Reg::DYN:
-            state.dyn.push(mid);
+            vm.state.dyn.push(mid);
             break;
         case Reg::ARG:
-            state.arg.push(mid);
+            vm.state.arg.push(mid);
             break;
         case Reg::STO:
-            state.sto.push(mid);
+            vm.state.sto.push(mid);
             break;
         case Reg::HAND:
-            state.hand.push(mid);
+            vm.state.hand.push(mid);
             break;
         default:
-            state.err0 = true;
+            vm.state.err0 = true;
             break;
         }
     }
         break;
     case Instr::POP: {
         stack<ObjectPtr>* stack;
-        Reg dest = state.cont.readReg(0);
-        Reg reg = state.cont.readReg(1);
+        Reg dest = vm.state.cont.readReg(0);
+        Reg reg = vm.state.cont.readReg(1);
         ObjectPtr mid = nullptr;
 #if DEBUG_INSTR > 0
         cout << "POP " << (long)reg << endl;
 #endif
         switch (reg) {
         case Reg::LEX:
-            stack = &state.lex;
+            stack = &vm.state.lex;
             break;
         case Reg::DYN:
-            stack = &state.dyn;
+            stack = &vm.state.dyn;
             break;
         case Reg::ARG:
-            stack = &state.arg;
+            stack = &vm.state.arg;
             break;
         case Reg::STO:
-            stack = &state.sto;
+            stack = &vm.state.sto;
             break;
         case Reg::HAND:
-            stack = &state.hand;
+            stack = &vm.state.hand;
             break;
         default:
             stack = nullptr;
-            state.err0 = true;
+            vm.state.err0 = true;
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
                 mid = stack->top();
                 stack->pop();
             } else {
-                state.err0 = true;
+                vm.state.err0 = true;
             }
             switch (dest) {
             case Reg::PTR:
-                state.ptr = mid;
+                vm.state.ptr = mid;
                 break;
             case Reg::SLF:
-                state.slf = mid;
+                vm.state.slf = mid;
                 break;
             case Reg::RET:
-                state.ret = mid;
+                vm.state.ret = mid;
                 break;
             default:
-                state.err0 = true;
+                vm.state.err0 = true;
                 break;
             }
         }
@@ -299,22 +295,22 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "GETL" << endl;
 #endif
-        Reg dest = state.cont.readReg(0);
-        if (state.lex.empty()) {
-            state.err0 = true;
+        Reg dest = vm.state.cont.readReg(0);
+        if (vm.state.lex.empty()) {
+            vm.state.err0 = true;
         } else {
             switch (dest) {
             case Reg::PTR:
-                state.ptr = state.lex.top();
+                vm.state.ptr = vm.state.lex.top();
                 break;
             case Reg::SLF:
-                state.slf = state.lex.top();
+                vm.state.slf = vm.state.lex.top();
                 break;
             case Reg::RET:
-                state.ret = state.lex.top();
+                vm.state.ret = vm.state.lex.top();
                 break;
             default:
-                state.err0 = true;
+                vm.state.err0 = true;
                 break;
             }
         }
@@ -324,22 +320,22 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "GETD" << endl;
 #endif
-        Reg dest = state.cont.readReg(0);
-        if (state.dyn.empty()) {
-            state.err0 = true;
+        Reg dest = vm.state.cont.readReg(0);
+        if (vm.state.dyn.empty()) {
+            vm.state.err0 = true;
         } else {
             switch (dest) {
             case Reg::PTR:
-                state.ptr = state.dyn.top();
+                vm.state.ptr = vm.state.dyn.top();
                 break;
             case Reg::SLF:
-                state.slf = state.dyn.top();
+                vm.state.slf = vm.state.dyn.top();
                 break;
             case Reg::RET:
-                state.ret = state.dyn.top();
+                vm.state.ret = vm.state.dyn.top();
                 break;
             default:
-                state.err0 = true;
+                vm.state.err0 = true;
                 break;
             }
         }
@@ -349,76 +345,76 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "ESWAP" << endl;
 #endif
-        swap(state.err0, state.err1);
+        swap(vm.state.err0, vm.state.err1);
     }
         break;
     case Instr::ECLR: {
 #if DEBUG_INSTR > 0
         cout << "ECLR" << endl;
 #endif
-        state.err0 = false;
+        vm.state.err0 = false;
     }
         break;
     case Instr::ESET: {
 #if DEBUG_INSTR > 0
         cout << "ESET" << endl;
 #endif
-        state.err0 = true;
+        vm.state.err0 = true;
     }
         break;
     case Instr::SYM: {
-        string str = state.cont.readString(0);
+        string str = vm.state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "SYM \"" << str << "\"" << endl;
 #endif
-        state.sym = Symbols::get()[str];
+        vm.state.sym = Symbols::get()[str];
     }
         break;
     case Instr::NUM: {
-        string str = state.cont.readString(0);
+        string str = vm.state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "NUM \"" << str << "\"" << endl;
 #endif
         auto temp = parseInteger(str.c_str());
         assert(temp);
-        state.num0 = *temp;
+        vm.state.num0 = *temp;
     }
         break;
     case Instr::INT: {
-        long val = state.cont.readLong(0);
+        long val = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "INT " << val << endl;
 #endif
-        state.num0 = Number(val);
+        vm.state.num0 = Number(val);
     }
         break;
     case Instr::FLOAT: {
-        string str = state.cont.readString(0);
+        string str = vm.state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "FLOAT \"" << str << "\"" << endl;
 #endif
         double dd = strtod(str.c_str(), NULL);
-        state.num0 = Number(dd);
+        vm.state.num0 = Number(dd);
     }
         break;
     case Instr::NSWAP: {
 #if DEBUG_INSTR > 0
         cout << "NSWAP" << endl;
 #endif
-        swap(state.num0, state.num1);
+        swap(vm.state.num0, vm.state.num1);
     }
         break;
     case Instr::CALL: {
-        long args = state.cont.readLong(0);
+        long args = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
-        cout << "CALL " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "CALL " << args << " (" << Symbols::get()[vm.state.sym] << ")" << endl;
 #if DEBUG_INSTR > 2
-        cout << "* Method Properties " << state.ptr << endl;
+        cout << "* Method Properties " << vm.state.ptr << endl;
 #endif
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&state.ptr->prim());
-        ObjectPtr closure = (*state.ptr)[ Symbols::get()["closure"] ];
+        auto stmt = boost::get<Method>(&vm.state.ptr->prim());
+        ObjectPtr closure = (*vm.state.ptr)[ Symbols::get()["closure"] ];
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
             (closure != nullptr) << " " <<
@@ -428,34 +424,34 @@ void executeInstr(Instr instr, VMState vm) {
         if ((closure != nullptr) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
-            if (!state.dyn.empty())
-                state.dyn.push( clone(state.dyn.top()) );
+            if (!vm.state.dyn.empty())
+                vm.state.dyn.push( clone(vm.state.dyn.top()) );
             else
-                state.err0 = true;
+                vm.state.err0 = true;
             // (3) Push a clone of the closure onto %lex
-            auto lex = state.lex.top();
-            state.lex.push( clone(closure) );
+            auto lex = vm.state.lex.top();
+            vm.state.lex.push( clone(closure) );
             // (4) Bind all the local variables
-            state.lex.top()->put(Symbols::get()["self"], state.slf);
-            state.lex.top()->put(Symbols::get()["again"], state.ptr);
-            state.lex.top()->put(Symbols::get()["caller"], lex);
-            state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
+            vm.state.lex.top()->put(Symbols::get()["self"], vm.state.slf);
+            vm.state.lex.top()->put(Symbols::get()["again"], vm.state.ptr);
+            vm.state.lex.top()->put(Symbols::get()["caller"], lex);
+            vm.state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"]);
             // (5) Push the trace information
-            pushTrace(state);
+            pushTrace(vm.state);
             // (6) Bind all of the arguments
-            if (!state.dyn.empty()) {
+            if (!vm.state.dyn.empty()) {
                 int index = args;
                 for (long n = 0; n < args; n++) {
-                    ObjectPtr arg = state.arg.top();
-                    state.arg.pop();
-                    state.dyn.top()->put(Symbols::get()[ "$" + to_string(index) ], arg);
+                    ObjectPtr arg = vm.state.arg.top();
+                    vm.state.arg.pop();
+                    vm.state.dyn.top()->put(Symbols::get()[ "$" + to_string(index) ], arg);
                     index--;
                 }
             }
             // (7) Push %cont onto %stack
-            state.stack = pushNode(state.stack, state.cont);
-            state.trns.push(stmt->translationUnit());
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+            vm.state.trns.push(stmt->translationUnit());
             // (8) Make a new %cont
             if (stmt) {
 #if DEBUG_INSTR > 3
@@ -463,91 +459,91 @@ void executeInstr(Instr instr, VMState vm) {
                 if (stmt->size() == 0) {
                     // What are we looking at...?
                     cout << "* * Where ptr has" << endl;
-                    for (auto& x : keys(state.ptr))
+                    for (auto& x : keys(vm.state.ptr))
                         cout << "  " << Symbols::get()[x];
                     cout << endl;
                     cout << "* * Directly" << endl;
-                    for (auto& x : (state.ptr)->directKeys())
+                    for (auto& x : (vm.state.ptr)->directKeys())
                         cout << "  " << Symbols::get()[x];
                     cout << endl;
                     cout << "* * Parents of ptr" << endl;
-                    for (auto& x : hierarchy(state.ptr))
+                    for (auto& x : hierarchy(vm.state.ptr))
                         cout << "  " << x;
                     cout << endl;
                     cout << "* * Following the prims of ptr" << endl;
-                    for (auto& x : hierarchy(state.ptr))
+                    for (auto& x : hierarchy(vm.state.ptr))
                         cout << "  " << x->prim().which();
                     cout << endl;
                 }
 #endif
-                state.cont = MethodSeek(*stmt);
+                vm.state.cont = MethodSeek(*stmt);
             }
         } else {
             // It's not a method; just return it
             for (long n = 0; n < args; n++) {
-                state.arg.pop(); // For consistency, we must pop and discard these anyway
+                vm.state.arg.pop(); // For consistency, we must pop and discard these anyway
             }
-            state.ret = state.ptr;
+            vm.state.ret = vm.state.ptr;
         }
     }
         break;
     case Instr::XCALL: {
 #if DEBUG_INSTR > 0
-        cout << "XCALL (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "XCALL (" << Symbols::get()[vm.state.sym] << ")" << endl;
 #endif
-        auto stmt = boost::get<Method>(&state.ptr->prim());
+        auto stmt = boost::get<Method>(&vm.state.ptr->prim());
         if (stmt) {
             // (6) Push %cont onto %stack
-            state.stack = pushNode(state.stack, state.cont);
-            state.trns.push(stmt->translationUnit());
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+            vm.state.trns.push(stmt->translationUnit());
             // (7) Make a new %cont
             if (stmt)
-                state.cont = MethodSeek(*stmt);
+                vm.state.cont = MethodSeek(*stmt);
         }
     }
         break;
     case Instr::XCALL0: {
-        long args = state.cont.readLong(0);
+        long args = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
-        cout << "XCALL0 " << args << " (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "XCALL0 " << args << " (" << Symbols::get()[vm.state.sym] << ")" << endl;
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&state.ptr->prim());
-        ObjectPtr closure = (*state.ptr)[ Symbols::get()["closure"] ];
+        auto stmt = boost::get<Method>(&vm.state.ptr->prim());
+        ObjectPtr closure = (*vm.state.ptr)[ Symbols::get()["closure"] ];
         if ((closure != nullptr) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
-            if (!state.dyn.empty())
-                state.dyn.push( clone(state.dyn.top()) );
+            if (!vm.state.dyn.empty())
+                vm.state.dyn.push( clone(vm.state.dyn.top()) );
             else
-                state.err0 = true;
+                vm.state.err0 = true;
             // (3) Push a clone of the closure onto %lex
-            auto lex = state.lex.top();
-            state.lex.push( clone(closure) );
+            auto lex = vm.state.lex.top();
+            vm.state.lex.push( clone(closure) );
             // (4) Bind all the local variables
-            state.lex.top()->put(Symbols::get()["self"], state.slf);
-            state.lex.top()->put(Symbols::get()["again"], state.ptr);
-            state.lex.top()->put(Symbols::get()["caller"], lex);
-            state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
+            vm.state.lex.top()->put(Symbols::get()["self"], vm.state.slf);
+            vm.state.lex.top()->put(Symbols::get()["again"], vm.state.ptr);
+            vm.state.lex.top()->put(Symbols::get()["caller"], lex);
+            vm.state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"]);
             // (5) Push the trace information
-            pushTrace(state);
+            pushTrace(vm.state);
             // (6) Bind all of the arguments
-            if (!state.dyn.empty()) {
+            if (!vm.state.dyn.empty()) {
                 int index = args;
                 for (long n = 0; n < args; n++) {
-                    ObjectPtr arg = state.arg.top();
-                    state.arg.pop();
-                    state.dyn.top()->put(Symbols::get()[ "$" + to_string(index) ], arg);
+                    ObjectPtr arg = vm.state.arg.top();
+                    vm.state.arg.pop();
+                    vm.state.dyn.top()->put(Symbols::get()[ "$" + to_string(index) ], arg);
                     index--;
                 }
             }
         } else {
             // It's not a method; just return it
             for (long n = 0; n < args; n++) {
-                state.arg.pop(); // For consistency, we must pop and discard these anyway
+                vm.state.arg.pop(); // For consistency, we must pop and discard these anyway
             }
-            state.ret = state.ptr;
+            vm.state.ret = vm.state.ptr;
         }
     }
         break;
@@ -555,49 +551,49 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "RET" << endl;
 #endif
-        if (state.lex.empty())
-            state.err0 = true;
+        if (vm.state.lex.empty())
+            vm.state.err0 = true;
         else
-            state.lex.pop();
-        if (state.dyn.empty())
-            state.err0 = true;
+            vm.state.lex.pop();
+        if (vm.state.dyn.empty())
+            vm.state.err0 = true;
         else
-            state.dyn.pop();
-        if (!state.trace)
-            state.err0 = true;
+            vm.state.dyn.pop();
+        if (!vm.state.trace)
+            vm.state.err0 = true;
         else
-            popTrace(state);
-        if (state.trns.empty())
-            state.err0 = true;
+            popTrace(vm.state);
+        if (vm.state.trns.empty())
+            vm.state.err0 = true;
         else
-            state.trns.pop();
+            vm.state.trns.pop();
     }
         break;
     case Instr::CLONE: {
 #if DEBUG_INSTR > 0
         cout << "CLONE" << endl;
 #endif
-        state.ret = clone(state.slf);
+        vm.state.ret = clone(vm.state.slf);
     }
         break;
     case Instr::RTRV: {
 #if DEBUG_INSTR > 0
-        cout << "RTRV (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "RTRV (" << Symbols::get()[vm.state.sym] << ")" << endl;
 #endif
         // Try to find the value itsel
-        ObjectPtr value = objectGet(state.slf, state.sym);
+        ObjectPtr value = objectGet(vm.state.slf, vm.state.sym);
         if (value == nullptr) {
 #if DEBUG_INSTR > 2
             cout << "* Looking for missing" << endl;
 #if DEBUG_INSTR > 3
             cout << "* Information:" << endl;
-            cout << "* * Lex: " << state.lex.top() << endl;
-            cout << "* * Dyn: " << state.dyn.top() << endl;
-            cout << "* * Slf: " << state.slf << endl;
+            cout << "* * Lex: " << vm.state.lex.top() << endl;
+            cout << "* * Dyn: " << vm.state.dyn.top() << endl;
+            cout << "* * Slf: " << vm.state.slf << endl;
 #endif
 #endif
             // Now try for missing
-            value = objectGet(state.slf, Symbols::get()["missing"]);
+            value = objectGet(vm.state.slf, Symbols::get()["missing"]);
 #if DEBUG_INSTR > 1
             if (value == nullptr)
                 cout << "* Found no missing" << endl;
@@ -607,8 +603,8 @@ void executeInstr(Instr instr, VMState vm) {
             if (value == nullptr) {
                 ObjectPtr meta = nullptr;
                 // If there is no `missing` either, fall back to the last resort
-                if (!state.lex.empty()) {
-                    value = objectGet(state.lex.top(), Symbols::get()["meta"]);
+                if (!vm.state.lex.empty()) {
+                    value = objectGet(vm.state.lex.top(), Symbols::get()["meta"]);
                     meta = value;
                 }
                 if (value != nullptr)
@@ -621,20 +617,20 @@ void executeInstr(Instr instr, VMState vm) {
 #endif
                 if (value == nullptr) {
                     // Abandon ship!
-                    state.stack = pushNode(state.stack, state.cont);
-                    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_TERMINATE }));
+                    vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+                    vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_TERMINATE }));
                 } else {
-                    state.slf = meta;
-                    state.ptr = value;
-                    state.stack = pushNode(state.stack, state.cont);
-                    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ZERO }));
+                    vm.state.slf = meta;
+                    vm.state.ptr = value;
+                    vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+                    vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_CALL_ZERO }));
                 }
             } else {
-                //state.sym = backup;
-                state.ret = value;
-                //state.slf = state.slf;
-                state.stack = pushNode(state.stack, state.cont);
-                state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_MISSING }));
+                //vm.state.sym = backup;
+                vm.state.ret = value;
+                //vm.state.slf = vm.state.slf;
+                vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+                vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_MISSING }));
             }
         } else {
 #if DEBUG_INSTR > 1
@@ -646,116 +642,116 @@ void executeInstr(Instr instr, VMState vm) {
                 (stmt ? stmt->translationUnit() : nullptr) << endl;
 #endif
 #endif
-            state.ret = value;
+            vm.state.ret = value;
         }
     }
         break;
     case Instr::RTRVD: {
 #if DEBUG_INSTR > 0
-        cout << "RTRVD (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "RTRVD (" << Symbols::get()[vm.state.sym] << ")" << endl;
 #endif
-        ObjectPtr slot = (*state.slf)[state.sym];
+        ObjectPtr slot = (*vm.state.slf)[vm.state.sym];
         if (slot != nullptr)
-            state.ret = slot;
+            vm.state.ret = slot;
         else
-            state.err0 = true;
+            vm.state.err0 = true;
     }
         break;
     case Instr::STR: {
-        string str = state.cont.readString(0);
+        string str = vm.state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "STR \"" << str << "\"" << endl;
 #endif
-        state.str0 = str;
+        vm.state.str0 = str;
     }
         break;
     case Instr::SSWAP: {
 #if DEBUG_INSTR > 0
         cout << "SSWAP" << endl;
 #endif
-        swap(state.str0, state.str1);
+        swap(vm.state.str0, vm.state.str1);
     }
         break;
     case Instr::EXPD: {
-        Reg expd = state.cont.readReg(0);
+        Reg expd = vm.state.cont.readReg(0);
 #if DEBUG_INSTR > 0
         cout << "EXPD " << (long)expd << endl;
 #endif
         switch (expd) {
         case Reg::SYM: {
-            auto test = boost::get<Symbolic>(&state.ptr->prim());
+            auto test = boost::get<Symbolic>(&vm.state.ptr->prim());
             if (test)
-                state.sym = *test;
+                vm.state.sym = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::NUM0: {
-            auto test = boost::get<Number>(&state.ptr->prim());
+            auto test = boost::get<Number>(&vm.state.ptr->prim());
             if (test)
-                state.num0 = *test;
+                vm.state.num0 = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::NUM1: {
-            auto test = boost::get<Number>(&state.ptr->prim());
+            auto test = boost::get<Number>(&vm.state.ptr->prim());
             if (test)
-                state.num1 = *test;
+                vm.state.num1 = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::STR0: {
-            auto test = boost::get<string>(&state.ptr->prim());
+            auto test = boost::get<string>(&vm.state.ptr->prim());
             if (test)
-                state.str0 = *test;
+                vm.state.str0 = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::STR1: {
-            auto test = boost::get<string>(&state.ptr->prim());
+            auto test = boost::get<string>(&vm.state.ptr->prim());
             if (test)
-                state.str1 = *test;
+                vm.state.str1 = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::MTHD: {
-            auto test = boost::get<Method>(&state.ptr->prim());
+            auto test = boost::get<Method>(&vm.state.ptr->prim());
             if (test)
-                state.mthd = *test;
+                vm.state.mthd = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::STRM: {
-            auto test = boost::get<StreamPtr>(&state.ptr->prim());
+            auto test = boost::get<StreamPtr>(&vm.state.ptr->prim());
             if (test)
-                state.strm = *test;
+                vm.state.strm = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::PRCS: {
-            auto test = boost::get<ProcessPtr>(&state.ptr->prim());
+            auto test = boost::get<ProcessPtr>(&vm.state.ptr->prim());
             if (test)
-                state.prcs = *test;
+                vm.state.prcs = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         case Reg::MTHDZ: {
-            auto test = boost::get<Method>(&state.ptr->prim());
+            auto test = boost::get<Method>(&vm.state.ptr->prim());
             if (test)
-                state.mthdz = *test;
+                vm.state.mthdz = *test;
             else
-                state.err0 = true;
+                vm.state.err0 = true;
         }
             break;
         default:
-            state.err0 = true;
+            vm.state.err0 = true;
             break;
         }
     }
@@ -764,185 +760,185 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "MTHD ..." << endl;
 #endif
-        FunctionIndex index = state.cont.readFunction(0);
-        state.mthd = Method(state.trns.top(), index);
+        FunctionIndex index = vm.state.cont.readFunction(0);
+        vm.state.mthd = Method(vm.state.trns.top(), index);
     }
         break;
     case Instr::LOAD: {
-        Reg ld = state.cont.readReg(0);
+        Reg ld = vm.state.cont.readReg(0);
 #if DEBUG_INSTR > 0
         cout << "LOAD " << (long)ld << endl;
 #endif
         switch (ld) {
         case Reg::SYM: {
-            state.ptr->prim(state.sym);
+            vm.state.ptr->prim(vm.state.sym);
         }
             break;
         case Reg::NUM0: {
-            state.ptr->prim(state.num0);
+            vm.state.ptr->prim(vm.state.num0);
         }
             break;
         case Reg::NUM1: {
-            state.ptr->prim(state.num1);
+            vm.state.ptr->prim(vm.state.num1);
         }
             break;
         case Reg::STR0: {
-            state.ptr->prim(state.str0);
+            vm.state.ptr->prim(vm.state.str0);
         }
             break;
         case Reg::STR1: {
-            state.ptr->prim(state.str1);
+            vm.state.ptr->prim(vm.state.str1);
         }
             break;
         case Reg::MTHD: {
 #if DEBUG_INSTR > 1
-            cout << "* Method Length " << state.mthd.instructions().size() << endl;
+            cout << "* Method Length " << vm.state.mthd.instructions().size() << endl;
 #endif
-            state.ptr->prim(state.mthd);
+            vm.state.ptr->prim(vm.state.mthd);
         }
             break;
         case Reg::STRM: {
-            state.ptr->prim(state.strm);
+            vm.state.ptr->prim(vm.state.strm);
         }
             break;
         case Reg::PRCS: {
-            state.ptr->prim(state.prcs);
+            vm.state.ptr->prim(vm.state.prcs);
         }
             break;
         case Reg::MTHDZ: {
 #if DEBUG_INSTR > 1
-            cout << "* Method Length " << state.mthdz.instructions().size() << endl;
+            cout << "* Method Length " << vm.state.mthdz.instructions().size() << endl;
 #endif
-            state.ptr->prim(state.mthdz);
+            vm.state.ptr->prim(vm.state.mthdz);
         }
             break;
         default:
-            state.err0 = true;
+            vm.state.err0 = true;
             break;
         }
     }
         break;
     case Instr::SETF: {
 #if DEBUG_INSTR > 0
-        cout << "SETF (" << Symbols::get()[state.sym] << ")" << endl;
+        cout << "SETF (" << Symbols::get()[vm.state.sym] << ")" << endl;
 #if DEBUG_INSTR > 2
         cout << "* Information:" << endl;
-        cout << "* * Lex: " << state.lex.top() << endl;
-        cout << "* * Dyn: " << state.dyn.top() << endl;
-        cout << "* * Slf: " << state.slf << endl;
+        cout << "* * Lex: " << vm.state.lex.top() << endl;
+        cout << "* * Dyn: " << vm.state.dyn.top() << endl;
+        cout << "* * Slf: " << vm.state.slf << endl;
 #endif
 #endif
-        if (state.slf == nullptr)
-            state.err0 = true;
-        else if (state.slf->isProtected(state.sym, Protection::PROTECT_ASSIGN))
-            throwError({ state, reader }, "ProtectedError");
+        if (vm.state.slf == nullptr)
+            vm.state.err0 = true;
+        else if (vm.state.slf->isProtected(vm.state.sym, Protection::PROTECT_ASSIGN))
+            throwError(vm, "ProtectedError");
         else
-            state.slf->put(state.sym, state.ptr);
+            vm.state.slf->put(vm.state.sym, vm.state.ptr);
     }
         break;
     case Instr::PEEK: {
         stack<ObjectPtr>* stack;
-        Reg dest = state.cont.readReg(0);
-        Reg reg = state.cont.readReg(1);
+        Reg dest = vm.state.cont.readReg(0);
+        Reg reg = vm.state.cont.readReg(1);
         ObjectPtr mid = nullptr;
 #if DEBUG_INSTR > 0
         cout << "PEEK " << (long)reg << endl;
 #endif
         switch (reg) {
         case Reg::LEX:
-            stack = &state.lex;
+            stack = &vm.state.lex;
             break;
         case Reg::DYN:
-            stack = &state.dyn;
+            stack = &vm.state.dyn;
             break;
         case Reg::ARG:
-            stack = &state.arg;
+            stack = &vm.state.arg;
             break;
         case Reg::STO:
-            stack = &state.sto;
+            stack = &vm.state.sto;
             break;
         case Reg::HAND:
-            stack = &state.hand;
+            stack = &vm.state.hand;
             break;
         default:
             stack = nullptr;
-            state.err0 = true;
+            vm.state.err0 = true;
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
                 mid = stack->top();
             } else {
-                state.err0 = true;
+                vm.state.err0 = true;
             }
             switch (dest) {
             case Reg::PTR:
-                state.ptr = mid;
+                vm.state.ptr = mid;
                 break;
             case Reg::SLF:
-                state.slf = mid;
+                vm.state.slf = mid;
                 break;
             case Reg::RET:
-                state.ret = mid;
+                vm.state.ret = mid;
                 break;
             default:
-                state.err0 = true;
+                vm.state.err0 = true;
                 break;
             }
         }
     }
         break;
     case Instr::SYMN: {
-        long val = state.cont.readLong(0);
+        long val = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "SYMN " << val << " (" << Symbols::get()[Symbolic{val}] << ")" << endl;
 #endif
-        state.sym = { val };
+        vm.state.sym = { val };
     }
         break;
     case Instr::CPP: {
-        long val = state.cont.readLong(0);
+        long val = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "CPP " << val << endl;
 #endif
-        auto func = reader.cpp.at(val);
+        auto func = vm.reader.cpp.at(val);
         if (func)
             func(vm);
         else
-            state.err0 = true;
+            vm.state.err0 = true;
     }
         break;
     case Instr::BOL: {
 #if DEBUG_INSTR > 0
-        cout << "BOL (" << state.flag << ")" << endl;
+        cout << "BOL (" << vm.state.flag << ")" << endl;
 #endif
-        state.ret = garnishObject(reader, state.flag);
+        vm.state.ret = garnishObject(vm.reader, vm.state.flag);
     }
         break;
     case Instr::TEST: {
 #if DEBUG_INSTR > 0
         cout << "TEST" << endl;
 #endif
-        if (state.slf == nullptr || state.ptr == nullptr)
-            state.flag = false;
+        if (vm.state.slf == nullptr || vm.state.ptr == nullptr)
+            vm.state.flag = false;
         else
-            state.flag = (state.slf == state.ptr);
+            vm.state.flag = (vm.state.slf == vm.state.ptr);
     }
         break;
     case Instr::BRANCH: {
 #if DEBUG_INSTR > 0
-        cout << "BRANCH (" << state.flag << ")" << endl;
+        cout << "BRANCH (" << vm.state.flag << ")" << endl;
 #endif
-        state.stack = pushNode(state.stack, state.cont);
-        if (state.flag) {
+        vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+        if (vm.state.flag) {
 #if DEBUG_INSTR > 2
-            cout << "* Method ( ) Length " << state.mthd.instructions().size() << endl;
+            cout << "* Method ( ) Length " << vm.state.mthd.instructions().size() << endl;
 #endif
-            state.cont = MethodSeek(state.mthd);
+            vm.state.cont = MethodSeek(vm.state.mthd);
         } else {
 #if DEBUG_INSTR > 2
-            cout << "* Method (Z) Length " << state.mthdz.instructions().size() << endl;
+            cout << "* Method (Z) Length " << vm.state.mthdz.instructions().size() << endl;
 #endif
-            state.cont = MethodSeek(state.mthdz);
+            vm.state.cont = MethodSeek(vm.state.mthdz);
         }
     }
         break;
@@ -950,13 +946,13 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "CCALL" << endl;
 #endif
-        if (state.slf == nullptr) {
-            state.err0 = true;
+        if (vm.state.slf == nullptr) {
+            vm.state.err0 = true;
         } else {
-            state.slf->prim( statePtr(state) );
-            state.arg.push(state.slf);
-            state.stack = pushNode(state.stack, state.cont);
-            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_CALL_ONE }));
+            vm.state.slf->prim( statePtr(vm.state) );
+            vm.state.arg.push(vm.state.slf);
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+            vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_CALL_ONE }));
         }
     }
         break;
@@ -964,12 +960,12 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "CGOTO" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( state.ptr->prim() );
+        auto cont = boost::get<StatePtr>( vm.state.ptr->prim() );
         if (cont) {
-            auto oldWind = state.wind;
+            auto oldWind = vm.state.wind;
             auto newWind = cont->wind;
-            state = *cont;
-            resolveThunks({ state, reader }, oldWind, newWind);
+            vm.state = *cont;
+            resolveThunks(vm, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
@@ -981,14 +977,14 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "CRET" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( state.ptr->prim() );
-        auto ret = state.ret;
+        auto cont = boost::get<StatePtr>( vm.state.ptr->prim() );
+        auto ret = vm.state.ret;
         if (cont) {
-            auto oldWind = state.wind;
+            auto oldWind = vm.state.wind;
             auto newWind = cont->wind;
-            state = *cont;
-            state.ret = ret;
-            resolveThunks({ state, reader }, oldWind, newWind);
+            vm.state = *cont;
+            vm.state.ret = ret;
+            resolveThunks(vm, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
@@ -1000,26 +996,26 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "WND" << endl;
 #endif
-        auto beforeMthd = boost::get<Method>(&state.slf->prim()),
-             afterMthd  = boost::get<Method>(&state.ptr->prim());
+        auto beforeMthd = boost::get<Method>(&vm.state.slf->prim()),
+             afterMthd  = boost::get<Method>(&vm.state.ptr->prim());
         if (beforeMthd && afterMthd) {
             Thunk before {
                 *beforeMthd,
-                (*state.slf)[ Symbols::get()["closure"] ],
-                state.dyn.top()
+                (*vm.state.slf)[ Symbols::get()["closure"] ],
+                vm.state.dyn.top()
             };
             Thunk after {
                 *afterMthd,
-                (*state.ptr)[ Symbols::get()["closure"] ],
-                state.dyn.top()
+                (*vm.state.ptr)[ Symbols::get()["closure"] ],
+                vm.state.dyn.top()
             };
             WindPtr frame = WindPtr(new WindFrame(before, after));
-            state.wind = pushNode(state.wind, frame);
+            vm.state.wind = pushNode(vm.state.wind, frame);
         } else {
 #if DEBUG_INSTR > 0
         cout << "* Not methods" << endl;
 #endif
-            state.err0 = true;
+            vm.state.err0 = true;
         }
     }
         break;
@@ -1027,14 +1023,14 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "UNWND" << endl;
 #endif
-        state.wind = popNode(state.wind);
+        vm.state.wind = popNode(vm.state.wind);
     }
         break;
     case Instr::THROW: {
 #if DEBUG_INSTR > 0
         cout << "THROW" << endl;
 #endif
-        ObjectPtr exc = state.slf;
+        ObjectPtr exc = vm.state.slf;
         deque<ObjectPtr> handlers;
         std::function<void(stack<ObjectPtr>&)> recurse = [&recurse, &handlers](stack<ObjectPtr>& st) {
             if (!st.empty()) {
@@ -1045,27 +1041,27 @@ void executeInstr(Instr instr, VMState vm) {
                 st.push(temp);
             }
         };
-        recurse(state.hand);
+        recurse(vm.state.hand);
 #if DEBUG_INSTR > 1
         cout << "* Got handlers: " << handlers.size() << endl;
 #endif
-        state.stack = pushNode(state.stack, state.cont);
-        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_PANIC }));
+        vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+        vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_PANIC }));
         for (ObjectPtr handler : handlers) {
-            state.arg.push(exc);
-            state.sto.push(handler);
-            state.stack = pushNode(state.stack, state.cont);
-            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_HANDLER }));
+            vm.state.arg.push(exc);
+            vm.state.sto.push(handler);
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+            vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_HANDLER }));
         }
     }
         break;
     case Instr::THROQ: {
 #if DEBUG_INSTR > 0
-        cout << "THROQ (" << state.err0 << ")" << endl;
+        cout << "THROQ (" << vm.state.err0 << ")" << endl;
 #endif
-        if (state.err0) {
-            state.stack = pushNode(state.stack, state.cont);
-            state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_THROW }));
+        if (vm.state.err0) {
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+            vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_THROW }));
         }
     }
         break;
@@ -1073,80 +1069,80 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "ADDS" << endl;
 #endif
-        state.str0 += state.str1;
+        vm.state.str0 += vm.state.str1;
     }
         break;
     case Instr::ARITH: {
-        long val = state.cont.readLong(0);
+        long val = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "ARITH " << val << endl;
 #endif
         switch (val) {
         case 1L:
-            state.num0 += state.num1;
+            vm.state.num0 += vm.state.num1;
             break;
         case 2L:
-            state.num0 -= state.num1;
+            vm.state.num0 -= vm.state.num1;
             break;
         case 3L:
-            state.num0 *= state.num1;
+            vm.state.num0 *= vm.state.num1;
             break;
         case 4L:
-            state.num0 /= state.num1;
+            vm.state.num0 /= vm.state.num1;
             break;
         case 5L:
-            state.num0 %= state.num1;
+            vm.state.num0 %= vm.state.num1;
             break;
         case 6L:
-            state.num0 = state.num0.pow(state.num1);
+            vm.state.num0 = vm.state.num0.pow(vm.state.num1);
             break;
         case 7L:
-            state.num0 &= state.num1;
+            vm.state.num0 &= vm.state.num1;
             break;
         case 8L:
-            state.num0 |= state.num1;
+            vm.state.num0 |= vm.state.num1;
             break;
         case 9L:
-            state.num0 ^= state.num1;
+            vm.state.num0 ^= vm.state.num1;
             break;
         default:
-            state.err0 = true;
+            vm.state.err0 = true;
             break;
         }
     }
         break;
     case Instr::THROA: {
-        string msg = state.cont.readString(0);
+        string msg = vm.state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
-        if (state.err0)
-            throwError({ state, reader }, "TypeError", msg);
+        if (vm.state.err0)
+            throwError(vm, "TypeError", msg);
     }
         break;
     case Instr::LOCFN: {
-        string msg = state.cont.readString(0);
+        string msg = vm.state.cont.readString(0);
 #if DEBUG_INSTR > 0
         cout << "LOCFN \"" << msg << "\"" << endl;
 #endif
-        state.file = msg;
+        vm.state.file = msg;
     }
         break;
     case Instr::LOCLN: {
-        long num = state.cont.readLong(0);
+        long num = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "LOCLN " << num << endl;
 #endif
-        state.line = num;
+        vm.state.line = num;
     }
         break;
     case Instr::LOCRT: {
 #if DEBUG_INSTR > 0
         cout << "LOCRT" << endl;
 #endif
-        auto stck = state.trace;
+        auto stck = vm.state.trace;
         if (stck) {
-            ObjectPtr sframe = reader.lit.at(Lit::SFRAME);
+            ObjectPtr sframe = vm.reader.lit.at(Lit::SFRAME);
             ObjectPtr frame = nullptr;
             ObjectPtr top = nullptr;
             while (stck) {
@@ -1163,19 +1159,19 @@ void executeInstr(Instr instr, VMState vm) {
                         frame->put(Symbols::parent(), temp);
                     }
                     frame = temp;
-                    frame->put(Symbols::get()["line"], garnishObject(reader, line));
-                    frame->put(Symbols::get()["file"], garnishObject(reader, file));
+                    frame->put(Symbols::get()["line"], garnishObject(vm.reader, line));
+                    frame->put(Symbols::get()["file"], garnishObject(vm.reader, file));
                 }
                 stck = popNode(stck);
             }
             assert(top != nullptr); // Should always be non-null since the loop must run once
-            state.ret = top;
+            vm.state.ret = top;
         } else {
             // The %trace stack was empty; this should not happen...
             // Honestly, this should probably be an assert failure,
             // but %trace is so weird right now that I'm hesitant to
             // rely on it.
-            state.ret = reader.lit.at(Lit::NIL);
+            vm.state.ret = vm.reader.lit.at(Lit::NIL);
             // TODO This *should* be an assertion failure, once %trace is reliable
         }
     }
@@ -1184,84 +1180,84 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "NRET" << endl;
 #endif
-        state.trace = pushNode(state.trace, make_tuple(0L, string("")));
-        state.stack = pushNode(state.stack, state.cont);
-        state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_RETURN }));
+        vm.state.trace = pushNode(vm.state.trace, make_tuple(0L, string("")));
+        vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+        vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_RETURN }));
     }
         break;
     case Instr::UNTR: {
 #if DEBUG_INSTR > 0
         cout << "UNTR" << endl;
 #endif
-        if (state.trns.empty())
-            state.err0 = true;
+        if (vm.state.trns.empty())
+            vm.state.err0 = true;
         else
-            state.trns.pop();
+            vm.state.trns.pop();
     }
         break;
     case Instr::CMPLX: {
-        string str0 = state.cont.readString(0);
-        string str1 = state.cont.readString(1);
+        string str0 = vm.state.cont.readString(0);
+        string str1 = vm.state.cont.readString(1);
 #if DEBUG_INSTR > 0
         cout << "CMPLX" << endl;
 #endif
         double rl = strtod(str0.c_str(), NULL);
         double im = strtod(str1.c_str(), NULL);
-        state.num0 = Number(Number::complex(rl, im));
+        vm.state.num0 = Number(Number::complex(rl, im));
     }
         break;
     case Instr::YLD: {
-        long val = state.cont.readLong(0);
-        Reg reg = state.cont.readReg(1);
+        long val = vm.state.cont.readLong(0);
+        Reg reg = vm.state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "YLD " << val << " " << (long)reg << endl;
 #endif
-        auto obj = reader.lit.at(val);
+        auto obj = vm.reader.lit.at(val);
         if (obj != nullptr) {
             switch (reg) {
             case Reg::PTR:
-                state.ptr = obj;
+                vm.state.ptr = obj;
                 break;
             case Reg::SLF:
-                state.slf = obj;
+                vm.state.slf = obj;
                 break;
             case Reg::RET:
-                state.ret = obj;
+                vm.state.ret = obj;
                 break;
             default:
-                state.err0 = true;
+                vm.state.err0 = true;
                 break;
             }
         } else {
-            state.err0 = true;
+            vm.state.err0 = true;
         }
     }
         break;
     case Instr::YLDC: {
-        long val = state.cont.readLong(0);
-        Reg reg = state.cont.readReg(1);
+        long val = vm.state.cont.readLong(0);
+        Reg reg = vm.state.cont.readReg(1);
 #if DEBUG_INSTR > 0
         cout << "YLDC " << val << " " << (long)reg << endl;
 #endif
-        auto obj = reader.lit.at(val);
+        auto obj = vm.reader.lit.at(val);
         if (obj != nullptr) {
             obj = clone(obj);
             switch (reg) {
             case Reg::PTR:
-                state.ptr = obj;
+                vm.state.ptr = obj;
                 break;
             case Reg::SLF:
-                state.slf = obj;
+                vm.state.slf = obj;
                 break;
             case Reg::RET:
-                state.ret = obj;
+                vm.state.ret = obj;
                 break;
             default:
-                state.err0 = true;
+                vm.state.err0 = true;
                 break;
             }
         } else {
-            state.err0 = true;
+            vm.state.err0 = true;
         }
     }
         break;
@@ -1269,60 +1265,60 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "DEL" << endl;
 #endif
-        if (state.slf == nullptr) {
-            state.err0 = true;
-        } else if (state.slf->isProtected(state.sym, Protection::PROTECT_DELETE)) {
-            throwError({ state, reader }, "ProtectedError", "Delete-protected variable");
+        if (vm.state.slf == nullptr) {
+            vm.state.err0 = true;
+        } else if (vm.state.slf->isProtected(vm.state.sym, Protection::PROTECT_DELETE)) {
+            throwError(vm, "ProtectedError", "Delete-protected variable");
         } else {
-            state.slf->remove(state.sym);
+            vm.state.slf->remove(vm.state.sym);
         }
     }
         break;
     case Instr::ARR: {
-        long val = state.cont.readLong(0);
+        long val = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "ARR " << val << endl;
 #endif
-        ObjectPtr arr = clone(reader.lit.at(Lit::ARRAY));
+        ObjectPtr arr = clone(vm.reader.lit.at(Lit::ARRAY));
         int j = 2 * (int)val - 1;
         for (long i = 0; i < val; i++, j -= 2) {
-            arr->put(Symbols::natural(j), state.arg.top());
-            state.arg.pop();
+            arr->put(Symbols::natural(j), vm.state.arg.top());
+            vm.state.arg.pop();
         }
-        arr->put(Symbols::get()["lowerBound"], garnishObject(reader, 0));
-        arr->put(Symbols::get()["upperBound"], garnishObject(reader, val));
-        state.ret = arr;
+        arr->put(Symbols::get()["lowerBound"], garnishObject(vm.reader, 0));
+        arr->put(Symbols::get()["upperBound"], garnishObject(vm.reader, val));
+        vm.state.ret = arr;
     }
         break;
     case Instr::DICT: {
-        long val = state.cont.readLong(0);
+        long val = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
         cout << "DICT " << val << endl;
 #endif
-        ObjectPtr dict = reader.lit.at(Lit::DICT);
+        ObjectPtr dict = vm.reader.lit.at(Lit::DICT);
         ObjectPtr impl0 = (*dict)[Symbols::get()["&impl"]];
         ObjectPtr impl = clone(impl0);
         (*impl) = (*impl0);
         dict = clone(dict);
         dict->put(Symbols::get()["&impl"], impl);
         for (long i = 0; i < val; i++) {
-            ObjectPtr value = state.arg.top();
-            state.arg.pop();
-            ObjectPtr key = state.arg.top();
-            state.arg.pop();
+            ObjectPtr value = vm.state.arg.top();
+            vm.state.arg.pop();
+            ObjectPtr key = vm.state.arg.top();
+            vm.state.arg.pop();
             auto key0 = boost::get<Symbolic>(&key->prim());
             if (key0) {
                 impl->put(*key0, value);
             } else {
-                throwError({ state, reader }, "TypeError", "Symbol expected");
+                throwError(vm, "TypeError", "Symbol expected");
                 return;
             }
         }
-        state.ret = dict;
+        vm.state.ret = dict;
     }
         break;
     case Instr::XXX: {
-        long val = state.cont.readLong(0);
+        long val = vm.state.cont.readLong(0);
         val = val; // Ignore unused variable warning
 #if DEBUG_INSTR > 0
         cout << "XXX " << val << endl;
@@ -1331,17 +1327,17 @@ void executeInstr(Instr instr, VMState vm) {
         switch (val) {
         case 0:
             // Store
-            trace_marker.push(state.trace);
+            trace_marker.push(vm.state.trace);
             break;
         case 1: {
             // Compare
-            auto temp = state.trace;
+            auto temp = vm.state.trace;
             auto curr = trace_marker.top();
             while ((curr != nullptr) && (temp != nullptr)) {
                 if (curr->get() != temp->get()) {
                     // Welp
                     cerr << "Trace assertion failure!" << endl;
-                    hardKill({ state, reader });
+                    hardKill(vm);
                 }
                 curr = popNode(curr);
                 temp = popNode(temp);
@@ -1349,7 +1345,7 @@ void executeInstr(Instr instr, VMState vm) {
             if (curr != temp) {
                 // Welp
                 cerr << "Trace assertion failure!" << endl;
-                hardKill({ state, reader });
+                hardKill(vm);
             }
             trace_marker.pop();
         }
@@ -1361,15 +1357,15 @@ void executeInstr(Instr instr, VMState vm) {
 #if DEBUG_INSTR > 0
         cout << "GOTO" << endl;
 #endif
-        state.stack = pushNode(state.stack, state.cont);
-        state.cont = state.mthd;
+        vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+        vm.state.cont = vm.state.mthd;
     }
         break;
     case Instr::MSWAP: {
 #if DEBUG_INSTR > 0
         cout << "MSWAP" << endl;
 #endif
-        swap(state.mthd, state.mthdz);
+        swap(vm.state.mthd, vm.state.mthdz);
     }
         break;
     }
