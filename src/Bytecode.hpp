@@ -183,9 +183,8 @@ void popTrace(IntState& state);
 /// necessary.
 ///
 /// \param instr the instruction
-/// \param state the interpreter state
-/// \param reader the read-only interpreter state
-void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader);
+/// \param vm the virtual machine state
+void executeInstr(Instr instr, VMState vm);
 
 /// This function performs one VM instruction from the front of the
 /// `%%cont` register. If `%%cont` is empty, the function will pop

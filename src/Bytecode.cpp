@@ -155,7 +155,11 @@ void popTrace(IntState& state) {
     state.file = std::get<1>(curr);
 }
 
-void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
+void executeInstr(Instr instr, VMState vm) {
+    // Man, I'm just too lazy to substitute all these in by hand right
+    // now. I'll do it later. Meh.
+    IntState& state = vm.state;
+    const ReadOnlyState& reader = vm.reader;
     switch (instr) {
     case Instr::MOV: {
         Reg src = state.cont.readReg(0);
@@ -1398,7 +1402,7 @@ void doOneStep(VMState& vm) {
 #ifdef PROFILE_INSTR
         Profiling::get().instructionBegin(instr);
 #endif
-        executeInstr(instr, vm.state, vm.reader);
+        executeInstr(instr, vm);
 #ifdef PROFILE_INSTR
         Profiling::get().instructionEnd(instr);
 #endif
