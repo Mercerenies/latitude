@@ -122,11 +122,10 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 /// until the error-throwing code has been executed by the underlying
 /// VM.
 ///
-/// \param state the interpreter state
-/// \param reader the read-only state
+/// \param vm the interpreter state
 /// \param name the name of the Latitude exception type
 /// \param msg the exception's message
-void throwError(IntState& state, const ReadOnlyState& reader, std::string name, std::string msg);
+void throwError(VMState vm, std::string name, std::string msg);
 
 /// Pushes the appropriate behavior onto the call stack to throw an
 /// error of the type given by `name` (looked up in the `err` object
@@ -135,19 +134,17 @@ void throwError(IntState& state, const ReadOnlyState& reader, std::string name, 
 /// until the error-throwing code has been executed by the underlying
 /// VM.
 ///
-/// \param state the interpreter state
-/// \param reader the read-only state
+/// \param vm the interpreter state
 /// \param name the name of the Latitude exception type
-void throwError(IntState& state, const ReadOnlyState& reader, std::string name);
+void throwError(VMState vm, std::string name);
 
 /// Pushes the appropriate behavior onto the call stack to throw the
 /// given object unconditionally. After a call to this method, no
 /// further modifications should be made to the IntState object until
 /// the error-throwing code has been executed by the underlying VM.
 ///
-/// \param state the interpreter state
-/// \param reader the read-only state
+/// \param vm the interpreter state
 /// \param obj the object to throw
-void throwError(IntState& state, const ReadOnlyState& reader, ObjectPtr obj);
+void throwError(VMState vm, ObjectPtr obj);
 
 #endif // STANDARD_HPP

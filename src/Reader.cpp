@@ -207,7 +207,7 @@ bool eval(VMState vm,
             vm.state.ret = garnishObject(vm.reader, boost::blank());
         }
     } catch (ParseError& e) {
-        throwError(vm.state, vm.reader, "ParseError", e.getMessage());
+        throwError(vm, "ParseError", e.getMessage());
         return false;
     }
     return true;
@@ -263,11 +263,11 @@ bool readFileSource(string fname,
 #ifdef DEBUG_LOADS
             std::cout << e.getMessage() << std::endl;
 #endif
-            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
+            throwError(vm, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
-        throwError(vm.state, vm.reader, "IOError", err.what());
+        throwError(vm, "IOError", err.what());
         return false;
     }
     return true;
@@ -400,11 +400,11 @@ bool compileFile(string fname,
             unit->instructions() = toplevel;
             saveToFile(file1, header, unit);
         } catch (ParseError& e) {
-            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
+            throwError(vm, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
-        throwError(vm.state, vm.reader, "IOError", err.what());
+        throwError(vm, "IOError", err.what());
         return false;
     }
     return true;
@@ -442,14 +442,14 @@ bool readFileComp(string fname,
             pushTrace(vm.state);
             vm.state.trns.push(unit);
         } catch (ParseError& e) {
-            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
+            throwError(vm, "ParseError", e.getMessage());
             return false;
         } catch (HeaderError& e) {
-            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
+            throwError(vm, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
-        throwError(vm.state, vm.reader, "IOError", err.what());
+        throwError(vm, "IOError", err.what());
         return false;
     }
     return true;

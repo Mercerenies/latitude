@@ -831,7 +831,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         if (state.slf == nullptr)
             state.err0 = true;
         else if (state.slf->isProtected(state.sym, Protection::PROTECT_ASSIGN))
-            throwError(state, reader, "ProtectedError");
+            throwError({ state, reader }, "ProtectedError");
         else
             state.slf->put(state.sym, state.ptr);
     }
@@ -1117,7 +1117,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
         if (state.err0)
-            throwError(state, reader, "TypeError", msg);
+            throwError({ state, reader }, "TypeError", msg);
     }
         break;
     case Instr::LOCFN: {
@@ -1268,7 +1268,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
         if (state.slf == nullptr) {
             state.err0 = true;
         } else if (state.slf->isProtected(state.sym, Protection::PROTECT_DELETE)) {
-            throwError(state, reader, "ProtectedError", "Delete-protected variable");
+            throwError({ state, reader }, "ProtectedError", "Delete-protected variable");
         } else {
             state.slf->remove(state.sym);
         }
@@ -1310,7 +1310,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             if (key0) {
                 impl->put(*key0, value);
             } else {
-                throwError(state, reader, "TypeError", "Symbol expected");
+                throwError({ state, reader }, "TypeError", "Symbol expected");
                 return;
             }
         }
