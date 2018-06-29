@@ -67,7 +67,6 @@ using BacktraceFrame = std::tuple<long, std::string>;
 /// The interpreter state consists of several mutable registers of
 /// various types.
 struct IntState {
-    ObjectPtr ptr, slf, ret;
     std::stack<ObjectPtr> lex, dyn, arg, sto;
     MethodSeek cont;
     NodePtr<MethodSeek> stack;
@@ -87,6 +86,7 @@ struct IntState {
 /// TransientState can be changed freely by the VM but will be lost
 /// when a continuation jump is performed.
 struct TransientState {
+    ObjectPtr ptr, slf, ret;
     bool err0, err1;
     Symbolic sym;
     Number num0, num1;

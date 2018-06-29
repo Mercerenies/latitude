@@ -112,9 +112,6 @@ void addMapToFrontier(const Container& visited, Container& frontier, map<T, Obje
 
 template <typename Container>
 void addContinuationToFrontier(const Container& visited, Container& frontier, IntState& state) {
-    addToFrontier     (visited, frontier, state.ptr .get());
-    addToFrontier     (visited, frontier, state.slf .get());
-    addToFrontier     (visited, frontier, state.ret .get());
     addStackToFrontier(visited, frontier, state.lex       );
     addStackToFrontier(visited, frontier, state.dyn       );
     addStackToFrontier(visited, frontier, state.arg       );
@@ -131,6 +128,13 @@ void addSeqToFrontier(const Container& visited, Container& frontier, Container1&
 template <typename Container>
 void addContinuationToFrontier(const Container& visited, Container& frontier, const ReadOnlyState& state) {
     addSeqToFrontier  (visited, frontier, state.lit );
+}
+
+template <typename Container>
+void addContinuationToFrontier(const Container& visited, Container& frontier, TransientState& trans) {
+    addToFrontier     (visited, frontier, trans.ptr .get());
+    addToFrontier     (visited, frontier, trans.slf .get());
+    addToFrontier     (visited, frontier, trans.ret .get());
 }
 
 template <typename Container>
@@ -224,6 +228,7 @@ long GC::garbageCollect(VMState& vm) {
     VectorProxy globals;
     addContinuationToFrontier<decltype(globals)>({}, globals, vm.state);
     addContinuationToFrontier<decltype(globals)>({}, globals, vm.reader);
+    addContinuationToFrontier<decltype(globals)>({}, globals, vm.trans);
     return garbageCollect(globals.value);
 }
 

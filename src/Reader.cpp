@@ -204,7 +204,7 @@ bool eval(VMState& vm,
             vm.state.cont = MethodSeek(Method(unit, { 0 }));
             vm.state.trns.push(unit);
         } else {
-            vm.state.ret = garnishObject(vm.reader, boost::blank());
+            vm.trans.ret = garnishObject(vm.reader, boost::blank());
         }
     } catch (ParseError& e) {
         throwError(vm, "ParseError", e.getMessage());

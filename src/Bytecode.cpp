@@ -159,13 +159,13 @@ void executeInstr(Instr instr, VMState& vm) {
         ObjectPtr mid = nullptr;
         switch (src) {
         case Reg::PTR:
-            mid = vm.state.ptr;
+            mid = vm.trans.ptr;
             break;
         case Reg::SLF:
-            mid = vm.state.slf;
+            mid = vm.trans.slf;
             break;
         case Reg::RET:
-            mid = vm.state.ret;
+            mid = vm.trans.ret;
             break;
         default:
             mid = nullptr;
@@ -174,13 +174,13 @@ void executeInstr(Instr instr, VMState& vm) {
         }
         switch (dest) {
         case Reg::PTR:
-            vm.state.ptr = mid;
+            vm.trans.ptr = mid;
             break;
         case Reg::SLF:
-            vm.state.slf = mid;
+            vm.trans.slf = mid;
             break;
         case Reg::RET:
-            vm.state.ret = mid;
+            vm.trans.ret = mid;
             break;
         default:
             vm.trans.err0 = true;
@@ -197,13 +197,13 @@ void executeInstr(Instr instr, VMState& vm) {
         ObjectPtr mid = nullptr;
         switch (src) {
         case Reg::PTR:
-            mid = vm.state.ptr;
+            mid = vm.trans.ptr;
             break;
         case Reg::SLF:
-            mid = vm.state.slf;
+            mid = vm.trans.slf;
             break;
         case Reg::RET:
-            mid = vm.state.ret;
+            mid = vm.trans.ret;
             break;
         default:
             mid = nullptr;
@@ -269,13 +269,13 @@ void executeInstr(Instr instr, VMState& vm) {
             }
             switch (dest) {
             case Reg::PTR:
-                vm.state.ptr = mid;
+                vm.trans.ptr = mid;
                 break;
             case Reg::SLF:
-                vm.state.slf = mid;
+                vm.trans.slf = mid;
                 break;
             case Reg::RET:
-                vm.state.ret = mid;
+                vm.trans.ret = mid;
                 break;
             default:
                 vm.trans.err0 = true;
@@ -294,13 +294,13 @@ void executeInstr(Instr instr, VMState& vm) {
         } else {
             switch (dest) {
             case Reg::PTR:
-                vm.state.ptr = vm.state.lex.top();
+                vm.trans.ptr = vm.state.lex.top();
                 break;
             case Reg::SLF:
-                vm.state.slf = vm.state.lex.top();
+                vm.trans.slf = vm.state.lex.top();
                 break;
             case Reg::RET:
-                vm.state.ret = vm.state.lex.top();
+                vm.trans.ret = vm.state.lex.top();
                 break;
             default:
                 vm.trans.err0 = true;
@@ -319,13 +319,13 @@ void executeInstr(Instr instr, VMState& vm) {
         } else {
             switch (dest) {
             case Reg::PTR:
-                vm.state.ptr = vm.state.dyn.top();
+                vm.trans.ptr = vm.state.dyn.top();
                 break;
             case Reg::SLF:
-                vm.state.slf = vm.state.dyn.top();
+                vm.trans.slf = vm.state.dyn.top();
                 break;
             case Reg::RET:
-                vm.state.ret = vm.state.dyn.top();
+                vm.trans.ret = vm.state.dyn.top();
                 break;
             default:
                 vm.trans.err0 = true;
@@ -402,12 +402,12 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "CALL " << args << " (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #if DEBUG_INSTR > 2
-        cout << "* Method Properties " << vm.state.ptr << endl;
+        cout << "* Method Properties " << vm.trans.ptr << endl;
 #endif
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&vm.state.ptr->prim());
-        ObjectPtr closure = (*vm.state.ptr)[ Symbols::get()["closure"] ];
+        auto stmt = boost::get<Method>(&vm.trans.ptr->prim());
+        ObjectPtr closure = (*vm.trans.ptr)[ Symbols::get()["closure"] ];
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " <<
             (closure != nullptr) << " " <<
@@ -425,8 +425,8 @@ void executeInstr(Instr instr, VMState& vm) {
             auto lex = vm.state.lex.top();
             vm.state.lex.push( clone(closure) );
             // (4) Bind all the local variables
-            vm.state.lex.top()->put(Symbols::get()["self"], vm.state.slf);
-            vm.state.lex.top()->put(Symbols::get()["again"], vm.state.ptr);
+            vm.state.lex.top()->put(Symbols::get()["self"], vm.trans.slf);
+            vm.state.lex.top()->put(Symbols::get()["again"], vm.trans.ptr);
             vm.state.lex.top()->put(Symbols::get()["caller"], lex);
             vm.state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"]);
@@ -452,19 +452,19 @@ void executeInstr(Instr instr, VMState& vm) {
                 if (stmt->size() == 0) {
                     // What are we looking at...?
                     cout << "* * Where ptr has" << endl;
-                    for (auto& x : keys(vm.state.ptr))
+                    for (auto& x : keys(vm.trans.ptr))
                         cout << "  " << Symbols::get()[x];
                     cout << endl;
                     cout << "* * Directly" << endl;
-                    for (auto& x : (vm.state.ptr)->directKeys())
+                    for (auto& x : (vm.trans.ptr)->directKeys())
                         cout << "  " << Symbols::get()[x];
                     cout << endl;
                     cout << "* * Parents of ptr" << endl;
-                    for (auto& x : hierarchy(vm.state.ptr))
+                    for (auto& x : hierarchy(vm.trans.ptr))
                         cout << "  " << x;
                     cout << endl;
                     cout << "* * Following the prims of ptr" << endl;
-                    for (auto& x : hierarchy(vm.state.ptr))
+                    for (auto& x : hierarchy(vm.trans.ptr))
                         cout << "  " << x->prim().which();
                     cout << endl;
                 }
@@ -476,7 +476,7 @@ void executeInstr(Instr instr, VMState& vm) {
             for (long n = 0; n < args; n++) {
                 vm.state.arg.pop(); // For consistency, we must pop and discard these anyway
             }
-            vm.state.ret = vm.state.ptr;
+            vm.trans.ret = vm.trans.ptr;
         }
     }
         break;
@@ -484,7 +484,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "XCALL (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
-        auto stmt = boost::get<Method>(&vm.state.ptr->prim());
+        auto stmt = boost::get<Method>(&vm.trans.ptr->prim());
         if (stmt) {
             // (6) Push %cont onto %stack
             vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
@@ -501,8 +501,8 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "XCALL0 " << args << " (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
         // (1) Perform a hard check for `closure`
-        auto stmt = boost::get<Method>(&vm.state.ptr->prim());
-        ObjectPtr closure = (*vm.state.ptr)[ Symbols::get()["closure"] ];
+        auto stmt = boost::get<Method>(&vm.trans.ptr->prim());
+        ObjectPtr closure = (*vm.trans.ptr)[ Symbols::get()["closure"] ];
         if ((closure != nullptr) && stmt) {
             // It's a method; get ready to call it
             // (2) Try to clone the top of %dyn
@@ -514,8 +514,8 @@ void executeInstr(Instr instr, VMState& vm) {
             auto lex = vm.state.lex.top();
             vm.state.lex.push( clone(closure) );
             // (4) Bind all the local variables
-            vm.state.lex.top()->put(Symbols::get()["self"], vm.state.slf);
-            vm.state.lex.top()->put(Symbols::get()["again"], vm.state.ptr);
+            vm.state.lex.top()->put(Symbols::get()["self"], vm.trans.slf);
+            vm.state.lex.top()->put(Symbols::get()["again"], vm.trans.ptr);
             vm.state.lex.top()->put(Symbols::get()["caller"], lex);
             vm.state.lex.top()->protectAll(Protection::PROTECT_ASSIGN | Protection::PROTECT_DELETE,
                                         Symbols::get()["self"], Symbols::get()["again"]);
@@ -536,7 +536,7 @@ void executeInstr(Instr instr, VMState& vm) {
             for (long n = 0; n < args; n++) {
                 vm.state.arg.pop(); // For consistency, we must pop and discard these anyway
             }
-            vm.state.ret = vm.state.ptr;
+            vm.trans.ret = vm.trans.ptr;
         }
     }
         break;
@@ -566,7 +566,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "CLONE" << endl;
 #endif
-        vm.state.ret = clone(vm.state.slf);
+        vm.trans.ret = clone(vm.trans.slf);
     }
         break;
     case Instr::RTRV: {
@@ -574,7 +574,7 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "RTRV (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
         // Try to find the value itsel
-        ObjectPtr value = objectGet(vm.state.slf, vm.trans.sym);
+        ObjectPtr value = objectGet(vm.trans.slf, vm.trans.sym);
         if (value == nullptr) {
 #if DEBUG_INSTR > 2
             cout << "* Looking for missing" << endl;
@@ -582,11 +582,11 @@ void executeInstr(Instr instr, VMState& vm) {
             cout << "* Information:" << endl;
             cout << "* * Lex: " << vm.state.lex.top() << endl;
             cout << "* * Dyn: " << vm.state.dyn.top() << endl;
-            cout << "* * Slf: " << vm.state.slf << endl;
+            cout << "* * Slf: " << vm.trans.slf << endl;
 #endif
 #endif
             // Now try for missing
-            value = objectGet(vm.state.slf, Symbols::get()["missing"]);
+            value = objectGet(vm.trans.slf, Symbols::get()["missing"]);
 #if DEBUG_INSTR > 1
             if (value == nullptr)
                 cout << "* Found no missing" << endl;
@@ -613,15 +613,15 @@ void executeInstr(Instr instr, VMState& vm) {
                     vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
                     vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_TERMINATE }));
                 } else {
-                    vm.state.slf = meta;
-                    vm.state.ptr = value;
+                    vm.trans.slf = meta;
+                    vm.trans.ptr = value;
                     vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
                     vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_CALL_ZERO }));
                 }
             } else {
                 //vm.trans.sym = backup;
-                vm.state.ret = value;
-                //vm.state.slf = vm.state.slf;
+                vm.trans.ret = value;
+                //vm.trans.slf = vm.trans.slf;
                 vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
                 vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_MISSING }));
             }
@@ -635,7 +635,7 @@ void executeInstr(Instr instr, VMState& vm) {
                 (stmt ? stmt->translationUnit() : nullptr) << endl;
 #endif
 #endif
-            vm.state.ret = value;
+            vm.trans.ret = value;
         }
     }
         break;
@@ -643,9 +643,9 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "RTRVD (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
-        ObjectPtr slot = (*vm.state.slf)[vm.trans.sym];
+        ObjectPtr slot = (*vm.trans.slf)[vm.trans.sym];
         if (slot != nullptr)
-            vm.state.ret = slot;
+            vm.trans.ret = slot;
         else
             vm.trans.err0 = true;
     }
@@ -672,7 +672,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         switch (expd) {
         case Reg::SYM: {
-            auto test = boost::get<Symbolic>(&vm.state.ptr->prim());
+            auto test = boost::get<Symbolic>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.sym = *test;
             else
@@ -680,7 +680,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::NUM0: {
-            auto test = boost::get<Number>(&vm.state.ptr->prim());
+            auto test = boost::get<Number>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.num0 = *test;
             else
@@ -688,7 +688,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::NUM1: {
-            auto test = boost::get<Number>(&vm.state.ptr->prim());
+            auto test = boost::get<Number>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.num1 = *test;
             else
@@ -696,7 +696,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::STR0: {
-            auto test = boost::get<string>(&vm.state.ptr->prim());
+            auto test = boost::get<string>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.str0 = *test;
             else
@@ -704,7 +704,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::STR1: {
-            auto test = boost::get<string>(&vm.state.ptr->prim());
+            auto test = boost::get<string>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.str1 = *test;
             else
@@ -712,7 +712,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::MTHD: {
-            auto test = boost::get<Method>(&vm.state.ptr->prim());
+            auto test = boost::get<Method>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.mthd = *test;
             else
@@ -720,7 +720,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::STRM: {
-            auto test = boost::get<StreamPtr>(&vm.state.ptr->prim());
+            auto test = boost::get<StreamPtr>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.strm = *test;
             else
@@ -728,7 +728,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::PRCS: {
-            auto test = boost::get<ProcessPtr>(&vm.state.ptr->prim());
+            auto test = boost::get<ProcessPtr>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.prcs = *test;
             else
@@ -736,7 +736,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
             break;
         case Reg::MTHDZ: {
-            auto test = boost::get<Method>(&vm.state.ptr->prim());
+            auto test = boost::get<Method>(&vm.trans.ptr->prim());
             if (test)
                 vm.trans.mthdz = *test;
             else
@@ -764,45 +764,45 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         switch (ld) {
         case Reg::SYM: {
-            vm.state.ptr->prim(vm.trans.sym);
+            vm.trans.ptr->prim(vm.trans.sym);
         }
             break;
         case Reg::NUM0: {
-            vm.state.ptr->prim(vm.trans.num0);
+            vm.trans.ptr->prim(vm.trans.num0);
         }
             break;
         case Reg::NUM1: {
-            vm.state.ptr->prim(vm.trans.num1);
+            vm.trans.ptr->prim(vm.trans.num1);
         }
             break;
         case Reg::STR0: {
-            vm.state.ptr->prim(vm.trans.str0);
+            vm.trans.ptr->prim(vm.trans.str0);
         }
             break;
         case Reg::STR1: {
-            vm.state.ptr->prim(vm.trans.str1);
+            vm.trans.ptr->prim(vm.trans.str1);
         }
             break;
         case Reg::MTHD: {
 #if DEBUG_INSTR > 1
             cout << "* Method Length " << vm.trans.mthd.instructions().size() << endl;
 #endif
-            vm.state.ptr->prim(vm.trans.mthd);
+            vm.trans.ptr->prim(vm.trans.mthd);
         }
             break;
         case Reg::STRM: {
-            vm.state.ptr->prim(vm.trans.strm);
+            vm.trans.ptr->prim(vm.trans.strm);
         }
             break;
         case Reg::PRCS: {
-            vm.state.ptr->prim(vm.trans.prcs);
+            vm.trans.ptr->prim(vm.trans.prcs);
         }
             break;
         case Reg::MTHDZ: {
 #if DEBUG_INSTR > 1
             cout << "* Method Length " << vm.trans.mthdz.instructions().size() << endl;
 #endif
-            vm.state.ptr->prim(vm.trans.mthdz);
+            vm.trans.ptr->prim(vm.trans.mthdz);
         }
             break;
         default:
@@ -818,15 +818,15 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "* Information:" << endl;
         cout << "* * Lex: " << vm.state.lex.top() << endl;
         cout << "* * Dyn: " << vm.state.dyn.top() << endl;
-        cout << "* * Slf: " << vm.state.slf << endl;
+        cout << "* * Slf: " << vm.trans.slf << endl;
 #endif
 #endif
-        if (vm.state.slf == nullptr)
+        if (vm.trans.slf == nullptr)
             vm.trans.err0 = true;
-        else if (vm.state.slf->isProtected(vm.trans.sym, Protection::PROTECT_ASSIGN))
+        else if (vm.trans.slf->isProtected(vm.trans.sym, Protection::PROTECT_ASSIGN))
             throwError(vm, "ProtectedError");
         else
-            vm.state.slf->put(vm.trans.sym, vm.state.ptr);
+            vm.trans.slf->put(vm.trans.sym, vm.trans.ptr);
     }
         break;
     case Instr::PEEK: {
@@ -865,13 +865,13 @@ void executeInstr(Instr instr, VMState& vm) {
             }
             switch (dest) {
             case Reg::PTR:
-                vm.state.ptr = mid;
+                vm.trans.ptr = mid;
                 break;
             case Reg::SLF:
-                vm.state.slf = mid;
+                vm.trans.slf = mid;
                 break;
             case Reg::RET:
-                vm.state.ret = mid;
+                vm.trans.ret = mid;
                 break;
             default:
                 vm.trans.err0 = true;
@@ -904,17 +904,17 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "BOL (" << vm.trans.flag << ")" << endl;
 #endif
-        vm.state.ret = garnishObject(vm.reader, vm.trans.flag);
+        vm.trans.ret = garnishObject(vm.reader, vm.trans.flag);
     }
         break;
     case Instr::TEST: {
 #if DEBUG_INSTR > 0
         cout << "TEST" << endl;
 #endif
-        if (vm.state.slf == nullptr || vm.state.ptr == nullptr)
+        if (vm.trans.slf == nullptr || vm.trans.ptr == nullptr)
             vm.trans.flag = false;
         else
-            vm.trans.flag = (vm.state.slf == vm.state.ptr);
+            vm.trans.flag = (vm.trans.slf == vm.trans.ptr);
     }
         break;
     case Instr::BRANCH: {
@@ -939,11 +939,11 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "CCALL" << endl;
 #endif
-        if (vm.state.slf == nullptr) {
+        if (vm.trans.slf == nullptr) {
             vm.trans.err0 = true;
         } else {
-            vm.state.slf->prim( statePtr(vm.state) );
-            vm.state.arg.push(vm.state.slf);
+            vm.trans.slf->prim( statePtr(vm.state) );
+            vm.state.arg.push(vm.trans.slf);
             vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
             vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_CALL_ONE }));
         }
@@ -953,7 +953,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "CGOTO" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( vm.state.ptr->prim() );
+        auto cont = boost::get<StatePtr>( vm.trans.ptr->prim() );
         if (cont) {
             auto oldWind = vm.state.wind;
             auto newWind = cont->wind;
@@ -970,13 +970,13 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "CRET" << endl;
 #endif
-        auto cont = boost::get<StatePtr>( vm.state.ptr->prim() );
-        auto ret = vm.state.ret;
+        auto cont = boost::get<StatePtr>( vm.trans.ptr->prim() );
+        auto ret = vm.trans.ret;
         if (cont) {
             auto oldWind = vm.state.wind;
             auto newWind = cont->wind;
             vm.state = *cont;
-            vm.state.ret = ret;
+            vm.trans.ret = ret;
             resolveThunks(vm, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
@@ -989,17 +989,17 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "WND" << endl;
 #endif
-        auto beforeMthd = boost::get<Method>(&vm.state.slf->prim()),
-             afterMthd  = boost::get<Method>(&vm.state.ptr->prim());
+        auto beforeMthd = boost::get<Method>(&vm.trans.slf->prim()),
+             afterMthd  = boost::get<Method>(&vm.trans.ptr->prim());
         if (beforeMthd && afterMthd) {
             Thunk before {
                 *beforeMthd,
-                (*vm.state.slf)[ Symbols::get()["closure"] ],
+                (*vm.trans.slf)[ Symbols::get()["closure"] ],
                 vm.state.dyn.top()
             };
             Thunk after {
                 *afterMthd,
-                (*vm.state.ptr)[ Symbols::get()["closure"] ],
+                (*vm.trans.ptr)[ Symbols::get()["closure"] ],
                 vm.state.dyn.top()
             };
             WindPtr frame = WindPtr(new WindFrame(before, after));
@@ -1023,7 +1023,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "THROW" << endl;
 #endif
-        ObjectPtr exc = vm.state.slf;
+        ObjectPtr exc = vm.trans.slf;
         deque<ObjectPtr> handlers;
         std::function<void(stack<ObjectPtr>&)> recurse = [&recurse, &handlers](stack<ObjectPtr>& st) {
             if (!st.empty()) {
@@ -1158,13 +1158,13 @@ void executeInstr(Instr instr, VMState& vm) {
                 stck = popNode(stck);
             }
             assert(top != nullptr); // Should always be non-null since the loop must run once
-            vm.state.ret = top;
+            vm.trans.ret = top;
         } else {
             // The %trace stack was empty; this should not happen...
             // Honestly, this should probably be an assert failure,
             // but %trace is so weird right now that I'm hesitant to
             // rely on it.
-            vm.state.ret = vm.reader.lit.at(Lit::NIL);
+            vm.trans.ret = vm.reader.lit.at(Lit::NIL);
             // TODO This *should* be an assertion failure, once %trace is reliable
         }
     }
@@ -1209,13 +1209,13 @@ void executeInstr(Instr instr, VMState& vm) {
         if (obj != nullptr) {
             switch (reg) {
             case Reg::PTR:
-                vm.state.ptr = obj;
+                vm.trans.ptr = obj;
                 break;
             case Reg::SLF:
-                vm.state.slf = obj;
+                vm.trans.slf = obj;
                 break;
             case Reg::RET:
-                vm.state.ret = obj;
+                vm.trans.ret = obj;
                 break;
             default:
                 vm.trans.err0 = true;
@@ -1237,13 +1237,13 @@ void executeInstr(Instr instr, VMState& vm) {
             obj = clone(obj);
             switch (reg) {
             case Reg::PTR:
-                vm.state.ptr = obj;
+                vm.trans.ptr = obj;
                 break;
             case Reg::SLF:
-                vm.state.slf = obj;
+                vm.trans.slf = obj;
                 break;
             case Reg::RET:
-                vm.state.ret = obj;
+                vm.trans.ret = obj;
                 break;
             default:
                 vm.trans.err0 = true;
@@ -1258,12 +1258,12 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "DEL" << endl;
 #endif
-        if (vm.state.slf == nullptr) {
+        if (vm.trans.slf == nullptr) {
             vm.trans.err0 = true;
-        } else if (vm.state.slf->isProtected(vm.trans.sym, Protection::PROTECT_DELETE)) {
+        } else if (vm.trans.slf->isProtected(vm.trans.sym, Protection::PROTECT_DELETE)) {
             throwError(vm, "ProtectedError", "Delete-protected variable");
         } else {
-            vm.state.slf->remove(vm.trans.sym);
+            vm.trans.slf->remove(vm.trans.sym);
         }
     }
         break;
@@ -1280,7 +1280,7 @@ void executeInstr(Instr instr, VMState& vm) {
         }
         arr->put(Symbols::get()["lowerBound"], garnishObject(vm.reader, 0));
         arr->put(Symbols::get()["upperBound"], garnishObject(vm.reader, val));
-        vm.state.ret = arr;
+        vm.trans.ret = arr;
     }
         break;
     case Instr::DICT: {
@@ -1307,7 +1307,7 @@ void executeInstr(Instr instr, VMState& vm) {
                 return;
             }
         }
-        vm.state.ret = dict;
+        vm.trans.ret = dict;
     }
         break;
     case Instr::XXX: {

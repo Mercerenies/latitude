@@ -116,9 +116,9 @@ void dumpEverything(std::ostream& out, VMState& vm) {
     // Stacks are printed from bottom to top, so the rightmost element
     // is the top stack element
 
-    out << "%ptr  : " <<      DebugObject(vm.state.ptr ) << std::endl;
-    out << "%slf  : " <<      DebugObject(vm.state.slf ) << std::endl;
-    out << "%ret  : " <<      DebugObject(vm.state.ret ) << std::endl;
+    out << "%ptr  : " <<      DebugObject(vm.trans.ptr ) << std::endl;
+    out << "%slf  : " <<      DebugObject(vm.trans.slf ) << std::endl;
+    out << "%ret  : " <<      DebugObject(vm.trans.ret ) << std::endl;
 
     out << "%lex  : " << DebugStackObject(vm.state.lex ) << std::endl;
     out << "%dyn  : " << DebugStackObject(vm.state.dyn ) << std::endl;
