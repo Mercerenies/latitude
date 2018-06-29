@@ -1501,7 +1501,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // runGC#.
      assert(reader.cpp.size() == CPP_GC_RUN);
      reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
-         long result = GC::get().garbageCollect(state0, reader0);
+         long result = GC::get().garbageCollect({ state0, reader0 });
          state0.ret = garnishObject(reader0, result);
      });
      sys->put(Symbols::get()["runGC#"],

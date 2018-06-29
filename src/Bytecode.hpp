@@ -168,11 +168,10 @@ void hardKill(VMState vm);
 /// call stack down to the new continuation position, executing all of
 /// the wind frame enter thunks.
 ///
-/// \param state the interpreter state
-/// \param reader the read-only interpreter state
+/// \param vm the virtual machine state
 /// \param oldWind the wind stack that the continuation is jumping \e from
 /// \param newWind the wind stack that the continuation is jumping \e to
-void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
+void resolveThunks(VMState vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
 
 void pushTrace(IntState& state);
 
@@ -195,9 +194,8 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader);
 /// continuations, this function empties the stack and performs no
 /// further operations.
 ///
-/// \param state the interpreter state
-/// \param reader the read-only interpreter state
-void doOneStep(IntState& state, const ReadOnlyState& reader);
+/// \param vm the virtual machine state
+void doOneStep(VMState& vm);
 
 /// This function returns whether or not the interpreter has more work
 /// to do. An interpreter is idling if there are no instructions in

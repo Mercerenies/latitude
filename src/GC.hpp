@@ -64,10 +64,9 @@ public:
     /// #garbageCollect(std::vector<Object*>) with all of the arguments from
     /// the various registers in the VM.
     ///
-    /// \param state the interpreter state
-    /// \param reader the read-only interpreter state
+    /// \param vm the virtual machine state
     /// \return the number of objects freed
-    long garbageCollect(IntState& state, const ReadOnlyState& reader);
+    long garbageCollect(VMState vm);
     /// A convenience function which garbage collects given an
     /// arbitrary iterable sequence of global values.
     ///
@@ -86,7 +85,7 @@ public:
 
     size_t getLimit() const;
 
-    void tick(IntState& state, const ReadOnlyState& reader);
+    void tick(VMState vm);
 
 };
 

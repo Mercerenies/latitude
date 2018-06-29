@@ -111,7 +111,7 @@ void hardKill(VMState vm) {
     vm.state.stack = NodePtr<MethodSeek>();
 }
 
-void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
+void resolveThunks(VMState vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
     deque<WindPtr> exits;
     deque<WindPtr> enters;
     while (oldWind) {
@@ -128,19 +128,19 @@ void resolveThunks(IntState& state, const ReadOnlyState& reader, NodePtr<WindPtr
         exits.pop_back();
         enters.pop_front();
     }
-    state.stack = pushNode(state.stack, state.cont);
-    state.stack = pushNode(state.stack,
-                           MethodSeek(Method(reader.gtu, { Table::GTU_UNSTORED })));
-    state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_STORED }));
+    vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+    vm.state.stack = pushNode(vm.state.stack,
+                             MethodSeek(Method(vm.reader.gtu, { Table::GTU_UNSTORED })));
+    vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_STORED }));
     for (WindPtr ptr : exits) {
-        state.lex.push( clone(ptr->after.lex) );
-        state.dyn.push( clone(ptr->after.dyn) );
-        state.stack = pushNode(state.stack, MethodSeek(ptr->after.code));
+        vm.state.lex.push( clone(ptr->after.lex) );
+        vm.state.dyn.push( clone(ptr->after.dyn) );
+        vm.state.stack = pushNode(vm.state.stack, MethodSeek(ptr->after.code));
     }
     for (WindPtr ptr : enters) {
-        state.lex.push( clone(ptr->before.lex) );
-        state.dyn.push( clone(ptr->before.dyn) );
-        state.stack = pushNode(state.stack, MethodSeek(ptr->before.code));
+        vm.state.lex.push( clone(ptr->before.lex) );
+        vm.state.dyn.push( clone(ptr->before.dyn) );
+        vm.state.stack = pushNode(vm.state.stack, MethodSeek(ptr->before.code));
     }
 }
 
@@ -965,7 +965,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             auto oldWind = state.wind;
             auto newWind = cont->wind;
             state = *cont;
-            resolveThunks(state, reader, oldWind, newWind);
+            resolveThunks({ state, reader }, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
@@ -984,7 +984,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             auto newWind = cont->wind;
             state = *cont;
             state.ret = ret;
-            resolveThunks(state, reader, oldWind, newWind);
+            resolveThunks({ state, reader }, oldWind, newWind);
         } else {
 #if DEBUG_INSTR > 0
             cout << "* Not a continuation" << endl;
@@ -1331,14 +1331,13 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             break;
         case 1: {
             // Compare
-            VMState vm { state, reader };
             auto temp = state.trace;
             auto curr = trace_marker.top();
             while ((curr != nullptr) && (temp != nullptr)) {
                 if (curr->get() != temp->get()) {
                     // Welp
                     cerr << "Trace assertion failure!" << endl;
-                    hardKill(vm);
+                    hardKill({ state, reader });
                 }
                 curr = popNode(curr);
                 temp = popNode(temp);
@@ -1346,7 +1345,7 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
             if (curr != temp) {
                 // Welp
                 cerr << "Trace assertion failure!" << endl;
-                hardKill(vm);
+                hardKill({ state, reader });
             }
             trace_marker.pop();
         }
@@ -1372,38 +1371,38 @@ void executeInstr(Instr instr, IntState& state, const ReadOnlyState& reader) {
     }
 }
 
-void doOneStep(IntState& state, const ReadOnlyState& reader) {
-    state.cont.advancePosition(1);
-    if (state.cont.atEnd()) {
+void doOneStep(VMState& vm) {
+    vm.state.cont.advancePosition(1);
+    if (vm.state.cont.atEnd()) {
         // Pop off the stack
 #if DEBUG_INSTR > 1
         cout << "<><><>" << endl;
 #endif
-        if (state.stack) {
+        if (vm.state.stack) {
 #ifdef PROFILE_INSTR
             Profiling::get().etcBegin();
 #endif
-            state.cont = state.stack->get();
-            state.stack = popNode(state.stack);
+            vm.state.cont = vm.state.stack->get();
+            vm.state.stack = popNode(vm.state.stack);
 #ifdef PROFILE_INSTR
             Profiling::get().etcEnd();
 #endif
-            doOneStep(state, reader);
+            doOneStep(vm);
         }
     } else {
         // Run one command
-        Instr instr = state.cont.readInstr();
+        Instr instr = vm.state.cont.readInstr();
 #if DEBUG_INSTR > 1
         cout << "<" << (long)instr << ">" << endl;
 #endif
 #ifdef PROFILE_INSTR
         Profiling::get().instructionBegin(instr);
 #endif
-        executeInstr(instr, state, reader);
+        executeInstr(instr, vm.state, vm.reader);
 #ifdef PROFILE_INSTR
         Profiling::get().instructionEnd(instr);
 #endif
-        GC::get().tick(state, reader);
+        GC::get().tick(vm);
     }
 }
 

@@ -21,7 +21,7 @@ void runREPL(ObjectPtr global, VMState vm) {
     readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, vm, table);
 
     while (!isIdling(vm.state))
-        doOneStep(vm.state, vm.reader);
+        doOneStep(vm);
 }
 
 void runRunner(ObjectPtr global, VMState vm) {
@@ -32,7 +32,7 @@ void runRunner(ObjectPtr global, VMState vm) {
     readFile(pathname + "std/runner.lats", { clone(global), clone(global) }, vm, table);
 
     while (!isIdling(vm.state))
-        doOneStep(vm.state, vm.reader);
+        doOneStep(vm);
 }
 
 void runCompiler(ObjectPtr global, VMState vm) {
@@ -43,5 +43,5 @@ void runCompiler(ObjectPtr global, VMState vm) {
     readFile(pathname + "std/compiler.lats", { clone(global), clone(global) }, vm, table);
 
     while (!isIdling(vm.state))
-        doOneStep(vm.state, vm.reader);
+        doOneStep(vm);
 }

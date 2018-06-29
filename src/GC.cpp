@@ -201,7 +201,7 @@ long GC::garbageCollect(std::vector<Object*> globals) {
     return total;
 }
 
-long GC::garbageCollect(IntState& state, const ReadOnlyState& reader) {
+long GC::garbageCollect(VMState vm) {
     // This little type is necessary to make the templated function addContinuationToFrontier
     // think that vectors are set-like.
     struct VectorProxy {
@@ -222,8 +222,8 @@ long GC::garbageCollect(IntState& state, const ReadOnlyState& reader) {
         }
     };
     VectorProxy globals;
-    addContinuationToFrontier<decltype(globals)>({}, globals, state);
-    addContinuationToFrontier<decltype(globals)>({}, globals, reader);
+    addContinuationToFrontier<decltype(globals)>({}, globals, vm.state);
+    addContinuationToFrontier<decltype(globals)>({}, globals, vm.reader);
     return garbageCollect(globals.value);
 }
 
@@ -239,10 +239,10 @@ size_t GC::getLimit() const {
     return limit;
 }
 
-void GC::tick(IntState& state, const ReadOnlyState& reader) {
+void GC::tick(VMState vm) {
     --count;
     if ((count <= 0) && (getTotal() > limit)) {
-        garbageCollect(state, reader);
+        garbageCollect(vm);
         count = TOTAL_COUNT;
         if (getTotal() > limit) {
             if (tracing) {
