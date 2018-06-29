@@ -111,34 +111,34 @@ void dumpBT(std::ostream& out, NodePtr<BacktraceFrame> frame) {
     dumpBT(out, popNode(frame));
 }
 
-void dumpEverything(std::ostream& out, IntState& state) {
+void dumpEverything(std::ostream& out, VMState& vm) {
 
     // Stacks are printed from bottom to top, so the rightmost element
     // is the top stack element
 
-    out << "%ptr  : " <<      DebugObject(state.ptr ) << std::endl;
-    out << "%slf  : " <<      DebugObject(state.slf ) << std::endl;
-    out << "%ret  : " <<      DebugObject(state.ret ) << std::endl;
+    out << "%ptr  : " <<      DebugObject(vm.state.ptr ) << std::endl;
+    out << "%slf  : " <<      DebugObject(vm.state.slf ) << std::endl;
+    out << "%ret  : " <<      DebugObject(vm.state.ret ) << std::endl;
 
-    out << "%lex  : " << DebugStackObject(state.lex ) << std::endl;
-    out << "%dyn  : " << DebugStackObject(state.dyn ) << std::endl;
-    out << "%arg  : " << DebugStackObject(state.arg ) << std::endl;
-    out << "%sto  : " << DebugStackObject(state.sto ) << std::endl;
-    out << "%hand : " << DebugStackObject(state.hand) << std::endl;
+    out << "%lex  : " << DebugStackObject(vm.state.lex ) << std::endl;
+    out << "%dyn  : " << DebugStackObject(vm.state.dyn ) << std::endl;
+    out << "%arg  : " << DebugStackObject(vm.state.arg ) << std::endl;
+    out << "%sto  : " << DebugStackObject(vm.state.sto ) << std::endl;
+    out << "%hand : " << DebugStackObject(vm.state.hand) << std::endl;
 
-    out << "%err0 : " << state.err0 << std::endl;
-    out << "%err1 : " << state.err1 << std::endl;
+    out << "%err0 : " << vm.trans.err0 << std::endl;
+    out << "%err1 : " << vm.trans.err1 << std::endl;
 
-    out << "%sym  : " << Symbols::get()[state.sym] << std::endl;
-    out << "%num0 : " << state.num0.asString() << std::endl;
-    out << "%num1 : " << state.num1.asString() << std::endl;
+    out << "%sym  : " << Symbols::get()[vm.trans.sym] << std::endl;
+    out << "%num0 : " << vm.trans.num0.asString() << std::endl;
+    out << "%num1 : " << vm.trans.num1.asString() << std::endl;
 
-    out << "%str0 : " << state.str0 << std::endl;
-    out << "%str1 : " << state.str1 << std::endl;
+    out << "%str0 : " << vm.trans.str0 << std::endl;
+    out << "%str1 : " << vm.trans.str1 << std::endl;
 
-    out << "%flag : " << state.flag << std::endl;
+    out << "%flag : " << vm.trans.flag << std::endl;
     out << "%trace:";
-    dumpBT(out, pushNode(state.trace, std::make_tuple(state.line, state.file)));
+    dumpBT(out, pushNode(vm.state.trace, std::make_tuple(vm.state.line, vm.state.file)));
     out << std::endl;
 
 }

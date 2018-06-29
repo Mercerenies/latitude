@@ -71,15 +71,6 @@ struct IntState {
     std::stack<ObjectPtr> lex, dyn, arg, sto;
     MethodSeek cont;
     NodePtr<MethodSeek> stack;
-    bool err0, err1;
-    Symbolic sym;
-    Number num0, num1;
-    std::string str0, str1;
-    Method mthd;
-    StreamPtr strm;
-    ProcessPtr prcs;
-    Method mthdz;
-    bool flag;
     NodePtr<WindPtr> wind;
     std::stack<ObjectPtr> hand;
     long line;
@@ -96,6 +87,15 @@ struct IntState {
 /// TransientState can be changed freely by the VM but will be lost
 /// when a continuation jump is performed.
 struct TransientState {
+    bool err0, err1;
+    Symbolic sym;
+    Number num0, num1;
+    std::string str0, str1;
+    Method mthd;
+    StreamPtr strm;
+    ProcessPtr prcs;
+    Method mthdz;
+    bool flag;
 
     TransientState();
 

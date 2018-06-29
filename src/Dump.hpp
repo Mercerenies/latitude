@@ -63,6 +63,6 @@ public:
 
 std::ostream& operator <<(std::ostream& out, const DebugStackObject& obj);
 
-void dumpEverything(std::ostream& out, IntState& state);
+void dumpEverything(std::ostream& out, VMState& state);
 
 #endif // DUMP_HPP

@@ -83,10 +83,10 @@ VMState VMState::createAndInit(ObjectPtr* global, int argc, char** argv) {
 
 IntState::IntState()
     : // %cont?
-      sym(Symbols::get()[""]),
       line(0) {}
 
-TransientState::TransientState() {}
+TransientState::TransientState()
+    : sym(Symbols::get()[""]) {}
 
 ReadOnlyState::ReadOnlyState()
     : gtu(std::make_shared<TranslationUnit>()) {}
@@ -169,7 +169,7 @@ void executeInstr(Instr instr, VMState& vm) {
             break;
         default:
             mid = nullptr;
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
             break;
         }
         switch (dest) {
@@ -183,7 +183,7 @@ void executeInstr(Instr instr, VMState& vm) {
             vm.state.ret = mid;
             break;
         default:
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
             break;
         }
     }
@@ -207,7 +207,7 @@ void executeInstr(Instr instr, VMState& vm) {
             break;
         default:
             mid = nullptr;
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
             break;
         }
         switch (stack) {
@@ -227,7 +227,7 @@ void executeInstr(Instr instr, VMState& vm) {
             vm.state.hand.push(mid);
             break;
         default:
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
             break;
         }
     }
@@ -258,14 +258,14 @@ void executeInstr(Instr instr, VMState& vm) {
             break;
         default:
             stack = nullptr;
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
                 mid = stack->top();
                 stack->pop();
             } else {
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
             }
             switch (dest) {
             case Reg::PTR:
@@ -278,7 +278,7 @@ void executeInstr(Instr instr, VMState& vm) {
                 vm.state.ret = mid;
                 break;
             default:
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
                 break;
             }
         }
@@ -290,7 +290,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         Reg dest = vm.state.cont.readReg(0);
         if (vm.state.lex.empty()) {
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         } else {
             switch (dest) {
             case Reg::PTR:
@@ -303,7 +303,7 @@ void executeInstr(Instr instr, VMState& vm) {
                 vm.state.ret = vm.state.lex.top();
                 break;
             default:
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
                 break;
             }
         }
@@ -315,7 +315,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         Reg dest = vm.state.cont.readReg(0);
         if (vm.state.dyn.empty()) {
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         } else {
             switch (dest) {
             case Reg::PTR:
@@ -328,7 +328,7 @@ void executeInstr(Instr instr, VMState& vm) {
                 vm.state.ret = vm.state.dyn.top();
                 break;
             default:
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
                 break;
             }
         }
@@ -338,21 +338,21 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "ESWAP" << endl;
 #endif
-        swap(vm.state.err0, vm.state.err1);
+        swap(vm.trans.err0, vm.trans.err1);
     }
         break;
     case Instr::ECLR: {
 #if DEBUG_INSTR > 0
         cout << "ECLR" << endl;
 #endif
-        vm.state.err0 = false;
+        vm.trans.err0 = false;
     }
         break;
     case Instr::ESET: {
 #if DEBUG_INSTR > 0
         cout << "ESET" << endl;
 #endif
-        vm.state.err0 = true;
+        vm.trans.err0 = true;
     }
         break;
     case Instr::SYM: {
@@ -360,7 +360,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "SYM \"" << str << "\"" << endl;
 #endif
-        vm.state.sym = Symbols::get()[str];
+        vm.trans.sym = Symbols::get()[str];
     }
         break;
     case Instr::NUM: {
@@ -370,7 +370,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         auto temp = parseInteger(str.c_str());
         assert(temp);
-        vm.state.num0 = *temp;
+        vm.trans.num0 = *temp;
     }
         break;
     case Instr::INT: {
@@ -378,7 +378,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "INT " << val << endl;
 #endif
-        vm.state.num0 = Number(val);
+        vm.trans.num0 = Number(val);
     }
         break;
     case Instr::FLOAT: {
@@ -387,20 +387,20 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "FLOAT \"" << str << "\"" << endl;
 #endif
         double dd = strtod(str.c_str(), NULL);
-        vm.state.num0 = Number(dd);
+        vm.trans.num0 = Number(dd);
     }
         break;
     case Instr::NSWAP: {
 #if DEBUG_INSTR > 0
         cout << "NSWAP" << endl;
 #endif
-        swap(vm.state.num0, vm.state.num1);
+        swap(vm.trans.num0, vm.trans.num1);
     }
         break;
     case Instr::CALL: {
         long args = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
-        cout << "CALL " << args << " (" << Symbols::get()[vm.state.sym] << ")" << endl;
+        cout << "CALL " << args << " (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #if DEBUG_INSTR > 2
         cout << "* Method Properties " << vm.state.ptr << endl;
 #endif
@@ -420,7 +420,7 @@ void executeInstr(Instr instr, VMState& vm) {
             if (!vm.state.dyn.empty())
                 vm.state.dyn.push( clone(vm.state.dyn.top()) );
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
             // (3) Push a clone of the closure onto %lex
             auto lex = vm.state.lex.top();
             vm.state.lex.push( clone(closure) );
@@ -482,7 +482,7 @@ void executeInstr(Instr instr, VMState& vm) {
         break;
     case Instr::XCALL: {
 #if DEBUG_INSTR > 0
-        cout << "XCALL (" << Symbols::get()[vm.state.sym] << ")" << endl;
+        cout << "XCALL (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
         auto stmt = boost::get<Method>(&vm.state.ptr->prim());
         if (stmt) {
@@ -498,7 +498,7 @@ void executeInstr(Instr instr, VMState& vm) {
     case Instr::XCALL0: {
         long args = vm.state.cont.readLong(0);
 #if DEBUG_INSTR > 0
-        cout << "XCALL0 " << args << " (" << Symbols::get()[vm.state.sym] << ")" << endl;
+        cout << "XCALL0 " << args << " (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
         // (1) Perform a hard check for `closure`
         auto stmt = boost::get<Method>(&vm.state.ptr->prim());
@@ -509,7 +509,7 @@ void executeInstr(Instr instr, VMState& vm) {
             if (!vm.state.dyn.empty())
                 vm.state.dyn.push( clone(vm.state.dyn.top()) );
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
             // (3) Push a clone of the closure onto %lex
             auto lex = vm.state.lex.top();
             vm.state.lex.push( clone(closure) );
@@ -545,19 +545,19 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "RET" << endl;
 #endif
         if (vm.state.lex.empty())
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         else
             vm.state.lex.pop();
         if (vm.state.dyn.empty())
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         else
             vm.state.dyn.pop();
         if (!vm.state.trace)
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         else
             popTrace(vm.state);
         if (vm.state.trns.empty())
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         else
             vm.state.trns.pop();
     }
@@ -571,10 +571,10 @@ void executeInstr(Instr instr, VMState& vm) {
         break;
     case Instr::RTRV: {
 #if DEBUG_INSTR > 0
-        cout << "RTRV (" << Symbols::get()[vm.state.sym] << ")" << endl;
+        cout << "RTRV (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
         // Try to find the value itsel
-        ObjectPtr value = objectGet(vm.state.slf, vm.state.sym);
+        ObjectPtr value = objectGet(vm.state.slf, vm.trans.sym);
         if (value == nullptr) {
 #if DEBUG_INSTR > 2
             cout << "* Looking for missing" << endl;
@@ -619,7 +619,7 @@ void executeInstr(Instr instr, VMState& vm) {
                     vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_CALL_ZERO }));
                 }
             } else {
-                //vm.state.sym = backup;
+                //vm.trans.sym = backup;
                 vm.state.ret = value;
                 //vm.state.slf = vm.state.slf;
                 vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
@@ -641,13 +641,13 @@ void executeInstr(Instr instr, VMState& vm) {
         break;
     case Instr::RTRVD: {
 #if DEBUG_INSTR > 0
-        cout << "RTRVD (" << Symbols::get()[vm.state.sym] << ")" << endl;
+        cout << "RTRVD (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #endif
-        ObjectPtr slot = (*vm.state.slf)[vm.state.sym];
+        ObjectPtr slot = (*vm.state.slf)[vm.trans.sym];
         if (slot != nullptr)
             vm.state.ret = slot;
         else
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
     }
         break;
     case Instr::STR: {
@@ -655,14 +655,14 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "STR \"" << str << "\"" << endl;
 #endif
-        vm.state.str0 = str;
+        vm.trans.str0 = str;
     }
         break;
     case Instr::SSWAP: {
 #if DEBUG_INSTR > 0
         cout << "SSWAP" << endl;
 #endif
-        swap(vm.state.str0, vm.state.str1);
+        swap(vm.trans.str0, vm.trans.str1);
     }
         break;
     case Instr::EXPD: {
@@ -674,77 +674,77 @@ void executeInstr(Instr instr, VMState& vm) {
         case Reg::SYM: {
             auto test = boost::get<Symbolic>(&vm.state.ptr->prim());
             if (test)
-                vm.state.sym = *test;
+                vm.trans.sym = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::NUM0: {
             auto test = boost::get<Number>(&vm.state.ptr->prim());
             if (test)
-                vm.state.num0 = *test;
+                vm.trans.num0 = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::NUM1: {
             auto test = boost::get<Number>(&vm.state.ptr->prim());
             if (test)
-                vm.state.num1 = *test;
+                vm.trans.num1 = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::STR0: {
             auto test = boost::get<string>(&vm.state.ptr->prim());
             if (test)
-                vm.state.str0 = *test;
+                vm.trans.str0 = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::STR1: {
             auto test = boost::get<string>(&vm.state.ptr->prim());
             if (test)
-                vm.state.str1 = *test;
+                vm.trans.str1 = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::MTHD: {
             auto test = boost::get<Method>(&vm.state.ptr->prim());
             if (test)
-                vm.state.mthd = *test;
+                vm.trans.mthd = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::STRM: {
             auto test = boost::get<StreamPtr>(&vm.state.ptr->prim());
             if (test)
-                vm.state.strm = *test;
+                vm.trans.strm = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::PRCS: {
             auto test = boost::get<ProcessPtr>(&vm.state.ptr->prim());
             if (test)
-                vm.state.prcs = *test;
+                vm.trans.prcs = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         case Reg::MTHDZ: {
             auto test = boost::get<Method>(&vm.state.ptr->prim());
             if (test)
-                vm.state.mthdz = *test;
+                vm.trans.mthdz = *test;
             else
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
         }
             break;
         default:
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
             break;
         }
     }
@@ -754,7 +754,7 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "MTHD ..." << endl;
 #endif
         FunctionIndex index = vm.state.cont.readFunction(0);
-        vm.state.mthd = Method(vm.state.trns.top(), index);
+        vm.trans.mthd = Method(vm.state.trns.top(), index);
     }
         break;
     case Instr::LOAD: {
@@ -764,56 +764,56 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         switch (ld) {
         case Reg::SYM: {
-            vm.state.ptr->prim(vm.state.sym);
+            vm.state.ptr->prim(vm.trans.sym);
         }
             break;
         case Reg::NUM0: {
-            vm.state.ptr->prim(vm.state.num0);
+            vm.state.ptr->prim(vm.trans.num0);
         }
             break;
         case Reg::NUM1: {
-            vm.state.ptr->prim(vm.state.num1);
+            vm.state.ptr->prim(vm.trans.num1);
         }
             break;
         case Reg::STR0: {
-            vm.state.ptr->prim(vm.state.str0);
+            vm.state.ptr->prim(vm.trans.str0);
         }
             break;
         case Reg::STR1: {
-            vm.state.ptr->prim(vm.state.str1);
+            vm.state.ptr->prim(vm.trans.str1);
         }
             break;
         case Reg::MTHD: {
 #if DEBUG_INSTR > 1
-            cout << "* Method Length " << vm.state.mthd.instructions().size() << endl;
+            cout << "* Method Length " << vm.trans.mthd.instructions().size() << endl;
 #endif
-            vm.state.ptr->prim(vm.state.mthd);
+            vm.state.ptr->prim(vm.trans.mthd);
         }
             break;
         case Reg::STRM: {
-            vm.state.ptr->prim(vm.state.strm);
+            vm.state.ptr->prim(vm.trans.strm);
         }
             break;
         case Reg::PRCS: {
-            vm.state.ptr->prim(vm.state.prcs);
+            vm.state.ptr->prim(vm.trans.prcs);
         }
             break;
         case Reg::MTHDZ: {
 #if DEBUG_INSTR > 1
-            cout << "* Method Length " << vm.state.mthdz.instructions().size() << endl;
+            cout << "* Method Length " << vm.trans.mthdz.instructions().size() << endl;
 #endif
-            vm.state.ptr->prim(vm.state.mthdz);
+            vm.state.ptr->prim(vm.trans.mthdz);
         }
             break;
         default:
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
             break;
         }
     }
         break;
     case Instr::SETF: {
 #if DEBUG_INSTR > 0
-        cout << "SETF (" << Symbols::get()[vm.state.sym] << ")" << endl;
+        cout << "SETF (" << Symbols::get()[vm.trans.sym] << ")" << endl;
 #if DEBUG_INSTR > 2
         cout << "* Information:" << endl;
         cout << "* * Lex: " << vm.state.lex.top() << endl;
@@ -822,11 +822,11 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
 #endif
         if (vm.state.slf == nullptr)
-            vm.state.err0 = true;
-        else if (vm.state.slf->isProtected(vm.state.sym, Protection::PROTECT_ASSIGN))
+            vm.trans.err0 = true;
+        else if (vm.state.slf->isProtected(vm.trans.sym, Protection::PROTECT_ASSIGN))
             throwError(vm, "ProtectedError");
         else
-            vm.state.slf->put(vm.state.sym, vm.state.ptr);
+            vm.state.slf->put(vm.trans.sym, vm.state.ptr);
     }
         break;
     case Instr::PEEK: {
@@ -855,13 +855,13 @@ void executeInstr(Instr instr, VMState& vm) {
             break;
         default:
             stack = nullptr;
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         }
         if (stack != nullptr) {
             if (!stack->empty()) {
                 mid = stack->top();
             } else {
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
             }
             switch (dest) {
             case Reg::PTR:
@@ -874,7 +874,7 @@ void executeInstr(Instr instr, VMState& vm) {
                 vm.state.ret = mid;
                 break;
             default:
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
                 break;
             }
         }
@@ -885,7 +885,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "SYMN " << val << " (" << Symbols::get()[Symbolic{val}] << ")" << endl;
 #endif
-        vm.state.sym = { val };
+        vm.trans.sym = { val };
     }
         break;
     case Instr::CPP: {
@@ -897,14 +897,14 @@ void executeInstr(Instr instr, VMState& vm) {
         if (func)
             func(vm);
         else
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
     }
         break;
     case Instr::BOL: {
 #if DEBUG_INSTR > 0
-        cout << "BOL (" << vm.state.flag << ")" << endl;
+        cout << "BOL (" << vm.trans.flag << ")" << endl;
 #endif
-        vm.state.ret = garnishObject(vm.reader, vm.state.flag);
+        vm.state.ret = garnishObject(vm.reader, vm.trans.flag);
     }
         break;
     case Instr::TEST: {
@@ -912,9 +912,9 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "TEST" << endl;
 #endif
         if (vm.state.slf == nullptr || vm.state.ptr == nullptr)
-            vm.state.flag = false;
+            vm.trans.flag = false;
         else
-            vm.state.flag = (vm.state.slf == vm.state.ptr);
+            vm.trans.flag = (vm.state.slf == vm.state.ptr);
     }
         break;
     case Instr::BRANCH: {
@@ -922,16 +922,16 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "BRANCH (" << vm.state.flag << ")" << endl;
 #endif
         vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
-        if (vm.state.flag) {
+        if (vm.trans.flag) {
 #if DEBUG_INSTR > 2
-            cout << "* Method ( ) Length " << vm.state.mthd.instructions().size() << endl;
+            cout << "* Method ( ) Length " << vm.trans.mthd.instructions().size() << endl;
 #endif
-            vm.state.cont = MethodSeek(vm.state.mthd);
+            vm.state.cont = MethodSeek(vm.trans.mthd);
         } else {
 #if DEBUG_INSTR > 2
-            cout << "* Method (Z) Length " << vm.state.mthdz.instructions().size() << endl;
+            cout << "* Method (Z) Length " << vm.trans.mthdz.instructions().size() << endl;
 #endif
-            vm.state.cont = MethodSeek(vm.state.mthdz);
+            vm.state.cont = MethodSeek(vm.trans.mthdz);
         }
     }
         break;
@@ -940,7 +940,7 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "CCALL" << endl;
 #endif
         if (vm.state.slf == nullptr) {
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         } else {
             vm.state.slf->prim( statePtr(vm.state) );
             vm.state.arg.push(vm.state.slf);
@@ -1008,7 +1008,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "* Not methods" << endl;
 #endif
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         }
     }
         break;
@@ -1050,9 +1050,9 @@ void executeInstr(Instr instr, VMState& vm) {
         break;
     case Instr::THROQ: {
 #if DEBUG_INSTR > 0
-        cout << "THROQ (" << vm.state.err0 << ")" << endl;
+        cout << "THROQ (" << vm.trans.err0 << ")" << endl;
 #endif
-        if (vm.state.err0) {
+        if (vm.trans.err0) {
             vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
             vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_THROW }));
         }
@@ -1062,7 +1062,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "ADDS" << endl;
 #endif
-        vm.state.str0 += vm.state.str1;
+        vm.trans.str0 += vm.trans.str1;
     }
         break;
     case Instr::ARITH: {
@@ -1072,34 +1072,34 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         switch (val) {
         case 1L:
-            vm.state.num0 += vm.state.num1;
+            vm.trans.num0 += vm.trans.num1;
             break;
         case 2L:
-            vm.state.num0 -= vm.state.num1;
+            vm.trans.num0 -= vm.trans.num1;
             break;
         case 3L:
-            vm.state.num0 *= vm.state.num1;
+            vm.trans.num0 *= vm.trans.num1;
             break;
         case 4L:
-            vm.state.num0 /= vm.state.num1;
+            vm.trans.num0 /= vm.trans.num1;
             break;
         case 5L:
-            vm.state.num0 %= vm.state.num1;
+            vm.trans.num0 %= vm.trans.num1;
             break;
         case 6L:
-            vm.state.num0 = vm.state.num0.pow(vm.state.num1);
+            vm.trans.num0 = vm.trans.num0.pow(vm.trans.num1);
             break;
         case 7L:
-            vm.state.num0 &= vm.state.num1;
+            vm.trans.num0 &= vm.trans.num1;
             break;
         case 8L:
-            vm.state.num0 |= vm.state.num1;
+            vm.trans.num0 |= vm.trans.num1;
             break;
         case 9L:
-            vm.state.num0 ^= vm.state.num1;
+            vm.trans.num0 ^= vm.trans.num1;
             break;
         default:
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
             break;
         }
     }
@@ -1109,7 +1109,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #if DEBUG_INSTR > 0
         cout << "THROA \"" << msg << "\"" << endl;
 #endif
-        if (vm.state.err0)
+        if (vm.trans.err0)
             throwError(vm, "TypeError", msg);
     }
         break;
@@ -1183,7 +1183,7 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "UNTR" << endl;
 #endif
         if (vm.state.trns.empty())
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         else
             vm.state.trns.pop();
     }
@@ -1196,7 +1196,7 @@ void executeInstr(Instr instr, VMState& vm) {
 #endif
         double rl = strtod(str0.c_str(), NULL);
         double im = strtod(str1.c_str(), NULL);
-        vm.state.num0 = Number(Number::complex(rl, im));
+        vm.trans.num0 = Number(Number::complex(rl, im));
     }
         break;
     case Instr::YLD: {
@@ -1218,11 +1218,11 @@ void executeInstr(Instr instr, VMState& vm) {
                 vm.state.ret = obj;
                 break;
             default:
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
                 break;
             }
         } else {
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         }
     }
         break;
@@ -1246,11 +1246,11 @@ void executeInstr(Instr instr, VMState& vm) {
                 vm.state.ret = obj;
                 break;
             default:
-                vm.state.err0 = true;
+                vm.trans.err0 = true;
                 break;
             }
         } else {
-            vm.state.err0 = true;
+            vm.trans.err0 = true;
         }
     }
         break;
@@ -1259,11 +1259,11 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "DEL" << endl;
 #endif
         if (vm.state.slf == nullptr) {
-            vm.state.err0 = true;
-        } else if (vm.state.slf->isProtected(vm.state.sym, Protection::PROTECT_DELETE)) {
+            vm.trans.err0 = true;
+        } else if (vm.state.slf->isProtected(vm.trans.sym, Protection::PROTECT_DELETE)) {
             throwError(vm, "ProtectedError", "Delete-protected variable");
         } else {
-            vm.state.slf->remove(vm.state.sym);
+            vm.state.slf->remove(vm.trans.sym);
         }
     }
         break;
@@ -1351,14 +1351,14 @@ void executeInstr(Instr instr, VMState& vm) {
         cout << "GOTO" << endl;
 #endif
         vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
-        vm.state.cont = vm.state.mthd;
+        vm.state.cont = vm.trans.mthd;
     }
         break;
     case Instr::MSWAP: {
 #if DEBUG_INSTR > 0
         cout << "MSWAP" << endl;
 #endif
-        swap(vm.state.mthd, vm.state.mthdz);
+        swap(vm.trans.mthd, vm.trans.mthdz);
     }
         break;
     }
