@@ -91,10 +91,10 @@ void spawnSystemCallsNew(ObjectPtr global,
                     readFile(str1, { global, global }, vm, table);
                 }
             } else {
-                throwError({ vm.state, vm.reader }, "TypeError", "String expected");
+                throwError(vm, "TypeError", "String expected");
             }
         } else {
-            throwError({ vm.state, vm.reader }, "SystemArgError", "Wrong number of arguments");
+            throwError(vm, "SystemArgError", "Wrong number of arguments");
         }
     });
     sys->put(Symbols::get()["kernelLoad#"],
@@ -171,10 +171,10 @@ void spawnSystemCallsNew(ObjectPtr global,
                     break;
                 }
             } else {
-                throwError({ vm.state, vm.reader }, "TypeError", "Stream expected");
+                throwError(vm, "TypeError", "Stream expected");
             }
         } else {
-            throwError({ vm.state, vm.reader }, "SystemArgError", "Wrong number of arguments");
+            throwError(vm, "SystemArgError", "Wrong number of arguments");
         }
     });
     sys->put(Symbols::get()["streamIn#"],
@@ -209,13 +209,13 @@ void spawnSystemCallsNew(ObjectPtr global,
                     }
                     vm.state.ret = garnishObject(vm.reader, boost::blank());
                 } else {
-                    throwError({ vm.state, vm.reader }, "IOError", "Stream not designated for output");
+                    throwError(vm, "IOError", "Stream not designated for output");
                 }
             } else {
-                throwError({ vm.state, vm.reader }, "SystemArgError", "Invalid argument to output function");
+                throwError(vm, "SystemArgError", "Invalid argument to output function");
             }
         } else {
-            throwError({ vm.state, vm.reader }, "SystemArgError", "Wrong number of arguments");
+            throwError(vm, "SystemArgError", "Wrong number of arguments");
         }
     });
     sys->put(Symbols::get()["streamPuts#"],
@@ -599,10 +599,10 @@ void spawnSystemCallsNew(ObjectPtr global,
                         else
                             vm.state.ret = garnishObject(vm.reader, (*stream0)->readText(1));
                     } else {
-                        throwError({ vm.state, vm.reader }, "IOError", "Stream not designated for input");
+                        throwError(vm, "IOError", "Stream not designated for input");
                     }
                 } else {
-                    throwError({ vm.state, vm.reader }, "TypeError", "Stream expected");
+                    throwError(vm, "TypeError", "Stream expected");
                 }
             }
         }
@@ -906,11 +906,11 @@ void spawnSystemCallsNew(ObjectPtr global,
     assert(reader.cpp.size() == CPP_SYM_NUM);
     reader.cpp.push_back([](VMState vm) {
         if (vm.state.num0.hierarchyLevel() > 1) {
-            throwError({ vm.state, vm.reader }, "TypeError", "Cannot produce symbols from non-integers");
+            throwError(vm, "TypeError", "Cannot produce symbols from non-integers");
         } else if (vm.state.num0 > Number(2147483647L)) {
-            throwError({ vm.state, vm.reader }, "TypeError", "Cannot produce symbols from large integers");
+            throwError(vm, "TypeError", "Cannot produce symbols from large integers");
         } else if (vm.state.num0.asSmallInt() < 0) {
-            throwError({ vm.state, vm.reader }, "TypeError", "Cannot produce symbols from negative numbers");
+            throwError(vm, "TypeError", "Cannot produce symbols from negative numbers");
         } else {
             Symbolic sym = Symbols::natural((int)vm.state.num0.asSmallInt());
             vm.state.ret = garnishObject(vm.reader, sym);
@@ -1079,7 +1079,7 @@ void spawnSystemCallsNew(ObjectPtr global,
     reader.cpp.push_back([](VMState vm) {
         ObjectPtr value = origin(vm.state.slf, vm.state.sym);
         if (value == nullptr) {
-            throwError({ vm.state, vm.reader }, "SlotError", "Cannot find origin of nonexistent slot");
+            throwError(vm, "SlotError", "Cannot find origin of nonexistent slot");
         } else {
             vm.state.ret = value;
         }
@@ -1123,7 +1123,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         case 0: {
             ProcessPtr proc = makeProcess(vm.state.str0);
             if (!proc)
-                throwError({ vm.state, vm.reader }, "NotSupportedError",
+                throwError(vm, "NotSupportedError",
                            "Asynchronous processes not supported on this system");
             vm.state.ret = clone(vm.state.slf);
             vm.state.ret->prim(proc);
@@ -1132,7 +1132,7 @@ void spawnSystemCallsNew(ObjectPtr global,
         case 1: {
             bool status = vm.state.prcs->run();
             if (!status)
-                throwError({ vm.state, vm.reader }, "IOError",
+                throwError(vm, "IOError",
                            "Could not start process");
             break;
         }
@@ -1331,10 +1331,10 @@ void spawnSystemCallsNew(ObjectPtr global,
              if (okay)
                  vm.state.ptr->prim( StreamPtr(new FileStream(vm.state.str0, access2, mode2)) );
              else
-                 throwError({ vm.state, vm.reader }, "SystemArgError",
+                 throwError(vm, "SystemArgError",
                             "Invalid mode/access specifier when opening file");
          } else {
-             throwError({ vm.state, vm.reader }, "TypeError",
+             throwError(vm, "TypeError",
                         "Symbol expected");
          }
      });
@@ -1497,7 +1497,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // runGC#.
      assert(reader.cpp.size() == CPP_GC_RUN);
      reader.cpp.push_back([](VMState vm) {
-         long result = GC::get().garbageCollect({ vm.state, vm.reader });
+         long result = GC::get().garbageCollect(vm);
          vm.state.ret = garnishObject(vm.reader, result);
      });
      sys->put(Symbols::get()["runGC#"],
@@ -1519,7 +1519,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              }
              vm.state.ret = obj;
          } catch (HeaderError& e) {
-             throwError({ vm.state, vm.reader }, "ParseError",
+             throwError(vm, "ParseError",
                         "File " + vm.state.str0 + " has invalid Latitude header");
          }
      });
@@ -1670,7 +1670,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          if (success)
              vm.state.ret = garnishObject(vm.reader, boost::blank());
          else
-             throwError({ vm.state, vm.reader }, "NotSupportedError",
+             throwError(vm, "NotSupportedError",
                         "Mutable environment variables not supported on this system");
      });
      sys->put(Symbols::get()["envSet#"],
@@ -1718,7 +1718,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              vm.state.ret = garnishObject(vm.reader, getWorkingDirectory());
              break;
          default:
-             throwError({ vm.state, vm.reader }, "SystemArgError",
+             throwError(vm, "SystemArgError",
                         "Invalid numerical argument to EXE_PATH");
              break;
          }
@@ -1746,7 +1746,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              vm.state.ret = garnishObject(vm.reader, stripDirname(vm.state.str0));
              break;
          default:
-             throwError({ vm.state, vm.reader }, "SystemArgError",
+             throwError(vm, "SystemArgError",
                         "Invalid numerical argument to PATH_OP");
              break;
          }
@@ -1844,7 +1844,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              vm.state.num1 = vm.state.num1.log();
              break;
          default:
-             throwError({ vm.state, vm.reader }, "SystemArgError",
+             throwError(vm, "SystemArgError",
                         "Invalid numerical argument to TRIG_OP");
              break;
          }
@@ -1997,7 +1997,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              ObjectPtr curr = clone(slot);
              curr->put(Symbols::get()["objectInstance"], vm.state.slf);
              curr->put(Symbols::get()["slotName"], garnishObject(vm.reader, vm.state.sym));
-             throwError({ vm.state, vm.reader }, curr);
+             throwError(vm, curr);
          }
      });
      sys->put(Symbols::get()["protectVar#"],
@@ -2277,7 +2277,7 @@ void spawnSystemCallsNew(ObjectPtr global,
              vm.state.ret = garnishObject(vm.reader, vm.state.num1.imagPart());
              break;
          default:
-             throwError({ vm.state, vm.reader }, "SystemArgError",
+             throwError(vm, "SystemArgError",
                         "Invalid numerical argument to EXE_PATH");
              break;
          }
@@ -2386,7 +2386,7 @@ void spawnSystemCallsNew(ObjectPtr global,
          if (end > start) {
              vm.state.ret = garnishObject(vm.reader, Number(x));
          } else {
-             throwError({ vm.state, vm.reader }, "InputError", "Text is not a number");
+             throwError(vm, "InputError", "Text is not a number");
          }
      });
      sys->put(Symbols::get()["strToDouble#"],
