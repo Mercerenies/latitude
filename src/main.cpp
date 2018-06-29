@@ -45,12 +45,12 @@ int main(int argc, char** argv) {
 
     IntState state = intState();
     ReadOnlyState reader = readOnlyState();
-    VMState vm { state, reader };
 
     // Overwrite the nullary register
     state.cont = MethodSeek(Method(reader.gtu, { Table::GTU_EMPTY }));
 
     ObjectPtr global = spawnObjects(state, reader, argc, argv);
+    VMState vm { state, reader };
 
     switch (args.run) {
     case RunMode::REPL: {

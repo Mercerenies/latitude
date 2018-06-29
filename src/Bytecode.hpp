@@ -53,7 +53,7 @@ public:
 
 /// \brief A CppFunction represents a C++ function that is callable
 /// from within the Latitude VM.
-using CppFunction = std::function<void(VMState)>;
+using CppFunction = std::function<void(VMState&)>;
 
 /// \brief A StatePtr is a smart pointer to an IntState instance.
 using StatePtr = std::shared_ptr<IntState>;
@@ -63,14 +63,6 @@ using WindPtr = std::shared_ptr<WindFrame>;
 
 /// \brief A single frame of a backtrace.
 using BacktraceFrame = std::tuple<long, std::string>;
-
-struct VMState {
-    IntState& state;
-    const ReadOnlyState& reader;
-
-    VMState(IntState& state, const ReadOnlyState& reader);
-
-};
 
 /// The interpreter state consists of several mutable registers of
 /// various types.
@@ -103,6 +95,16 @@ struct ReadOnlyState {
     std::vector<CppFunction> cpp;
     std::vector<ObjectPtr> lit;
     TranslationUnitPtr gtu;
+};
+
+struct VMState {
+    IntState state;
+    const ReadOnlyState reader;
+
+    VMState(IntState& state, const ReadOnlyState& reader);
+    explicit VMState(const VMState&) = default;
+    explicit VMState(VMState&&) = default;
+
 };
 
 /// A thunk contains a method and dynamic and lexical scoping
@@ -160,7 +162,7 @@ ReadOnlyState readOnlyState();
 /// state which is guaranteed to be idling (according to #isIdling).
 ///
 /// \param vm the virtual machine state
-void hardKill(VMState vm);
+void hardKill(VMState& vm);
 
 /// This function, which is called during continuation jumps, compares
 /// two wind frame stacks. Once it finds the first element that the
@@ -172,7 +174,7 @@ void hardKill(VMState vm);
 /// \param vm the virtual machine state
 /// \param oldWind the wind stack that the continuation is jumping \e from
 /// \param newWind the wind stack that the continuation is jumping \e to
-void resolveThunks(VMState vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
+void resolveThunks(VMState& vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
 
 void pushTrace(IntState& state);
 
@@ -185,7 +187,7 @@ void popTrace(IntState& state);
 ///
 /// \param instr the instruction
 /// \param vm the virtual machine state
-void executeInstr(Instr instr, VMState vm);
+void executeInstr(Instr instr, VMState& vm);
 
 /// This function performs one VM instruction from the front of the
 /// `%%cont` register. If `%%cont` is empty, the function will pop

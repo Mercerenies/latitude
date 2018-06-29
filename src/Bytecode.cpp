@@ -106,12 +106,12 @@ ReadOnlyState readOnlyState() {
     return reader;
 }
 
-void hardKill(VMState vm) {
+void hardKill(VMState& vm) {
     vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_EMPTY }));
     vm.state.stack = NodePtr<MethodSeek>();
 }
 
-void resolveThunks(VMState vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
+void resolveThunks(VMState& vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind) {
     deque<WindPtr> exits;
     deque<WindPtr> enters;
     while (oldWind) {
@@ -155,7 +155,7 @@ void popTrace(IntState& state) {
     state.file = std::get<1>(curr);
 }
 
-void executeInstr(Instr instr, VMState vm) {
+void executeInstr(Instr instr, VMState& vm) {
     switch (instr) {
     case Instr::MOV: {
         Reg src = vm.state.cont.readReg(0);

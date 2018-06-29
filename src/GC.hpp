@@ -66,7 +66,7 @@ public:
     ///
     /// \param vm the virtual machine state
     /// \return the number of objects freed
-    long garbageCollect(VMState vm);
+    long garbageCollect(VMState& vm);
     /// A convenience function which garbage collects given an
     /// arbitrary iterable sequence of global values.
     ///
@@ -85,7 +85,7 @@ public:
 
     size_t getLimit() const;
 
-    void tick(VMState vm);
+    void tick(VMState& vm);
 
 };
 

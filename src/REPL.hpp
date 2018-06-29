@@ -7,10 +7,10 @@
 #include "Proto.hpp"
 #include "Bytecode.hpp"
 
-void runREPL(ObjectPtr global, VMState vm);
+void runREPL(ObjectPtr global, VMState& vm);
 
-void runRunner(ObjectPtr global, VMState vm);
+void runRunner(ObjectPtr global, VMState& vm);
 
-void runCompiler(ObjectPtr global, VMState vm);
+void runCompiler(ObjectPtr global, VMState& vm);
 
 #endif // REPL_HPP

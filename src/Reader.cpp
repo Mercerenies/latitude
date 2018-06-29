@@ -187,7 +187,7 @@ std::list< std::unique_ptr<Stmt> > parse(const OperatorTable& table,
     return result;
 }
 
-bool eval(VMState vm,
+bool eval(VMState& vm,
           const OperatorTable& table,
           string str) {
     try {
@@ -215,7 +215,7 @@ bool eval(VMState vm,
 
 bool readFileSource(string fname,
                     Scope defScope,
-                    VMState vm,
+                    VMState& vm,
                     const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Loading " << fname << "..." << endl;
@@ -356,7 +356,7 @@ TranslationUnitPtr loadFromFile(ifstream& file) {
 
 bool compileFile(string fname,
                  string fname1,
-                 VMState vm,
+                 VMState& vm,
                  const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
@@ -412,7 +412,7 @@ bool compileFile(string fname,
 
 bool readFileComp(string fname,
                   Scope defScope,
-                  VMState vm,
+                  VMState& vm,
                   const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Loading (compiled) " << fname << "..." << endl;
@@ -476,7 +476,7 @@ bool needsRecompile(string fname, string cname) {
 
 bool readFile(string fname,
               Scope defScope,
-              VMState vm,
+              VMState& vm,
               const OperatorTable& table) {
     bool okay = true;
     string cname = fname + "c";

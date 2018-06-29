@@ -201,7 +201,7 @@ long GC::garbageCollect(std::vector<Object*> globals) {
     return total;
 }
 
-long GC::garbageCollect(VMState vm) {
+long GC::garbageCollect(VMState& vm) {
     // This little type is necessary to make the templated function addContinuationToFrontier
     // think that vectors are set-like.
     struct VectorProxy {
@@ -239,7 +239,7 @@ size_t GC::getLimit() const {
     return limit;
 }
 
-void GC::tick(VMState vm) {
+void GC::tick(VMState& vm) {
     --count;
     if ((count <= 0) && (getTotal() > limit)) {
         garbageCollect(vm);

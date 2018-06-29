@@ -13,7 +13,7 @@
 
 using namespace std;
 
-void runREPL(ObjectPtr global, VMState vm) {
+void runREPL(ObjectPtr global, VMState& vm) {
 
     OperatorTable table = getTable(global);
 
@@ -24,7 +24,7 @@ void runREPL(ObjectPtr global, VMState vm) {
         doOneStep(vm);
 }
 
-void runRunner(ObjectPtr global, VMState vm) {
+void runRunner(ObjectPtr global, VMState& vm) {
 
     OperatorTable table = getTable(global);
 
@@ -35,7 +35,7 @@ void runRunner(ObjectPtr global, VMState vm) {
         doOneStep(vm);
 }
 
-void runCompiler(ObjectPtr global, VMState vm) {
+void runCompiler(ObjectPtr global, VMState& vm) {
 
     OperatorTable table = getTable(global);
 

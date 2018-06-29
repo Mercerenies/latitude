@@ -125,7 +125,7 @@ ObjectPtr spawnObjects(IntState& state, ReadOnlyState& reader, int argc, char** 
 /// \param vm the interpreter state
 /// \param name the name of the Latitude exception type
 /// \param msg the exception's message
-void throwError(VMState vm, std::string name, std::string msg);
+void throwError(VMState& vm, std::string name, std::string msg);
 
 /// Pushes the appropriate behavior onto the call stack to throw an
 /// error of the type given by `name` (looked up in the `err` object
@@ -136,7 +136,7 @@ void throwError(VMState vm, std::string name, std::string msg);
 ///
 /// \param vm the interpreter state
 /// \param name the name of the Latitude exception type
-void throwError(VMState vm, std::string name);
+void throwError(VMState& vm, std::string name);
 
 /// Pushes the appropriate behavior onto the call stack to throw the
 /// given object unconditionally. After a call to this method, no
@@ -145,6 +145,6 @@ void throwError(VMState vm, std::string name);
 ///
 /// \param vm the interpreter state
 /// \param obj the object to throw
-void throwError(VMState vm, ObjectPtr obj);
+void throwError(VMState& vm, ObjectPtr obj);
 
 #endif // STANDARD_HPP
