@@ -18,7 +18,7 @@ void runREPL(ObjectPtr global, VMState& vm) {
     OperatorTable table = getTable(global);
 
     string pathname = stripFilename(getExecutablePathname());
-    readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, vm.state, vm.reader, table);
+    readFile(pathname + "std/repl.lats", { clone(global), clone(global) }, vm, table);
 
     while (!isIdling(vm.state))
         doOneStep(vm.state, vm.reader);
@@ -29,7 +29,7 @@ void runRunner(ObjectPtr global, VMState& vm) {
     OperatorTable table = getTable(global);
 
     string pathname = stripFilename(getExecutablePathname());
-    readFile(pathname + "std/runner.lats", { clone(global), clone(global) }, vm.state, vm.reader, table);
+    readFile(pathname + "std/runner.lats", { clone(global), clone(global) }, vm, table);
 
     while (!isIdling(vm.state))
         doOneStep(vm.state, vm.reader);
@@ -40,7 +40,7 @@ void runCompiler(ObjectPtr global, VMState& vm) {
     OperatorTable table = getTable(global);
 
     string pathname = stripFilename(getExecutablePathname());
-    readFile(pathname + "std/compiler.lats", { clone(global), clone(global) }, vm.state, vm.reader, table);
+    readFile(pathname + "std/compiler.lats", { clone(global), clone(global) }, vm, table);
 
     while (!isIdling(vm.state))
         doOneStep(vm.state, vm.reader);

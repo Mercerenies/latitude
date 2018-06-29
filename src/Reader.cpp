@@ -187,8 +187,7 @@ std::list< std::unique_ptr<Stmt> > parse(const OperatorTable& table,
     return result;
 }
 
-bool eval(IntState& state,
-          const ReadOnlyState& reader,
+bool eval(VMState& vm,
           const OperatorTable& table,
           string str) {
     try {
@@ -200,15 +199,15 @@ bool eval(IntState& state,
                 stmt->translate(*unit, toplevel);
             }
             (makeAssemblerLine(Instr::UNTR)).appendOnto(toplevel);
-            state.stack = pushNode(state.stack, state.cont);
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
             unit->instructions() = toplevel;
-            state.cont = MethodSeek(Method(unit, { 0 }));
-            state.trns.push(unit);
+            vm.state.cont = MethodSeek(Method(unit, { 0 }));
+            vm.state.trns.push(unit);
         } else {
-            state.ret = garnishObject(reader, boost::blank());
+            vm.state.ret = garnishObject(vm.reader, boost::blank());
         }
     } catch (ParseError& e) {
-        throwError(state, reader, "ParseError", e.getMessage());
+        throwError(vm.state, vm.reader, "ParseError", e.getMessage());
         return false;
     }
     return true;
@@ -216,8 +215,7 @@ bool eval(IntState& state,
 
 bool readFileSource(string fname,
                     Scope defScope,
-                    IntState& state,
-                    const ReadOnlyState& reader,
+                    VMState& vm,
                     const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Loading " << fname << "..." << endl;
@@ -245,31 +243,31 @@ bool readFileSource(string fname,
                 stmt->translate(*unit, toplevel);
             }
             (makeAssemblerLine(Instr::RET)).appendOnto(toplevel);
-            auto lex = state.lex.top();
-            state.lex.push(defScope.lex);
-            if (!state.dyn.empty()) {
-                state.dyn.push( clone(state.dyn.top()) );
+            auto lex = vm.state.lex.top();
+            vm.state.lex.push(defScope.lex);
+            if (!vm.state.dyn.empty()) {
+                vm.state.dyn.push( clone(vm.state.dyn.top()) );
             }
-            ObjectPtr mthd = clone(reader.lit.at(Lit::METHOD));
+            ObjectPtr mthd = clone(vm.reader.lit.at(Lit::METHOD));
             mthd->prim(Method(unit, { 0 }));
-            state.lex.top()->put(Symbols::get()["self"], state.lex.top());
-            state.lex.top()->put(Symbols::get()["again"], mthd);
-            state.lex.top()->put(Symbols::get()["caller"], lex);
+            vm.state.lex.top()->put(Symbols::get()["self"], vm.state.lex.top());
+            vm.state.lex.top()->put(Symbols::get()["again"], mthd);
+            vm.state.lex.top()->put(Symbols::get()["caller"], lex);
             unit->instructions() = toplevel;
             optimize::lookupSymbols(unit);
-            state.stack = pushNode(state.stack, state.cont);
-            state.cont = MethodSeek(Method(unit, { 0 }));
-            pushTrace(state);
-            state.trns.push(unit);
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+            vm.state.cont = MethodSeek(Method(unit, { 0 }));
+            pushTrace(vm.state);
+            vm.state.trns.push(unit);
         } catch (ParseError& e) {
 #ifdef DEBUG_LOADS
             std::cout << e.getMessage() << std::endl;
 #endif
-            throwError(state, reader, "ParseError", e.getMessage());
+            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
-        throwError(state, reader, "IOError", err.what());
+        throwError(vm.state, vm.reader, "IOError", err.what());
         return false;
     }
     return true;
@@ -358,8 +356,7 @@ TranslationUnitPtr loadFromFile(ifstream& file) {
 
 bool compileFile(string fname,
                  string fname1,
-                 IntState& state,
-                 const ReadOnlyState& reader,
+                 VMState& vm,
                  const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Compiling " << fname << " into " << fname1 << "..." << endl;
@@ -403,11 +400,11 @@ bool compileFile(string fname,
             unit->instructions() = toplevel;
             saveToFile(file1, header, unit);
         } catch (ParseError& e) {
-            throwError(state, reader, "ParseError", e.getMessage());
+            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
-        throwError(state, reader, "IOError", err.what());
+        throwError(vm.state, vm.reader, "IOError", err.what());
         return false;
     }
     return true;
@@ -415,8 +412,7 @@ bool compileFile(string fname,
 
 bool readFileComp(string fname,
                   Scope defScope,
-                  IntState& state,
-                  const ReadOnlyState& reader,
+                  VMState& vm,
                   const OperatorTable& table) {
 #ifdef DEBUG_LOADS
     cout << "Loading (compiled) " << fname << "..." << endl;
@@ -430,30 +426,30 @@ bool readFileComp(string fname,
         } BOOST_SCOPE_EXIT_END;
         try {
             TranslationUnitPtr unit = loadFromFile(file);
-            auto lex = state.lex.top();
-            state.lex.push(defScope.lex);
-            if (!state.dyn.empty()) {
-                state.dyn.push( clone(state.dyn.top()) );
+            auto lex = vm.state.lex.top();
+            vm.state.lex.push(defScope.lex);
+            if (!vm.state.dyn.empty()) {
+                vm.state.dyn.push( clone(vm.state.dyn.top()) );
             }
-            ObjectPtr mthd = clone(reader.lit.at(Lit::METHOD));
+            ObjectPtr mthd = clone(vm.reader.lit.at(Lit::METHOD));
             mthd->prim(Method(unit, { 0 }));
-            state.lex.top()->put(Symbols::get()["self"], state.lex.top());
-            state.lex.top()->put(Symbols::get()["again"], mthd);
-            state.lex.top()->put(Symbols::get()["caller"], lex);
+            vm.state.lex.top()->put(Symbols::get()["self"], vm.state.lex.top());
+            vm.state.lex.top()->put(Symbols::get()["again"], mthd);
+            vm.state.lex.top()->put(Symbols::get()["caller"], lex);
             optimize::lookupSymbols(unit);
-            state.stack = pushNode(state.stack, state.cont);
-            state.cont = MethodSeek(Method(unit, { 0 }));
-            pushTrace(state);
-            state.trns.push(unit);
+            vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
+            vm.state.cont = MethodSeek(Method(unit, { 0 }));
+            pushTrace(vm.state);
+            vm.state.trns.push(unit);
         } catch (ParseError& e) {
-            throwError(state, reader, "ParseError", e.getMessage());
+            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
             return false;
         } catch (HeaderError& e) {
-            throwError(state, reader, "ParseError", e.getMessage());
+            throwError(vm.state, vm.reader, "ParseError", e.getMessage());
             return false;
         }
     } catch (ios_base::failure& err) {
-        throwError(state, reader, "IOError", err.what());
+        throwError(vm.state, vm.reader, "IOError", err.what());
         return false;
     }
     return true;
@@ -480,17 +476,16 @@ bool needsRecompile(string fname, string cname) {
 
 bool readFile(string fname,
               Scope defScope,
-              IntState& state,
-              const ReadOnlyState& reader,
+              VMState& vm,
               const OperatorTable& table) {
     bool okay = true;
     string cname = fname + "c";
     if (needsRecompile(fname, cname)) {
-        okay &= compileFile(fname, cname, state, reader, table);
+        okay &= compileFile(fname, cname, vm, table);
     }
-    // readFileSource(fname, defScope, state, reader);
+    // readFileSource(fname, defScope, vm);
     if (okay)
-        okay &= readFileComp(cname, defScope, state, reader, table);
+        okay &= readFileComp(cname, defScope, vm, table);
     return okay;
 }
 

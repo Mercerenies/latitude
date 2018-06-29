@@ -84,11 +84,13 @@ void spawnSystemCallsNew(ObjectPtr global,
             if (str0) {
                 string str1 = *str0;
                 if (state0.num0.asSmallInt() == 2) {
-                    compileFile(str1, str1 + "c", state0, reader0, table);
+                    VMState vm { state0, reader0 };
+                    compileFile(str1, str1 + "c", vm, table);
                 } else {
                     if (state0.num0.asSmallInt() == 1)
                         str1 = stripFilename(getExecutablePathname()) + str1;
-                    readFile(str1, { global, global }, state0, reader0, table);
+                    VMState vm { state0, reader0 };
+                    readFile(str1, { global, global }, vm, table);
                 }
             } else {
                 throwError(state0, reader0, "TypeError", "String expected");
@@ -625,7 +627,8 @@ void spawnSystemCallsNew(ObjectPtr global,
     assert(reader.cpp.size() == CPP_EVAL);
     reader.cpp.push_back([](IntState& state0, const ReadOnlyState& reader0) {
         OperatorTable table = getTable(state0.lex.top());
-        eval(state0, reader0, table, state0.str0);
+        VMState vm { state0, reader0 };
+        eval(vm, table, state0.str0);
     });
     sys->put(Symbols::get()["eval#"],
              defineMethod(unit, global, method,
