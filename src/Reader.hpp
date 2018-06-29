@@ -49,23 +49,23 @@ void clearCurrentLine() noexcept;
  */
 std::list< std::unique_ptr<Stmt> > parse(const OperatorTable& table, std::string filename, std::string str);
 
-bool eval(VMState& vm,
+bool eval(VMState vm,
           const OperatorTable& table,
           std::string str);
 
 bool readFileSource(std::string fname,
                     Scope defScope,
-                    VMState& vm,
+                    VMState vm,
                     const OperatorTable& table);
 
 bool compileFile(std::string fname,
                  std::string fname1,
-                 VMState& vm,
+                 VMState vm,
                  const OperatorTable& table);
 
 bool readFile(std::string fname,
               Scope defScope,
-              VMState& vm,
+              VMState vm,
               const OperatorTable& table);
 
 // Throws HeaderError

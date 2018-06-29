@@ -106,7 +106,7 @@ ReadOnlyState readOnlyState() {
     return reader;
 }
 
-void hardKill(VMState& vm) {
+void hardKill(VMState vm) {
     vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_EMPTY }));
     vm.state.stack = NodePtr<MethodSeek>();
 }
