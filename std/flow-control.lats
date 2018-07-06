@@ -235,9 +235,6 @@ Number downto := {
     }.
   }.
 }.
-Number times* := ~star #'(Number times).
-Number upto* := ~star #'(Number upto).
-Number downto* := ~star #'(Number downto).
 
 global Ellipsis ::= Object clone.
 global ... := Ellipsis.

@@ -73,11 +73,6 @@ argument ranges from `0` up to, but not including, `self`.
 
 Note that `n times (block).` is equivalent to `0 upto n do (block).`
 
-### `Number times* (block).`
-
-Equivalent to `times` except that it supports
-the [standard loop macros](../appendix/terms.md#loop-macros).
-
 ### `Number upto (n) do (block).`
 
 Executes the block once for each integer from `self` up to, but not
@@ -85,22 +80,12 @@ including, `n`, passing the current integer value as an argument to
 the block. If either of `self` or `n` is a non-integer, they will be
 rounded down to the nearest integer before the loop begins.
 
-### `Number upto* (n) do (block).`
-
-Equivalent to `upto` except that it supports
-the [standard loop macros](../appendix/terms.md#loop-macros).
-
 ### `Number downto (n) do (block).`
 
 Executes the block once for each integer from `self` down to, but not
 including, `n`, passing the current integer value as an argument to the
 block. If either of `self` or `n` is a non-integer, they will be
 rounded down to the nearest integer before the loop begins.
-
-### `Number downto* (n) do (block).`
-
-Equivalent to `downto` except that it supports
-the [standard loop macros](../appendix/terms.md#loop-macros).
 
 ### `Number asciiChr.`
 
