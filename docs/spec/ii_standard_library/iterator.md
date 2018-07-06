@@ -111,6 +111,13 @@ This iterator is returned by calls to `filter` and iterates over
 collections while skipping certain elements. `FilterIterator` is
 mutable if and only if the underlying iterator is mutable.
 
+### `RangeIterator.`
+
+This iterator iterates over a range of numbers, as per the `Range`
+object. Ranges are constructed via several methods
+on [`Number`](number.md) or via [`Range make`](range.md#range-make-a-b-d). Range
+iterators are always immutable.
+
 [[up](.)]
 <br/>[[prev - The FilePath Object](filepath.md)]
 <br/>[[next - The Kernel Object](kernel.md)]

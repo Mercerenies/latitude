@@ -60,4 +60,4 @@ resources necessary to start it in the future.
 
 [[up](.)]
 <br/>[[prev - The Procedure Object](proc.md)]
-<br/>[[next - The Slots Object](slots.md)]
+<br/>[[next - The Range Object](range.md)]

@@ -74,5 +74,5 @@ Used in the protection interface is the `Protection` enumeration
 object, defining the values `Assign` and `Delete`.
 
 [[up](.)]
-<br/>[[prev - The Process Object](process.md)]
+<br/>[[prev - The Range Object](range.md)]
 <br/>[[next - The Stack Frame Object](stackframe.md)]

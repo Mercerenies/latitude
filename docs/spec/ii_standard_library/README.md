@@ -66,6 +66,7 @@ scope object.
      |    +-- ChainIterator
      |    +-- DictIterator
      |    +-- NilIterator
+     |    +-- RangeIterator
      |    +-- StringIterator
      +-- Kernel
      +-- Kernel GC
@@ -82,6 +83,7 @@ scope object.
      |    +-- Cont
      |    +-- Method
      +-- Process
+     +-- Range
      +-- Slots
      +-- StackFrame
      +-- Stream
@@ -121,6 +123,7 @@ scope object.
  * [Parents](parents.md)
  * [Proc](proc.md)
  * [Process](process.md)
+ * [Range](range.md)
  * [Slots](slots.md)
  * [StackFrame](stackframe.md)
  * [Stream](stream.md)

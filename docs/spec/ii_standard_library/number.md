@@ -66,26 +66,17 @@ if the value is non-positive or non-integer. Additionally, a
 
 ### `Number times (block).`
 
-Executes the block `self` times. If `self` is a non-integer, it is
-rounded down to the nearest integer before executing the block. Each
-time the block is executed, it is passed an argument, where the
-argument ranges from `0` up to, but not including, `self`.
+Returns a [`Range`](range.md) object from `0` up to `self`.
 
-Note that `n times (block).` is equivalent to `0 upto n do (block).`
+Note that `n times.` is equivalent to `0 upto n.`
 
-### `Number upto (n) do (block).`
+### `Number upto (n).`
 
-Executes the block once for each integer from `self` up to, but not
-including, `n`, passing the current integer value as an argument to
-the block. If either of `self` or `n` is a non-integer, they will be
-rounded down to the nearest integer before the loop begins.
+Returns a [`Range`](range.md) object from `self` up to (but not including) `n`.
 
-### `Number downto (n) do (block).`
+### `Number downto (n).`
 
-Executes the block once for each integer from `self` down to, but not
-including, `n`, passing the current integer value as an argument to the
-block. If either of `self` or `n` is a non-integer, they will be
-rounded down to the nearest integer before the loop begins.
+Returns a [`Range`](range.md) object from `self` down to (but not including) `n`.
 
 ### `Number asciiChr.`
 
