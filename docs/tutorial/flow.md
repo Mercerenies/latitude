@@ -218,14 +218,14 @@ Latitude also provides several abstract looping constructs. There are
 too many to cover in this chapter, but here are a few of the basic
 ones.
 
-    10 times { putln "This will print ten times.". }
+    10 times do { putln "This will print ten times.". }
     1 upto 11 do { putln "This will also print ten times.". }.
     11 downto 1 do { putln "This prints ten times as well.". }.
 
 In all three cases, the current iteration will be passed as an
 argument to the loop body and can therefore be accessed with `$1`.
 
-    10 times {
+    10 times do {
       putln: "Iteration number " ++ $1.
     }.
 
