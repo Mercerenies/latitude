@@ -205,9 +205,9 @@ character-by-character.
 
 `Nil` is an iterable object and always acts as an empty collection.
 
-Finally, `$*` is a method which returns an argument list object. An
-argument list object is a collection which contains all of the
-arguments currently in scope.
+`$*` is a method which returns an argument list object. An argument
+list object is a collection which contains all of the arguments
+currently in scope.
 
     test := {
       $* visit {
@@ -222,6 +222,16 @@ arguments than you expect. Generally, if you write a method which
 expects N arguments, you should generally assume that `$*` might
 contain additional arguments, and so you should only utilize the
 first N.
+
+Finally, if your intention is to iterate from some `n` to some `m`,
+then Latitude provides a `Range` type for doing so. We have already
+indirectly seen this `Range` type, used in looping statements, but it
+is also a full-fledged collection and as such can have any collection
+method applied to it.
+
+    10 upto 15. ; Collection consisting of 10, 11, 12, 13, 14
+    15 downto 10. ; Collection consisting of 15, 14, 13, 12, 11
+    5 times. ; Collection consisting of 0, 1, 2, 3, 4
 
 ## Summary
 
