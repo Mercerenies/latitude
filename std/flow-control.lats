@@ -188,52 +188,30 @@ global loopCall := {
   $1.
 }.
 
+global Range ::= Object clone.
+Range start := 0.
+Range finish := 0.
+Range step := 1.
+Range iterator := Nil. ; To be assigned later...
+Range make := {
+  a := $1.
+  b := $2.
+  d := $3.
+  self clone tap {
+    self start := a.
+    self finish := b.
+    self step := d.
+  }.
+}.
+
 Number times := {
-  localize.
-  block0 := #'$1.
-  block := Kernel invoke #'(block0) on (Conditional).
-  loopCall (block).
-  i := -1.
-  incr := {
-    parent i := i + 1.
-  }.
-  while { incr. (i) < (this floor). } do {
-    (block) call (i).
-  }.
+  Range make (0, self, 1).
 }.
 Number upto := {
-  localize.
-  takes '[n].
-  Object clone tap {
-    self do := {
-      block0 := #'$1.
-      block := Kernel invoke #'(block0) on (Conditional).
-      loopCall (block).
-      i := this floor - 1.
-      incr := { parent i := i + 1. }.
-      while { incr. (i) < (n floor). } do {
-        (block) call (i).
-      }.
-    }.
-  }.
+  Range make (self, $1, 1).
 }.
 Number downto := {
-  localize.
-  takes '[n].
-  Object clone tap {
-    self do := {
-      block0 := #'$1.
-      block := Kernel invoke #'(block0) on (Conditional).
-      loopCall (block).
-      i := this floor + 1.
-      decr := {
-        parent i := i - 1.
-      }.
-      while { decr. (i) > (n floor). } do {
-        (block) call (i).
-      }.
-    }.
-  }.
+  Range make (self, $1, -1).
 }.
 
 global Ellipsis ::= Object clone.
@@ -285,7 +263,7 @@ global case := {
                 return: Conditional send ($1) call.
               }.
             }.
-          } else {
+           } else {
             Object clone tap {
               self do := { }.
             }.

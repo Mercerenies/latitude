@@ -37,6 +37,30 @@ FilterIterator check := {
   }.
 }.
 
+global RangeIterator ::= Iterator clone.
+RangeIterator impl := Range make (0, 0, 1).
+RangeIterator pos := 0.
+RangeIterator end? := {
+  (self impl finish - self pos) * self impl step <= 0.
+}.
+RangeIterator element := { self pos. }.
+RangeIterator next := {
+  self pos := self pos + self impl step.
+}.
+RangeIterator clone := {
+  Parents above (RangeIterator, 'clone) call tap {
+    self pos := self pos.
+  }.
+}.
+
+Range iterator := {
+  curr := self.
+  RangeIterator clone tap {
+    self impl := curr.
+    self pos := curr start.
+  }.
+}.
+
 ;; Collection implementations are expected to have `iterator`, as well as a sane `clone`.
 ;; Implementors are encourages to override these methods where appropriate to make them more efficient,
 ;; for example the `size` method. The iterator returned by `iterator` must support the following:
@@ -493,7 +517,11 @@ Collection inject: Array.
 Collection inject: Dict.
 Collection inject: Chain.
 
+Collection inject: Range.
+
 Collection inject: Iterator.
+
+Range do := #'(Range visit).
 
 ;; Return the script
 here.
