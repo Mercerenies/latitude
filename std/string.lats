@@ -16,7 +16,7 @@ String find := {
     parent index := index + this length.
   }.
   byteIndex := 0.
-  index times {
+  index times do {
     parent byteIndex := meta sys stringNext#: this, byteIndex.
   }.
   byteResult := self findBytes: substr, byteIndex.
