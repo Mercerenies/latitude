@@ -232,11 +232,9 @@ argument to the loop body and can therefore be accessed with `$1`.
 Many of the other looping constructs rely on iterators and
 collections, which will be discussed later.
 
-Each of the looping constructs described here (but, for efficiency
-reasons, *not* the collection ones which will be described later) has
-a variant which ends in an asterisk: `loop*`, `while*`, `times*`,
-`upto*`, and `downto*`. This variant behaves like the original
-construct except that it also enables exiting the loop prematurely.
+`loop` and `while` each have variants labeled, respectively, `loop*`
+and `while*`. These variants behave like the original constructs except
+that they also enable exiting the loop prematurely.
 
 Specifically, two additional methods become available: `next` and
 `last`. `next` takes no arguments and jumps back to the start of the
