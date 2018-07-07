@@ -1,7 +1,7 @@
 
 # The Collection Builder Object and Builders
 
-    Collection Builder := Object clone.
+    CollectionBuilder := Object clone.
 
 A builder is used to construct a specific type of data structure,
 usually a collection. The `CollectionBuilder` object is designed to be
