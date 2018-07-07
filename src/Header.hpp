@@ -77,6 +77,10 @@ template <typename OutputIterator>
 auto serialize_t<Header>::serialize(const type& arg, OutputIterator& iter) const -> void {
     using ::serialize;
 
+    serialize<char>('L', iter);
+    serialize<char>('A', iter);
+    serialize<char>('T', iter);
+
     serialize<long>(FILE_VERSION, iter);
 
     if (arg.fields & (unsigned int)HeaderField::MODULE) {
@@ -102,6 +106,14 @@ auto serialize_t<Header>::deserialize(InputIterator& iter) const -> type{
 
     Header header;
     header.fields = 0;
+
+    std::string start;
+    start += deserialize<char>(iter);
+    start += deserialize<char>(iter);
+    start += deserialize<char>(iter);
+
+    if (start != "LAT")
+        throw HeaderError("File is not a Latitude compiled file");
 
     header.version = deserialize<long>(iter);
     if (header.version != 1000)

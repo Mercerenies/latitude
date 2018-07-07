@@ -250,6 +250,14 @@ class BytecodeFile:
             ord('$'): self.read_string,
         }[nature]()
 
+def read_start(file):
+    text = ""
+    for i in range(3):
+        text += chr(file.read_byte())
+    if text != "LAT":
+        # Yes, we'll make our own exception later.
+        raise RuntimeError("File is not a Latitude bytecode file")
+
 def read_header(file):
     version = file.read_long()
     header = Header(version)
@@ -282,6 +290,7 @@ if len(sys.argv) <= 1:
 
 with closing(BytecodeFile(sys.argv[1])) as file:
     try:
+        read_start(file)
         header = read_header(file)
         if header.version != 1000:
             print("Unknown file version!", file=stderr)
