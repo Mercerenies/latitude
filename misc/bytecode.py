@@ -6,6 +6,7 @@
 # Note: Depends on Alakazam (pip install alakazam)
 
 import sys
+import traceback
 from contextlib import closing
 from enum import Enum
 from itertools import count
@@ -171,6 +172,9 @@ class BytecodeFile:
     def close(self):
         self._file.close()
 
+    def tell(self):
+        return self._file.tell()
+
     def _read_number(self, length, signed=True):
         if signed:
             sign = -1 if self.read_byte() > 0 else 1
@@ -290,3 +294,6 @@ with closing(BytecodeFile(sys.argv[1])) as file:
                 print("  {}".format(instr))
     except EOFError:
         pass
+    except Exception as e:
+        print("At position:", file.tell())
+        traceback.print_exc()
