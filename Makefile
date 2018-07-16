@@ -1,5 +1,5 @@
 
-CCFLAGS=-c -Wall
+CCFLAGS=-c -std=c99 -Wall
 CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
 LINK=$(CXX) $(LINKFLAGS) -Wall -std=gnu++1y -o ../latitude
