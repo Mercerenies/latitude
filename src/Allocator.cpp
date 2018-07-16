@@ -12,8 +12,6 @@ constexpr size_t BUCKET_SIZE = 100;
 CountedArray::CountedArray() :
     used(0), array(BUCKET_SIZE, ObjectEntry()), next(0) {}
 
-Allocator Allocator::instance = Allocator();
-
 Allocator::Allocator() : vec() {
     vec.reserve(START_CAP);
 }

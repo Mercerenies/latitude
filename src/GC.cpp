@@ -11,8 +11,6 @@
 
 using namespace std;
 
-GC GC::instance = GC();
-
 GC::GC()
     : alloc(), count(TOTAL_COUNT), limit(8192L), tracing(false) {}
 
