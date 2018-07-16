@@ -19,7 +19,7 @@ Run the following command, from the base directory.
 If your compiler goes by a different name, you may have to pass
 `CXX=compiler_name` and `CC=compiler_name`. If the C++ Boost libraries
 are in a location that is not included by default, you may include
-`BOOST=-I /path/to/boost/` in the build command.
+`BOOST="-I /path/to/boost/"` in the build command.
 
 Building the `release` target is recommended for maximal performance.
 In order to set Latitude up so that you can run it from the command
@@ -48,7 +48,7 @@ Run the following command, from the base directory.
 If your compiler goes by a different name, you may have to pass
 `CXX=compiler_name` and `CC=compiler_name`. If the C++ Boost libraries
 are in a location that is not included by default, you may include
-`BOOST=-I /path/to/boost/` in the build command.
+`BOOST="-I /path/to/boost/"` in the build command.
 
 Building the `release` target is recommended for maximal performance.
 Latitude is tested on Windows with MinGW, so it is recommended that it
