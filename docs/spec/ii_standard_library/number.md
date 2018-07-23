@@ -57,7 +57,7 @@ As detailed
 in
 [Symbol Table](../i_syntax_and_semantics/ch3_object.md#symbol-table),
 every positive integer is uniquely associated with a special symbol,
-called an ordinal symbol. Given a positive integer, this method
+called an natural symbol. Given a positive integer, this method
 returns the ordinal symbol associated with it. A `TypeError` is thrown
 if the value is non-positive or non-integer. Additionally, a
 `TypeError` is thrown if the value is above `2^31 - 1 = 2147483647`.
