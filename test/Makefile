@@ -1,5 +1,5 @@
 
-LOCAL_FILES=main.o
+LOCAL_FILES=main.o test_Symbol.o
 
 PROJ_FILES=$(addprefix ../src/,$(subst main.o,,$(OBJFILES)))
 
