@@ -6,6 +6,10 @@
 #include <cstring>
 #include <iostream>
 
+void initRandom() {
+    srand(time(NULL));
+}
+
 CmdArgs parseArgs(int& argc, char**& argv) {
     int len = argc; // Copied since we're going to update argc
     int j = 1;

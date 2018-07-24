@@ -19,10 +19,6 @@ extern "C" {
 #include <ctime>
 #include <cstdlib>
 
-void initRandom() {
-    srand(time(NULL));
-}
-
 int main(int argc, char** argv) {
     initRandom();
 

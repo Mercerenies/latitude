@@ -53,6 +53,8 @@ struct CmdArgs {
     OutputMode output;
 };
 
+void initRandom();
+
 /// Parses the command line arguments into a CmdArgs instance. Any
 /// arguments which are used by this procedure are consumed and
 /// removed from the argument list.
