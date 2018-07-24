@@ -163,6 +163,8 @@ struct Symbolic {
 /// \return whether the two are equal
 bool operator ==(const Symbolic& a, const Symbolic& b) noexcept;
 
+bool operator !=(const Symbolic& a, const Symbolic& b) noexcept;
+
 
 /// Symbols follow an arbitrary but consistent total ordering to allow
 /// their admission into tree-like structures such as `std::map` and

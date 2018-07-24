@@ -117,6 +117,10 @@ bool operator ==(const Symbolic& a, const Symbolic& b) noexcept {
     return a.index == b.index;
 }
 
+bool operator !=(const Symbolic& a, const Symbolic& b) noexcept {
+    return !(a == b);
+}
+
 bool operator <(const Symbolic& a, const Symbolic& b) noexcept {
     return a.index < b.index;
 }
