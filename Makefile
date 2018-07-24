@@ -23,7 +23,8 @@ release:	CCFLAGS += -O3
 release:	LINKFLAGS += -O3
 release:	Project
 
-export BOOST LINK LINKFLAGS CC CCFLAGS CXX CXXFLAGS
+test:	Project
+	$(MAKE) -C test/
 
 export BOOST LINK LINKFLAGS CC CCFLAGS CXX CXXFLAGS OBJFILES
 
