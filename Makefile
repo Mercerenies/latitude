@@ -1,4 +1,6 @@
 
+OBJFILES=Proto.o Standard.o Scanner.o Parser.o main.o Reader.o Stream.o Garnish.o GC.o Symbol.o REPL.o Number.o Process.o Bytecode.o Header.o Instructions.o Environment.o Pathname.o Allocator.o Unicode.o Args.o Assembler.o pl_Unidata.o Operator.o Optimizer.o CUnicode.o Protection.o Dump.o Parents.o Precedence.o Input.o Base.o Statics.o
+
 CCFLAGS=-c -std=c99 -Wall
 CXXFLAGS=$(BOOST) -c -Wall -std=gnu++1y
 LINKFLAGS=$(BOOST) -Wall -std=gnu++1y
@@ -22,6 +24,8 @@ release:	LINKFLAGS += -O3
 release:	Project
 
 export BOOST LINK LINKFLAGS CC CCFLAGS CXX CXXFLAGS
+
+export BOOST LINK LINKFLAGS CC CCFLAGS CXX CXXFLAGS OBJFILES
 
 install:
 	./latitude --compile
