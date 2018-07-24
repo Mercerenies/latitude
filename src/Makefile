@@ -10,7 +10,7 @@ profile:	Project
 release:	Project
 
 Project:	$(FILES)
-	$(LINK) $(FILES)
+	$(LINK) -o ../latitude $(FILES)
 
 Proto.o:	Proto.cpp Proto.hpp Protection.hpp Stream.hpp GC.hpp Symbol.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp Allocator.hpp
 	$(CXX) $(CXXFLAGS) Proto.cpp
