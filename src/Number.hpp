@@ -55,6 +55,14 @@ public:
     /// contains the actual value.
     typedef boost::variant<smallint, bigint, ratio, floating, complex> magic_t;
 
+    enum hierarchy_t {
+        SMALLINT = 0,
+        BIGINT   = 1,
+        RATIO    = 2,
+        FLOATING = 3,
+        COMPLEX  = 4
+    };
+
 private:
     std::unique_ptr<magic_t> value;
 public:
@@ -299,7 +307,7 @@ public:
     /// (complex number).
     ///
     /// \return the hierarchy level
-    int hierarchyLevel() const;
+    hierarchy_t hierarchyLevel() const;
 
     friend Number complexNumber(const Number&, const Number&);
 

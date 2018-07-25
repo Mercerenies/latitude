@@ -880,8 +880,9 @@ auto Number::asSmallInt() const
     return boost::apply_visitor(MagicNumber::StrictCastVisitor<smallint>(), *value);
 }
 
-int Number::hierarchyLevel() const {
-    return boost::apply_visitor(MagicNumber::LevelVisitor(), *value);
+auto Number::hierarchyLevel() const
+    -> hierarchy_t {
+    return (hierarchy_t)boost::apply_visitor(MagicNumber::LevelVisitor(), *value);
 }
 
 Number complexNumber(const Number& real, const Number& imag) {
