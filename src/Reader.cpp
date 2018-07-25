@@ -96,12 +96,6 @@ unique_ptr<Stmt> translateStmt(const OperatorTable& table, Expr*& expr, bool hel
         transform(contents0.begin(), contents0.end(), contents1.begin(),
                   [](auto& cc) { return move(cc); });
         return unique_ptr<Stmt>(new StmtMethod(line, contents1));
-    } else if (expr->isSpecialMethod) {
-        auto contents0 = translateList(table, expr->args, held);
-        list< shared_ptr<Stmt> > contents1( contents0.size() );
-        transform(contents0.begin(), contents0.end(), contents1.begin(),
-                  [](auto& cc) { return move(cc); });
-        return unique_ptr<Stmt>(new StmtSpecialMethod(line, contents1));
     } else if (expr->isComplex) {
         return unique_ptr<Stmt>(new StmtComplex(line, expr->number, expr->number1));
     } else if (expr->equals) {
@@ -858,99 +852,6 @@ void StmtZeroDispatch::translate(TranslationUnit& unit, InstrSeq& seq) {
     (makeAssemblerLine(Instr::LOAD, Reg::NUM0)).appendOnto(seq);
     (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::RET)).appendOnto(seq);
 
-}
-
-StmtSpecialMethod::StmtSpecialMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents)
-    : Stmt(line_no), contents(move(contents)) {}
-
-void StmtSpecialMethod::translate(TranslationUnit& unit, InstrSeq& seq) {
-
-    //stateLine(seq);
-
-    // PIZZA
-
-    auto prefix = [this, &unit](const InstrSeq& arg) {
-        InstrSeq result;
-        // Find the literal object to use
-        (makeAssemblerLine(Instr::YLDC, Lit::METHOD, Reg::PTR)).appendOnto(result);
-        // Translate the method sequence
-        InstrSeq mthd;
-        stateLine(mthd);
-        stateFile(mthd);
-        if (arg.empty()) {
-            // If the method is empty, it defaults to `meta Nil.`
-            (makeAssemblerLine(Instr::YLD, Lit::NIL, Reg::RET)).appendOnto(mthd);
-        } else {
-            mthd.insert(mthd.end(), arg.begin(), arg.end());
-        }
-        (makeAssemblerLine(Instr::RET)).appendOnto(mthd);
-        // Register with the translation unit
-        FunctionIndex index = unit.pushMethod(mthd);
-        // Clone and put a prim() onto it
-        (makeAssemblerLine(Instr::MTHD, index)).appendOnto(result);
-        (makeAssemblerLine(Instr::LOAD, Reg::MTHD)).appendOnto(result);
-        (makeAssemblerLine(Instr::MOV, Reg::PTR, Reg::SLF)).appendOnto(result);
-        // Give the object an appropriate closure
-        (makeAssemblerLine(Instr::GETL, Reg::PTR)).appendOnto(result);
-        (makeAssemblerLine(Instr::SYM, "closure")).appendOnto(result);
-        (makeAssemblerLine(Instr::SETF)).appendOnto(result);
-        (makeAssemblerLine(Instr::MOV, Reg::SLF, Reg::RET)).appendOnto(result);
-        return result;
-    };
-
-    // Find the literal object to use
-    (makeAssemblerLine(Instr::GETL, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "meta")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "statements")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-
-    // Call the `statements` function properly
-    (makeAssemblerLine(Instr::POP, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::STO)).appendOnto(seq);
-
-    // Add all of the elements
-    for (auto& arg : contents) {
-
-        // Evaluate the argument
-        InstrSeq arg0;
-        arg->translate(unit, arg0);
-
-        InstrSeq temp = prefix(arg0);
-        seq.insert(seq.end(), temp.begin(), temp.end());
-        (makeAssemblerLine(Instr::PUSH, Reg::RET, Reg::ARG)).appendOnto(seq);
-
-        // Grab `next` and call it
-        (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::SYM, "next")).appendOnto(seq);
-        (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-        (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-        (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-        (makeAssemblerLine(Instr::CALL, 1L)).appendOnto(seq);
-
-    }
-
-    // Now call finish
-    (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::SYM, "finish")).appendOnto(seq);
-    (makeAssemblerLine(Instr::RTRV)).appendOnto(seq);
-    (makeAssemblerLine(Instr::PEEK, Reg::SLF, Reg::STO)).appendOnto(seq);
-    (makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR)).appendOnto(seq);
-    (makeAssemblerLine(Instr::CALL, 0L)).appendOnto(seq);
-
-    // Leave %sto the way we found it
-    (makeAssemblerLine(Instr::POP, Reg::PTR, Reg::STO)).appendOnto(seq);
-
-}
-
-void StmtSpecialMethod::propogateFileName(std::string name) {
-    for (auto& ptr : contents)
-        ptr->propogateFileName(name);
-    Stmt::propogateFileName(name);
 }
 
 StmtComplex::StmtComplex(int line_no, double lhs, double rhs)

@@ -292,18 +292,6 @@ public:
 };
 
 /*
- * A special method literal.
- */
-class StmtSpecialMethod : public Stmt {
-private:
-    std::list< std::shared_ptr<Stmt> > contents;
-public:
-    StmtSpecialMethod(int line_no, std::list< std::shared_ptr<Stmt> >& contents);
-    virtual void translate(TranslationUnit&, InstrSeq&);
-    virtual void propogateFileName(std::string name);
-};
-
-/*
  * A complex number literal.
  */
 class StmtComplex : public Stmt {

@@ -67,7 +67,6 @@
         bool isSigil; // Check name and rhs
         bool isEquality; // Treated like call with a rhs
         bool isZeroDispatch; // Check name
-        bool isSpecialMethod; // Just like isMethod
         bool isBind; // Treated like call with a rhs
         bool isComplex; // Check number and number1
         bool equals2; // ::= (`a b ::= c.` desugars to `a b := c. a b :: 'b.`)
