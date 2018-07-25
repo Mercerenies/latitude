@@ -639,16 +639,6 @@ Number& Number::operator =(Number other) {
     return *this;
 }
 
-bool Number::operator ==(const Number& other) const {
-    auto& second = *other.value;
-    return boost::apply_visitor(MagicNumber::EqualVisitor(), *value, second);
-}
-
-bool Number::operator <(const Number& other) const {
-    auto& second = *other.value;
-    return boost::apply_visitor(MagicNumber::LessVisitor(), *value, second);
-}
-
 Number& Number::operator +=(const Number& other) {
     auto& second = *other.value;
     if ((value->which() == 0) && (second.which() == 0)) {
@@ -954,4 +944,28 @@ boost::optional<Number> parseInteger(const char* integer) {
         ++integer;
     }
     return sign * accum;
+}
+
+bool operator ==(const Number& self, const Number& other) {
+    return boost::apply_visitor(MagicNumber::EqualVisitor(), *self.value, *other.value);
+}
+
+bool operator <(const Number& self, const Number& other) {
+    return boost::apply_visitor(MagicNumber::LessVisitor(), *self.value, *other.value);
+}
+
+bool operator >(const Number& self, const Number& other) {
+    return (other < self);
+}
+
+bool operator <=(const Number& self, const Number& other) {
+    return !(other < self);
+}
+
+bool operator >=(const Number& self, const Number& other) {
+    return !(self < other);
+}
+
+bool operator !=(const Number& self, const Number& other) {
+    return !(self == other);
 }

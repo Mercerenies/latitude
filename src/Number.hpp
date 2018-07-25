@@ -33,7 +33,10 @@
 /// -# `ratio` A fraction consisting of arbitrary precision integers
 /// -# `floating` A floating-point real value
 /// -# `complex` A floating-point complex value
-class Number : private boost::operators<Number> {
+class Number :
+    private boost::integer_arithmetic<Number>,
+    private boost::bitwise<Number>,
+    private boost::unit_steppable<Number> {
 public:
 
     /// A fixed-precision integer is a C++ long integer.
@@ -104,21 +107,6 @@ public:
     ///
     /// \param other the other number
     Number& operator=(Number other);
-
-    /// Returns whether the two numbers are the same. The comparison
-    /// is done by coercing to the wider type.
-    ///
-    /// \param other the other number
-    /// \return whether the values are equal
-    bool operator ==(const Number& other) const;
-
-    /// Returns whether the number is less than another number. The
-    /// comparison is done by coercing to the wider type. Comparing
-    /// complex numbers with this operator always returns false.
-    ///
-    /// \param other the other number
-    /// \return whether the value is less than the argument
-    bool operator <(const Number& other) const;
 
     /// Adds the number in-place.
     ///
@@ -310,6 +298,8 @@ public:
     hierarchy_t hierarchyLevel() const;
 
     friend Number complexNumber(const Number&, const Number&);
+    friend bool operator ==(const Number& self, const Number& other);
+    friend bool operator <(const Number& self, const Number& other);
 
 };
 
@@ -349,4 +339,23 @@ Number constantEps();
 
 boost::optional<Number> parseInteger(const char* integer);
 
+/// Returns whether the two numbers are the same. The comparison
+/// is done by coercing to the wider type.
+///
+/// \param other the other number
+/// \return whether the values are equal
+bool operator ==(const Number& self, const Number& other);
+
+/// Returns whether the number is less than another number. The
+/// comparison is done by coercing to the wider type. Comparing
+/// complex numbers with this operator always returns false.
+///
+/// \param other the other number
+/// \return whether the value is less than the argument
+bool operator <(const Number& self, const Number& other);
+
+bool operator >(const Number& self, const Number& other);
+bool operator <=(const Number& self, const Number& other);
+bool operator >=(const Number& self, const Number& other);
+bool operator !=(const Number& self, const Number& other);
 #endif // NUMBER_HPP
