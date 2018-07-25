@@ -358,4 +358,7 @@ bool operator >(const Number& self, const Number& other);
 bool operator <=(const Number& self, const Number& other);
 bool operator >=(const Number& self, const Number& other);
 bool operator !=(const Number& self, const Number& other);
+
+std::ostream& operator <<(std::ostream& out, const Number& number);
+
 #endif // NUMBER_HPP

@@ -969,3 +969,7 @@ bool operator >=(const Number& self, const Number& other) {
 bool operator !=(const Number& self, const Number& other) {
     return !(self == other);
 }
+
+std::ostream& operator <<(std::ostream& out, const Number& number) {
+    return out << number.asString();
+}
