@@ -45,8 +45,11 @@ void _bindArguments(ForwardIterator& begin, ForwardIterator& end) {}
 /// \param lst a forward-iterable structure
 /// \param args the arguments to bind
 /// \return whether or not the arguments were successfully bound
+///
+/// \deprecated Operates on an old version of ObjectPtr which no
+/// longer exists on the codebase
 template <typename Iterable, typename... Ts>
-bool bindArguments(const Iterable& lst, Ts&... args) {
+[[deprecated]] bool bindArguments(const Iterable& lst, Ts&... args) {
     auto begin = lst.begin();
     auto end = lst.end();
     auto dist = std::distance(begin, end);
