@@ -1,3 +1,5 @@
+//// Copyright (c) 2018 Silvio Mayolo
+//// See LICENSE.txt for licensing details
 
 #define CATCH_CONFIG_RUNNER
 #include "catch2/catch.hpp"
