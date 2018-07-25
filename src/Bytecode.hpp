@@ -167,11 +167,6 @@ StatePtr statePtr(const IntState& state);
 /// \return a smart pointer
 StatePtr statePtr(IntState&& state);
 
-/// This pseudo-constructor creates an empty read-only state.
-///
-/// \return a ReadOnlyState instance containing no information
-ReadOnlyState readOnlyState();
-
 /// This function leaves the interpreter in a valid but unspecified
 /// state which is guaranteed to be idling (according to #isIdling).
 ///
