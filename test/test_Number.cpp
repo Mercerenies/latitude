@@ -341,6 +341,15 @@ TEST_CASE( "Parsing integers", "[number]" ) {
   REQUIRE( parseInteger("B100101100") == Number(300l) );
   REQUIRE( parseInteger("O454") == Number(300l) );
   REQUIRE( parseInteger("B112") == boost::none );
-
+  REQUIRE( parseInteger("D+300") == Number(300l) );
+  REQUIRE( parseInteger("X+12C") == Number(300l) );
+  REQUIRE( parseInteger("B+100101100") == Number(300l) );
+  REQUIRE( parseInteger("O+454") == Number(300l) );
+  REQUIRE( parseInteger("B+112") == boost::none );
+  REQUIRE( parseInteger("D-300") == Number(-300l) );
+  REQUIRE( parseInteger("X-12C") == Number(-300l) );
+  REQUIRE( parseInteger("B-100101100") == Number(-300l) );
+  REQUIRE( parseInteger("O-454") == Number(-300l) );
+  REQUIRE( parseInteger("B-112") == boost::none );
 
 }
