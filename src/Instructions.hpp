@@ -238,7 +238,7 @@ public:
 
     RegisterArg argument(int n) const;
 
-    RegisterArg argumentCount() const;
+    std::size_t argumentCount() const;
 
     /// \brief Verifies the integrity of the instruction and its arguments.
     ///

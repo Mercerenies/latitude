@@ -158,7 +158,7 @@ RegisterArg AssemblerLine::argument(int n) const {
     return args[n];
 }
 
-RegisterArg AssemblerLine::argumentCount() const {
+std::size_t AssemblerLine::argumentCount() const {
     return args.size();
 }
 
