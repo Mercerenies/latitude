@@ -53,6 +53,8 @@ struct CmdArgs {
     OutputMode output;
 };
 
+/// Initializes the C random number generator by calling `srand` and
+/// providing it with some seed, such as the current time.
 void initRandom();
 
 /// Parses the command line arguments into a CmdArgs instance. Any

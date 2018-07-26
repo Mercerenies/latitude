@@ -94,6 +94,7 @@ namespace Lit {
 /// type is provided to avoid accidentally treating function indices
 /// as ordinary integers and vice versa.
 struct FunctionIndex {
+    /// The index of the function.
     int index;
 };
 
@@ -199,6 +200,7 @@ class AssemblerLineArgs;
 /// arguments.
 class AssemblerLine {
 public:
+    /// The type of iterators over the arguments of an AssemblerLine.
     using const_iterator = std::vector<RegisterArg>::const_iterator;
 private:
     Instr command;
@@ -214,7 +216,9 @@ public:
     /// \brief Constructs an empty assembler line.
     AssemblerLine() = default;
 
-    /// \brief Constructs an assembler line with the given opcode
+    /// \brief Constructs an assembler line with the given opcode.
+    ///
+    /// \param code the opcode
     AssemblerLine(Instr code);
 
     /// \brief Gets the opcode for the assembler line.
@@ -232,18 +236,29 @@ public:
     /// \param arg the argument
     void addRegisterArg(const RegisterArg& arg);
 
+    /// \brief Removes all of the arguments.
     void clearRegisterArgs();
 
+    /// \brief Returns an iterable construct over the arguments.
+    ///
+    /// \return an argument iterable
     AssemblerLineArgs arguments() const;
 
+    /// \brief Returns the nth argument of the instruction.
+    ///
+    /// \param n the index
+    /// \return the argument
     RegisterArg argument(int n) const;
 
+    /// \brief Returns the number of arguments.
+    ///
+    /// \return the argument count
     std::size_t argumentCount() const;
 
     /// \brief Verifies the integrity of the instruction and its arguments.
     ///
-    /// If the instruction is valid and correct, no operations
-    /// occur. Otherwise, an exception is thrown.
+    /// If the instruction is valid and correct, nothing happens.
+    /// Otherwise, an exception is thrown.
     ///
     /// \throw AssemblerError in the case of an integrity error
     void validate();
@@ -264,13 +279,28 @@ public:
 
 };
 
+/// An adapter for AssemblerLine which allows it to be treated as an
+/// iterable container by C++ standard library functions. The
+/// container will produce a constant iterator which iterates over the
+/// arguments of the AssemblerLine. The iterator will be invalidated
+/// if any arguments are added or removed or if the argument list is
+/// cleared.
 class AssemblerLineArgs {
 private:
     const AssemblerLine& impl;
 public:
+
+    /// Constructs an arguments object.
+    ///
+    /// \param inner the AssemblerLine object to represent
     AssemblerLineArgs(const AssemblerLine& inner);
+
+    /// \return an iterator to the beginning
     AssemblerLine::const_iterator begin() const;
+
+    /// \return an iterator to the end
     AssemblerLine::const_iterator end() const;
+
 };
 
 /// For efficiency reasons, it is undesirable to pass around methods
@@ -455,6 +485,10 @@ public:
     /// \return the function argument
     FunctionIndex readFunction(int n);
 
+    /// Returns the full sequence of instructions representing the
+    /// method.
+    ///
+    /// \return the instruction sequence
     InstrSeq& instructions();
 
 };

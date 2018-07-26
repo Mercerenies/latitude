@@ -113,15 +113,46 @@ struct ReadOnlyState {
 
 };
 
+/// The composite virtual machine register space. A VMState consists
+/// of an IntState, a TransientState, and a ReadOnlyState. These
+/// objects can be explicitly constructed but are usually constructed
+/// implicitly via VMState::createAndInit().
 struct VMState {
     IntState state;
     TransientState trans;
     const ReadOnlyState reader;
 
+    /// Constructs a VMState.
+    ///
+    /// \param state the interpreter state
+    /// \param reader the read-only state
     VMState(IntState& state, const ReadOnlyState& reader);
-    explicit VMState(const VMState&) = default;
-    explicit VMState(VMState&&) = default;
 
+    /// Copy-constructs a VMState.
+    ///
+    /// Virtual machine states can be copied, but (for efficiency
+    /// reasons) copying must be done explicitly.
+    ///
+    /// \param arg the VMState
+    explicit VMState(const VMState& arg) = default;
+
+    /// Move-constructs a VMState.
+    ///
+    /// Virtual machine states can be moved, but (for efficiency
+    /// reasons) moving must be done explicitly.
+    ///
+    /// \param arg the VMState
+    explicit VMState(VMState&& arg) = default;
+
+    /// A static factory method which initializes the standard library
+    /// and virtual machine state, constructing all of the necessary
+    /// built-in Latitude objects. The constructed VMState is
+    /// returned.
+    ///
+    /// \param[out] global the global scope object
+    /// \param[in] argc the command line argument count
+    /// \param[in] argv the command line arguments
+    /// \return the constructed VMState
     static VMState createAndInit(ObjectPtr* global, int argc, char** argv);
 
 };
@@ -185,8 +216,16 @@ void hardKill(VMState& vm);
 /// \param newWind the wind stack that the continuation is jumping \e to
 void resolveThunks(VMState& vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWind);
 
+/// Pushes the current stack trace data (%line and %file) onto the
+/// %trace register stack.
+///
+/// \param state the interpreter state
 void pushTrace(IntState& state);
 
+/// Pushes the current stack trace data (from %trace) into the
+/// %line and %file.
+///
+/// \param state the interpreter state
 void popTrace(IntState& state);
 
 /// Given an instruction and an interpreter state whose `%%cont`

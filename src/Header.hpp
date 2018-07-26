@@ -12,6 +12,8 @@
 ///
 /// \brief Functions and accessors for file header information
 
+/// The current Latitude file version, stored in the header for
+/// bookkeeping purposes.
 constexpr int FILE_VERSION = 1000;
 
 /// This enum class is used for setting which fields of the Header
@@ -39,16 +41,26 @@ struct Header {
     int version;
 };
 
-/// Given a file, this function reads just enough of the file to
-/// access its header and returns a Header instance detailing the
+/// Given a source file, this function reads just enough of the file
+/// to access its header and returns a Header instance detailing the
 /// information that was acquired.
 ///
 /// \param file the file stream
 /// \return the file header
 Header getFileHeaderSource(std::ifstream& file);
 
+/// Given a bytecode file, this function reads just enough of the file
+/// to access its header and returns a Header instance detailing the
+/// information that was acquired.
+///
+/// \param file the file stream
+/// \return the file header
 Header getFileHeaderComp(std::ifstream& file);
 
+/// Stores the header in the given Latitude bytecode file.
+///
+/// \param file the output binary file
+/// \param header the file header to store
 void saveFileHeader(std::ofstream& file, const Header& header);
 
 // ----
