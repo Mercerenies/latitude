@@ -58,6 +58,8 @@ public:
     /// contains the actual value.
     typedef boost::variant<smallint, bigint, ratio, floating, complex> magic_t;
 
+    /// An enumeration representing the levels of the Latitude
+    /// numerical hierarchy.
     enum hierarchy_t {
         SMALLINT = 0,
         BIGINT   = 1,
@@ -297,7 +299,7 @@ public:
     /// \return the hierarchy level
     hierarchy_t hierarchyLevel() const;
 
-    friend Number complexNumber(const Number&, const Number&);
+    friend Number complexNumber(const Number& real, const Number& imag);
     friend bool operator ==(const Number& self, const Number& other);
     friend bool operator <(const Number& self, const Number& other);
 
@@ -337,11 +339,21 @@ boost::optional<Number> constantNegInf();
 /// \return the epsilon value
 Number constantEps();
 
+/// Reads an integer. This function expects a string in the format
+/// used internally by the Latitude VM for radix literals. That is,
+/// the first character should be D, X, O, or B (case sensitive),
+/// respectively representing base 10, base 16, base 8, or base 2.
+/// This is optionally followed by a sign, either + or -, and then one
+/// or more digits.
+///
+/// \param integer the text to parse
+/// \return the number (an integer) or none
 boost::optional<Number> parseInteger(const char* integer);
 
 /// Returns whether the two numbers are the same. The comparison
 /// is done by coercing to the wider type.
 ///
+/// \param self the first number
 /// \param other the other number
 /// \return whether the values are equal
 bool operator ==(const Number& self, const Number& other);
@@ -350,6 +362,7 @@ bool operator ==(const Number& self, const Number& other);
 /// comparison is done by coercing to the wider type. Comparing
 /// complex numbers with this operator always returns false.
 ///
+/// \param self the first number
 /// \param other the other number
 /// \return whether the value is less than the argument
 bool operator <(const Number& self, const Number& other);
