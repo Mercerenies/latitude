@@ -10,6 +10,10 @@
 #include <string>
 #include <ios>
 
+/// \file
+///
+/// \brief The Stream class and various subclasses
+
 class Stream;
 
 /// A shared pointer to a Stream object.
