@@ -2595,7 +2595,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // dumpDbg#: obj.
      assert(reader.cpp.size() == CPP_DUMPDBG);
      reader.cpp.push_back([](VMState& vm) {
-         std::cout << "Object: " << DebugObject(vm.trans.slf) << std::endl;
+         std::cout << "Object: " << DebugObject{ vm.trans.slf } << std::endl;
      });
      sys->put(Symbols::get()["dumpDbg#"],
               defineMethod(unit, global, method,

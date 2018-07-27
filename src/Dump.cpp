@@ -7,20 +7,6 @@
 #include <boost/variant.hpp>
 #include <list>
 
-DebugObject::DebugObject(ObjectPtr ptr)
-    : impl(ptr) {}
-
-ObjectPtr DebugObject::get() const {
-    return impl;
-}
-
-DebugStackObject::DebugStackObject(std::stack<ObjectPtr>& stack)
-    : impl(stack) {}
-
-std::stack<ObjectPtr>& DebugStackObject::get() const {
-    return impl;
-}
-
 struct DebugPrimVisitor : boost::static_visitor<std::string> {
 
     std::string operator()(boost::blank) const {
@@ -69,11 +55,11 @@ std::string toStringInfo(ObjectPtr obj) {
 
 std::ostream& operator <<(std::ostream& out, const DebugObject& obj) {
     // First, we know we can safely print the pointer's numerical value.
-    out << obj.get().get();
+    out << obj.impl.get();
     // Get prim info
-    std::string prim = boost::apply_visitor(DebugPrimVisitor(), obj.get()->prim());
+    std::string prim = boost::apply_visitor(DebugPrimVisitor(), obj.impl->prim());
     // Get toString info
-    std::string str = toStringInfo(obj.get());
+    std::string str = toStringInfo(obj.impl);
     // Print everything
     if (prim != "")
         out << "[" << prim << "]";
@@ -89,17 +75,17 @@ void dumpStack(std::ostream& out, std::stack<ObjectPtr>& stack) {
     auto value = stack.top();
     stack.pop();
     dumpStack(out, stack);
-    out << DebugObject(value) << " ";
+    out << DebugObject{ value } << " ";
     stack.push(value);
 }
 
 std::ostream& operator <<(std::ostream& out, const DebugStackObject& obj) {
-    if (obj.get().empty())
+    if (obj.impl.empty())
         return out;
-    auto value = obj.get().top();
-    obj.get().pop();
-    dumpStack(out, obj.get());
-    out << DebugObject(value);
+    auto value = obj.impl.top();
+    obj.impl.pop();
+    dumpStack(out, obj.impl);
+    out << DebugObject { value };
     return out;
 }
 
@@ -116,15 +102,15 @@ void dumpEverything(std::ostream& out, VMState& vm) {
     // Stacks are printed from bottom to top, so the rightmost element
     // is the top stack element
 
-    out << "%ptr  : " <<      DebugObject(vm.trans.ptr ) << std::endl;
-    out << "%slf  : " <<      DebugObject(vm.trans.slf ) << std::endl;
-    out << "%ret  : " <<      DebugObject(vm.trans.ret ) << std::endl;
+    out << "%ptr  : " <<      DebugObject{ vm.trans.ptr } << std::endl;
+    out << "%slf  : " <<      DebugObject{ vm.trans.slf } << std::endl;
+    out << "%ret  : " <<      DebugObject{ vm.trans.ret } << std::endl;
 
-    out << "%lex  : " << DebugStackObject(vm.state.lex ) << std::endl;
-    out << "%dyn  : " << DebugStackObject(vm.state.dyn ) << std::endl;
-    out << "%arg  : " << DebugStackObject(vm.state.arg ) << std::endl;
-    out << "%sto  : " << DebugStackObject(vm.state.sto ) << std::endl;
-    out << "%hand : " << DebugStackObject(vm.state.hand) << std::endl;
+    out << "%lex  : " << DebugStackObject{ vm.state.lex  } << std::endl;
+    out << "%dyn  : " << DebugStackObject{ vm.state.dyn  } << std::endl;
+    out << "%arg  : " << DebugStackObject{ vm.state.arg  } << std::endl;
+    out << "%sto  : " << DebugStackObject{ vm.state.sto  } << std::endl;
+    out << "%hand : " << DebugStackObject{ vm.state.hand } << std::endl;
 
     out << "%err0 : " << vm.trans.err0 << std::endl;
     out << "%err1 : " << vm.trans.err1 << std::endl;
