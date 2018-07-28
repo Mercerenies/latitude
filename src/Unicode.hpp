@@ -77,8 +77,10 @@ boost::optional<UniChar> charAt(std::string str, long i);
 
 /// Returns the index of the next Unicode character after the
 /// character which starts at the nth byte. If the index is out of
-/// bounds, not at a character boundary, or at the position of the
-/// final character, this function returns an empty optional instance.
+/// bounds or not at a character boundary, this function returns an
+/// empty optional instance. If the index points to the final
+/// character in the string, the length of the string is returned, to
+/// correspond with the notion of an ending iterator.
 ///
 /// \param str the string
 /// \param i the index
