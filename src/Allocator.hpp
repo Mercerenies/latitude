@@ -74,7 +74,6 @@ public:
     static Allocator& get() noexcept;
     ObjectPtr allocate();
     void free(Object*);
-    void DEBUG();
 };
 
 #endif // ALLOCATOR_HPP
