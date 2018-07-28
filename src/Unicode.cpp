@@ -61,6 +61,8 @@ UniChar uniChr(long cp) {
 }
 
 boost::optional<UniChar> charAt(std::string str, long i) {
+    if ((i < 0) || ((unsigned long)i >= str.length()))
+        return boost::none;
     bool valid = true;
     long result = 0L;
     auto full_len = str.length();
@@ -101,6 +103,8 @@ boost::optional<UniChar> charAt(std::string str, long i) {
 }
 
 boost::optional<long> nextCharPos(std::string str, long i) {
+    if ((i < 0) || ((unsigned long)i >= str.length()))
+        return boost::none;
     // Based on the algorithm at http://stackoverflow.com/a/4063258/2288659
     bool valid = true;
     auto full_len = str.length();
