@@ -54,6 +54,10 @@ std::string toStringInfo(ObjectPtr obj) {
 }
 
 std::ostream& operator <<(std::ostream& out, const DebugObject& obj) {
+    if (obj.impl == nullptr) {
+        out << "nullptr";
+        return out;
+    }
     // First, we know we can safely print the pointer's numerical value.
     out << obj.impl.get();
     // Get prim info
