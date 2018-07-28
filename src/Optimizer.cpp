@@ -16,9 +16,12 @@ namespace optimize {
                 if (line.getCommand() == Instr::SYM) {
                     // Assume the instruction is valid, so its first argument is a string.
                     auto sym = boost::get<std::string>(line.argument(0));
-                    line.setCommand(Instr::SYMN);
-                    line.clearRegisterArgs();
-                    line.addRegisterArg(Symbols::get()[sym].index);
+                    Symbolic id = Symbols::get()[sym];
+                    if (Symbols::symbolType(id) != SymbolType::GENERATED) {
+                        line.setCommand(Instr::SYMN);
+                        line.clearRegisterArgs();
+                        line.addRegisterArg(id.index);
+                    }
                 }
             }
         }
