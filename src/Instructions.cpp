@@ -171,7 +171,7 @@ auto AssemblerLine::iterEnd() const -> const_iterator {
 }
 
 void AssemblerLine::validate() {
-    InstructionSet iset = InstructionSet::getInstance();
+    InstructionSet& iset = InstructionSet::getInstance();
     if (!iset.hasInstruction(command))
         throw AssemblerError("Unknown instruction " + to_string((int)command));
     InstructionSet::ValidList parms = iset.getParams(command);
