@@ -20,6 +20,7 @@ TEST_CASE( "String garnishing", "[garnish]" ) {
 
   REQUIRE( str != nullptr );
   REQUIRE( *str == "abc" );
+  REQUIRE( (*obj)[Symbols::parent()] == globalVM->reader.lit[Lit::STRING] );
 
 }
 
@@ -41,6 +42,10 @@ TEST_CASE( "Number garnishing", "[garnish]" ) {
   REQUIRE( *x2 == 10l );
   REQUIRE( *x3 == 10l );
 
+  REQUIRE( (*n1)[Symbols::parent()] == globalVM->reader.lit[Lit::NUMBER] );
+  REQUIRE( (*n2)[Symbols::parent()] == globalVM->reader.lit[Lit::NUMBER] );
+  REQUIRE( (*n3)[Symbols::parent()] == globalVM->reader.lit[Lit::NUMBER] );
+
 }
 
 
@@ -53,6 +58,7 @@ TEST_CASE( "Symbol garnishing", "[garnish]" ) {
 
   REQUIRE( sym1 != nullptr );
   REQUIRE( *sym1 == sym );
+  REQUIRE( (*obj)[Symbols::parent()] == globalVM->reader.lit[Lit::SYMBOL] );
 
 }
 
