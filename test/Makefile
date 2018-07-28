@@ -11,8 +11,11 @@ all:	Testing
 
 test:	Testing
 
+test-clean:
+	rm *.o
+
 Testing:	$(LOCAL_FILES)
 	$(LINK) -o test.out $(FILES)
 
-main.o:	main.cpp
+main.o:	main.cpp test.hpp
 	$(CXX) $(CXXFLAGS) main.cpp

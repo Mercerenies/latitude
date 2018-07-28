@@ -26,6 +26,9 @@ release:	Project
 test:	Project
 	$(MAKE) -C test/
 
+test-clean:
+	$(MAKE) -C test/ test-clean
+
 export BOOST LINK LINKFLAGS CC CCFLAGS CXX CXXFLAGS OBJFILES
 
 install:
