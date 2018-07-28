@@ -303,6 +303,17 @@ public:
 
 };
 
+bool operator==(FunctionIndex a, FunctionIndex b);
+
+/// Compares two AssemblerLine instances for equality. Two
+/// AssemblerLine instances are equal if they contain the same opcode
+/// and the same collection of arguments.
+///
+/// \param a the first line
+/// \param b the second line
+/// \return whether they are equal
+bool operator==(const AssemblerLine& a, const AssemblerLine& b);
+
 /// For efficiency reasons, it is undesirable to pass around methods
 /// as sequences of instructions. Thus, all methods in Latitude code
 /// are stored in localized translation units, where they can be

@@ -6,6 +6,7 @@
 #include "Serialize.hpp"
 #include <utility>
 #include <memory>
+#include <algorithm>
 
 using namespace std;
 
@@ -130,6 +131,21 @@ AssemblerLine::const_iterator AssemblerLineArgs::begin() const {
 
 AssemblerLine::const_iterator AssemblerLineArgs::end() const {
     return impl.iterEnd();
+}
+
+bool operator==(FunctionIndex a, FunctionIndex b) {
+    return a.index == b.index;
+}
+
+bool operator==(const AssemblerLine& a, const AssemblerLine& b) {
+    if (a.getCommand() != b.getCommand())
+        return false;
+    if (a.argumentCount() != b.argumentCount())
+        return false;
+    if (!std::equal(a.arguments().begin(), a.arguments().end(),
+                    b.arguments().begin()))
+        return false;
+    return true;
 }
 
 AssemblerLine::AssemblerLine(Instr code)
