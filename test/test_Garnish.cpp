@@ -15,7 +15,7 @@ extern VMState* globalVM;
 
 TEST_CASE( "String garnishing", "[garnish]" ) {
 
-  ObjectPtr obj = garnishObject(globalVM->reader, "abc");
+  ObjectPtr obj = garnishObject(globalVM->reader, std::string("abc"));
   std::string* str = boost::get<std::string>(&obj->prim());
 
   REQUIRE( str != nullptr );
