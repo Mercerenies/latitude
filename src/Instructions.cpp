@@ -74,6 +74,7 @@ void InstructionSet::initialize() {
     props[Instr::LOCRT] = { };
     props[Instr::NRET] = { };
     props[Instr::UNTR] = { };
+    props[Instr::CMPLX] = { isStringRegisterArg, isStringRegisterArg };
     props[Instr::YLD] = { isLongRegisterArg, isObjectRegister };
     props[Instr::YLDC] = { isLongRegisterArg, isObjectRegister };
     props[Instr::DEL] = { };
