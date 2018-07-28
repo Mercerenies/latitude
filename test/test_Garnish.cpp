@@ -2,14 +2,13 @@
 //// See LICENSE.txt for licensing details
 
 #include "catch2/catch.hpp"
+#include "test.hpp"
 #include "Garnish.hpp"
 #include "Proto.hpp"
 #include "Number.hpp"
 #include "Symbol.hpp"
 #include <boost/blank.hpp>
 #include <string>
-
-extern VMState* globalVM;
 
 // Not testing the garnishSeq stuff here right now.
 

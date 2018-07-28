@@ -7,6 +7,7 @@
 #include "Args.hpp"
 #include "Proto.hpp"
 #include "Bytecode.hpp"
+#include "test.hpp"
 
 ObjectPtr* globalScope;
 VMState* globalVM;
