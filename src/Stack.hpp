@@ -39,12 +39,20 @@ public:
     ///
     /// \param data0 the element to place on the stack
     StackNode(const T& data0);
+    /// Constructs a stack node containing the single element
+    /// given. The resulting stack will have exactly one element in
+    /// it. The element will be moved into the stack.
+    ///
+    /// \param data0 the element to place on the stack
+    StackNode(T&& data0);
     /// Returns a reference to the element on the stack.
     ///
     /// \return a reference to the stack element
     const T& get();
     template <typename S>
     friend NodePtr<S> pushNode(NodePtr<S> node, const S& data);
+    template <typename S>
+    friend NodePtr<S> pushNode(NodePtr<S> node, S&& data);
     template <typename S>
     friend NodePtr<S> popNode(NodePtr<S> node);
 };
@@ -57,6 +65,15 @@ public:
 /// \return the new stack
 template <typename T>
 NodePtr<T> pushNode(NodePtr<T> node, const T& data);
+
+/// Moves an element onto the stack, returning a modified stack.
+///
+/// \tparam T the type of stack elements
+/// \param node a stack
+/// \param data the element to push
+/// \return the new stack
+template <typename T>
+NodePtr<T> pushNode(NodePtr<T> node, T&& data);
 
 /// Pops an element off the stack, returning a modified stack.
 ///
@@ -74,6 +91,10 @@ StackNode<T>::StackNode(const T& data0)
     : next(nullptr), data(data0) {}
 
 template <typename T>
+StackNode<T>::StackNode(T&& data0)
+    : next(nullptr), data(std::forward<T&&>(data0)) {}
+
+template <typename T>
 const T& StackNode<T>::get() {
     return data;
 }
@@ -81,6 +102,13 @@ const T& StackNode<T>::get() {
 template <typename T>
 NodePtr<T> pushNode(NodePtr<T> node, const T& data) {
     NodePtr<T> ptr(new StackNode<T>(data));
+    ptr->next = node;
+    return ptr;
+}
+
+template <typename T>
+NodePtr<T> pushNode(NodePtr<T> node, T&& data) {
+    NodePtr<T> ptr(new StackNode<T>(std::forward<T&&>(data)));
     ptr->next = node;
     return ptr;
 }
