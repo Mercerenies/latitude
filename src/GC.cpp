@@ -43,6 +43,8 @@ void GC::freeAll() {
 
 template <typename Container>
 void addToFrontier(const Container& visited, Container& frontier, Object* val) {
+    if (val == nullptr)
+        return;
     if (visited.find(val) == visited.end()) {
 #if GC_PRINT > 1
         std::cout << "<<Inserting " << val << ">>" << std::endl;
