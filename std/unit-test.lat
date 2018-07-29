@@ -79,7 +79,7 @@ unit-test TestModule := TestModule.
 
 UnitTest ::= Proc clone.
 UnitTest pretty := { self name. }.
-UnitTest name := "".
+UnitTest name := '().
 UnitTest call := True.
 UnitTest make := {
   takes '[block].

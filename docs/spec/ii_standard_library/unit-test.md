@@ -106,7 +106,7 @@ procedure. They are usually constructed via `UnitTest make` or
 
 #### `UnitTest name.`
 
-Returns the unit test's name, which defaults to `""`. This slot can be
+Returns the unit test's name, which defaults to `'()`. This slot can be
 (and usually is) overridden in subobjects.
 
 #### `UnitTest pretty.`
