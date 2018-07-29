@@ -306,11 +306,25 @@ auto serialize_t<AssemblerLine>::deserialize(InputIterator& iter) const -> type 
     return instruction;
 }
 
+/// Serializes the object into the given output iterator. There must
+/// be a compatible specialization of `serialize_t` of the form
+/// `serialize_t<T>`.
+///
+/// \tparam T the object type
+/// \tparam OutputIterator the type of the output iterator
+/// \param arg the object to serialize
+/// \param iter the output iterator
 template <typename T, typename OutputIterator>
 void serialize(const T& arg, OutputIterator& iter) {
     serialize_t<T>().serialize(arg, iter);
 }
 
+/// Deserializes an object of the given type from the input iterator.
+///
+/// \tparam T the object type
+/// \tparam InputIterator the type of the input iterator
+/// \param iter the input iterator
+/// \return the object
 template <typename T, typename InputIterator>
 T deserialize(InputIterator& iter) {
     return serialize_t<T>().deserialize(iter);

@@ -81,10 +81,28 @@ public:
     /// collector prints a line of text whenever it runs.
     void setTracing(bool);
 
+    /// Returns the total number of allocated objects registered with
+    /// the garbage collector.
+    ///
+    /// \return the total
     size_t getTotal() const;
 
+    /// Returns the maximum number of objects that will not trigger a
+    /// garbage collection. When the garbage collector's tick
+    /// determines that it is time to check the object count, if the
+    /// number of objects is greater than this limit, then the garbage
+    /// collector will run.
+    ///
+    /// \return the limit
     size_t getLimit() const;
 
+    /// Ticks the garbage collector. This method should be called at
+    /// every instruction execution, so that the garbage collector can
+    /// keep track of roughly how much "work" the VM is doing. After a
+    /// specific number of ticks, the garbage collector will check the
+    /// object count and determine whether or not it should run.
+    ///
+    /// \param vm the VM state
     void tick(VMState& vm);
 
 };

@@ -58,6 +58,10 @@ std::string stripDirname(std::string path);
 /// \return the modification time
 std::time_t modificationTime(std::string path);
 
+/// Returns whether a file with the given name exists.
+///
+/// \param fname the path name, either relative or absolute
+/// \return whether the file exists
 bool fileExists(std::string fname);
 
 #endif // PATHNAME_HPP

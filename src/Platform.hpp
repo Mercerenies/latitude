@@ -23,10 +23,19 @@
 #  define USE_NULL
 #endif
 
+/// This enumeration describes the different broad classes of
+/// operating systems which Latitude recognizes.
 enum class OS {
+
+    /// Windows or WinNT operating systems.
     WINDOWS,
+
+    /// Linux, Unix, or other POSIX-based operating systems.
     POSIX,
+
+    /// Non-Windows and non-POSIX operating systems.
     UNKNOWN
+
 };
 
 #ifdef USE_WINDOWS

@@ -63,7 +63,18 @@ public:
 
 };
 
+/// Returns the code point of a Unicode character. Equivalent to
+/// UniChar::codePoint().
+///
+/// \param ch the character
+/// \return the code point
 long uniOrd(UniChar ch);
+
+/// Constructs a Unicode character from the given (valid) code point.
+/// Equivalent to UniChar::UniChar(long).
+///
+/// \param cp the code point
+/// \return the character
 UniChar uniChr(long cp);
 
 /// Returns the Unicode code point beginning at the nth byte in the

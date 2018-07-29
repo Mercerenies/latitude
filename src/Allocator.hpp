@@ -70,10 +70,30 @@ public:
 
     /// Retrieves the singleton allocator.
     ///
-    /// \returns the allocator instance
+    /// \return the allocator instance
     static Allocator& get() noexcept;
+
+    /// Allocates a new object and returns a pointer to it.
+    ///
+    /// \return the new object
+    ///
+    /// \warning This method should not be called directly. The
+    /// GC::allocate() method will delegate to this one while also
+    /// performing the additional work of registering the new object
+    /// with the garbage collector.
     ObjectPtr allocate();
-    void free(Object*);
+
+    /// Frees the object.
+    ///
+    /// \param ptr the object
+    ///
+    /// \warning This method should not be called directly. The
+    /// garbage collector will call it directly when it deems
+    /// necessary. Alternatively, to free an object early (such as by
+    /// reference counting), the garbage collector method
+    /// GC::free(Object*) should be used.
+    void free(Object* ptr);
+
 };
 
 #endif // ALLOCATOR_HPP
