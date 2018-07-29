@@ -95,12 +95,24 @@ void addWindToFrontier(const Container& visited, Container& frontier, stack<Wind
     if (!stack.empty()) {
         auto fst = stack.top();
         stack.pop();
-        addToFrontier(visited, frontier, fst->before.lex);
-        addToFrontier(visited, frontier, fst->before.dyn);
-        addToFrontier(visited, frontier, fst->after.lex);
-        addToFrontier(visited, frontier, fst->after.dyn);
+        addToFrontier(visited, frontier, fst->before.lex.get());
+        addToFrontier(visited, frontier, fst->before.dyn.get());
+        addToFrontier(visited, frontier, fst->after.lex.get());
+        addToFrontier(visited, frontier, fst->after.dyn.get());
         addWindToFrontier(visited, frontier, stack);
         stack.push(fst);
+    }
+}
+
+template <typename Container>
+void addWindToFrontier(const Container& visited, Container& frontier, NodePtr<WindPtr> stack) {
+    if (stack != nullptr) {
+        auto fst = stack->get();
+        addToFrontier(visited, frontier, fst->before.lex.get());
+        addToFrontier(visited, frontier, fst->before.dyn.get());
+        addToFrontier(visited, frontier, fst->after.lex.get());
+        addToFrontier(visited, frontier, fst->after.dyn.get());
+        addWindToFrontier(visited, frontier, popNode(stack));
     }
 }
 
@@ -117,6 +129,7 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, In
     addStackToFrontier(visited, frontier, state.arg       );
     addStackToFrontier(visited, frontier, state.sto       );
     addStackToFrontier(visited, frontier, state.hand      );
+    addWindToFrontier (visited, frontier, state.wind      );
 }
 
 template <typename Container, typename Container1>
