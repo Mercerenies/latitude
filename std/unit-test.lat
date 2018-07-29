@@ -84,7 +84,14 @@ UnitTest call := True.
 UnitTest make := {
   takes '[block].
   self clone tap {
-    self call := #'(block).
+    self call := {
+      callCC {
+        escapable.
+        $fail := { return. }.
+        parent self send #'block call.
+        True.
+      }.
+    }.
   }.
 }.
 unit-test UnitTest := UnitTest.
@@ -108,7 +115,7 @@ unit-test FailedTest := FailedTest.
 
 unit-test truthy := {
   $1 or {
-    FailedTest make: "Truthy expression expected".
+    $fail: FailedTest make ("Truthy expression expected").
   }.
 }.
 
@@ -116,7 +123,8 @@ unit-test eq := {
   a := #'$1.
   b := #'$2.
   (#'a == #'b) or {
-    FailedTest make: (#'a toString) ++ " and " ++ (#'b toString) ++ " are not equal".
+    failure := FailedTest make: (#'a toString) ++ " and " ++ (#'b toString) ++ " are not equal".
+    $fail: failure.
   }.
 }.
 
@@ -132,7 +140,7 @@ unit-test throws := {
       } catch (exc) do {
         result = True.
       }.
-      result.
+      result or { $fail: result. }.
     }.
   }.
 }.

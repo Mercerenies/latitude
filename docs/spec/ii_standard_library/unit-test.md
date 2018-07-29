@@ -11,21 +11,25 @@ designed to be used as unit tests should implement the mixin
 
 ### `truthy (block).`
 
-Runs the block. If the block produces a truthy result, that result is
-returned. Otherwise, a `FailedTest` object with an appropriate message
-is returned.
+Runs the block. This method expects to be run inside a unit test (or
+somewhere where `$fail` is defined). If the block produces a truthy
+result, that result is returned. Otherwise, `$fail` is called with a
+`FailedTest` object as the argument.
 
 ### `eq (a, b).`
 
-Compares (without evaluating) `a` and `b` for `==` equality. If they
-are equal, `True` is returned. Otherwise, a `FailedTest` object with
-an appropriate message is returned.
+Compares (without evaluating) `a` and `b` for `==` equality. This
+method expects to be run inside a unit test, or somewhere with a
+`$fail` method. If the two arguments are equal, `True` is returned.
+Otherwise, a `FailedTest` object with an appropriate message is
+passed to `$fail`.
 
 ### `throws (exc) do (block).`
 
-Runs the block. If the block throws an exception of the type `exc`,
-then `True` is returned. Otherwise, an appropriate `FailedTest` object
-is returned.
+Runs the block. This method expects to be run inside a unit test, or
+somewhere with a `$fail` method. If the block throws an exception of
+the type `exc`, then `True` is returned. Otherwise, an appropriate
+`FailedTest` object is passed to `$fail`.
 
 ## The Test Module Mixin Object
 
@@ -127,8 +131,17 @@ implementation on the `UnitTest` object simply returns the constant
 #### `UnitTest make (block).`
 
 Given an evaluating block object, this method constructs a new unit
-test whose `call` method performs the given block, with `self` bound
-to the appropriate unit test object.
+test. The unit test's `call` method will invoke `block` (with `self`
+bound to the unit test itself) in an environment where a `$fail`
+method is defined. If the unit test returns normally, it is considered
+to have passed.
+
+`$fail` shall be a method taking a single argument. If `$fail` is
+called with a falsy argument, the unit test will immediately fail
+without running any further code. If `$fail` is called with a truthy
+argument, the unit test will terminate successfully, again without
+running any further code. Put another way `$fail` behaves like a
+continuation object pointing to the end of the test case.
 
 ## The Test Summary Object
 
