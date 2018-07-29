@@ -21,6 +21,16 @@ struct DebugObject {
 
 std::ostream& operator <<(std::ostream& out, const DebugObject& obj);
 
+/// \brief An adapter for printing debug values in great detail.
+///
+/// This adapter prints objects in much more detail than DebugObject,
+/// which is intended to provide only a summary.
+struct DebugDetailObject {
+    ObjectPtr impl;
+};
+
+std::ostream& operator <<(std::ostream& out, const DebugDetailObject& obj);
+
 /// \brief An adapter for printing stacks of objects.
 ///
 /// An adapter which provides useful dumping and printing capabilities

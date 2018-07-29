@@ -73,6 +73,28 @@ std::ostream& operator <<(std::ostream& out, const DebugObject& obj) {
     return out;
 }
 
+std::ostream& operator <<(std::ostream& out, const DebugDetailObject& obj) {
+    if (obj.impl == nullptr) {
+        out << "nullptr";
+        return out;
+    }
+    out << DebugObject{obj.impl} << std::endl;
+    out << " Direct:" << std::endl;
+    for (Symbolic key : obj.impl->directKeys()) {
+        out << "  " << Symbols::get()[key] << ": "
+            << DebugObject{ (*obj.impl)[key] } << std::endl;
+    }
+    out << " Indirect:" << std::endl;
+    ObjectPtr parent = (*obj.impl)[Symbols::parent()];
+    if ((parent != nullptr) && (parent != obj.impl)) {
+        for (Symbolic key : keys(parent)) {
+            out << "  " << Symbols::get()[key] << ": "
+                << DebugObject{ objectGet(obj.impl, key) } << std::endl;
+        }
+    }
+    return out;
+}
+
 void dumpStack(std::ostream& out, std::stack<ObjectPtr>& stack) {
     if (stack.empty())
         return;
