@@ -1,0 +1,30 @@
+;;* MODULE test/bool-nil
+;;* PACKAGE latitude
+
+;;;; Copyright (c) 2018 Silvio Mayolo
+;;;; See LICENSE.txt for licensing details
+
+use 'unit-test importAll.
+
+bool-nil := $whereAmI.
+TestModule inject: bool-nil.
+
+bool-nil addTest 'bool-nil-truthiness do {
+  eq: Boolean  toBool, True.
+  eq: True     toBool, True.
+  eq: False    toBool, False.
+  eq: Nil      toBool, False.
+}.
+
+bool-nil addTest 'bool-nil-predicates do {
+  truthy { True  true?.  }.
+  truthy { False false?. }.
+  truthy { Nil   nil?.   }.
+}.
+
+bool-nil addTest 'nil-iterator do {
+  eq: Nil to (Array), [].
+  truthy { Nil iterator end?. }.
+}.
+
+bool-nil.
