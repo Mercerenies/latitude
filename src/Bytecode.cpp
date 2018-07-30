@@ -121,18 +121,19 @@ void resolveThunks(VMState& vm, NodePtr<WindPtr> oldWind, NodePtr<WindPtr> newWi
         exits.pop_back();
         enters.pop_front();
     }
+    ObjectPtr dyn = vm.state.dyn.top();
     vm.state.stack = pushNode(vm.state.stack, vm.state.cont);
     vm.state.stack = pushNode(vm.state.stack,
                              MethodSeek(Method(vm.reader.gtu, { Table::GTU_UNSTORED })));
     vm.state.cont = MethodSeek(Method(vm.reader.gtu, { Table::GTU_STORED }));
     for (WindPtr ptr : exits) {
         vm.state.lex.push( clone(ptr->after.lex) );
-        vm.state.dyn.push( clone(ptr->after.dyn) );
+        vm.state.dyn.push( clone(dyn) );
         vm.state.stack = pushNode(vm.state.stack, MethodSeek(ptr->after.code));
     }
     for (WindPtr ptr : enters) {
         vm.state.lex.push( clone(ptr->before.lex) );
-        vm.state.dyn.push( clone(ptr->before.dyn) );
+        vm.state.dyn.push( clone(dyn) );
         vm.state.stack = pushNode(vm.state.stack, MethodSeek(ptr->before.code));
     }
 }
