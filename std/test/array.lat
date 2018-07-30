@@ -1,0 +1,177 @@
+;;* MODULE test/array
+;;* PACKAGE latitude
+
+;;;; Copyright (c) 2018 Silvio Mayolo
+;;;; See LICENSE.txt for licensing details
+
+use 'unit-test importAll.
+
+array := $whereAmI.
+TestModule inject: array.
+
+Dummy := Object clone.
+Dummy toString := "Dummy".
+Dummy pretty := "Dummy*".
+
+array addTest 'array-length-and-empty do {
+  truthy { [] empty?. }.
+  truthy { [1] empty? not. }.
+  eq: [1, 2, 3] length, 3.
+  eq: [1, 2, 3] size  , 3.
+  eq: [] length, 0.
+  eq: [] size  , 0.
+}.
+
+array addTest 'array-push-pop do {
+  arr := [].
+
+  eq: arr, [].
+  truthy { arr empty?. }.
+
+  arr pushBack: 1.
+  arr pushBack: 2.
+  arr pushBack: 3.
+
+  eq: arr, [1, 2, 3].
+
+  eq: arr popBack, 3.
+  eq: arr popFront, 1.
+  eq: arr, [2].
+
+  arr pushBack: 4.
+  arr pushFront: 5.
+  arr pushFront: 6.
+  eq: arr, [6, 5, 2, 4].
+  eq: arr length, 4.
+
+}.
+
+array addTest 'array-cloning do {
+
+  arr1 := [1, 2, 3].
+  arr2 := arr1 clone.
+
+  eq: arr1, arr2.
+
+  ;; We're breaking the connection on the back end between the two.
+  eq: arr2 popBack, 3.
+  arr2 pushBack: 4.
+  arr1 pushBack: 5.
+
+  ;; We're *not* breaking the front end connection.
+  eq: arr1 popFront, 1.
+  arr1 pushFront: 6.
+
+  eq: arr1, [6, 2, 3, 5].
+  eq: arr2, [6, 2, 4].
+
+}.
+
+array addTest 'array-random-access do {
+
+  arr := ["A", "B", "C", "D"].
+
+  eq: arr nth ( 2), "C".
+  eq: arr nth ( 0), "A".
+  eq: arr nth (-1), "D".
+  eq: arr nth (-4), "A".
+  eq: arr nth (-3), "B".
+  throws (err BoundsError) do { arr nth (4). }.
+  throws (err BoundsError) do { arr nth (-9). }.
+  throws (err ArgError) do { arr nth (0.5). }.
+  throws (err ArgError) do { arr nth (1+1i). }.
+
+  arr pushFront: "Front".
+  arr pushBack: "Back".
+
+  eq: arr nth ( 0), "Front".
+  eq: arr nth ( 5), "Back".
+  eq: arr nth (-1), "Back".
+
+  arr nth (2) = "B_modified".
+  eq: arr nth (2), "B_modified".
+  arr nth (-2) = "D_modified".
+  eq: arr nth (-2), "D_modified".
+
+  arr nth (-1) = "Back_modified".
+  eq: arr popBack, "Back_modified".
+
+}.
+
+array addTest 'array-joining do {
+
+  arr := [Dummy, 1, Dummy].
+
+  eq: arr join (","), "Dummy,1,Dummy".
+  eq: arr joinText (","), "Dummy*,1,Dummy*".
+  eq: arr join (""), "Dummy1Dummy".
+  eq: arr joinText (""), "Dummy*1Dummy*".
+  eq: arr join ("FOO"), "DummyFOO1FOODummy".
+  eq: arr joinText ("FOO"), "Dummy*FOO1FOODummy*".
+  eq: [] join ("FOO"), "".
+  eq: [] joinText ("FOO"), "".
+  eq: [1] join ("FOO"), "1".
+  eq: [1] joinText ("FOO"), "1".
+
+}.
+
+array addTest 'array-to-string do {
+
+  arr := [1, 2, 3, 4, 5].
+  eq: arr toString, "[1, 2, 3, 4, 5]".
+
+}.
+
+array addTest 'array-comparisons do {
+
+  truthy { [1, 2, 3] == [1, 2, 3]. }.
+  truthy { [1, 2, 3] /= [1, 2]. }.
+  truthy { [1, 2] /= [1, 2, 3]. }.
+  truthy { [1, 2, 4] /= [1, 2, 3]. }.
+  truthy { [] == []. }.
+
+  truthy { [1, 2, 3] < [1, 2, 4]. }.
+  truthy { [1, 2] < [1, 2, 3]. }.
+
+}.
+
+array addTest 'array-insertion-removal do {
+
+  arr := [1, 2, 3, 4, 3, 2, 1].
+  eq: arr remove { $1 == 3. }, [1, 2, 4, 2, 1].
+  eq: arr removeOnce { $1 == 3. }, [1, 2, 4, 3, 2, 1].
+
+  eq: arr, [1, 2, 3, 4, 3, 2, 1].
+
+  arr remove! { $1 == 3. }.
+  eq: arr, [1, 2, 4, 2, 1].
+
+  arr removeOnce! { $1 == 2. }.
+  eq: arr, [1, 4, 2, 1].
+
+  arr insert: 1, 5.
+  eq: arr, [1, 5, 4, 2, 1].
+
+  arr insert: -1, 6.
+  eq: arr, [1, 5, 4, 2, 6, 1].
+
+  arr insert: 0, 7.
+  eq: arr, [7, 1, 5, 4, 2, 6, 1].
+
+  arr insert: 7, 8.
+  eq: arr, [7, 1, 5, 4, 2, 6, 1, 8].
+
+}.
+
+array addTest 'array-builder do {
+
+  builder := Array builder.
+  builder append (10).
+  builder append (20).
+  builder append ("foobar").
+  builder append (Nil).
+  eq: builder finish, [10, 20, "foobar", Nil].
+
+}.
+
+array.
