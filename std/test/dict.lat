@@ -1,0 +1,54 @@
+;;* MODULE test/dict
+;;* PACKAGE latitude
+
+;;;; Copyright (c) 2018 Silvio Mayolo
+;;;; See LICENSE.txt for licensing details
+
+use 'unit-test importAll.
+
+dict := $whereAmI.
+TestModule inject: dict.
+
+dict addTest 'dict-to-string do {
+  eq: [=>] toString, "[=>]".
+  eq: [ 'a => 1 ] toString, "['a => 1]".
+}.
+
+dict addTest 'dict-cloning do {
+
+  a := [ 'foo => 1, 'bar => 2 ].
+  b := a clone.
+  c := a dup.
+
+  a get 'foo = "a".
+  b get 'bar = "b".
+  b get 'baz = "c".
+
+  eq: a, [ 'foo => "a", 'bar => 2 ].
+  eq: b, [ 'foo => 1, 'bar => "b", 'baz => "c" ].
+  eq: c, [ 'foo => 1, 'bar => 2 ].
+
+}.
+
+dict addTest 'dict-random-access do {
+
+  a := [ 'foo => 1 ].
+
+  truthy { a has? 'foo. }.
+  truthy { a has? 'bar not. }.
+
+  eq: a get 'foo, 1.
+  throws (err TypeError) do { a get 'bar. }. ;; Should be SlotError :(
+
+  a get 'foo = 2.
+  eq: a get 'foo, 2.
+
+  a get 'bar = 3.
+  truthy { a has? 'bar. }.
+  eq: a get 'bar, 3.
+
+}.
+
+;; /////
+
+dict.
