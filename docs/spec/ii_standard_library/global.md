@@ -262,8 +262,11 @@ is evaluated as a Latitude script. The returned value from the file
 (usually, but not necessarily the constructed module) is placed in
 `&loaded` for later access and returned.
 
-If multiple candidate modules have the name `name`, a `ModuleError`
-will be raised. In this case, use the full `fromPackage ...` form.
+Note that `resolveImport` and, by extension, this method will always
+import the *first* matched module. It is possible for there to be
+multiple modules from distinct packages with the same name. If there
+is concern for this possibility, the full `fromPackage ...` form of
+the `use` expression can be used to specify a package.
 
 ### `global fromPackage (pkg) use (name).`
 

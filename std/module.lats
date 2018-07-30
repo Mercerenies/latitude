@@ -97,26 +97,20 @@ ModuleLoader resolveImport := {
   if (imp is? (String)) then {
     imp.
   } else {
-    candidates := [].
-    this loadPath visit {
+    match := this loadPath any {
       curr := $1 ++ (imp asText) ++ ".lat".
-      { Stream exists? (curr). } or { Stream exists? (curr ++ "c"). } ifTrue {
-        matchPackage (curr) ifTrue {
-          candidates pushBack: curr.
+      { Stream exists? (curr). } or { Stream exists? (curr ++ "c"). } and {
+        matchPackage (curr) and {
+          curr.
         }.
       }.
     }.
-    candidates empty? ifTrue {
+    match nil? ifTrue {
       err ModuleError clone tap {
         self message := "Cannot find module " ++ (imp).
       } throw.
     }.
-    (candidates size > 1) ifTrue {
-      err ModuleError clone tap {
-        self message := "Ambiguous module name " ++ (imp).
-      } throw.
-    }.
-    candidates nth (0).
+    match.
   }.
 }.
 

@@ -6,6 +6,6 @@ meta sys kernelLoad0#: "std/latitude.lats", global.
 
 use 'repl.
 
-$moduleLoader loadPath pushBack: Kernel cwd ++ "/".
+$moduleLoader loadPath pushFront: Kernel cwd ++ "/".
 
 repl REPL loop.
