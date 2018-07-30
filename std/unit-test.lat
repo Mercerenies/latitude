@@ -145,4 +145,16 @@ unit-test throws := {
   }.
 }.
 
+$whereAmI is? (String) ifTrue {
+  args := ArgList clone fillWith ($argv).
+  if (args empty?) then {
+    putln: "Usage: latitude unit-test.lat <test-names ...>".
+  } else {
+    args visit {
+      putln: "Running " ++ $1.
+      use ($1) runTests.
+    }.
+  }.
+}.
+
 unit-test.
