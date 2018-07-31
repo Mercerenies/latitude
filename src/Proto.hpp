@@ -339,6 +339,9 @@ std::list<ObjectPtr> hierarchy(ObjectPtr obj);
 ///
 /// \param dyn the dynamic scope
 /// \param here the location to the set the variable to
+///
+/// \deprecated Assign the variable directly instead
+[[deprecated]]
 void hereIAm(ObjectPtr dyn, ObjectPtr here);
 
 #endif // PROTO_HPP
