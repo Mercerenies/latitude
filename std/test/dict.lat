@@ -49,6 +49,49 @@ dict addTest 'dict-random-access do {
 
 }.
 
-;; /////
+dict addTest 'dict-key-deletion do {
+
+  a := [ 'foo => 1, 'bar => 2 ].
+
+  a delete: 'baz.
+  truthy { a has? 'foo. }.
+  truthy { a has? 'bar. }.
+
+  a delete: 'bar.
+  truthy { a has? 'foo. }.
+  truthy { a has? 'bar not. }.
+
+}.
+
+dict addTest 'dict-iteration do {
+
+  truthy { [=>] iterator end?. }.
+
+  arr := [ 'a => 1 ] to (Array).
+  eq: arr length, 1.
+  eq: arr nth (0) car, 'a.
+  eq: arr nth (0) cdr, 1.
+
+}.
+
+dict addTest 'dict-keys-and-values do {
+
+  eq: [=>] keys to (Array), [].
+  eq: [=>] values to (Array), [].
+
+  eq: [ 'a => 1 ] keys to (Array), ['a].
+  eq: [ 'a => 1 ] values to (Array), [1].
+
+}.
+
+dict addTest 'dict-equality do {
+
+  eq: [ 'a => 1 ], [ 'a => 1 ].
+
+  dict := [ 'a => 1 ].
+  dict get 'b = 2.
+  eq: dict, [ 'a => 1, 'b => 2 ].
+
+}.
 
 dict.
