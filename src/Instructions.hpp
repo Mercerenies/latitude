@@ -413,7 +413,11 @@ public:
     /// \return the function index within the translation unit
     FunctionIndex index();
 
+    friend bool operator==(Method a, Method b);
+
 };
+
+bool operator==(Method a, Method b);
 
 /// For efficiency reasons, it is undesirable to store methods
 /// directly. Therefore, a MethodSeek instance stores a sequence of

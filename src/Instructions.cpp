@@ -271,6 +271,10 @@ FunctionIndex Method::index() {
     return ind;
 }
 
+bool operator==(Method a, Method b) {
+    return (a.unit == b.unit) && (a.ind == b.ind);
+}
+
 // -1L will become the maximum unsigned long value
 
 MethodSeek::MethodSeek()
