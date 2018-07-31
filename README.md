@@ -44,6 +44,12 @@ if you decide that you want to have multiple random number generators
 object into a "class-like" object, from which other objects can be
 made.
 
+## Code Samples
+
+Several runnable code examples are available in the
+repository
+[`/latitude-examples`](https://github.com/Mercerenies/latitude-examples/).
+
 ## Dependencies
 
 Latitude requires a C++14 compiler (tested with GCC 5.3.0), the Boost
