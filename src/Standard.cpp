@@ -2,6 +2,7 @@
 //// See LICENSE.txt for licensing details
 
 #include "Standard.hpp"
+#include "Args.hpp"
 #include "Assembler.hpp"
 #include "Reader.hpp"
 #include "Garnish.hpp"
@@ -2604,6 +2605,39 @@ void spawnSystemCallsNew(ObjectPtr global,
                                    makeAssemblerLine(Instr::RTRV),
                                    makeAssemblerLine(Instr::MOV, Reg::RET, Reg::SLF),
                                    makeAssemblerLine(Instr::CPP, CPP_DUMPDBG))));
+
+     // CPP_LATVER (returns part of the Latitude version, based on %num0)
+     //  * 0 - Major
+     //  * 1 - Minor
+     //  * 2 - Build
+     //  * 3 - Release type
+     assert(reader.cpp.size() == CPP_LATVER);
+     reader.cpp.push_back([](VMState& vm) {
+             switch (vm.trans.num0.asSmallInt()) {
+             case 0:
+                 vm.trans.ret = garnishObject(vm.reader, CURRENT_VERSION.majorVersion);
+                 break;
+             case 1:
+                 vm.trans.ret = garnishObject(vm.reader, CURRENT_VERSION.minorVersion);
+                 break;
+             case 2:
+                 vm.trans.ret = garnishObject(vm.reader, CURRENT_VERSION.buildVersion);
+                 break;
+             case 3:
+                 vm.trans.ret = garnishObject(vm.reader, (int)CURRENT_VERSION.release);
+                 break;
+             }
+         });
+     sys->put(Symbols::get()["latitudeVersion#"],
+              defineMethod(unit, global, method,
+                           asmCode(makeAssemblerLine(Instr::GETD, Reg::SLF),
+                                   makeAssemblerLine(Instr::SYMN, Symbols::get()["$1"].index),
+                                   makeAssemblerLine(Instr::RTRV),
+                                   makeAssemblerLine(Instr::MOV, Reg::RET, Reg::PTR),
+                                   makeAssemblerLine(Instr::ECLR),
+                                   makeAssemblerLine(Instr::EXPD, Reg::NUM0),
+                                   makeAssemblerLine(Instr::THROA, "Number expected"),
+                                   makeAssemblerLine(Instr::CPP, CPP_LATVER))));
 
      // GTU METHODS //
 

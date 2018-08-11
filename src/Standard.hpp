@@ -71,7 +71,8 @@ namespace Table {
         CPP_WHILE_REGS = 57,
         CPP_WHILE_REGS_ZERO = 58,
         CPP_FRESH = 59,
-        CPP_DUMPDBG = 60;
+        CPP_DUMPDBG = 60,
+        CPP_LATVER = 61;
     constexpr long
         GTU_EMPTY = 0,
         GTU_LOOP_DO = 1,

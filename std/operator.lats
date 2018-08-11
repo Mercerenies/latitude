@@ -43,3 +43,36 @@ meta operators get '-   = operator (35, Associativity Left ).
 meta operators get '/   = operator (40, Associativity Left ).
 meta operators get '*   = operator (45, Associativity Left ).
 meta operators get '^   = operator (50, Associativity Right).
+
+
+;; Versioning
+
+global Version ::= Object clone.
+
+Version Release := Enumeration of '[Dev, Alpha, Beta, Full].
+
+Version major := meta sys latitudeVersion#: 0.
+Version minor := meta sys latitudeVersion#: 1.
+Version build := meta sys latitudeVersion#: 2.
+Version release := Version Release value (meta sys latitudeVersion#: 3).
+
+Version == := {
+  (self major == $1 major) &&
+    (self minor == $1 minor) &&
+    (self build == $1 build) &&
+    (self release == $1 release).
+}.
+
+Version < := {
+  localize.
+  takes '[other].
+  cond {
+    when (this major < other major) do { True. }.
+    when (this major > other major) do { False. }.
+    when (this minor < other minor) do { True. }.
+    when (this minor > other minor) do { False. }.
+    when (this build < other build) do { True. }.
+    when (this build > other build) do { False. }.
+    else { False. }. ; We could possibly compare the release types to one another
+  }.
+}.
