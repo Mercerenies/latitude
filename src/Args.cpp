@@ -5,6 +5,26 @@
 #include "Args.hpp"
 #include <cstring>
 #include <iostream>
+#include <sstream>
+
+std::string Version::asString() const {
+    std::ostringstream str;
+    str << "v" << majorVersion << "." << minorVersion << "." << buildVersion;
+    switch (release) {
+    case ReleaseType::DEV:
+        str << "-dev";
+        break;
+    case ReleaseType::ALPHA:
+        str << "-alpha";
+        break;
+    case ReleaseType::BETA:
+        str << "-beta";
+        break;
+    case ReleaseType::FULL:
+        break;
+    }
+    return str.str();
+}
 
 void initRandom() {
     srand(time(NULL));
@@ -59,5 +79,5 @@ void outputHelp() {
 void outputVersion() {
     // This will print an actual version number once the language has been
     // formally released. For now, it's a placeholder string.
-    std::cout << "Latitude [Development Version]" << std::endl;
+    std::cout << "Latitude " << CURRENT_VERSION.asString() << std::endl;
 }

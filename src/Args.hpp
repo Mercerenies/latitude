@@ -4,6 +4,8 @@
 #ifndef ARGS_HPP
 #define ARGS_HPP
 
+#include <string>
+
 /// \file
 ///
 /// \brief Parsing tools and structures for command line arguments.
@@ -52,6 +54,28 @@ struct CmdArgs {
     RunMode run;
     OutputMode output;
 };
+
+/// A Latitude release can be an alpha release, a beta release, or a
+/// full release.
+enum class ReleaseType {
+    DEV, ALPHA, BETA, FULL
+};
+
+/// A Latitude version object.
+struct Version {
+    int majorVersion;
+    int minorVersion;
+    int buildVersion;
+    ReleaseType release;
+
+    constexpr Version(int major, int minor, int build, ReleaseType release)
+        : majorVersion(major), minorVersion(minor), buildVersion(build), release(release) {}
+
+    std::string asString() const;
+
+};
+
+constexpr Version CURRENT_VERSION = Version(0, 1, 0, ReleaseType::DEV);
 
 /// Initializes the C random number generator by calling `srand` and
 /// providing it with some seed, such as the current time.
