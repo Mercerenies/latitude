@@ -64,12 +64,6 @@ There is an Emacs mode for Latitude in `misc/latitude-mode.el` which
 should work out-of-the-box and will highlight Latitude syntax.
 Improvements will be on the way to the Emacs mode in the future.
 
-## Usage
-
-This language is still in development. Once an official release is
-made (within the next few months), there will be some stability. But
-for now, FUTURE CHANGES MAY BREAK YOUR CODE!
-
 ## License
 
 Latitude is copyrighted software belonging to Silvio Mayolo

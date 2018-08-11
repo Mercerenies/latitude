@@ -75,7 +75,7 @@ struct Version {
 
 };
 
-constexpr Version CURRENT_VERSION = Version(0, 1, 0, ReleaseType::DEV);
+constexpr Version CURRENT_VERSION = Version(0, 1, 0, ReleaseType::FULL);
 
 /// Initializes the C random number generator by calling `srand` and
 /// providing it with some seed, such as the current time.
