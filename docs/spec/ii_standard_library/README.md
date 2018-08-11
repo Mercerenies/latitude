@@ -89,6 +89,7 @@ scope object.
      +-- Stream
      +-- String
      +-- Symbol
+     +-- Version
      +-- err
      +-- global
      +-- meta
@@ -129,6 +130,7 @@ scope object.
  * [Stream](stream.md)
  * [String](string.md)
  * [Symbol](symbol.md)
+ * [Version](version.md)
  * [global](global.md)
  * [meta](meta.md)
 
