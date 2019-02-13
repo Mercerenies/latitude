@@ -2310,7 +2310,7 @@ void spawnSystemCallsNew(ObjectPtr global,
      // objId#: obj.
      assert(reader.cpp.size() == CPP_OBJID);
      reader.cpp.push_back([](VMState& vm) {
-         auto value = (intptr_t)(vm.trans.ret.get());
+         auto value = (intptr_t)(vm.trans.ret);
          auto value1 = Number::bigint(value);
          vm.trans.ret = garnishObject(vm.reader, Number(value1));
      });

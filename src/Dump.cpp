@@ -59,7 +59,7 @@ std::ostream& operator <<(std::ostream& out, const DebugObject& obj) {
         return out;
     }
     // First, we know we can safely print the pointer's numerical value.
-    out << obj.impl.get();
+    out << obj.impl;
     // Get prim info
     std::string prim = boost::apply_visitor(DebugPrimVisitor(), obj.impl->prim());
     // Get toString info

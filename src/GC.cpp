@@ -23,7 +23,7 @@ ObjectPtr GC::allocate() {
 #if GC_PRINT > 2
     std::cout << "<<Allocating " << ptr << ">>" << std::endl;
 #endif
-    alloc.insert(ptr.get());
+    alloc.insert(ptr);
     return ptr;
 }
 
@@ -63,7 +63,7 @@ void addSlotsToFrontier(const Container& visited, Container& frontier, Object* c
         std::cout << "<<Key " << Symbols::get()[key] << ">>" << std::endl;
 #endif
         auto val = (*curr)[key];
-        addToFrontier(visited, frontier, val.get());
+        addToFrontier(visited, frontier, val);
     }
 #if GC_PRINT > 1
     std::cout << "<<End keys>>" << std::endl;
@@ -75,7 +75,7 @@ void addStackToFrontier(const Container& visited, Container& frontier, stack<Obj
     if (!stack.empty()) {
         auto fst = stack.top();
         stack.pop();
-        addToFrontier(visited, frontier, fst.get());
+        addToFrontier(visited, frontier, fst);
         addStackToFrontier(visited, frontier, stack);
         stack.push(fst);
     }
@@ -95,10 +95,10 @@ void addWindToFrontier(const Container& visited, Container& frontier, stack<Wind
     if (!stack.empty()) {
         auto fst = stack.top();
         stack.pop();
-        addToFrontier(visited, frontier, fst->before.lex.get());
-        addToFrontier(visited, frontier, fst->before.dyn.get());
-        addToFrontier(visited, frontier, fst->after.lex.get());
-        addToFrontier(visited, frontier, fst->after.dyn.get());
+        addToFrontier(visited, frontier, fst->before.lex);
+        addToFrontier(visited, frontier, fst->before.dyn);
+        addToFrontier(visited, frontier, fst->after.lex);
+        addToFrontier(visited, frontier, fst->after.dyn);
         addWindToFrontier(visited, frontier, stack);
         stack.push(fst);
     }
@@ -108,10 +108,10 @@ template <typename Container>
 void addWindToFrontier(const Container& visited, Container& frontier, NodePtr<WindPtr> stack) {
     if (stack != nullptr) {
         auto fst = stack->get();
-        addToFrontier(visited, frontier, fst->before.lex.get());
-        addToFrontier(visited, frontier, fst->before.dyn.get());
-        addToFrontier(visited, frontier, fst->after.lex.get());
-        addToFrontier(visited, frontier, fst->after.dyn.get());
+        addToFrontier(visited, frontier, fst->before.lex);
+        addToFrontier(visited, frontier, fst->before.dyn);
+        addToFrontier(visited, frontier, fst->after.lex);
+        addToFrontier(visited, frontier, fst->after.dyn);
         addWindToFrontier(visited, frontier, popNode(stack));
     }
 }
@@ -119,7 +119,7 @@ void addWindToFrontier(const Container& visited, Container& frontier, NodePtr<Wi
 template <typename Container, typename T>
 void addMapToFrontier(const Container& visited, Container& frontier, map<T, ObjectPtr>& map) {
     for (auto& value : map)
-        addToFrontier(visited, frontier, value.second.get());
+        addToFrontier(visited, frontier, value.second);
 }
 
 template <typename Container>
@@ -135,7 +135,7 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, In
 template <typename Container, typename Container1>
 void addSeqToFrontier(const Container& visited, Container& frontier, Container1& vec) {
     for (auto& value : vec)
-        addToFrontier(visited, frontier, value.get());
+        addToFrontier(visited, frontier, value);
 }
 
 template <typename Container>
@@ -145,9 +145,9 @@ void addContinuationToFrontier(const Container& visited, Container& frontier, co
 
 template <typename Container>
 void addContinuationToFrontier(const Container& visited, Container& frontier, TransientState& trans) {
-    addToFrontier     (visited, frontier, trans.ptr .get());
-    addToFrontier     (visited, frontier, trans.slf .get());
-    addToFrontier     (visited, frontier, trans.ret .get());
+    addToFrontier     (visited, frontier, trans.ptr );
+    addToFrontier     (visited, frontier, trans.slf );
+    addToFrontier     (visited, frontier, trans.ret );
 }
 
 template <typename Container>

@@ -12,83 +12,8 @@
 
 using namespace std;
 
-void ObjectPtr::up() {
-    if (impl != nullptr) {
-        ObjectEntry* ptr = reinterpret_cast<ObjectEntry*>(impl);
-        ptr->ref_count++;
-    }
-}
-
-void ObjectPtr::down() {
-    if (impl != nullptr) {
-        ObjectEntry* ptr = reinterpret_cast<ObjectEntry*>(impl);
-        assert(ptr->ref_count > 0);
-        ptr->ref_count--;
-        if (ptr->ref_count == 0) {
-            //std::cout << "<FREE " << impl << ">" << std::endl;
-            GC::get().free(impl);
-        }
-    }
-}
-
-ObjectPtr::ObjectPtr() : impl(nullptr) {}
-
-ObjectPtr::ObjectPtr(nullptr_t) : ObjectPtr() {}
-
-ObjectPtr::ObjectPtr(Object* ptr) : impl(ptr) {
-    up();
-}
-
-ObjectPtr::ObjectPtr(const ObjectPtr& ptr) : impl(ptr.impl) {
-    up();
-}
-
-ObjectPtr::ObjectPtr(ObjectPtr&& ptr) : impl(ptr.impl) {
-    ptr.impl = nullptr;
-    // Created and destroyed a reference; leave it alone
-}
-
-ObjectPtr::~ObjectPtr() {
-    down();
-}
-
-ObjectPtr& ObjectPtr::operator=(const ObjectPtr& ptr) {
-    down();
-    impl = ptr.impl;
-    up();
-    return *this;
-}
-
-ObjectPtr& ObjectPtr::operator=(ObjectPtr&& ptr) {
-    down();
-    impl = ptr.impl;
-    ptr.impl = nullptr;
-    // Created and destroyed a reference; leave it alone
-    return *this;
-}
-
-Object& ObjectPtr::operator*() const {
-    return *impl;
-}
-
-Object* ObjectPtr::operator->() const {
-    return impl;
-}
-
-Object* ObjectPtr::get() const {
-    return impl;
-}
-
-bool ObjectPtr::operator==(const ObjectPtr& ptr) const {
-    return this->impl == ptr.impl;
-}
-
-bool ObjectPtr::operator!=(const ObjectPtr& ptr) const {
-    return this->impl != ptr.impl;
-}
-
 bool PtrCompare::operator()(const ObjectPtr& a, const ObjectPtr& b) {
-    return a.get() < b.get();
+    return a < b;
 }
 
 Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, Protection::NO_PROTECTION) {}
