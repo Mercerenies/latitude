@@ -16,6 +16,44 @@ bool PtrCompare::operator()(const ObjectPtr& a, const ObjectPtr& b) {
     return a < b;
 }
 
+ObjectHierarchyIterator ObjectHierarchy::begin() {
+    return { curr };
+}
+
+ObjectHierarchyIterator ObjectHierarchy::end() {
+    return { nullptr };
+}
+
+bool ObjectHierarchyIterator::operator==(ObjectHierarchyIterator other) {
+    return curr == other.curr;
+}
+
+bool ObjectHierarchyIterator::operator!=(ObjectHierarchyIterator other) {
+    return curr != other.curr;
+}
+
+ObjectPtr& ObjectHierarchyIterator::operator*() {
+    return curr;
+}
+
+ObjectPtr* ObjectHierarchyIterator::operator->() {
+    return &curr;
+}
+
+ObjectHierarchyIterator& ObjectHierarchyIterator::operator++() {
+    ObjectPtr next = (*curr)[ Symbols::parent() ];
+    if (next == curr)
+        next = nullptr;
+    curr = next;
+    return *this;
+}
+
+ObjectHierarchyIterator ObjectHierarchyIterator::operator++(int) {
+    auto self = *this;
+    ++*this;
+    return self;
+}
+
 Slot::Slot(ObjectPtr ptr) noexcept : Slot(ptr, Protection::NO_PROTECTION) {}
 
 Slot::Slot(ObjectPtr ptr, Protection protect) noexcept : obj(ptr), protection(protect) {}
@@ -110,17 +148,8 @@ set<Symbolic> keys(ObjectPtr obj) {
     return result;
 }
 
-list<ObjectPtr> hierarchy(ObjectPtr obj) {
-    list<ObjectPtr> parents;
-    while (find_if(parents.begin(), parents.end(), [&obj](auto obj1) {
-                return obj == obj1;
-            }) == parents.end()) {
-        parents.push_back(obj);
-        obj = (*obj)[ Symbols::parent() ];
-        if (obj == nullptr)
-            break;
-    }
-    return parents;
+ObjectHierarchy hierarchy(ObjectPtr obj) {
+    return { obj };
 }
 
 void hereIAm(ObjectPtr dyn, ObjectPtr here) {

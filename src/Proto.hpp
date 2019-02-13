@@ -59,6 +59,31 @@ struct PtrCompare {
 
 };
 
+struct ObjectHierarchyIterator;
+
+struct ObjectHierarchy {
+    ObjectPtr curr;
+    ObjectHierarchyIterator begin();
+    ObjectHierarchyIterator end();
+};
+
+struct ObjectHierarchyIterator {
+
+    typedef std::ptrdiff_t difference_type;
+    typedef ObjectPtr value_type;
+    typedef ObjectPtr* pointer;
+    typedef ObjectPtr& reference;
+    typedef std::input_iterator_tag iterator_category;
+
+    ObjectPtr curr;
+    bool operator==(ObjectHierarchyIterator);
+    bool operator!=(ObjectHierarchyIterator);
+    ObjectPtr& operator*();
+    ObjectPtr* operator->();
+    ObjectHierarchyIterator& operator++();
+    ObjectHierarchyIterator operator++(int);
+};
+
 /// \brief A primitive field, which can be either empty or an element
 /// of any number of types.
 using Prim = boost::variant<boost::blank, Number, std::string,
@@ -248,7 +273,7 @@ std::set<Symbolic> keys(ObjectPtr obj);
 ///
 /// \param obj the object
 /// \return the hierarchy of parents
-std::list<ObjectPtr> hierarchy(ObjectPtr obj);
+ObjectHierarchy hierarchy(ObjectPtr obj);
 
 /// Sets the $whereAmI variable. Should be used when the "execution
 /// environment" is changing, for instance when loading a file. Note
