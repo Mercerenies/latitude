@@ -16,7 +16,7 @@ TEST_CASE( "The garbage collector can be run by force", "" ) {
 TEST_CASE( "The garbage collector cleans up cyclic references", "" ) {
 
   ObjectPtr obj = clone(globalVM->reader.lit[Lit::OBJECT]);
-  Object* raw = obj.get();
+  Object* raw = obj;
   ObjectEntry* data = reinterpret_cast<ObjectEntry*>(raw);
 
   obj->put(Symbols::get()["cyclicReference"], obj);

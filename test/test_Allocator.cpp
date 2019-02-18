@@ -20,6 +20,7 @@ TEST_CASE( "Allocation and deallocation work as expected", "" ) {
 
 }
 
+/*
 TEST_CASE( "Deallocation by ref count actually happens", "" ) {
 
   ObjectPtr newObject0 = GC::get().allocate();
@@ -41,4 +42,4 @@ TEST_CASE( "Deallocation by ref count actually happens", "" ) {
   REQUIRE( reinterpret_cast<ObjectEntry*>(raw)->in_use == false );
 
 }
-
+*/
