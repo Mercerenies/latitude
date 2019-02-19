@@ -47,7 +47,7 @@ public:
 
     /// Gets the element, or returns nullptr if it is not found.
     ///
-    /// \param key The key
+    /// \param key the key
     /// \return the value, or nullptr
     V* get(K key);
 
@@ -58,6 +58,13 @@ public:
     /// \param key the key
     /// \param value the value
     void put(K key, V value);
+
+    /// Removes the key from the map. If the key does not exist, no
+    /// action is taken.
+    ///
+    /// \param key the key
+    /// \return true if something was removed
+    bool remove(K key);
 
     std::size_t size();
 
@@ -140,7 +147,7 @@ V* HashMap<K, V>::get(K key) {
         if (pair == defaulted) {
             return nullptr;
         } else if (pair.first == key) {
-            return &pair.second;
+            return (pair.second == defaulted.second) ? nullptr : &pair.second;
         } else if (pair.first < key) {
             base++;
         } else {
@@ -169,6 +176,15 @@ void HashMap<K, V>::put(K key, V value) {
     }
     rehash();
     put(key, value);
+}
+
+template <typename K, typename V>
+bool HashMap<K, V>::remove(K key) {
+    V* slot = get(key);
+    if (slot == nullptr)
+        return false;
+    *slot = V();
+    return true;
 }
 
 template <typename K, typename V>
