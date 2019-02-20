@@ -99,3 +99,18 @@ TEST_CASE( "Deleted slots can be reassigned", "" ) {
 
 }
 
+TEST_CASE( "Maps can be iterated over", "" ) {
+
+  HashMap<int, int> map;
+
+  REQUIRE( map.size() == 0 );
+  REQUIRE( map.begin() == map.end() );
+  REQUIRE( std::count_if(map.begin(), map.end(), [](auto) { return true; }) == 0 );
+
+  map.put(10, 1);
+  REQUIRE( map.size() == 0 );
+  REQUIRE( map.begin() != map.end() );
+  REQUIRE( *(map.begin()) == std::pair<int, int>(10, 1) );
+  REQUIRE( std::count_if(map.begin(), map.end(), [](auto) { return true; }) == 1 );
+
+}

@@ -13,6 +13,9 @@ class HashMap;
 template <typename K, typename V>
 void swap(HashMap<K, V>& a, HashMap<K, V>& b);
 
+template <typename K, typename V>
+class HashMapIterator;
+
 /// A custom hash map implementation. The types K and V must both be
 /// default-initializable and trivially copyable. Additionally, K
 /// should be hashable and ordered. Note that the "default" value
@@ -21,7 +24,7 @@ void swap(HashMap<K, V>& a, HashMap<K, V>& b);
 template <typename K, typename V>
 class HashMap {
 private:
-    std::pair<K, V>* arr;
+    std::pair<K, V>* arr; // Owns this pointer
     std::size_t bucketCount;
     std::hash<K> hash;
     std::pair<K, V> defaulted;
@@ -68,7 +71,36 @@ public:
 
     std::size_t size();
 
-}; ///// Delete, iterator, then use this data structure
+    HashMapIterator<K, V> begin();
+
+    HashMapIterator<K, V> end();
+
+};
+
+template <typename K, typename V>
+bool operator==(HashMapIterator<K, V>, HashMapIterator<K, V>);
+
+template <typename K, typename V>
+bool operator!=(HashMapIterator<K, V>, HashMapIterator<K, V>);
+
+template <typename K, typename V>
+class HashMapIterator : public std::iterator<std::forward_iterator_tag, std::pair<K, V>> {
+private:
+    std::pair<K, V>* data; // Not owning!
+    std::size_t pos;
+    std::size_t length;
+    V defaulted;
+public:
+    HashMapIterator();
+    HashMapIterator(std::pair<K, V>* data, std::size_t start, std::size_t length);
+    HashMapIterator(std::pair<K, V>* data, std::size_t length);
+    HashMapIterator& operator++();
+    HashMapIterator operator++(int);
+    std::pair<K, V>& operator*();
+    std::pair<K, V>* operator->();
+    friend bool operator==<K, V>(HashMapIterator, HashMapIterator);
+    friend bool operator!=<K, V>(HashMapIterator, HashMapIterator);
+};
 
 // ------------
 
@@ -190,6 +222,67 @@ bool HashMap<K, V>::remove(K key) {
 template <typename K, typename V>
 std::size_t HashMap<K, V>::size() {
     return elems;
+}
+
+template <typename K, typename V>
+HashMapIterator<K, V> HashMap<K, V>::begin() {
+    return HashMapIterator<K, V>(arr, bucketCount * TREE_LEN);
+}
+
+template <typename K, typename V>
+HashMapIterator<K, V> HashMap<K, V>::end() {
+    return HashMapIterator<K, V>(arr, bucketCount * TREE_LEN, bucketCount * TREE_LEN);
+}
+
+template <typename K, typename V>
+HashMapIterator<K, V>::HashMapIterator()
+    : data(), pos(0), length(0) {}
+
+template <typename K, typename V>
+HashMapIterator<K, V>::HashMapIterator(std::pair<K, V>* data, std::size_t start, std::size_t length)
+    // I don't care about the overflow on -1; it's by design
+    : data(data), pos(start - 1), length(length) {
+    ++(*this);
+}
+
+template <typename K, typename V>
+HashMapIterator<K, V>::HashMapIterator(std::pair<K, V>* data, std::size_t length)
+    : HashMapIterator(data, 0, length) {}
+
+template <typename K, typename V>
+auto HashMapIterator<K, V>::operator++() -> HashMapIterator& {
+    // The forbidden do-while O.O
+    do {
+        ++pos;
+    } while ((pos < length) && (data[pos].second == defaulted));
+    return *this;
+}
+
+template <typename K, typename V>
+auto HashMapIterator<K, V>::operator++(int) -> HashMapIterator {
+    auto other = *this;
+    ++this;
+    return other;
+}
+
+template <typename K, typename V>
+std::pair<K, V>& HashMapIterator<K, V>::operator*() {
+    return data[pos];
+}
+
+template <typename K, typename V>
+std::pair<K, V>* HashMapIterator<K, V>::operator->() {
+    return &data[pos];
+}
+
+template <typename K, typename V>
+bool operator==(HashMapIterator<K, V> a, HashMapIterator<K, V> b) {
+    return a.data == b.data && a.pos == b.pos && a.length == b.length;
+}
+
+template <typename K, typename V>
+bool operator!=(HashMapIterator<K, V> a, HashMapIterator<K, V> b) {
+    return !(a == b);
 }
 
 #endif // HASHMAP_HPP
