@@ -52,7 +52,7 @@ public:
     ///
     /// \param key the key
     /// \return the value, or nullptr
-    V* get(K key);
+    V* get(K key) const;
 
     /// Adds a value to the map, or updates an existing value if the key
     /// already exists in the map. Note that adding a new value may
@@ -71,9 +71,9 @@ public:
 
     std::size_t size();
 
-    HashMapIterator<K, V> begin();
+    HashMapIterator<K, V> begin() const;
 
-    HashMapIterator<K, V> end();
+    HashMapIterator<K, V> end() const;
 
 };
 
@@ -109,10 +109,10 @@ constexpr std::size_t TREE_LEN = (1 << TREE_DEPTH) - 1;
 constexpr std::size_t DEFAULT_BUCKETS = 101;
 
 template <typename K, typename V>
-void swap(HashMap<K, V>& a, HashMap<K, V>& b) {
+void swap(HashMap<K, V>& a, HashMap<K, V>& b) { // TODO Write some unit tests for me :)
     using std::swap;
     swap(a.arr, b.arr);
-    swap(a.bucket_count, b.bucket_count);
+    swap(a.bucketCount, b.bucketCount);
     swap(a.elems, b.elems);
 }
 
@@ -172,7 +172,7 @@ auto HashMap<K, V>::operator=(HashMap&& other) -> HashMap& {
 }
 
 template <typename K, typename V>
-V* HashMap<K, V>::get(K key) {
+V* HashMap<K, V>::get(K key) const {
     std::size_t base = (hash(key) % bucketCount) * TREE_LEN;
     for (unsigned int i = 0; i < TREE_DEPTH; i++) {
         auto& pair = arr[base];
@@ -225,12 +225,12 @@ std::size_t HashMap<K, V>::size() {
 }
 
 template <typename K, typename V>
-HashMapIterator<K, V> HashMap<K, V>::begin() {
+HashMapIterator<K, V> HashMap<K, V>::begin() const {
     return HashMapIterator<K, V>(arr, bucketCount * TREE_LEN);
 }
 
 template <typename K, typename V>
-HashMapIterator<K, V> HashMap<K, V>::end() {
+HashMapIterator<K, V> HashMap<K, V>::end() const {
     return HashMapIterator<K, V>(arr, bucketCount * TREE_LEN, bucketCount * TREE_LEN);
 }
 
