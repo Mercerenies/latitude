@@ -10,6 +10,7 @@
 #include "Number.hpp"
 #include "Instructions.hpp"
 #include "Protection.hpp"
+#include "HashMap.hpp"
 #include <list>
 #include <functional>
 #include <memory>
@@ -137,6 +138,9 @@ struct Slot {
 
 };
 
+bool operator==(const Slot& a, const Slot& b);
+bool operator!=(const Slot& a, const Slot& b);
+
 /// An object in the language. Objects have slots which are referenced
 /// by symbols, as well as a special `prim` field which is not
 /// directly accessible using the syntax of the language. The slots
@@ -147,7 +151,7 @@ struct Slot {
 /// many of the built-in numerical, string, and symbol methods.
 class Object {
 private:
-    std::unordered_map<Symbolic, Slot> slots;
+    HashMap<Symbolic, Slot> slots;
     Prim primitive;
 
     Slot* getSlot(Symbolic key);

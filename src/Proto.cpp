@@ -63,19 +63,19 @@ bool Slot::hasObject() const noexcept {
 }
 
 Slot* Object::getSlot(Symbolic key) {
-    auto iter = slots.find(key);
-    if (iter == slots.end())
-        return nullptr;
-    else
-        return &iter->second;
+    return slots.get(key);
 }
 
 const Slot* Object::getSlot(Symbolic key) const {
-    auto iter = slots.find(key);
-    if (iter == slots.end())
-        return nullptr;
-    else
-        return &iter->second;
+    return slots.get(key);
+}
+
+bool operator==(const Slot& a, const Slot& b) {
+    return a.obj == b.obj && a.protection == b.protection;
+}
+
+bool operator!=(const Slot& a, const Slot& b) {
+    return !(a == b);
 }
 
 ObjectPtr Object::operator [](Symbolic key) const {
@@ -88,13 +88,13 @@ ObjectPtr Object::operator [](Symbolic key) const {
 void Object::put(Symbolic key, ObjectPtr ptr) {
     Slot* slot = this->getSlot(key);
     if (slot == nullptr)
-        slots[key] = Slot(ptr);
+        slots.put(key, ptr);
     else
         slot->obj = ptr;
 }
 
 void Object::remove(Symbolic key) {
-    slots.erase(key);
+    slots.remove(key);
 }
 
 set<Symbolic> Object::directKeys() const {
