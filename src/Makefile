@@ -15,7 +15,7 @@ Project:	$(FILES)
 Proto.o:	Proto.cpp Proto.hpp Protection.hpp Stream.hpp GC.hpp Symbol.hpp Standard.hpp Number.hpp Reader.hpp Garnish.hpp Macro.hpp Parser.tab.c Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp Allocator.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Proto.cpp
 
-Standard.o:	Standard.cpp Standard.hpp Proto.hpp Protection.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Environment.hpp Pathname.hpp Stack.hpp Platform.hpp Unicode.hpp pl_Unidata.h Base.hpp
+Standard.o:	Standard.cpp Standard.hpp Proto.hpp Protection.hpp Process.hpp Reader.hpp Stream.hpp Garnish.hpp Macro.hpp Parser.tab.c GC.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Environment.hpp Pathname.hpp Stack.hpp Platform.hpp Unicode.hpp pl_Unidata.h Base.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Standard.cpp
 
 Scanner.o:	lex.yy.c lex.yy.h
@@ -30,16 +30,16 @@ lex.yy.c:	Scanner.flex Parser.tab.c Operator.h CUnicode.h
 Parser.tab.c:	Parser.y
 	bison -d Parser.y
 
-Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp Protection.hpp Process.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Stack.hpp Optimizer.hpp Pathname.hpp Base.hpp Serialize.hpp
+Reader.o:	Reader.cpp Reader.hpp Parser.tab.c Symbol.hpp Standard.hpp Garnish.hpp Macro.hpp Proto.hpp Protection.hpp Process.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Stack.hpp Optimizer.hpp Pathname.hpp Base.hpp Serialize.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Reader.cpp
 
 Stream.o:	Stream.cpp Stream.hpp
 	$(CXX) $(CXXFLAGS) Stream.cpp
 
-Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Protection.hpp Stream.hpp Reader.hpp Macro.hpp Process.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Stack.hpp Base.hpp
+Garnish.o:	Garnish.cpp Garnish.hpp Proto.hpp Protection.hpp Stream.hpp Reader.hpp Macro.hpp Process.hpp Bytecode.hpp Instructions.hpp Assembler.hpp Stack.hpp Base.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Garnish.cpp
 
-GC.o:	GC.cpp GC.hpp Proto.hpp Protection.hpp Process.hpp Bytecode.hpp Instructions.hpp Allocator.hpp Stack.hpp
+GC.o:	GC.cpp GC.hpp Proto.hpp Protection.hpp Process.hpp Bytecode.hpp Instructions.hpp Allocator.hpp Stack.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) GC.cpp
 
 Symbol.o:	Symbol.cpp Symbol.hpp
@@ -48,13 +48,13 @@ Symbol.o:	Symbol.cpp Symbol.hpp
 Number.o:	Number.cpp Number.hpp
 	$(CXX) $(CXXFLAGS) Number.cpp
 
-REPL.o:	REPL.cpp REPL.hpp Proto.hpp Protection.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Process.hpp Stream.hpp Bytecode.hpp Instructions.hpp Pathname.hpp Stack.hpp
+REPL.o:	REPL.cpp REPL.hpp Proto.hpp Protection.hpp Reader.hpp Symbol.hpp Garnish.hpp Standard.hpp GC.hpp Process.hpp Stream.hpp Bytecode.hpp Instructions.hpp Pathname.hpp Stack.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) REPL.cpp
 
 Process.o:	Process.cpp Process.hpp Stream.hpp Platform.hpp
 	$(CXX) $(CXXFLAGS) Process.cpp
 
-Bytecode.o:	Bytecode.cpp Bytecode.hpp Symbol.hpp Number.hpp Proto.hpp Protection.hpp Reader.hpp Garnish.hpp Header.hpp Instructions.hpp Instructions.hpp Assembler.hpp Stack.hpp GC.hpp Base.hpp Serialize.hpp
+Bytecode.o:	Bytecode.cpp Bytecode.hpp Symbol.hpp Number.hpp Proto.hpp Protection.hpp Reader.hpp Garnish.hpp Header.hpp Instructions.hpp Instructions.hpp Assembler.hpp Stack.hpp GC.hpp Base.hpp Serialize.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Bytecode.cpp
 
 Header.o:	Header.cpp Header.hpp Serialize.hpp
@@ -69,7 +69,7 @@ Environment.o:	Environment.cpp Environment.hpp Platform.hpp
 Pathname.o: Pathname.cpp Pathname.hpp Platform.hpp
 	$(CXX) $(CXXFLAGS) Pathname.cpp
 
-Allocator.o:	Allocator.cpp Allocator.hpp Proto.hpp Protection.hpp Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp
+Allocator.o:	Allocator.cpp Allocator.hpp Proto.hpp Protection.hpp Process.hpp Bytecode.hpp Instructions.hpp Stack.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Allocator.cpp
 
 Unicode.o:	Unicode.cpp Unicode.hpp pl_Unidata.h
@@ -99,16 +99,16 @@ Optimizer.o:	Optimizer.cpp Optimizer.hpp Instructions.hpp Symbol.hpp
 CUnicode.o:	CUnicode.cpp CUnicode.h
 	$(CXX) $(CXXFLAGS) CUnicode.cpp
 
-Dump.o:	Dump.cpp Dump.hpp Proto.hpp Bytecode.hpp Instructions.hpp
+Dump.o:	Dump.cpp Dump.hpp Proto.hpp Bytecode.hpp Instructions.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Dump.cpp
 
 Protection.o:	Protection.cpp Protection.hpp
 	$(CXX) $(CXXFLAGS) Protection.cpp
 
-Parents.o:	Parents.cpp Parents.hpp Proto.hpp Symbol.hpp
+Parents.o:	Parents.cpp Parents.hpp Proto.hpp Symbol.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Parents.cpp
 
-Precedence.o:	Precedence.cpp Precedence.hpp Proto.hpp Symbol.hpp Parser.tab.c
+Precedence.o:	Precedence.cpp Precedence.hpp Proto.hpp Symbol.hpp Parser.tab.c HashMap.hpp
 	$(CXX) $(CXXFLAGS) Precedence.cpp
 
 Input.o:	Input.cpp Input.hpp
@@ -117,8 +117,8 @@ Input.o:	Input.cpp Input.hpp
 Base.o:	Base.cpp Base.hpp
 	$(CXX) $(CXXFLAGS) Base.cpp
 
-Statics.o:	Statics.cpp Allocator.hpp GC.hpp Proto.hpp
+Statics.o:	Statics.cpp Allocator.hpp GC.hpp Proto.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) Statics.cpp
 
-main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp Protection.hpp
+main.o:	main.cpp lex.yy.h Standard.hpp Reader.hpp Garnish.hpp GC.hpp REPL.hpp Bytecode.hpp Instructions.hpp Proto.hpp Stack.hpp Args.hpp Pathname.hpp Protection.hpp HashMap.hpp
 	$(CXX) $(CXXFLAGS) main.cpp
