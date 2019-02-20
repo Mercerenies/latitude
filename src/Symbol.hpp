@@ -150,6 +150,8 @@ public:
 /// Symbolic instances can be constructed from integers by aggregate
 /// initialization.
 struct Symbolic {
+    /// Initializes to an unused "null" symbolic value.
+    Symbolic() = default;
     /// The index of the symbol.
     Symbols::index_t index;
 };

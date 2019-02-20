@@ -15,6 +15,13 @@ long Symbols::gensymIndex = 100L;
 
 Symbols::Symbols()
     : syms(), names(), index(0), parentIndex(0) {
+    // Okay, so this calls for some explanation. In order to use the
+    // HashMap.hpp implementation, Symbols need to be default
+    // constructible to a meaningful empty value. So the first symbol
+    // interned (index 0) needs to have a value that will never be
+    // accessed from inside Latitude. Thus, we generate a symbol and
+    // immediately discard it, hence making index 0 unreachable.
+    (*this)["~"];
     parentIndex = (*this)["parent"].index;
 }
 
