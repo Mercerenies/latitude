@@ -44,7 +44,7 @@ control tools for exiting the loop abnormally or jumping ahead to the
 next iteration, at the cost of a performance penalty over using the
 un-specialized version. For instance, `global loop` is a loop which
 will run forever; `global loop*` behaves the same way but with
-additionall macros defined.
+additional macros defined.
 
 The following macros are defined in these specialized looping
 constructs. Macros beginning with a `$` are assumed to be defined in
