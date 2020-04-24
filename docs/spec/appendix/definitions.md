@@ -1,7 +1,7 @@
 
 # Definitions
 
- * Evaluating object (defined in [Objects](../i_syntax_and_semantics/ch3_object.md#objects))) -
+ * Evaluating object (defined in [Objects](../i_syntax_and_semantics/ch3_object.md#objects)) -
    An object whose primitive field contains a method is an evaluating
    object.
  * Non-traditional object (defined
